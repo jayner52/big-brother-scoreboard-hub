@@ -7,7 +7,7 @@ interface PoolContextType {
   poolEntries: PoolEntry[];
   scoringRules: ScoringRules;
   weeklyResults: WeeklyResults[];
-  addPoolEntry: (entry: Omit<PoolEntry, 'id' | 'scores' | 'timestamp'>) => void;
+  addPoolEntry: (entry: Omit<PoolEntry, 'id' | 'created_at' | 'updated_at'>) => void;
   updateContestants: (contestants: Contestant[]) => void;
   addWeeklyResults: (results: WeeklyResults) => void;
   calculateScores: () => void;
@@ -36,6 +36,7 @@ const defaultScoringRules: ScoringRules = {
   pov: 5,
   evicted: 20,
   bonus: 5,
+  survival: 5,
 };
 
 export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -44,18 +45,12 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [scoringRules] = useState<ScoringRules>(defaultScoringRules);
   const [weeklyResults, setWeeklyResults] = useState<WeeklyResults[]>([]);
 
-  const addPoolEntry = useCallback((entry: Omit<PoolEntry, 'id' | 'scores' | 'timestamp'>) => {
+  const addPoolEntry = useCallback((entry: Omit<PoolEntry, 'id' | 'created_at' | 'updated_at'>) => {
     const newEntry: PoolEntry = {
       ...entry,
       id: Date.now().toString(),
-      scores: {
-        hohPoints: 0,
-        povPoints: 0,
-        evictedPoints: 0,
-        bonusPoints: 0,
-        total: 0,
-      },
-      timestamp: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     setPoolEntries(prev => [...prev, newEntry]);
   }, []);
@@ -69,41 +64,9 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const calculateScores = useCallback(() => {
-    setPoolEntries(prev => prev.map(entry => {
-      let hohPoints = 0;
-      let povPoints = 0;
-      let evictedPoints = 0;
-      let bonusPoints = 0;
-
-      // Calculate points based on weekly results
-      weeklyResults.forEach(week => {
-        if (week.hohWinner === entry.picks.week1HOH) {
-          hohPoints += scoringRules.hoh;
-        }
-        if (week.povWinner === entry.picks.week1POV) {
-          povPoints += scoringRules.pov;
-        }
-        if (week.evicted === entry.picks.firstEvicted || week.evicted === entry.picks.week2Evicted) {
-          evictedPoints += scoringRules.evicted;
-        }
-        if (week.bonusWinners?.some(winner => Object.values(entry.picks).includes(winner))) {
-          bonusPoints += scoringRules.bonus;
-        }
-      });
-
-      const total = hohPoints + povPoints + evictedPoints + bonusPoints;
-
-      return {
-        ...entry,
-        scores: {
-          hohPoints,
-          povPoints,
-          evictedPoints,
-          bonusPoints,
-          total,
-        },
-      };
-    }));
+    // This is now handled by the AdminScoringPanel component
+    // The actual score calculation happens in the database via Supabase
+    console.log('Score calculation triggered - handled by admin panel');
   }, [weeklyResults, scoringRules]);
 
   const resetPool = useCallback(() => {

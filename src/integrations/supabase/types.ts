@@ -9,78 +9,206 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      contestants: {
+      bonus_questions: {
         Row: {
+          answer_revealed: boolean
+          correct_answer: string | null
           created_at: string
           id: string
           is_active: boolean
-          name: string
+          points_value: number
+          question_text: string
+          question_type: string
+          sort_order: number
+          updated_at: string
         }
         Insert: {
+          answer_revealed?: boolean
+          correct_answer?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
-          name: string
+          points_value?: number
+          question_text: string
+          question_type: string
+          sort_order: number
+          updated_at?: string
         }
         Update: {
+          answer_revealed?: boolean
+          correct_answer?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
-          name?: string
+          points_value?: number
+          question_text?: string
+          question_type?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
+      contestant_groups: {
+        Row: {
+          created_at: string
+          group_name: string
+          id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          group_name: string
+          id?: string
+          sort_order: number
+        }
+        Update: {
+          created_at?: string
+          group_name?: string
+          id?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      contestants: {
+        Row: {
+          created_at: string
+          group_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contestants_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "contestant_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pool_entries: {
         Row: {
+          bonus_answers: Json
           bonus_points: number
           created_at: string
-          evicted_points: number
-          first_evicted_pick: string
-          hoh_points: number
+          current_rank: number | null
           id: string
           participant_name: string
-          pov_points: number
+          payment_confirmed: boolean
+          player_1: string
+          player_2: string
+          player_3: string
+          player_4: string
+          player_5: string
+          team_name: string
           total_points: number
           updated_at: string
           user_id: string
-          week1_hoh_pick: string
-          week1_pov_pick: string
-          week2_evicted_pick: string
-          winner_pick: string
+          weekly_points: number
         }
         Insert: {
+          bonus_answers?: Json
           bonus_points?: number
           created_at?: string
-          evicted_points?: number
-          first_evicted_pick: string
-          hoh_points?: number
+          current_rank?: number | null
           id?: string
           participant_name: string
-          pov_points?: number
+          payment_confirmed?: boolean
+          player_1: string
+          player_2: string
+          player_3: string
+          player_4: string
+          player_5: string
+          team_name: string
           total_points?: number
           updated_at?: string
           user_id: string
-          week1_hoh_pick: string
-          week1_pov_pick: string
-          week2_evicted_pick: string
-          winner_pick: string
+          weekly_points?: number
         }
         Update: {
+          bonus_answers?: Json
           bonus_points?: number
           created_at?: string
-          evicted_points?: number
-          first_evicted_pick?: string
-          hoh_points?: number
+          current_rank?: number | null
           id?: string
           participant_name?: string
-          pov_points?: number
+          payment_confirmed?: boolean
+          player_1?: string
+          player_2?: string
+          player_3?: string
+          player_4?: string
+          player_5?: string
+          team_name?: string
           total_points?: number
           updated_at?: string
           user_id?: string
-          week1_hoh_pick?: string
-          week1_pov_pick?: string
-          week2_evicted_pick?: string
-          winner_pick?: string
+          weekly_points?: number
+        }
+        Relationships: []
+      }
+      pool_settings: {
+        Row: {
+          created_at: string
+          draft_open: boolean
+          entry_fee_amount: number
+          entry_fee_currency: string
+          id: string
+          payment_details_1: string
+          payment_details_2: string | null
+          payment_method_1: string
+          payment_method_2: string | null
+          registration_deadline: string | null
+          season_active: boolean
+          season_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          draft_open?: boolean
+          entry_fee_amount?: number
+          entry_fee_currency?: string
+          id?: string
+          payment_details_1?: string
+          payment_details_2?: string | null
+          payment_method_1?: string
+          payment_method_2?: string | null
+          registration_deadline?: string | null
+          season_active?: boolean
+          season_name?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          draft_open?: boolean
+          entry_fee_amount?: number
+          entry_fee_currency?: string
+          id?: string
+          payment_details_1?: string
+          payment_details_2?: string | null
+          payment_method_1?: string
+          payment_method_2?: string | null
+          registration_deadline?: string | null
+          season_active?: boolean
+          season_name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -134,6 +262,47 @@ export type Database = {
           week_number?: number
         }
         Relationships: []
+      }
+      weekly_team_scores: {
+        Row: {
+          bonus_points_earned: number
+          competition_points: number
+          created_at: string
+          id: string
+          pool_entry_id: string
+          survival_points: number
+          total_week_points: number
+          week_number: number
+        }
+        Insert: {
+          bonus_points_earned?: number
+          competition_points?: number
+          created_at?: string
+          id?: string
+          pool_entry_id: string
+          survival_points?: number
+          total_week_points?: number
+          week_number: number
+        }
+        Update: {
+          bonus_points_earned?: number
+          competition_points?: number
+          created_at?: string
+          id?: string
+          pool_entry_id?: string
+          survival_points?: number
+          total_week_points?: number
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_team_scores_pool_entry_id_fkey"
+            columns: ["pool_entry_id"]
+            isOneToOne: false
+            referencedRelation: "pool_entries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

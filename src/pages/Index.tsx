@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
-import { PoolEntryForm } from '@/components/PoolEntryForm';
-import { PoolTable } from '@/components/PoolTable';
-import { ScoringPanel } from '@/components/ScoringPanel';
+import { TeamDraftForm } from '@/components/TeamDraftForm';
+import { TeamLeaderboard } from '@/components/TeamLeaderboard';
+import { AdminScoringPanel } from '@/components/AdminScoringPanel';
 
 const Index = () => {
   return (
@@ -20,19 +20,19 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Pool Entry Form */}
+          {/* Team Draft Form */}
           <div className="mb-12">
-            <PoolEntryForm />
+            <TeamDraftForm />
           </div>
 
-          {/* Scoring Panel */}
+          {/* Admin Scoring Panel */}
           <div className="mb-12">
-            <ScoringPanel />
+            <AdminScoringPanel />
           </div>
 
-          {/* Pool Table */}
+          {/* Team Leaderboard */}
           <div className="mb-8">
-            <PoolTable />
+            <TeamLeaderboard />
           </div>
 
           {/* Footer */}

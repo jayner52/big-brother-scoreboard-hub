@@ -5,9 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Settings, DollarSign, Mail } from 'lucide-react';
+import { PrizePoolPanel } from '@/components/admin/PrizePoolPanel';
 
 interface PoolSettings {
   id: string;
@@ -378,6 +380,12 @@ export const PoolSettingsPanel: React.FC = () => {
       >
         {saving ? 'Saving...' : 'Save Pool Settings'}
       </Button>
+
+      <Separator className="my-6" />
+      
+      <div>
+        <PrizePoolPanel />
+      </div>
     </div>
   );
 };

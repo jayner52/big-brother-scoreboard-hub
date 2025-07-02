@@ -106,7 +106,14 @@ export const BonusQuestionsSection: React.FC<BonusQuestionsSectionProps> = ({
         );
 
       default:
-        return null;
+        return (
+          <Input
+            type="text"
+            value={currentAnswer || ''}
+            onChange={(e) => onBonusAnswerChange(question.id, e.target.value)}
+            placeholder="Enter your answer"
+          />
+        );
     }
   };
 

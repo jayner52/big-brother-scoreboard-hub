@@ -319,6 +319,17 @@ export const BonusQuestionsPanel: React.FC = () => {
                   placeholder="Enter correct number"
                 />
               )}
+
+              {!['player_select', 'dual_player_select', 'yes_no', 'number'].includes(question.question_type) && (
+                <Input
+                  type="text"
+                  value={bonusAnswers[question.id] || ''}
+                  onChange={(e) => 
+                    handleBonusAnswer(question.id, e.target.value, question.answer_revealed)
+                  }
+                  placeholder="Enter correct answer"
+                />
+              )}
             </div>
           </CardContent>
         </Card>

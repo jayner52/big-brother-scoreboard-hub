@@ -33,9 +33,9 @@ export const ScoringPanel: React.FC = () => {
 
     const results: WeeklyResults = {
       week: weekData.week,
-      hohWinner: weekData.hohWinner || undefined,
-      povWinner: weekData.povWinner || undefined,
-      evicted: weekData.evicted || undefined,
+      hohWinner: weekData.hohWinner === 'no-winner' ? undefined : weekData.hohWinner || undefined,
+      povWinner: weekData.povWinner === 'no-winner' ? undefined : weekData.povWinner || undefined,
+      evicted: weekData.evicted === 'no-eviction' ? undefined : weekData.evicted || undefined,
     };
 
     addWeeklyResults(results);
@@ -87,7 +87,7 @@ export const ScoringPanel: React.FC = () => {
                 <SelectValue placeholder="Select HOH winner" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No winner this week</SelectItem>
+                <SelectItem value="no-winner">No winner this week</SelectItem>
                 {activeContestants.map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
                     {contestant.name}
@@ -104,7 +104,7 @@ export const ScoringPanel: React.FC = () => {
                 <SelectValue placeholder="Select POV winner" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No winner this week</SelectItem>
+                <SelectItem value="no-winner">No winner this week</SelectItem>
                 {activeContestants.map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
                     {contestant.name}
@@ -121,7 +121,7 @@ export const ScoringPanel: React.FC = () => {
                 <SelectValue placeholder="Select evicted contestant" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No eviction this week</SelectItem>
+                <SelectItem value="no-eviction">No eviction this week</SelectItem>
                 {activeContestants.map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
                     {contestant.name}

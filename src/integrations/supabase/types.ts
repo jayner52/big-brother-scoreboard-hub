@@ -9,7 +9,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      contestants: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
+      pool_entries: {
+        Row: {
+          bonus_points: number
+          created_at: string
+          evicted_points: number
+          first_evicted_pick: string
+          hoh_points: number
+          id: string
+          participant_name: string
+          pov_points: number
+          total_points: number
+          updated_at: string
+          user_id: string
+          week1_hoh_pick: string
+          week1_pov_pick: string
+          week2_evicted_pick: string
+          winner_pick: string
+        }
+        Insert: {
+          bonus_points?: number
+          created_at?: string
+          evicted_points?: number
+          first_evicted_pick: string
+          hoh_points?: number
+          id?: string
+          participant_name: string
+          pov_points?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+          week1_hoh_pick: string
+          week1_pov_pick: string
+          week2_evicted_pick: string
+          winner_pick: string
+        }
+        Update: {
+          bonus_points?: number
+          created_at?: string
+          evicted_points?: number
+          first_evicted_pick?: string
+          hoh_points?: number
+          id?: string
+          participant_name?: string
+          pov_points?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+          week1_hoh_pick?: string
+          week1_pov_pick?: string
+          week2_evicted_pick?: string
+          winner_pick?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_results: {
+        Row: {
+          created_at: string
+          evicted_contestant: string | null
+          hoh_winner: string | null
+          id: string
+          pov_winner: string | null
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          evicted_contestant?: string | null
+          hoh_winner?: string | null
+          id?: string
+          pov_winner?: string | null
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          evicted_contestant?: string | null
+          hoh_winner?: string | null
+          id?: string
+          pov_winner?: string | null
+          week_number?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -11,16 +11,20 @@ import { SpecialEventsSection } from './weekly-events/SpecialEventsSection';
 import { PointsPreview } from './weekly-events/PointsPreview';
 import { DoubleEvictionToggle } from './weekly-events/DoubleEvictionToggle';
 import { SecondEvictionSection } from './weekly-events/SecondEvictionSection';
+import { JuryPhaseToggle } from './weekly-events/JuryPhaseToggle';
+import { HistoricalWeekSelector } from './weekly-events/HistoricalWeekSelector';
 
 export const WeeklyEventsPanel: React.FC = () => {
   const {
     contestants,
     scoringRules,
     loading,
+    currentWeek,
     eventForm,
     setEventForm,
     getPointsPreview,
     handleSubmitWeek,
+    loadData
   } = useWeeklyEvents();
 
   if (loading) {
@@ -43,6 +47,18 @@ export const WeeklyEventsPanel: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
+          {/* Historical Week Management */}
+          <HistoricalWeekSelector
+            onLoadWeek={(weekData) => setEventForm(weekData)}
+            currentWeek={currentWeek}
+          />
+
+          {/* Jury Phase Toggle */}
+          <JuryPhaseToggle
+            eventForm={eventForm}
+            setEventForm={setEventForm}
+          />
+
           {/* Double Eviction Toggle */}
           <DoubleEvictionToggle
             eventForm={eventForm}

@@ -26,7 +26,8 @@ export const useWeeklyEvents = () => {
     secondReplacementNominee: '',
     secondEvicted: '',
     maxNominees: 4,
-    specialEvents: []
+    specialEvents: [],
+    isJuryPhase: false
   });
 
   const loadData = async () => {
@@ -97,7 +98,9 @@ export const useWeeklyEvents = () => {
       (r.category === 'competitions' && r.subcategory === eventType) ||
       (r.category === 'weekly' && r.subcategory === eventType) ||
       (r.category === 'final_placement' && r.subcategory === eventType) ||
-      (r.category === 'penalties' && r.subcategory === eventType)
+      (r.category === 'penalties' && r.subcategory === eventType) ||
+      (r.category === 'special_events' && r.subcategory === eventType) ||
+      (r.category === 'jury' && r.subcategory === eventType)
     );
     return rule?.points || 0;
   };
@@ -131,6 +134,13 @@ export const useWeeklyEvents = () => {
     activeContestants.forEach(contestant => {
       preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('survival');
     });
+    
+    // Jury phase points (if enabled this week)
+    if (eventForm.isJuryPhase) {
+      activeContestants.forEach(contestant => {
+        preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('jury_member');
+      });
+    }
     
     // Special events points
     eventForm.specialEvents.forEach(se => {
@@ -235,6 +245,18 @@ export const useWeeklyEvents = () => {
         });
       });
 
+      // Add jury points if jury phase starts this week
+      if (eventForm.isJuryPhase) {
+        activeContestants.forEach(contestant => {
+          events.push({
+            week_number: eventForm.week,
+            contestant_id: contestant.id,
+            event_type: 'jury_member',
+            points_awarded: calculatePoints('jury_member')
+          });
+        });
+      }
+
       // Insert weekly events
       const { error: eventsError } = await supabase
         .from('weekly_events')
@@ -305,7 +327,8 @@ export const useWeeklyEvents = () => {
         secondReplacementNominee: '',
         secondEvicted: '',
         maxNominees: 4,
-        specialEvents: []
+        specialEvents: [],
+        isJuryPhase: false
       });
 
       // Reload data

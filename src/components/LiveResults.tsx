@@ -167,16 +167,19 @@ export const LiveResults: React.FC = () => {
             <div>
               <h4 className="font-semibold mb-2">Competition Points</h4>
               <ul className="space-y-1">
-                <li>• Head of Household: <span className="font-bold">10 points</span></li>
-                <li>• Power of Veto: <span className="font-bold">5 points</span></li>
-                <li>• Being Evicted: <span className="font-bold">20 points</span></li>
+                <li>• Head of Household: <span className="font-bold">3 points</span></li>
+                <li>• Power of Veto: <span className="font-bold">3 points</span></li>
+                <li>• Being Nominated: <span className="font-bold">1 point</span></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Weekly Points</h4>
+              <h4 className="font-semibold mb-2">Other Points</h4>
               <ul className="space-y-1">
-                <li>• Survival (per active player): <span className="font-bold">5 points</span></li>
-                <li>• Bonus Questions: <span className="font-bold">5-10 points</span></li>
+                <li>• Survival (per week): <span className="font-bold">1 point</span></li>
+                <li>• Making Jury: <span className="font-bold">2 points</span></li>
+                <li>• Prize Won: <span className="font-bold">2 points</span></li>
+                <li>• Punishment: <span className="font-bold">-1 points</span></li>
+                <li>• Bonus Questions: <span className="font-bold">1-10 points</span></li>
               </ul>
             </div>
           </div>

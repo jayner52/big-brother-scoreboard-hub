@@ -12,12 +12,20 @@ export const useWeeklyEvents = () => {
   
   const [eventForm, setEventForm] = useState<WeeklyEventForm>({
     week: 1,
-    nominees: [],
+    nominees: ['', ''],
     hohWinner: '',
     povWinner: '',
     povUsed: false,
     replacementNominee: '',
     evicted: '',
+    isDoubleEviction: false,
+    secondHohWinner: '',
+    secondNominees: ['', ''],
+    secondPovWinner: '',
+    secondPovUsed: false,
+    secondReplacementNominee: '',
+    secondEvicted: '',
+    maxNominees: 4,
     specialEvents: []
   });
 
@@ -66,7 +74,7 @@ export const useWeeklyEvents = () => {
       
       const nextWeek = weeklyData?.[0]?.week_number ? weeklyData[0].week_number + 1 : 1;
       setCurrentWeek(nextWeek);
-      setEventForm(prev => ({ ...prev, week: nextWeek }));
+      setEventForm(prev => ({ ...prev, week: nextWeek, nominees: ['', ''], secondNominees: ['', ''] }));
 
     } catch (error) {
       console.error('Error loading data:', error);
@@ -80,7 +88,10 @@ export const useWeeklyEvents = () => {
     }
   };
 
-  const calculatePoints = (eventType: string) => {
+  const calculatePoints = (eventType: string, customPoints?: number) => {
+    if (eventType === 'custom' && customPoints !== undefined) {
+      return customPoints;
+    }
     const rule = scoringRules.find(r => 
       r.subcategory === eventType || 
       (r.category === 'weekly_competition' && eventType.includes(r.subcategory || ''))
@@ -121,9 +132,32 @@ export const useWeeklyEvents = () => {
     // Special events points
     eventForm.specialEvents.forEach(se => {
       if (se.contestant && se.eventType) {
-        preview[se.contestant] = (preview[se.contestant] || 0) + calculatePoints(se.eventType);
+        preview[se.contestant] = (preview[se.contestant] || 0) + calculatePoints(se.eventType, se.customPoints);
       }
     });
+    
+    // Double eviction second round points
+    if (eventForm.isDoubleEviction) {
+      // Second HOH points
+      if (eventForm.secondHohWinner && eventForm.secondHohWinner !== 'no-winner') {
+        preview[eventForm.secondHohWinner] = (preview[eventForm.secondHohWinner] || 0) + calculatePoints('hoh_winner');
+      }
+      
+      // Second POV points
+      if (eventForm.secondPovWinner && eventForm.secondPovWinner !== 'no-winner') {
+        preview[eventForm.secondPovWinner] = (preview[eventForm.secondPovWinner] || 0) + calculatePoints('pov_winner');
+      }
+      
+      // Second nominees points
+      eventForm.secondNominees.filter(n => n).forEach(nominee => {
+        preview[nominee] = (preview[nominee] || 0) + calculatePoints('nominee');
+      });
+      
+      // Second replacement nominee points
+      if (eventForm.secondReplacementNominee) {
+        preview[eventForm.secondReplacementNominee] = (preview[eventForm.secondReplacementNominee] || 0) + calculatePoints('replacement_nominee');
+      }
+    }
     
     return preview;
   };
@@ -213,7 +247,7 @@ export const useWeeklyEvents = () => {
           contestant_id: contestants.find(c => c.name === se.contestant)?.id,
           event_type: se.eventType,
           description: se.description,
-          points_awarded: calculatePoints(se.eventType)
+          points_awarded: calculatePoints(se.eventType, se.customPoints)
         }));
 
       if (specialEvents.length > 0) {
@@ -254,12 +288,20 @@ export const useWeeklyEvents = () => {
       // Reset form for next week
       setEventForm({
         week: eventForm.week + 1,
-        nominees: [],
+        nominees: ['', ''],
         hohWinner: '',
         povWinner: '',
         povUsed: false,
         replacementNominee: '',
         evicted: '',
+        isDoubleEviction: false,
+        secondHohWinner: '',
+        secondNominees: ['', ''],
+        secondPovWinner: '',
+        secondPovUsed: false,
+        secondReplacementNominee: '',
+        secondEvicted: '',
+        maxNominees: 4,
         specialEvents: []
       });
 

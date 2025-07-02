@@ -1,0 +1,120 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Users, MapPin, Briefcase, Calendar } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { ContestantWithBio } from '@/types/admin';
+
+export const ContestantBios: React.FC = () => {
+  const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadContestants();
+  }, []);
+
+  const loadContestants = async () => {
+    try {
+      const { data } = await supabase
+        .from('contestants')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      
+      if (data) {
+        const mappedContestants = data.map(c => ({
+          id: c.id,
+          name: c.name,
+          isActive: c.is_active,
+          group_id: c.group_id,
+          sort_order: c.sort_order,
+          bio: c.bio,
+          photo_url: c.photo_url,
+          hometown: c.hometown,
+          age: c.age,
+          occupation: c.occupation
+        }));
+        setContestants(mappedContestants);
+      }
+    } catch (error) {
+      console.error('Error loading contestants:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading contestant information...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          Meet the Contestants
+        </h2>
+        <p className="text-muted-foreground">
+          Get to know the houseguests competing in Big Brother 26
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {contestants.map((contestant) => (
+          <Card key={contestant.id} className={`overflow-hidden transition-all duration-300 hover:shadow-lg ${
+            !contestant.isActive ? 'opacity-60 border-destructive/20' : ''
+          }`}>
+            <div className="relative">
+              {contestant.photo_url ? (
+                <img 
+                  src={contestant.photo_url} 
+                  alt={contestant.name}
+                  className="w-full h-48 object-cover"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                  <Users className="h-16 w-16 text-muted-foreground" />
+                </div>
+              )}
+              <div className="absolute top-2 right-2">
+                <Badge variant={contestant.isActive ? "default" : "destructive"}>
+                  {contestant.isActive ? 'Active' : 'Eliminated'}
+                </Badge>
+              </div>
+            </div>
+            
+            <CardHeader>
+              <CardTitle className="text-xl">{contestant.name}</CardTitle>
+              {contestant.bio && (
+                <CardDescription className="text-sm">
+                  {contestant.bio}
+                </CardDescription>
+              )}
+            </CardHeader>
+            
+            <CardContent className="space-y-3">
+              {contestant.age && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>{contestant.age} years old</span>
+                </div>
+              )}
+              
+              {contestant.hometown && (
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>{contestant.hometown}</span>
+                </div>
+              )}
+              
+              {contestant.occupation && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <span>{contestant.occupation}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};

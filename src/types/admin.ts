@@ -37,6 +37,9 @@ export interface ContestantWithBio {
   sort_order?: number;
   bio?: string;
   photo_url?: string;
+  hometown?: string;
+  age?: number;
+  occupation?: string;
 }
 
 export interface WeeklyEventForm {
@@ -47,9 +50,18 @@ export interface WeeklyEventForm {
   povUsed: boolean;
   replacementNominee?: string;
   evicted: string;
+  isDoubleEviction: boolean;
+  secondHohWinner?: string;
+  secondNominees: string[];
+  secondPovWinner?: string;
+  secondPovUsed: boolean;
+  secondReplacementNominee?: string;
+  secondEvicted?: string;
+  maxNominees: number;
   specialEvents: Array<{
     contestant: string;
     eventType: string;
     description?: string;
+    customPoints?: number;
   }>;
 }

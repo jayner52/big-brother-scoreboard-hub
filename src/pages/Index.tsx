@@ -6,6 +6,7 @@ import { TeamLeaderboard } from '@/components/TeamLeaderboard';
 import { EveryonesPicks } from '@/components/EveryonesPicks';
 import { LiveResults } from '@/components/LiveResults';
 import { ContestantValues } from '@/components/ContestantValues';
+import { ContestantBios } from '@/components/ContestantBios';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,12 +38,13 @@ const Index = () => {
 
           {/* Tabbed Interface */}
           <Tabs defaultValue="draft" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-8">
+            <TabsList className="grid w-full grid-cols-6 mb-8">
               <TabsTrigger value="draft">Draft Team</TabsTrigger>
               <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
               <TabsTrigger value="picks">Everyone's Picks</TabsTrigger>
               <TabsTrigger value="results">Live Results</TabsTrigger>
               <TabsTrigger value="contestants">Contestant Values</TabsTrigger>
+              <TabsTrigger value="bios">Contestant Bios</TabsTrigger>
             </TabsList>
 
             <TabsContent value="draft">
@@ -63,6 +65,10 @@ const Index = () => {
 
             <TabsContent value="contestants">
               <ContestantValues />
+            </TabsContent>
+
+            <TabsContent value="bios">
+              <ContestantBios />
             </TabsContent>
           </Tabs>
 

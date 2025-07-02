@@ -71,32 +71,41 @@ export type Database = {
       }
       contestants: {
         Row: {
+          age: number | null
           bio: string | null
           created_at: string
           group_id: string | null
+          hometown: string | null
           id: string
           is_active: boolean
           name: string
+          occupation: string | null
           photo_url: string | null
           sort_order: number | null
         }
         Insert: {
+          age?: number | null
           bio?: string | null
           created_at?: string
           group_id?: string | null
+          hometown?: string | null
           id?: string
           is_active?: boolean
           name: string
+          occupation?: string | null
           photo_url?: string | null
           sort_order?: number | null
         }
         Update: {
+          age?: number | null
           bio?: string | null
           created_at?: string
           group_id?: string | null
+          hometown?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          occupation?: string | null
           photo_url?: string | null
           sort_order?: number | null
         }
@@ -207,6 +216,8 @@ export type Database = {
           entry_fee_amount: number
           entry_fee_currency: string
           id: string
+          jury_phase_active: boolean | null
+          jury_start_week: number | null
           payment_details_1: string
           payment_details_2: string | null
           payment_method_1: string
@@ -222,6 +233,8 @@ export type Database = {
           entry_fee_amount?: number
           entry_fee_currency?: string
           id?: string
+          jury_phase_active?: boolean | null
+          jury_start_week?: number | null
           payment_details_1?: string
           payment_details_2?: string | null
           payment_method_1?: string
@@ -237,6 +250,8 @@ export type Database = {
           entry_fee_amount?: number
           entry_fee_currency?: string
           id?: string
+          jury_phase_active?: boolean | null
+          jury_start_week?: number | null
           payment_details_1?: string
           payment_details_2?: string | null
           payment_method_1?: string
@@ -316,6 +331,7 @@ export type Database = {
           created_at: string
           event_details: Json | null
           event_type: string
+          eviction_round: number | null
           id: string
           points_awarded: number | null
           updated_at: string
@@ -326,6 +342,7 @@ export type Database = {
           created_at?: string
           event_details?: Json | null
           event_type: string
+          eviction_round?: number | null
           id?: string
           points_awarded?: number | null
           updated_at?: string
@@ -336,6 +353,7 @@ export type Database = {
           created_at?: string
           event_details?: Json | null
           event_type?: string
+          eviction_round?: number | null
           id?: string
           points_awarded?: number | null
           updated_at?: string
@@ -357,7 +375,11 @@ export type Database = {
           evicted_contestant: string | null
           hoh_winner: string | null
           id: string
+          is_double_eviction: boolean | null
           pov_winner: string | null
+          second_evicted_contestant: string | null
+          second_hoh_winner: string | null
+          second_pov_winner: string | null
           week_number: number
         }
         Insert: {
@@ -365,7 +387,11 @@ export type Database = {
           evicted_contestant?: string | null
           hoh_winner?: string | null
           id?: string
+          is_double_eviction?: boolean | null
           pov_winner?: string | null
+          second_evicted_contestant?: string | null
+          second_hoh_winner?: string | null
+          second_pov_winner?: string | null
           week_number: number
         }
         Update: {
@@ -373,7 +399,11 @@ export type Database = {
           evicted_contestant?: string | null
           hoh_winner?: string | null
           id?: string
+          is_double_eviction?: boolean | null
           pov_winner?: string | null
+          second_evicted_contestant?: string | null
+          second_hoh_winner?: string | null
+          second_pov_winner?: string | null
           week_number?: number
         }
         Relationships: []

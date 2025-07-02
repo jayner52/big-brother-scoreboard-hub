@@ -9,6 +9,8 @@ import { PovUsageSection } from './weekly-events/PovUsageSection';
 import { EvictionSection } from './weekly-events/EvictionSection';
 import { SpecialEventsSection } from './weekly-events/SpecialEventsSection';
 import { PointsPreview } from './weekly-events/PointsPreview';
+import { DoubleEvictionToggle } from './weekly-events/DoubleEvictionToggle';
+import { SecondEvictionSection } from './weekly-events/SecondEvictionSection';
 
 export const WeeklyEventsPanel: React.FC = () => {
   const {
@@ -41,12 +43,24 @@ export const WeeklyEventsPanel: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
-          {/* Competition Winners */}
-          <CompetitionWinners
+          {/* Double Eviction Toggle */}
+          <DoubleEvictionToggle
             eventForm={eventForm}
             setEventForm={setEventForm}
-            activeContestants={activeContestants}
           />
+
+          {/* First Eviction (or only eviction) */}
+          <div className={eventForm.isDoubleEviction ? "border rounded-lg p-4 bg-blue-50 border-blue-200" : ""}>
+            {eventForm.isDoubleEviction && (
+              <h3 className="text-lg font-semibold mb-4 text-blue-800">First Eviction</h3>
+            )}
+            
+            {/* Competition Winners */}
+            <CompetitionWinners
+              eventForm={eventForm}
+              setEventForm={setEventForm}
+              activeContestants={activeContestants}
+            />
 
           {/* Nominees */}
           <NomineesSection
@@ -62,12 +76,22 @@ export const WeeklyEventsPanel: React.FC = () => {
             activeContestants={activeContestants}
           />
 
-          {/* Evicted Contestant */}
-          <EvictionSection
-            eventForm={eventForm}
-            setEventForm={setEventForm}
-            activeContestants={activeContestants}
-          />
+            {/* Evicted Contestant */}
+            <EvictionSection
+              eventForm={eventForm}
+              setEventForm={setEventForm}
+              activeContestants={activeContestants}
+            />
+          </div>
+
+          {/* Second Eviction (only shown for double eviction weeks) */}
+          {eventForm.isDoubleEviction && (
+            <SecondEvictionSection
+              eventForm={eventForm}
+              setEventForm={setEventForm}
+              activeContestants={activeContestants}
+            />
+          )}
 
           {/* Special Events */}
           <SpecialEventsSection

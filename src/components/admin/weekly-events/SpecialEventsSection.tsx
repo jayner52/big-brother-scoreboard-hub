@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -23,11 +23,11 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   const addSpecialEvent = () => {
     setEventForm(prev => ({
       ...prev,
-      specialEvents: [...prev.specialEvents, { contestant: '', eventType: '', description: '' }]
+      specialEvents: [...prev.specialEvents, { contestant: '', eventType: '', description: '', customPoints: undefined }]
     }));
   };
 
-  const updateSpecialEvent = (index: number, field: string, value: string) => {
+  const updateSpecialEvent = (index: number, field: string, value: string | number) => {
     setEventForm(prev => ({
       ...prev,
       specialEvents: prev.specialEvents.map((event, i) => 
@@ -55,63 +55,79 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         </Button>
       </div>
       <div className="space-y-2">
-        {eventForm.specialEvents.map((event, index) => (
-          <Card key={index} className="p-3">
-            <div className="grid grid-cols-12 gap-2 items-end">
-              <div className="col-span-4">
-                <Label className="text-xs">Contestant</Label>
-                <Select 
-                  value={event.contestant} 
-                  onValueChange={(value) => updateSpecialEvent(index, 'contestant', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeContestants.map(contestant => (
-                      <SelectItem key={contestant.id} value={contestant.name}>
-                        {contestant.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-3">
-                <Label className="text-xs">Event Type</Label>
-                <Select 
-                  value={event.eventType} 
-                  onValueChange={(value) => updateSpecialEvent(index, 'eventType', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {scoringRules
-                      .filter(r => r.category === 'special_events' && r.subcategory && r.subcategory.trim() !== '')
-                      .map(rule => (
-                        <SelectItem key={rule.id} value={rule.subcategory!}>
-                          {rule.description} ({rule.points > 0 ? '+' : ''}{rule.points}pts)
+        {eventForm.specialEvents.map((event, index) => {
+          const isCustomEvent = event.eventType === 'custom';
+          
+          return (
+            <Card key={index} className="p-3">
+              <div className="grid grid-cols-12 gap-2 items-end">
+                <div className="col-span-3">
+                  <Label className="text-xs">Contestant</Label>
+                  <Select 
+                    value={event.contestant} 
+                    onValueChange={(value) => updateSpecialEvent(index, 'contestant', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeContestants.map(contestant => (
+                        <SelectItem key={contestant.id} value={contestant.name}>
+                          {contestant.name}
                         </SelectItem>
                       ))}
-                  </SelectContent>
-                </Select>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-3">
+                  <Label className="text-xs">Event Type</Label>
+                  <Select 
+                    value={event.eventType} 
+                    onValueChange={(value) => updateSpecialEvent(index, 'eventType', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="custom">Custom Event</SelectItem>
+                      {scoringRules
+                        .filter(r => r.category === 'special_events' && r.subcategory && r.subcategory.trim() !== '')
+                        .map(rule => (
+                          <SelectItem key={rule.id} value={rule.subcategory!}>
+                            {rule.description} ({rule.points > 0 ? '+' : ''}{rule.points}pts)
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-3">
+                  <Label className="text-xs">{isCustomEvent ? 'Event Name' : 'Description'}</Label>
+                  <Input
+                    value={event.description || ''}
+                    onChange={(e) => updateSpecialEvent(index, 'description', e.target.value)}
+                    placeholder={isCustomEvent ? 'Event name' : 'Optional details'}
+                  />
+                </div>
+                {isCustomEvent && (
+                  <div className="col-span-2">
+                    <Label className="text-xs">Points</Label>
+                    <Input
+                      type="number"
+                      value={event.customPoints || ''}
+                      onChange={(e) => updateSpecialEvent(index, 'customPoints', parseInt(e.target.value) || 0)}
+                      placeholder="Points"
+                    />
+                  </div>
+                )}
+                <div className={isCustomEvent ? "col-span-1" : "col-span-1"}>
+                  <Button size="sm" variant="destructive" onClick={() => removeSpecialEvent(index)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="col-span-4">
-                <Label className="text-xs">Description</Label>
-                <Input
-                  value={event.description || ''}
-                  onChange={(e) => updateSpecialEvent(index, 'description', e.target.value)}
-                  placeholder="Optional details"
-                />
-              </div>
-              <div className="col-span-1">
-                <Button size="sm" variant="destructive" onClick={() => removeSpecialEvent(index)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

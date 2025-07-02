@@ -1,8 +1,8 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { X, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Plus, Minus } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 
 interface NomineesSectionProps {
@@ -16,44 +16,63 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
   setEventForm,
   activeContestants,
 }) => {
-  const addNominee = (contestant: string) => {
-    if (!contestant || eventForm.nominees.includes(contestant) || eventForm.nominees.length >= 2) return;
-    setEventForm(prev => ({
-      ...prev,
-      nominees: [...prev.nominees, contestant]
-    }));
+  const addNominee = () => {
+    if (eventForm.nominees.length < eventForm.maxNominees) {
+      setEventForm(prev => ({ ...prev, nominees: [...prev.nominees, ''] }));
+    }
   };
 
-  const removeNominee = (contestant: string) => {
-    setEventForm(prev => ({
-      ...prev,
-      nominees: prev.nominees.filter(n => n !== contestant)
-    }));
+  const removeNominee = (index: number) => {
+    if (eventForm.nominees.length > 2) {
+      setEventForm(prev => ({
+        ...prev,
+        nominees: prev.nominees.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const updateNominee = (index: number, value: string) => {
+    const newNominees = [...eventForm.nominees];
+    newNominees[index] = value;
+    setEventForm(prev => ({ ...prev, nominees: newNominees }));
   };
 
   return (
     <div>
-      <Label className="font-semibold flex items-center gap-2">
-        <Users className="h-4 w-4" />
-        Nominees ({eventForm.nominees.length}/2)
-      </Label>
-      <div className="mt-2 space-y-2">
-        <div className="flex gap-2 flex-wrap">
-          {eventForm.nominees.map(nominee => (
-            <Badge key={nominee} variant="destructive" className="flex items-center gap-1">
-              {nominee}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => removeNominee(nominee)} />
-            </Badge>
-          ))}
+      <div className="flex items-center justify-between mb-2">
+        <Label className="font-semibold">Nominees</Label>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={addNominee}
+            disabled={eventForm.nominees.length >= eventForm.maxNominees}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => removeNominee(eventForm.nominees.length - 1)}
+            disabled={eventForm.nominees.length <= 2}
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
         </div>
-        {eventForm.nominees.length < 2 && (
-          <Select value="" onValueChange={addNominee}>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {eventForm.nominees.map((nominee, index) => (
+          <Select 
+            key={index}
+            value={nominee || ''} 
+            onValueChange={(value) => updateNominee(index, value)}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Add nominee" />
+              <SelectValue placeholder={`Nominee ${index + 1}`} />
             </SelectTrigger>
             <SelectContent>
               {activeContestants
-                .filter(c => !eventForm.nominees.includes(c.name))
+                .filter(c => !eventForm.nominees.includes(c.name) || c.name === nominee)
                 .map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
                     {contestant.name}
@@ -61,7 +80,7 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
                 ))}
             </SelectContent>
           </Select>
-        )}
+        ))}
       </div>
     </div>
   );

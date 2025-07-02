@@ -94,7 +94,10 @@ export const useWeeklyEvents = () => {
     }
     const rule = scoringRules.find(r => 
       r.subcategory === eventType || 
-      (r.category === 'weekly_competition' && eventType.includes(r.subcategory || ''))
+      (r.category === 'competitions' && r.subcategory === eventType) ||
+      (r.category === 'weekly' && r.subcategory === eventType) ||
+      (r.category === 'final_placement' && r.subcategory === eventType) ||
+      (r.category === 'penalties' && r.subcategory === eventType)
     );
     return rule?.points || 0;
   };
@@ -126,7 +129,7 @@ export const useWeeklyEvents = () => {
     const activeContestants = contestants.filter(c => c.isActive && 
       (eventForm.evicted === 'no-eviction' || c.name !== eventForm.evicted));
     activeContestants.forEach(contestant => {
-      preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('weekly_survival');
+      preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('survival');
     });
     
     // Special events points
@@ -227,8 +230,8 @@ export const useWeeklyEvents = () => {
         events.push({
           week_number: eventForm.week,
           contestant_id: contestant.id,
-          event_type: 'weekly_survival',
-          points_awarded: calculatePoints('weekly_survival')
+          event_type: 'survival',
+          points_awarded: calculatePoints('survival')
         });
       });
 

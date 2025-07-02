@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Crown, Key, Target, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
 
@@ -17,6 +18,12 @@ interface ContestantStats {
   times_selected: number;
   elimination_week?: number;
   group_name?: string;
+  current_hoh?: boolean;
+  current_pov_winner?: boolean;
+  currently_nominated?: boolean;
+  pov_used_on?: boolean;
+  final_placement?: number;
+  americas_favorite?: boolean;
 }
 
 export const ContestantValues: React.FC = () => {
@@ -95,8 +102,16 @@ export const ContestantValues: React.FC = () => {
         );
         const eliminationWeek = evictionEvent ? evictionEvent.week_number : undefined;
 
-        // Calculate total points earned
-        const totalPointsEarned = (hohWins * 10) + (vetoWins * 10); // Simplified calculation
+        // Calculate total points earned from all weekly and special events
+        const weeklyPoints = (weeklyEventsResult.data || [])
+          .filter(event => event.contestant_id === contestant.id)
+          .reduce((sum, event) => sum + (event.points_awarded || 0), 0);
+        
+        const specialPoints = (specialEventsResult.data || [])
+          .filter(event => event.contestant_id === contestant.id)
+          .reduce((sum, event) => sum + (event.points_awarded || 0), 0);
+
+        const totalPointsEarned = weeklyPoints + specialPoints;
 
         return {
           contestant_name: contestant.name,
@@ -109,7 +124,13 @@ export const ContestantValues: React.FC = () => {
           punishments: punishments,
           times_selected: timesSelected,
           elimination_week: eliminationWeek,
-          group_name: group?.group_name
+          group_name: group?.group_name,
+          current_hoh: contestant.current_hoh,
+          current_pov_winner: contestant.current_pov_winner,
+          currently_nominated: contestant.currently_nominated,
+          pov_used_on: contestant.pov_used_on,
+          final_placement: contestant.final_placement,
+          americas_favorite: contestant.americas_favorite
         };
       });
 
@@ -176,10 +197,53 @@ export const ContestantValues: React.FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={contestant?.isActive ? "default" : "destructive"}>
-                          {contestant?.isActive ? "Active" : 
-                            stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
-                        </Badge>
+                        <div className="flex flex-wrap gap-1">
+                          {contestant?.isActive ? (
+                            <>
+                              <Badge variant="default">Active</Badge>
+                              {stat.current_hoh && (
+                                <Badge variant="secondary" className="flex items-center gap-1">
+                                  <Crown className="h-3 w-3" />
+                                  HOH
+                                </Badge>
+                              )}
+                              {stat.current_pov_winner && (
+                                <Badge variant="secondary" className="flex items-center gap-1">
+                                  <Key className="h-3 w-3" />
+                                  POV
+                                </Badge>
+                              )}
+                              {stat.currently_nominated && (
+                                <Badge variant="destructive" className="flex items-center gap-1">
+                                  <Target className="h-3 w-3" />
+                                  Nominated
+                                </Badge>
+                              )}
+                              {stat.pov_used_on && (
+                                <Badge variant="outline" className="flex items-center gap-1">
+                                  <Shield className="h-3 w-3" />
+                                  Saved
+                                </Badge>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <Badge variant="destructive">
+                                {stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
+                              </Badge>
+                              {stat.final_placement && (
+                                <Badge variant="outline">
+                                  {stat.final_placement === 1 ? "Winner" : 
+                                   stat.final_placement === 2 ? "Runner-up" :
+                                   `${stat.final_placement}th Place`}
+                                </Badge>
+                              )}
+                              {stat.americas_favorite && (
+                                <Badge variant="secondary">AFP</Badge>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center font-bold">
                         {stat.total_points_earned}

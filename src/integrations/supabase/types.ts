@@ -72,8 +72,13 @@ export type Database = {
       contestants: {
         Row: {
           age: number | null
+          americas_favorite: boolean
           bio: string | null
           created_at: string
+          current_hoh: boolean
+          current_pov_winner: boolean
+          currently_nominated: boolean
+          final_placement: number | null
           group_id: string | null
           hometown: string | null
           id: string
@@ -81,12 +86,18 @@ export type Database = {
           name: string
           occupation: string | null
           photo_url: string | null
+          pov_used_on: boolean
           sort_order: number | null
         }
         Insert: {
           age?: number | null
+          americas_favorite?: boolean
           bio?: string | null
           created_at?: string
+          current_hoh?: boolean
+          current_pov_winner?: boolean
+          currently_nominated?: boolean
+          final_placement?: number | null
           group_id?: string | null
           hometown?: string | null
           id?: string
@@ -94,12 +105,18 @@ export type Database = {
           name: string
           occupation?: string | null
           photo_url?: string | null
+          pov_used_on?: boolean
           sort_order?: number | null
         }
         Update: {
           age?: number | null
+          americas_favorite?: boolean
           bio?: string | null
           created_at?: string
+          current_hoh?: boolean
+          current_pov_winner?: boolean
+          currently_nominated?: boolean
+          final_placement?: number | null
           group_id?: string | null
           hometown?: string | null
           id?: string
@@ -107,6 +124,7 @@ export type Database = {
           name?: string
           occupation?: string | null
           photo_url?: string | null
+          pov_used_on?: boolean
           sort_order?: number | null
         }
         Relationships: [
@@ -223,6 +241,8 @@ export type Database = {
           group_names: string[] | null
           id: string
           jury_phase_active: boolean | null
+          jury_phase_started: boolean
+          jury_start_timestamp: string | null
           jury_start_week: number | null
           number_of_groups: number | null
           payment_details_1: string
@@ -245,6 +265,8 @@ export type Database = {
           group_names?: string[] | null
           id?: string
           jury_phase_active?: boolean | null
+          jury_phase_started?: boolean
+          jury_start_timestamp?: string | null
           jury_start_week?: number | null
           number_of_groups?: number | null
           payment_details_1?: string
@@ -267,6 +289,8 @@ export type Database = {
           group_names?: string[] | null
           id?: string
           jury_phase_active?: boolean | null
+          jury_phase_started?: boolean
+          jury_start_timestamp?: string | null
           jury_start_week?: number | null
           number_of_groups?: number | null
           payment_details_1?: string
@@ -277,6 +301,39 @@ export type Database = {
           registration_deadline?: string | null
           season_active?: boolean
           season_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      prize_pools: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          is_active: boolean
+          place_number: number
+          prize_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          place_number: number
+          prize_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          place_number?: number
+          prize_amount?: number
           updated_at?: string
         }
         Relationships: []

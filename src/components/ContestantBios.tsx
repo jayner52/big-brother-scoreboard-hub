@@ -4,9 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Users, MapPin, Briefcase, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
+import { PoolSettings } from '@/types/pool';
 
 export const ContestantBios: React.FC = () => {
   const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
+  const [poolSettings, setPoolSettings] = useState<PoolSettings | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,13 +17,13 @@ export const ContestantBios: React.FC = () => {
 
   const loadContestants = async () => {
     try {
-      const { data } = await supabase
-        .from('contestants')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      const [contestantsResult, settingsResult] = await Promise.all([
+        supabase.from('contestants').select('*').order('sort_order', { ascending: true }),
+        supabase.from('pool_settings').select('*').limit(1).single()
+      ]);
       
-      if (data) {
-        const mappedContestants = data.map(c => ({
+      if (contestantsResult.data) {
+        const mappedContestants = contestantsResult.data.map(c => ({
           id: c.id,
           name: c.name,
           isActive: c.is_active,
@@ -34,6 +36,10 @@ export const ContestantBios: React.FC = () => {
           occupation: c.occupation
         }));
         setContestants(mappedContestants);
+      }
+
+      if (settingsResult.data) {
+        setPoolSettings(settingsResult.data);
       }
     } catch (error) {
       console.error('Error loading contestants:', error);
@@ -53,7 +59,7 @@ export const ContestantBios: React.FC = () => {
           Meet the Contestants
         </h2>
         <p className="text-muted-foreground">
-          Get to know the houseguests competing in Big Brother 26
+          Get to know the houseguests competing in {poolSettings?.season_name || 'Big Brother'}
         </p>
       </div>
 

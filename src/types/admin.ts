@@ -82,6 +82,10 @@ export interface WeeklyEventForm {
   secondReplacementNominee?: string;
   secondEvicted?: string;
   maxNominees: number;
+  isFinalWeek?: boolean;
+  winner?: string;
+  runnerUp?: string;
+  americasFavorite?: string;
   specialEvents: Array<{
     contestant: string;
     eventType: string;

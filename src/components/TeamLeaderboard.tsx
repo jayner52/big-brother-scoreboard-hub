@@ -59,8 +59,8 @@ export const TeamLeaderboard: React.FC = () => {
       <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
         <CardTitle className="text-2xl">Team Leaderboard</CardTitle>
         <div className="flex flex-wrap gap-2 mt-2 text-sm">
-          <Badge variant="secondary" className="bg-white/20">Weekly: 5 pts/player</Badge>
-          <Badge variant="secondary" className="bg-white/20">Competitions: Variable</Badge>
+          <Badge variant="secondary" className="bg-white/20">Survival: 1 pt/week</Badge>
+          <Badge variant="secondary" className="bg-white/20">HOH/POV: 3 pts each</Badge>
           <Badge variant="secondary" className="bg-white/20">Bonus: 5-10 pts</Badge>
         </div>
       </CardHeader>

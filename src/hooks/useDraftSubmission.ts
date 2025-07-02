@@ -33,19 +33,14 @@ export const useDraftSubmission = () => {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to submit your team",
-          variant: "destructive",
-        });
-        return false;
-      }
+      
+      // Generate a temporary user ID if not logged in
+      const userId = user?.id || `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       const { error } = await supabase
         .from('pool_entries')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           participant_name: formData.participant_name,
           team_name: formData.team_name,
           email: formData.email,

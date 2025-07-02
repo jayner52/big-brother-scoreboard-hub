@@ -187,13 +187,13 @@ export const ContestantManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Contestant Management</h2>
+        <h2 className="text-2xl font-bold">Houseguest Management</h2>
         <Button 
           onClick={() => setShowAddForm(true)}
           className="flex items-center gap-2"
         >
           <UserPlus className="h-4 w-4" />
-          Add Contestant
+          Add Houseguest
         </Button>
       </div>
 

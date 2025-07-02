@@ -25,13 +25,14 @@ interface ContestantScore {
 export const WeekByWeekOverview: React.FC = () => {
   const [weeklyResults, setWeeklyResults] = useState<WeekSummary[]>([]);
   const [contestantScores, setContestantScores] = useState<Record<number, ContestantScore[]>>({});
+  const [specialEvents, setSpecialEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadWeekByWeekData();
   }, []);
 
-  const loadWeekByWeekData = async () => {
+const loadWeekByWeekData = async () => {
     try {
       // Load weekly results
       const { data: weeklyData, error: weeklyError } = await supabase
@@ -60,6 +61,7 @@ export const WeekByWeekOverview: React.FC = () => {
           week_number,
           contestant_id,
           event_type,
+          description,
           points_awarded,
           contestants(name)
         `)
@@ -114,6 +116,9 @@ export const WeekByWeekOverview: React.FC = () => {
       });
 
       setContestantScores(scoresByWeek);
+
+      // Store special events for use in component
+      setSpecialEvents(specialEvents || []);
 
     } catch (error) {
       console.error('Error loading week by week data:', error);
@@ -188,7 +193,7 @@ export const WeekByWeekOverview: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Points Summary for this week - show all surviving contestants */}
+                   {/* Points Summary for this week - show all surviving contestants */}
                   {contestantScores[week.week_number] && (
                     <div>
                       <h4 className="font-medium mb-2">Points Earned This Week (All Survivors)</h4>
@@ -199,6 +204,22 @@ export const WeekByWeekOverview: React.FC = () => {
                             <div key={contestant.name} className="flex justify-between bg-gray-50 p-2 rounded">
                               <span className="truncate">{contestant.name}</span>
                               <span className="font-bold text-green-600">+{contestant.weeklyTotal}</span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Special Events for this week */}
+                  {specialEvents?.filter(event => event.week_number === week.week_number).length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-medium mb-2">Special Events</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                        {specialEvents
+                          ?.filter(event => event.week_number === week.week_number)
+                          .map((event, index) => (
+                            <div key={index} className="bg-purple-50 p-2 rounded border-l-2 border-purple-200">
+                              <span className="font-medium">{(event.contestants as any)?.name}</span>: {event.description || event.event_type.replace(/_/g, ' ')}
                             </div>
                           ))}
                       </div>

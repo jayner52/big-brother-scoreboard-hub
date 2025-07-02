@@ -137,8 +137,18 @@ export const HouseguestValues: React.FC = () => {
         };
       });
 
-      // Sort by total points earned (descending)
-      stats.sort((a, b) => b.total_points_earned - a.total_points_earned);
+      // Sort by: Active players first (by points), then evicted players (first evicted last)
+      stats.sort((a, b) => {
+        const aActive = mappedHouseguests.find(c => c.name === a.houseguest_name)?.isActive;
+        const bActive = mappedHouseguests.find(c => c.name === b.houseguest_name)?.isActive;
+        
+        if (aActive && !bActive) return -1; // Active first
+        if (!aActive && bActive) return 1;  // Evicted last
+        if (aActive && bActive) return b.total_points_earned - a.total_points_earned; // Active by points
+        
+        // For evicted, first evicted goes to bottom
+        return (a.elimination_week || 0) - (b.elimination_week || 0);
+      });
       setHouseguestStats(stats);
 
     } catch (error) {

@@ -17,7 +17,7 @@ import { FinalWeekSection } from './weekly-events/FinalWeekSection';
 import { SecondEvictionSection } from './weekly-events/SecondEvictionSection';
 import { ThirdEvictionSection } from './weekly-events/ThirdEvictionSection';
 import { JuryPhaseToggle } from './weekly-events/JuryPhaseToggle';
-import { EnhancedHistoricalWeekSelector } from './weekly-events/EnhancedHistoricalWeekSelector';
+import { ImprovedHistoricalWeekSelector } from './weekly-events/ImprovedHistoricalWeekSelector';
 import { useScoringRules } from '@/hooks/useScoringRules';
 
 export const WeeklyEventsPanel: React.FC = () => {
@@ -63,7 +63,7 @@ export const WeeklyEventsPanel: React.FC = () => {
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           {/* Historical Week Management */}
-          <EnhancedHistoricalWeekSelector
+          <ImprovedHistoricalWeekSelector
             onLoadWeek={(weekData) => setEventForm(weekData)}
             currentWeek={currentWeek}
           />

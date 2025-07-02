@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Crown, Shield, Users } from 'lucide-react';
+import { Trophy, Crown, Shield, Users, Ban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatEventType, getEventDisplayText } from '@/utils/eventFormatters';
 
@@ -228,9 +228,20 @@ export const LiveResults: React.FC = () => {
                       <TableCell>
                         {week.nominees?.length ? (
                           <div className="text-sm">
-                            {week.nominees.join(', ')}
+                            {week.nominees.map((nominee, index) => (
+                              <div key={index} className="flex items-center gap-1">
+                                {week.pov_used && week.pov_used_on === nominee ? (
+                                  <>
+                                    <span className="line-through text-gray-500">{nominee}</span>
+                                    <Ban className="h-3 w-3 text-blue-500" />
+                                  </>
+                                ) : (
+                                  <span>{nominee}</span>
+                                )}
+                              </div>
+                            )).reduce((prev, curr, index) => index === 0 ? [curr] : [...prev, ', ', curr], [])}
                             {week.replacement_nominee && (
-                              <div className="text-xs text-orange-600">
+                              <div className="text-xs text-orange-600 mt-1">
                                 +{week.replacement_nominee}
                               </div>
                             )}

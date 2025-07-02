@@ -109,6 +109,8 @@ export type Database = {
           age: number | null
           americas_favorite: boolean
           bio: string | null
+          block_survival_bonus_2_weeks: boolean | null
+          block_survival_bonus_4_weeks: boolean | null
           created_at: string
           current_hoh: boolean
           current_pov_winner: boolean
@@ -123,11 +125,15 @@ export type Database = {
           photo_url: string | null
           pov_used_on: boolean
           sort_order: number | null
+          times_on_block_at_eviction: number | null
+          times_saved_by_veto: number | null
         }
         Insert: {
           age?: number | null
           americas_favorite?: boolean
           bio?: string | null
+          block_survival_bonus_2_weeks?: boolean | null
+          block_survival_bonus_4_weeks?: boolean | null
           created_at?: string
           current_hoh?: boolean
           current_pov_winner?: boolean
@@ -142,11 +148,15 @@ export type Database = {
           photo_url?: string | null
           pov_used_on?: boolean
           sort_order?: number | null
+          times_on_block_at_eviction?: number | null
+          times_saved_by_veto?: number | null
         }
         Update: {
           age?: number | null
           americas_favorite?: boolean
           bio?: string | null
+          block_survival_bonus_2_weeks?: boolean | null
+          block_survival_bonus_4_weeks?: boolean | null
           created_at?: string
           current_hoh?: boolean
           current_pov_winner?: boolean
@@ -161,6 +171,8 @@ export type Database = {
           photo_url?: string | null
           pov_used_on?: boolean
           sort_order?: number | null
+          times_on_block_at_eviction?: number | null
+          times_saved_by_veto?: number | null
         }
         Relationships: [
           {
@@ -612,6 +624,10 @@ export type Database = {
       calculate_contestant_points: {
         Args: { contestant_id_param: string }
         Returns: number
+      }
+      format_event_type: {
+        Args: { event_type_input: string }
+        Returns: string
       }
     }
     Enums: {

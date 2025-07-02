@@ -5,7 +5,7 @@ import { TeamDraftForm } from '@/components/TeamDraftForm';
 import { TeamLeaderboard } from '@/components/TeamLeaderboard';
 import { EveryonesPicks } from '@/components/EveryonesPicks';
 import { LiveResults } from '@/components/LiveResults';
-import { ContestantValues } from '@/components/ContestantValues';
+import { HouseguestValues } from '@/components/HouseguestValues';
 import { ContestantBios } from '@/components/ContestantBios';
 import { PrizePoolDisplay } from '@/components/PrizePoolDisplay';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,7 +21,11 @@ const Index = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-between items-start mb-4">
-              <div></div>
+              <Link to="/auth">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  Login / Sign Up
+                </Button>
+              </Link>
               <h1 className="text-5xl font-bold bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
                 Big Brother Fantasy Pool
               </h1>
@@ -59,8 +63,8 @@ const Index = () => {
               <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
               <TabsTrigger value="picks">Everyone's Picks</TabsTrigger>
               <TabsTrigger value="results">Live Results</TabsTrigger>
-              <TabsTrigger value="contestants">Contestant Values</TabsTrigger>
-              <TabsTrigger value="bios">Contestant Bios</TabsTrigger>
+              <TabsTrigger value="contestants">Houseguest Values</TabsTrigger>
+              <TabsTrigger value="bios">Houseguest Bios</TabsTrigger>
             </TabsList>
 
             <TabsContent value="draft">
@@ -80,7 +84,7 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="contestants">
-              <ContestantValues />
+              <HouseguestValues />
             </TabsContent>
 
             <TabsContent value="bios">

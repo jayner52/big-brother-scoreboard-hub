@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Crown, Shield, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { formatEventType, getEventDisplayText } from '@/utils/eventFormatters';
 
 interface WeeklyResult {
   week_number: number;
@@ -24,7 +25,7 @@ interface SpecialEvent {
   week_number: number;
   event_type: string;
   description: string | null;
-  contestant_name: string;
+  houseguest_name: string;
 }
 
 export const LiveResults: React.FC = () => {
@@ -63,7 +64,7 @@ export const LiveResults: React.FC = () => {
         week_number: event.week_number,
         event_type: event.event_type,
         description: event.description,
-        contestant_name: (event.contestants as any)?.name || 'Unknown'
+        houseguest_name: (event.contestants as any)?.name || 'Unknown'
       }));
       
       setSpecialEvents(mappedSpecialEvents);
@@ -151,7 +152,7 @@ export const LiveResults: React.FC = () => {
                     .filter(event => event.week_number === weeklyResults[0].week_number)
                     .map((event, index) => (
                       <div key={index} className="bg-purple-50 p-2 rounded text-sm">
-                        <span className="font-medium">{event.contestant_name}</span>: {event.description || event.event_type}
+                        <span className="font-medium">{event.houseguest_name}</span>: {getEventDisplayText(event.event_type, event.description)}
                       </div>
                     ))}
                 </div>
@@ -255,7 +256,7 @@ export const LiveResults: React.FC = () => {
                               .slice(0, 2)
                               .map((event, index) => (
                                 <div key={index} className="bg-purple-100 px-2 py-1 rounded">
-                                  {event.contestant_name}: {event.event_type}
+                                  {event.houseguest_name}: {getEventDisplayText(event.event_type, event.description)}
                                 </div>
                               ))}
                           </div>

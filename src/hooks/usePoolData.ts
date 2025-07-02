@@ -34,7 +34,8 @@ export const usePoolData = () => {
           payment_details_2: settings.payment_details_2,
           registration_deadline: settings.registration_deadline,
           draft_open: settings.draft_open,
-          season_active: settings.season_active
+          season_active: settings.season_active,
+          enable_bonus_questions: settings.enable_bonus_questions
         };
         setPoolSettings(mappedSettings);
       }
@@ -72,7 +73,7 @@ export const usePoolData = () => {
       const mappedQuestions = questions?.map(q => ({
         id: q.id,
         question_text: q.question_text,
-        question_type: q.question_type as 'player_select' | 'dual_player_select' | 'yes_no' | 'number',
+        question_type: q.question_type as 'player_select' | 'dual_player_select' | 'yes_no' | 'number' | 'creature_select',
         sort_order: q.sort_order,
         is_active: q.is_active,
         correct_answer: q.correct_answer,
@@ -93,10 +94,15 @@ export const usePoolData = () => {
     }
   };
 
+  const refreshPoolData = () => {
+    loadPoolData();
+  };
+
   return {
     poolSettings,
     contestantGroups,
     bonusQuestions,
-    loading
+    loading,
+    refreshPoolData
   };
 };

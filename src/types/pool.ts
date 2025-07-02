@@ -25,6 +25,7 @@ export interface PoolSettings {
   registration_deadline?: string;
   draft_open: boolean;
   season_active: boolean;
+  enable_bonus_questions?: boolean;
 }
 
 export interface BonusQuestion {

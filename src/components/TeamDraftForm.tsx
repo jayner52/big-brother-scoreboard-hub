@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { BasicInfoForm } from '@/components/draft/BasicInfoForm';
 import { PaymentInfoDisplay } from '@/components/draft/PaymentInfoDisplay';
+import { PaymentValidationSection } from '@/components/draft/PaymentValidationSection';
 import { TeamDraftSection } from '@/components/draft/TeamDraftSection';
 import { BonusQuestionsSection } from '@/components/draft/BonusQuestionsSection';
 import { usePoolData } from '@/hooks/usePoolData';
@@ -64,11 +65,21 @@ export const TeamDraftForm: React.FC = () => {
 
           <Separator />
 
-          <BonusQuestionsSection
-            bonusQuestions={bonusQuestions}
-            contestantGroups={contestantGroups}
-            bonusAnswers={formData.bonus_answers}
-            onBonusAnswerChange={updateBonusAnswer}
+          {poolSettings?.enable_bonus_questions && bonusQuestions.length > 0 && (
+            <>
+              <BonusQuestionsSection
+                bonusQuestions={bonusQuestions}
+                contestantGroups={contestantGroups}
+                bonusAnswers={formData.bonus_answers}
+                onBonusAnswerChange={updateBonusAnswer}
+              />
+              <Separator />
+            </>
+          )}
+
+          <PaymentValidationSection
+            paymentConfirmed={formData.payment_confirmed}
+            onPaymentConfirmedChange={(confirmed) => updateFormData({ payment_confirmed: confirmed })}
           />
 
           <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold">

@@ -55,6 +55,7 @@ export const useDraftSubmission = () => {
           player_4: formData.player_4,
           player_5: formData.player_5,
           bonus_answers: formData.bonus_answers,
+          payment_confirmed: formData.payment_confirmed,
         });
 
       if (error) throw error;

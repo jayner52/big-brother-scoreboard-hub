@@ -10,6 +10,7 @@ export interface DraftFormData {
   player_4: string;
   player_5: string;
   bonus_answers: Record<string, any>;
+  payment_confirmed: boolean;
 }
 
 export const useDraftForm = () => {
@@ -23,6 +24,7 @@ export const useDraftForm = () => {
     player_4: '',
     player_5: '',
     bonus_answers: {},
+    payment_confirmed: false,
   });
 
   const updateFormData = (updates: Partial<DraftFormData>) => {
@@ -50,6 +52,7 @@ export const useDraftForm = () => {
       player_4: '',
       player_5: '',
       bonus_answers: {},
+      payment_confirmed: false,
     });
   };
 

@@ -152,8 +152,8 @@ export const WeekByWeekOverview: React.FC = () => {
                     )}
                   </div>
                   
-                  {/* Week Summary */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                   {/* Week Summary */}
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                     <div className="text-center p-3 bg-yellow-50 rounded-lg">
                       <Crown className="h-6 w-6 text-yellow-600 mx-auto mb-1" />
                       <p className="text-sm font-medium text-yellow-800">HOH</p>
@@ -163,6 +163,16 @@ export const WeekByWeekOverview: React.FC = () => {
                       <Shield className="h-6 w-6 text-blue-600 mx-auto mb-1" />
                       <p className="text-sm font-medium text-blue-800">POV</p>
                       <p className="font-bold text-blue-900">{week.pov_winner || "N/A"}</p>
+                      {week.second_pov_winner && (
+                        <p className="text-xs text-blue-600">2nd: {week.second_pov_winner}</p>
+                      )}
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg">
+                      <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
+                      <p className="text-sm font-medium text-orange-800">POV Used</p>
+                      <p className="font-bold text-orange-900">
+                        {week.second_pov_winner ? "Yes" : "No"}
+                      </p>
                     </div>
                     <div className="text-center p-3 bg-red-50 rounded-lg">
                       <Users className="h-6 w-6 text-red-600 mx-auto mb-1" />
@@ -178,17 +188,16 @@ export const WeekByWeekOverview: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Points Summary for this week */}
+                  {/* Points Summary for this week - show all surviving contestants */}
                   {contestantScores[week.week_number] && (
                     <div>
-                      <h4 className="font-medium mb-2">Points Earned This Week</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                      <h4 className="font-medium mb-2">Points Earned This Week (All Survivors)</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm">
                         {contestantScores[week.week_number]
-                          .filter(contestant => contestant.weeklyTotal > 0)
-                          .slice(0, 8)
+                          .sort((a, b) => b.weeklyTotal - a.weeklyTotal)
                           .map((contestant) => (
                             <div key={contestant.name} className="flex justify-between bg-gray-50 p-2 rounded">
-                              <span>{contestant.name}</span>
+                              <span className="truncate">{contestant.name}</span>
                               <span className="font-bold text-green-600">+{contestant.weeklyTotal}</span>
                             </div>
                           ))}

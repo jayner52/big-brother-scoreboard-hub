@@ -1,8 +1,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award } from 'lucide-react';
+import { Award, Save } from 'lucide-react';
 import { useWeeklyEvents } from '@/hooks/useWeeklyEvents';
+import { useWeeklyEventsSave } from '@/hooks/useWeeklyEventsSave';
 import { CompetitionWinners } from './weekly-events/CompetitionWinners';
 import { NomineesSection } from './weekly-events/NomineesSection';
 import { PovUsageSection } from './weekly-events/PovUsageSection';
@@ -33,6 +34,7 @@ export const WeeklyEventsPanel: React.FC = () => {
   } = useWeeklyEvents();
   
   const { getWinnerPoints, getRunnerUpPoints } = useScoringRules();
+  const { isAutoSaving, saveCurrentWeekDraft } = useWeeklyEventsSave(eventForm, currentWeek);
 
   if (loading) {
     return <div className="text-center py-8">Loading weekly events panel...</div>;
@@ -48,6 +50,12 @@ export const WeeklyEventsPanel: React.FC = () => {
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5" />
             Week {eventForm.week} Events
+            {isAutoSaving && (
+              <div className="flex items-center gap-1 ml-auto text-purple-200">
+                <Save className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Saving...</span>
+              </div>
+            )}
           </CardTitle>
           <CardDescription className="text-purple-100">
             Record all events for the week and automatically calculate points
@@ -159,13 +167,24 @@ export const WeeklyEventsPanel: React.FC = () => {
           {/* Points Preview */}
           <PointsPreview pointsPreview={pointsPreview} />
 
-          <Button 
-            onClick={handleSubmitWeek} 
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-            size="lg"
-          >
-            Submit Week {eventForm.week} Events & Calculate Points
-          </Button>
+          <div className="flex gap-4">
+            <Button 
+              onClick={saveCurrentWeekDraft}
+              variant="outline"
+              className="flex-1"
+              disabled={isAutoSaving}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Progress
+            </Button>
+            <Button 
+              onClick={handleSubmitWeek} 
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              size="lg"
+            >
+              Submit & Close Week {eventForm.week}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

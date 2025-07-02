@@ -10,10 +10,26 @@ interface WeeklyResult {
   hoh_winner: string | null;
   pov_winner: string | null;
   evicted_contestant: string | null;
+  nominees: string[] | null;
+  pov_used: boolean | null;
+  pov_used_on: string | null;
+  replacement_nominee: string | null;
+  is_double_eviction: boolean | null;
+  is_triple_eviction: boolean | null;
+  jury_phase_started: boolean | null;
+  is_draft: boolean | null;
+}
+
+interface SpecialEvent {
+  week_number: number;
+  event_type: string;
+  description: string | null;
+  contestant_name: string;
 }
 
 export const LiveResults: React.FC = () => {
   const [weeklyResults, setWeeklyResults] = useState<WeeklyResult[]>([]);
+  const [specialEvents, setSpecialEvents] = useState<SpecialEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +45,28 @@ export const LiveResults: React.FC = () => {
 
       if (error) throw error;
       setWeeklyResults(data || []);
+
+      // Load special events
+      const { data: specialData, error: specialError } = await supabase
+        .from('special_events')
+        .select(`
+          week_number,
+          event_type,
+          description,
+          contestants(name)
+        `)
+        .order('week_number', { ascending: false });
+
+      if (specialError) throw specialError;
+      
+      const mappedSpecialEvents = (specialData || []).map(event => ({
+        week_number: event.week_number,
+        event_type: event.event_type,
+        description: event.description,
+        contestant_name: (event.contestants as any)?.name || 'Unknown'
+      }));
+      
+      setSpecialEvents(mappedSpecialEvents);
     } catch (error) {
       console.error('Error loading weekly results:', error);
     } finally {
@@ -48,11 +86,22 @@ export const LiveResults: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-yellow-500" />
-              Week {weeklyResults[0].week_number} - Latest Results
+              Week {weeklyResults[0].week_number} - {weeklyResults[0].is_draft ? 'In Progress' : 'Latest Results'}
+              <div className="flex gap-2 ml-auto">
+                {weeklyResults[0].is_double_eviction && (
+                  <Badge variant="destructive">Double Eviction</Badge>
+                )}
+                {weeklyResults[0].is_triple_eviction && (
+                  <Badge variant="destructive">Triple Eviction</Badge>
+                )}
+                {weeklyResults[0].jury_phase_started && (
+                  <Badge className="bg-purple-500">Jury Started</Badge>
+                )}
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-yellow-50 rounded-lg">
                 <Crown className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
                 <h4 className="font-semibold text-yellow-800">Head of Household</h4>
@@ -66,6 +115,23 @@ export const LiveResults: React.FC = () => {
                 <p className="text-xl font-bold text-blue-900">
                   {weeklyResults[0].pov_winner || "TBD"}
                 </p>
+                {weeklyResults[0].pov_used && (
+                  <p className="text-sm text-blue-600 mt-1">
+                    Used on {weeklyResults[0].pov_used_on}
+                  </p>
+                )}
+              </div>
+              <div className="text-center p-4 bg-orange-50 rounded-lg">
+                <Users className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+                <h4 className="font-semibold text-orange-800">Nominees</h4>
+                <p className="text-sm font-bold text-orange-900">
+                  {weeklyResults[0].nominees?.join(', ') || "TBD"}
+                </p>
+                {weeklyResults[0].replacement_nominee && (
+                  <p className="text-xs text-orange-600 mt-1">
+                    Replacement: {weeklyResults[0].replacement_nominee}
+                  </p>
+                )}
               </div>
               <div className="text-center p-4 bg-red-50 rounded-lg">
                 <Users className="h-8 w-8 text-red-600 mx-auto mb-2" />
@@ -75,6 +141,22 @@ export const LiveResults: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {/* Special Events for Current Week */}
+            {specialEvents.filter(event => event.week_number === weeklyResults[0].week_number).length > 0 && (
+              <div className="mt-6">
+                <h4 className="font-semibold mb-2">Special Events This Week</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {specialEvents
+                    .filter(event => event.week_number === weeklyResults[0].week_number)
+                    .map((event, index) => (
+                      <div key={index} className="bg-purple-50 p-2 rounded text-sm">
+                        <span className="font-medium">{event.contestant_name}</span>: {event.description || event.event_type}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -98,7 +180,9 @@ export const LiveResults: React.FC = () => {
                     <TableHead>Week</TableHead>
                     <TableHead>Head of Household</TableHead>
                     <TableHead>Power of Veto</TableHead>
+                    <TableHead>Nominees</TableHead>
                     <TableHead>Evicted</TableHead>
+                    <TableHead>Special Events</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -106,7 +190,12 @@ export const LiveResults: React.FC = () => {
                   {weeklyResults.map((week) => (
                     <TableRow key={week.week_number}>
                       <TableCell className="font-bold">
-                        Week {week.week_number}
+                        <div className="flex items-center gap-2">
+                          Week {week.week_number}
+                          {week.is_double_eviction && <Badge variant="outline" className="text-xs">2x</Badge>}
+                          {week.is_triple_eviction && <Badge variant="outline" className="text-xs">3x</Badge>}
+                          {week.jury_phase_started && <Badge variant="outline" className="text-xs bg-purple-100">Jury</Badge>}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {week.hoh_winner ? (
@@ -120,9 +209,30 @@ export const LiveResults: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         {week.pov_winner ? (
-                          <div className="flex items-center gap-2">
-                            <Shield className="h-4 w-4 text-blue-500" />
-                            <span className="font-semibold">{week.pov_winner}</span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <Shield className="h-4 w-4 text-blue-500" />
+                              <span className="font-semibold">{week.pov_winner}</span>
+                            </div>
+                            {week.pov_used && (
+                              <div className="text-xs text-blue-600">
+                                Used on {week.pov_used_on}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">TBD</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {week.nominees?.length ? (
+                          <div className="text-sm">
+                            {week.nominees.join(', ')}
+                            {week.replacement_nominee && (
+                              <div className="text-xs text-orange-600">
+                                +{week.replacement_nominee}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <span className="text-gray-400">TBD</span>
@@ -138,12 +248,29 @@ export const LiveResults: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>
+                        {specialEvents.filter(event => event.week_number === week.week_number).length > 0 ? (
+                          <div className="text-xs space-y-1">
+                            {specialEvents
+                              .filter(event => event.week_number === week.week_number)
+                              .slice(0, 2)
+                              .map((event, index) => (
+                                <div key={index} className="bg-purple-100 px-2 py-1 rounded">
+                                  {event.contestant_name}: {event.event_type}
+                                </div>
+                              ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">None</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <Badge variant={
-                          week.hoh_winner && week.pov_winner && week.evicted_contestant
+                          week.hoh_winner && week.pov_winner && week.evicted_contestant && !week.is_draft
                             ? "default"
                             : "secondary"
                         }>
-                          {week.hoh_winner && week.pov_winner && week.evicted_contestant
+                          {week.is_draft ? "In Progress" : 
+                           week.hoh_winner && week.pov_winner && week.evicted_contestant
                             ? "Complete"
                             : "In Progress"}
                         </Badge>
@@ -157,34 +284,6 @@ export const LiveResults: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Scoring Guide */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Scoring System</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <h4 className="font-semibold mb-2">Competition Points</h4>
-              <ul className="space-y-1">
-                <li>• Head of Household: <span className="font-bold">3 points</span></li>
-                <li>• Power of Veto: <span className="font-bold">3 points</span></li>
-                <li>• Being Nominated: <span className="font-bold">1 point</span></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Other Points</h4>
-              <ul className="space-y-1">
-                <li>• Survival (per week): <span className="font-bold">1 point</span></li>
-                <li>• Making Jury: <span className="font-bold">2 points</span></li>
-                <li>• Prize Won: <span className="font-bold">2 points</span></li>
-                <li>• Punishment: <span className="font-bold">-1 points</span></li>
-                <li>• Bonus Questions: <span className="font-bold">1-10 points</span></li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

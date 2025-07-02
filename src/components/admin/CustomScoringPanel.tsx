@@ -160,7 +160,7 @@ export const CustomScoringPanel: React.FC = () => {
         >
           {saving ? 'Saving...' : 'Save Scoring Rules'}
         </Button>
-      </CardContent>
+        </CardContent>
     </Card>
   );
 };

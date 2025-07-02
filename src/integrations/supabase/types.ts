@@ -69,6 +69,41 @@ export type Database = {
         }
         Relationships: []
       }
+      contestant_nominations: {
+        Row: {
+          contestant_id: string
+          created_at: string
+          id: string
+          nomination_type: string
+          survived: boolean | null
+          week_number: number
+        }
+        Insert: {
+          contestant_id: string
+          created_at?: string
+          id?: string
+          nomination_type: string
+          survived?: boolean | null
+          week_number: number
+        }
+        Update: {
+          contestant_id?: string
+          created_at?: string
+          id?: string
+          nomination_type?: string
+          survived?: boolean | null
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contestant_nominations_contestant_id_fkey"
+            columns: ["contestant_id"]
+            isOneToOne: false
+            referencedRelation: "contestants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contestants: {
         Row: {
           age: number | null
@@ -454,10 +489,24 @@ export type Database = {
           hoh_winner: string | null
           id: string
           is_double_eviction: boolean | null
+          is_draft: boolean | null
+          is_triple_eviction: boolean | null
+          jury_phase_started: boolean | null
+          nominees: string[] | null
+          pov_used: boolean | null
+          pov_used_on: string | null
           pov_winner: string | null
+          replacement_nominee: string | null
           second_evicted_contestant: string | null
           second_hoh_winner: string | null
+          second_nominees: string[] | null
+          second_pov_used: boolean | null
+          second_pov_used_on: string | null
           second_pov_winner: string | null
+          second_replacement_nominee: string | null
+          third_evicted_contestant: string | null
+          third_hoh_winner: string | null
+          third_pov_winner: string | null
           week_number: number
         }
         Insert: {
@@ -466,10 +515,24 @@ export type Database = {
           hoh_winner?: string | null
           id?: string
           is_double_eviction?: boolean | null
+          is_draft?: boolean | null
+          is_triple_eviction?: boolean | null
+          jury_phase_started?: boolean | null
+          nominees?: string[] | null
+          pov_used?: boolean | null
+          pov_used_on?: string | null
           pov_winner?: string | null
+          replacement_nominee?: string | null
           second_evicted_contestant?: string | null
           second_hoh_winner?: string | null
+          second_nominees?: string[] | null
+          second_pov_used?: boolean | null
+          second_pov_used_on?: string | null
           second_pov_winner?: string | null
+          second_replacement_nominee?: string | null
+          third_evicted_contestant?: string | null
+          third_hoh_winner?: string | null
+          third_pov_winner?: string | null
           week_number: number
         }
         Update: {
@@ -478,10 +541,24 @@ export type Database = {
           hoh_winner?: string | null
           id?: string
           is_double_eviction?: boolean | null
+          is_draft?: boolean | null
+          is_triple_eviction?: boolean | null
+          jury_phase_started?: boolean | null
+          nominees?: string[] | null
+          pov_used?: boolean | null
+          pov_used_on?: string | null
           pov_winner?: string | null
+          replacement_nominee?: string | null
           second_evicted_contestant?: string | null
           second_hoh_winner?: string | null
+          second_nominees?: string[] | null
+          second_pov_used?: boolean | null
+          second_pov_used_on?: string | null
           second_pov_winner?: string | null
+          second_replacement_nominee?: string | null
+          third_evicted_contestant?: string | null
+          third_hoh_winner?: string | null
+          third_pov_winner?: string | null
           week_number?: number
         }
         Relationships: []

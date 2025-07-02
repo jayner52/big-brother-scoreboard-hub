@@ -132,8 +132,8 @@ export const useWeeklyEvents = () => {
       preview[eventForm.povWinner] = (preview[eventForm.povWinner] || 0) + calculatePoints('pov_winner');
     }
     
-    // Nominee points
-    eventForm.nominees.forEach(nominee => {
+    // Nominee points (only add if nominee is not empty)
+    eventForm.nominees.filter(nominee => nominee).forEach(nominee => {
       preview[nominee] = (preview[nominee] || 0) + calculatePoints('nominee');
     });
     
@@ -186,7 +186,15 @@ export const useWeeklyEvents = () => {
       }
     }
     
-    return preview;
+    // Filter out empty entries (those with 0 or no points)
+    const filteredPreview: Record<string, number> = {};
+    Object.entries(preview).forEach(([name, points]) => {
+      if (points > 0 && name.trim()) {
+        filteredPreview[name] = points;
+      }
+    });
+    
+    return filteredPreview;
   };
 
   const handleSubmitWeek = async () => {

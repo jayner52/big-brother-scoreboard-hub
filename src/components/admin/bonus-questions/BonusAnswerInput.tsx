@@ -17,6 +17,39 @@ export const BonusAnswerInput: React.FC<BonusAnswerInputProps> = ({
   contestants,
   onAnswerChange
 }) => {
+  const creatureOptions = [
+    'Mammal',
+    'Bird', 
+    'Reptile/Amphibian',
+    'Food',
+    'Robot',
+    'Bug/Insect/Arachnid',
+    'Fish/Sea Creature',
+    'Alien',
+    'Other',
+    "They won't play OTEV"
+  ];
+
+  if (question.question_type === 'creature_select') {
+    return (
+      <Select 
+        value={currentAnswer || ''} 
+        onValueChange={onAnswerChange}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select creature type" />
+        </SelectTrigger>
+        <SelectContent>
+          {creatureOptions.map(option => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
   if (question.question_type === 'player_select') {
     return (
       <Select 

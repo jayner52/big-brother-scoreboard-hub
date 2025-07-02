@@ -19,10 +19,42 @@ export const BonusQuestionsSection: React.FC<BonusQuestionsSectionProps> = ({
   bonusAnswers,
   onBonusAnswerChange,
 }) => {
+  const creatureOptions = [
+    'Mammal',
+    'Bird', 
+    'Reptile/Amphibian',
+    'Food',
+    'Robot',
+    'Bug/Insect/Arachnid',
+    'Fish/Sea Creature',
+    'Alien',
+    'Other',
+    "They won't play OTEV"
+  ];
+
   const renderBonusQuestion = (question: BonusQuestion) => {
     const currentAnswer = bonusAnswers[question.id];
 
     switch (question.question_type) {
+      case 'creature_select':
+        return (
+          <Select 
+            value={currentAnswer || ''} 
+            onValueChange={(value) => onBonusAnswerChange(question.id, value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select creature type" />
+            </SelectTrigger>
+            <SelectContent>
+              {creatureOptions.map(option => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+
       case 'player_select':
         return (
           <Select 

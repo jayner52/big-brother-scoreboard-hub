@@ -181,7 +181,7 @@ export const ContestantValues: React.FC = () => {
                 {contestantStats.map((stat, index) => {
                   const contestant = contestants.find(c => c.name === stat.contestant_name);
                   const fantasyValue = stat.times_selected > 0 ? 
-                    (stat.total_points_earned / stat.times_selected).toFixed(1) : '0.0';
+                    Math.round(stat.total_points_earned / stat.times_selected).toString() : '0';
                   
                   return (
                     <TableRow key={stat.contestant_name}>

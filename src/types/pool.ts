@@ -30,7 +30,7 @@ export interface PoolSettings {
 export interface BonusQuestion {
   id: string;
   question_text: string;
-  question_type: 'player_select' | 'dual_player_select' | 'yes_no' | 'number';
+  question_type: 'player_select' | 'dual_player_select' | 'yes_no' | 'number' | 'creature_select';
   sort_order: number;
   is_active: boolean;
   correct_answer?: string;

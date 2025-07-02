@@ -178,13 +178,13 @@ export const PrizePoolPanel: React.FC = () => {
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <h4 className="font-semibold text-green-800">Expected Collection</h4>
               <p className="text-2xl font-bold text-green-900">
-                {currency} ${totalExpected.toFixed(2)}
+                {currency} ${Math.round(totalExpected)}
               </p>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <h4 className="font-semibold text-purple-800">Total Prizes</h4>
               <p className="text-2xl font-bold text-purple-900">
-                {currency} ${totalPrizes.toFixed(2)}
+                {currency} ${Math.round(totalPrizes)}
               </p>
               <Badge variant={totalPrizes <= totalExpected ? "default" : "destructive"} className="mt-1">
                 {totalPrizes <= totalExpected ? "Within Budget" : "Over Budget"}
@@ -212,7 +212,7 @@ export const PrizePoolPanel: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <Badge variant="outline">{prize.place_number}st Place</Badge>
                     <span className="font-semibold">
-                      {currency} ${prize.prize_amount.toFixed(2)}
+                      {currency} ${Math.round(prize.prize_amount)}
                     </span>
                     {prize.description && (
                       <span className="text-sm text-gray-600">- {prize.description}</span>
@@ -221,10 +221,10 @@ export const PrizePoolPanel: React.FC = () => {
                   <div className="flex gap-2">
                     <Input
                       type="number"
-                      value={prize.prize_amount}
+                      value={prize.prize_amount.toString()}
                       onChange={(e) => updatePrize(prize.id, { prize_amount: parseFloat(e.target.value) || 0 })}
                       className="w-24"
-                      step="0.01"
+                      step="1"
                     />
                     <Button
                       variant="destructive"

@@ -9,8 +9,13 @@ interface ContestantStats {
   contestant_name: string;
   total_points_earned: number;
   weeks_active: number;
-  competitions_won: number;
+  hoh_wins: number;
+  veto_wins: number;
+  times_on_block: number;
+  prizes_won: number;
+  punishments: number;
   times_selected: number;
+  elimination_week?: number;
   group_name?: string;
 }
 
@@ -26,17 +31,19 @@ export const ContestantValues: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [contestantsResult, groupsResult, poolEntriesResult, weeklyResultsResult] = await Promise.all([
+      const [contestantsResult, groupsResult, poolEntriesResult, weeklyEventsResult, specialEventsResult] = await Promise.all([
         supabase.from('contestants').select('*').order('sort_order'),
         supabase.from('contestant_groups').select('*').order('sort_order'),
         supabase.from('pool_entries').select('*'),
-        supabase.from('weekly_results').select('*')
+        supabase.from('weekly_events').select('*'),
+        supabase.from('special_events').select('*')
       ]);
 
       if (contestantsResult.error) throw contestantsResult.error;
       if (groupsResult.error) throw groupsResult.error;
       if (poolEntriesResult.error) throw poolEntriesResult.error;
-      if (weeklyResultsResult.error) throw weeklyResultsResult.error;
+      if (weeklyEventsResult.error) throw weeklyEventsResult.error;
+      if (specialEventsResult.error) throw specialEventsResult.error;
 
       // Map contestants to match our type interface
       const mappedContestants = (contestantsResult.data || []).map(c => ({
@@ -57,22 +64,51 @@ export const ContestantValues: React.FC = () => {
           return count + (players.includes(contestant.name) ? 1 : 0);
         }, 0);
 
-        // Count competitions won
-        const competitionsWon = (weeklyResultsResult.data || []).reduce((count, week) => {
-          return count + 
-            (week.hoh_winner === contestant.name ? 1 : 0) +
-            (week.pov_winner === contestant.name ? 1 : 0);
-        }, 0);
+        // Count HOH wins
+        const hohWins = (weeklyEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'hoh_winner'
+        ).length;
 
-        // Calculate estimated points (this would need real weekly scoring data)
-        const totalPointsEarned = competitionsWon * 10; // Simplified calculation
+        // Count Veto wins
+        const vetoWins = (weeklyEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'pov_winner'
+        ).length;
+
+        // Count times on block (nominations)
+        const timesOnBlock = (weeklyEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'nominated'
+        ).length;
+
+        // Count prizes
+        const prizesWon = (specialEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type.includes('prize')
+        ).length;
+
+        // Count punishments
+        const punishments = (specialEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type.includes('punishment')
+        ).length;
+
+        // Find elimination week
+        const evictionEvent = (weeklyEventsResult.data || []).find(event => 
+          event.contestant_id === contestant.id && event.event_type === 'evicted'
+        );
+        const eliminationWeek = evictionEvent ? evictionEvent.week_number : undefined;
+
+        // Calculate total points earned
+        const totalPointsEarned = (hohWins * 10) + (vetoWins * 10); // Simplified calculation
 
         return {
           contestant_name: contestant.name,
           total_points_earned: totalPointsEarned,
-          weeks_active: contestant.isActive ? (weeklyResultsResult.data?.length || 0) : 0,
-          competitions_won: competitionsWon,
+          weeks_active: contestant.isActive ? (weeklyEventsResult.data?.filter(e => e.contestant_id === contestant.id).length || 0) : 0,
+          hoh_wins: hohWins,
+          veto_wins: vetoWins,
+          times_on_block: timesOnBlock,
+          prizes_won: prizesWon,
+          punishments: punishments,
           times_selected: timesSelected,
+          elimination_week: eliminationWeek,
           group_name: group?.group_name
         };
       });
@@ -111,7 +147,11 @@ export const ContestantValues: React.FC = () => {
                   <TableHead>Group</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Points Earned</TableHead>
-                  <TableHead>Competitions Won</TableHead>
+                  <TableHead>HOH Wins</TableHead>
+                  <TableHead>Veto Wins</TableHead>
+                  <TableHead>Times on Block</TableHead>
+                  <TableHead>Prizes</TableHead>
+                  <TableHead>Punishments</TableHead>
                   <TableHead>Times Selected</TableHead>
                   <TableHead>Fantasy Value</TableHead>
                 </TableRow>
@@ -137,14 +177,27 @@ export const ContestantValues: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Badge variant={contestant?.isActive ? "default" : "destructive"}>
-                          {contestant?.isActive ? "Active" : "Evicted"}
+                          {contestant?.isActive ? "Active" : 
+                            stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center font-bold">
                         {stat.total_points_earned}
                       </TableCell>
                       <TableCell className="text-center">
-                        {stat.competitions_won}
+                        {stat.hoh_wins}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {stat.veto_wins}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {stat.times_on_block}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {stat.prizes_won}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {stat.punishments}
                       </TableCell>
                       <TableCell className="text-center">
                         {stat.times_selected}

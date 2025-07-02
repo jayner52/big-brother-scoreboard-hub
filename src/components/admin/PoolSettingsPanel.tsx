@@ -264,15 +264,15 @@ export const PoolSettingsPanel: React.FC = () => {
             <div>
               <Label htmlFor="payment_method_2">Secondary Payment Method (Optional)</Label>
               <Select 
-                value={settings.payment_method_2 || ''} 
-                onValueChange={(value) => setSettings({ ...settings, payment_method_2: value || null })}
+                value={settings.payment_method_2 || 'none'} 
+                onValueChange={(value) => setSettings({ ...settings, payment_method_2: value === 'none' ? null : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select payment method" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
-                  <SelectItem value="E-transfer">E-transfer</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="E-transfer">E-transfer</SelectItem>
                   <SelectItem value="Venmo">Venmo</SelectItem>
                   <SelectItem value="PayPal">PayPal</SelectItem>
                   <SelectItem value="Cash App">Cash App</SelectItem>

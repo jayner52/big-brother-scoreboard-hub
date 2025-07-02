@@ -47,14 +47,14 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
               <div>
                 <Label htmlFor={`group-${contestant.id}`}>Group Assignment</Label>
                 <Select 
-                  value={editForm.group_id || ''} 
-                  onValueChange={(value) => onFormChange({ group_id: value || null })}
+                  value={editForm.group_id || 'unassigned'} 
+                  onValueChange={(value) => onFormChange({ group_id: value === 'unassigned' ? null : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select group" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No Group</SelectItem>
+                    <SelectItem value="unassigned">No Group</SelectItem>
                     {groups.map(group => (
                       <SelectItem key={group.id} value={group.id}>
                         {group.group_name}

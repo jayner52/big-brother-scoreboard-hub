@@ -215,6 +215,7 @@ export type Database = {
       pool_settings: {
         Row: {
           created_at: string
+          draft_locked: boolean
           draft_open: boolean
           enable_free_pick: boolean | null
           entry_fee_amount: number
@@ -236,6 +237,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          draft_locked?: boolean
           draft_open?: boolean
           enable_free_pick?: boolean | null
           entry_fee_amount?: number
@@ -257,6 +259,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          draft_locked?: boolean
           draft_open?: boolean
           enable_free_pick?: boolean | null
           entry_fee_amount?: number

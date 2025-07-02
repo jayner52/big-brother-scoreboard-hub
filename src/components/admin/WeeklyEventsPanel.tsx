@@ -10,6 +10,9 @@ import { EvictionSection } from './weekly-events/EvictionSection';
 import { SpecialEventsSection } from './weekly-events/SpecialEventsSection';
 import { PointsPreview } from './weekly-events/PointsPreview';
 import { DoubleEvictionToggle } from './weekly-events/DoubleEvictionToggle';
+import { TripleEvictionToggle } from './weekly-events/TripleEvictionToggle';
+import { FinalWeekToggle } from './weekly-events/FinalWeekToggle';
+import { FinalWeekSection } from './weekly-events/FinalWeekSection';
 import { SecondEvictionSection } from './weekly-events/SecondEvictionSection';
 import { JuryPhaseToggle } from './weekly-events/JuryPhaseToggle';
 import { HistoricalWeekSelector } from './weekly-events/HistoricalWeekSelector';
@@ -53,69 +56,92 @@ export const WeeklyEventsPanel: React.FC = () => {
             currentWeek={currentWeek}
           />
 
-          {/* Jury Phase Toggle */}
-          <JuryPhaseToggle
-            eventForm={eventForm}
-            setEventForm={setEventForm}
-          />
-
-          {/* Double Eviction Toggle */}
-          <DoubleEvictionToggle
-            eventForm={eventForm}
-            setEventForm={setEventForm}
-          />
-
-          {/* First Eviction (or only eviction) */}
-          <div className={eventForm.isDoubleEviction ? "border rounded-lg p-4 bg-blue-50 border-blue-200" : ""}>
-            {eventForm.isDoubleEviction && (
-              <h3 className="text-lg font-semibold mb-4 text-blue-800">First Eviction</h3>
-            )}
-            
-            {/* Competition Winners */}
-            <CompetitionWinners
+          {/* Special Week Toggles */}
+          <div className="space-y-4">
+            <JuryPhaseToggle
               eventForm={eventForm}
               setEventForm={setEventForm}
-              activeContestants={activeContestants}
             />
-
-          {/* Nominees */}
-          <NomineesSection
-            eventForm={eventForm}
-            setEventForm={setEventForm}
-            activeContestants={activeContestants}
-          />
-
-          {/* POV Usage and Replacement */}
-          <PovUsageSection
-            eventForm={eventForm}
-            setEventForm={setEventForm}
-            activeContestants={activeContestants}
-          />
-
-            {/* Evicted Contestant */}
-            <EvictionSection
+            
+            <DoubleEvictionToggle
+              eventForm={eventForm}
+              setEventForm={setEventForm}
+            />
+            
+            <TripleEvictionToggle
+              eventForm={eventForm}
+              setEventForm={setEventForm}
+            />
+            
+            <FinalWeekToggle
               eventForm={eventForm}
               setEventForm={setEventForm}
               activeContestants={activeContestants}
             />
           </div>
 
-          {/* Second Eviction (only shown for double eviction weeks) */}
-          {eventForm.isDoubleEviction && (
-            <SecondEvictionSection
+          {/* Final Week Section (replaces regular week content) */}
+          {eventForm.isFinalWeek ? (
+            <FinalWeekSection
               eventForm={eventForm}
               setEventForm={setEventForm}
               activeContestants={activeContestants}
             />
-          )}
+          ) : (
+            <>
+              {/* Regular Week Content */}
+              <div className={eventForm.isDoubleEviction ? "border rounded-lg p-4 bg-blue-50 border-blue-200" : ""}>
+                {eventForm.isDoubleEviction && (
+                  <h3 className="text-lg font-semibold mb-4 text-blue-800">First Eviction</h3>
+                )}
+                
+                {/* Competition Winners */}
+                <CompetitionWinners
+                  eventForm={eventForm}
+                  setEventForm={setEventForm}
+                  activeContestants={activeContestants}
+                />
 
-          {/* Special Events */}
-          <SpecialEventsSection
-            eventForm={eventForm}
-            setEventForm={setEventForm}
-            activeContestants={activeContestants}
-            scoringRules={scoringRules}
-          />
+                {/* Nominees */}
+                <NomineesSection
+                  eventForm={eventForm}
+                  setEventForm={setEventForm}
+                  activeContestants={activeContestants}
+                />
+
+                {/* POV Usage and Replacement */}
+                <PovUsageSection
+                  eventForm={eventForm}
+                  setEventForm={setEventForm}
+                  activeContestants={activeContestants}
+                />
+
+                {/* Evicted Contestant */}
+                <EvictionSection
+                  eventForm={eventForm}
+                  setEventForm={setEventForm}
+                  activeContestants={activeContestants}
+                />
+              </div>
+
+              {/* Second Eviction (only shown for double eviction weeks) */}
+              {eventForm.isDoubleEviction && (
+                <SecondEvictionSection
+                  eventForm={eventForm}
+                  setEventForm={setEventForm}
+                  activeContestants={activeContestants}
+                />
+              )}
+
+              {/* Special Events */}
+              <SpecialEventsSection
+                eventForm={eventForm}
+                setEventForm={setEventForm}
+                activeContestants={activeContestants}
+                scoringRules={scoringRules}
+              />
+            </>
+          )}
 
           {/* Points Preview */}
           <PointsPreview pointsPreview={pointsPreview} />

@@ -16,18 +16,26 @@ export const useWeeklyEvents = () => {
     hohWinner: '',
     povWinner: '',
     povUsed: false,
+    povUsedOn: '',
     replacementNominee: '',
     evicted: '',
     isDoubleEviction: false,
+    isTripleEviction: false,
+    isFinalWeek: false,
+    isJuryPhase: false,
     secondHohWinner: '',
     secondNominees: ['', ''],
     secondPovWinner: '',
     secondPovUsed: false,
+    secondPovUsedOn: '',
     secondReplacementNominee: '',
     secondEvicted: '',
+    thirdEvicted: '',
     maxNominees: 4,
     specialEvents: [],
-    isJuryPhase: false
+    winner: '',
+    runnerUp: '',
+    americasFavorite: ''
   });
 
   const loadData = async () => {
@@ -317,18 +325,26 @@ export const useWeeklyEvents = () => {
         hohWinner: '',
         povWinner: '',
         povUsed: false,
+        povUsedOn: '',
         replacementNominee: '',
         evicted: '',
         isDoubleEviction: false,
+        isTripleEviction: false,
+        isFinalWeek: false,
+        isJuryPhase: false,
         secondHohWinner: '',
         secondNominees: ['', ''],
         secondPovWinner: '',
         secondPovUsed: false,
+        secondPovUsedOn: '',
         secondReplacementNominee: '',
         secondEvicted: '',
+        thirdEvicted: '',
         maxNominees: 4,
         specialEvents: [],
-        isJuryPhase: false
+        winner: '',
+        runnerUp: '',
+        americasFavorite: ''
       });
 
       // Reload data

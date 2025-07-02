@@ -14,6 +14,24 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
   setEventForm,
   activeContestants,
 }) => {
+  // Calculate final nominees (after POV ceremony)
+  const getFinalNominees = () => {
+    let finalNominees = [...eventForm.nominees.filter(n => n)];
+    
+    if (eventForm.povUsed && eventForm.povUsedOn) {
+      // Remove the person saved by POV
+      finalNominees = finalNominees.filter(n => n !== eventForm.povUsedOn);
+      // Add replacement nominee if there is one
+      if (eventForm.replacementNominee) {
+        finalNominees.push(eventForm.replacementNominee);
+      }
+    }
+    
+    return finalNominees;
+  };
+
+  const finalNominees = getFinalNominees();
+
   return (
     <div>
       <Label className="font-semibold">Evicted Contestant</Label>
@@ -23,13 +41,26 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="no-eviction">No eviction</SelectItem>
-          {activeContestants.map(contestant => (
-            <SelectItem key={contestant.id} value={contestant.name}>
-              {contestant.name}
-            </SelectItem>
-          ))}
+          {finalNominees.length > 0 ? (
+            finalNominees.map(nominee => (
+              <SelectItem key={nominee} value={nominee}>
+                {nominee}
+              </SelectItem>
+            ))
+          ) : (
+            activeContestants.map(contestant => (
+              <SelectItem key={contestant.id} value={contestant.name}>
+                {contestant.name}
+              </SelectItem>
+            ))
+          )}
         </SelectContent>
       </Select>
+      {finalNominees.length > 0 && (
+        <p className="text-xs text-muted-foreground mt-1">
+          Showing final nominees after POV ceremony
+        </p>
+      )}
     </div>
   );
 };

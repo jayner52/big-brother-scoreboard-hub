@@ -235,6 +235,7 @@ export type Database = {
           created_at: string
           draft_locked: boolean
           draft_open: boolean
+          enable_bonus_questions: boolean | null
           enable_free_pick: boolean | null
           entry_fee_amount: number
           entry_fee_currency: string
@@ -259,6 +260,7 @@ export type Database = {
           created_at?: string
           draft_locked?: boolean
           draft_open?: boolean
+          enable_bonus_questions?: boolean | null
           enable_free_pick?: boolean | null
           entry_fee_amount?: number
           entry_fee_currency?: string
@@ -283,6 +285,7 @@ export type Database = {
           created_at?: string
           draft_locked?: boolean
           draft_open?: boolean
+          enable_bonus_questions?: boolean | null
           enable_free_pick?: boolean | null
           entry_fee_amount?: number
           entry_fee_currency?: string

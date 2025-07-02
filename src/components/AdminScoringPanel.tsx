@@ -5,6 +5,7 @@ import { ContestantManagement } from '@/components/admin/ContestantManagement';
 import { WeeklyEventsPanel } from '@/components/admin/WeeklyEventsPanel';
 import { LegacyWeeklyResults } from '@/components/admin/LegacyWeeklyResults';
 import { BonusQuestionsPanel } from '@/components/admin/BonusQuestionsPanel';
+import { PoolSettingsPanel } from '@/components/admin/PoolSettingsPanel';
 
 export const AdminScoringPanel: React.FC = () => {
   return (
@@ -17,9 +18,10 @@ export const AdminScoringPanel: React.FC = () => {
       </CardHeader>
       <CardContent className="p-6">
         <Tabs defaultValue="events" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="events">Weekly Events</TabsTrigger>
             <TabsTrigger value="contestants">Contestants</TabsTrigger>
+            <TabsTrigger value="settings">Pool Settings</TabsTrigger>
             <TabsTrigger value="legacy">Legacy Scoring</TabsTrigger>
             <TabsTrigger value="bonus">Bonus Questions</TabsTrigger>
           </TabsList>
@@ -30,6 +32,10 @@ export const AdminScoringPanel: React.FC = () => {
 
           <TabsContent value="contestants" className="space-y-4">
             <ContestantManagement />
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-4">
+            <PoolSettingsPanel />
           </TabsContent>
 
           <TabsContent value="legacy" className="space-y-4">

@@ -5,14 +5,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ContestantWithBio } from '@/types/admin';
+import { ContestantWithBio, ContestantGroup } from '@/types/admin';
 import { Pencil, Save, X, UserPlus } from 'lucide-react';
 
 export const ContestantManagement: React.FC = () => {
   const { toast } = useToast();
   const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
+  const [groups, setGroups] = useState<ContestantGroup[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<ContestantWithBio>>({});
   const [showAddForm, setShowAddForm] = useState(false);
@@ -20,6 +22,7 @@ export const ContestantManagement: React.FC = () => {
 
   useEffect(() => {
     loadContestants();
+    loadGroups();
   }, []);
 
   const loadContestants = async () => {
@@ -37,7 +40,10 @@ export const ContestantManagement: React.FC = () => {
           group_id: c.group_id,
           sort_order: c.sort_order,
           bio: c.bio,
-          photo_url: c.photo_url
+          photo_url: c.photo_url,
+          hometown: c.hometown,
+          age: c.age,
+          occupation: c.occupation
         }));
         setContestants(mappedContestants);
       }
@@ -50,6 +56,21 @@ export const ContestantManagement: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadGroups = async () => {
+    try {
+      const { data } = await supabase
+        .from('contestant_groups')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      
+      if (data) {
+        setGroups(data);
+      }
+    } catch (error) {
+      console.error('Error loading groups:', error);
     }
   };
 
@@ -69,7 +90,11 @@ export const ContestantManagement: React.FC = () => {
           is_active: editForm.isActive,
           bio: editForm.bio,
           photo_url: editForm.photo_url,
-          sort_order: editForm.sort_order
+          sort_order: editForm.sort_order,
+          group_id: editForm.group_id,
+          hometown: editForm.hometown,
+          age: editForm.age,
+          occupation: editForm.occupation
         })
         .eq('id', editingId);
 
@@ -107,7 +132,11 @@ export const ContestantManagement: React.FC = () => {
           is_active: editForm.isActive ?? true,
           bio: editForm.bio,
           photo_url: editForm.photo_url,
-          sort_order: editForm.sort_order ?? contestants.length + 1
+          sort_order: editForm.sort_order ?? contestants.length + 1,
+          group_id: editForm.group_id,
+          hometown: editForm.hometown,
+          age: editForm.age,
+          occupation: editForm.occupation
         })
         .select()
         .single();
@@ -182,14 +211,65 @@ export const ContestantManagement: React.FC = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="photo_url">Photo URL</Label>
+                <Label htmlFor="group_assignment">Group Assignment</Label>
+                <Select 
+                  value={editForm.group_id || ''} 
+                  onValueChange={(value) => setEditForm(prev => ({ ...prev, group_id: value || null }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No Group</SelectItem>
+                    {groups.map(group => (
+                      <SelectItem key={group.id} value={group.id}>
+                        {group.group_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="age">Age</Label>
                 <Input
-                  id="photo_url"
-                  value={editForm.photo_url || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, photo_url: e.target.value }))}
-                  placeholder="Photo URL"
+                  id="age"
+                  type="number"
+                  value={editForm.age || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, age: parseInt(e.target.value) || null }))}
+                  placeholder="Age"
                 />
               </div>
+              <div>
+                <Label htmlFor="hometown">Hometown</Label>
+                <Input
+                  id="hometown"
+                  value={editForm.hometown || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, hometown: e.target.value }))}
+                  placeholder="Hometown"
+                />
+              </div>
+              <div>
+                <Label htmlFor="occupation">Occupation</Label>
+                <Input
+                  id="occupation"
+                  value={editForm.occupation || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, occupation: e.target.value }))}
+                  placeholder="Occupation"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="photo_url">Photo URL</Label>
+              <Input
+                id="photo_url"
+                value={editForm.photo_url || ''}
+                onChange={(e) => setEditForm(prev => ({ ...prev, photo_url: e.target.value }))}
+                placeholder="Photo URL"
+              />
             </div>
             <div>
               <Label htmlFor="bio">Bio</Label>
@@ -232,13 +312,65 @@ export const ContestantManagement: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`photo-${contestant.id}`}>Photo URL</Label>
+                      <Label htmlFor={`group-${contestant.id}`}>Group Assignment</Label>
+                      <Select 
+                        value={editForm.group_id || ''} 
+                        onValueChange={(value) => setEditForm(prev => ({ ...prev, group_id: value || null }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select group" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">No Group</SelectItem>
+                          {groups.map(group => (
+                            <SelectItem key={group.id} value={group.id}>
+                              {group.group_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor={`age-${contestant.id}`}>Age</Label>
                       <Input
-                        id={`photo-${contestant.id}`}
-                        value={editForm.photo_url || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, photo_url: e.target.value }))}
+                        id={`age-${contestant.id}`}
+                        type="number"
+                        value={editForm.age || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, age: parseInt(e.target.value) || null }))}
+                        placeholder="Age"
                       />
                     </div>
+                    <div>
+                      <Label htmlFor={`hometown-${contestant.id}`}>Hometown</Label>
+                      <Input
+                        id={`hometown-${contestant.id}`}
+                        value={editForm.hometown || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, hometown: e.target.value }))}
+                        placeholder="Hometown"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`occupation-${contestant.id}`}>Occupation</Label>
+                      <Input
+                        id={`occupation-${contestant.id}`}
+                        value={editForm.occupation || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, occupation: e.target.value }))}
+                        placeholder="Occupation"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`photo-${contestant.id}`}>Photo URL</Label>
+                    <Input
+                      id={`photo-${contestant.id}`}
+                      value={editForm.photo_url || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, photo_url: e.target.value }))}
+                      placeholder="Photo URL"
+                    />
                   </div>
                   <div>
                     <Label htmlFor={`bio-${contestant.id}`}>Bio</Label>
@@ -279,9 +411,21 @@ export const ContestantManagement: React.FC = () => {
                     )}
                     <div>
                       <h3 className="font-semibold text-lg">{contestant.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
+                      <p className="text-sm text-muted-foreground mb-1">
                         {contestant.isActive ? 'Active' : 'Eliminated'} • Order: {contestant.sort_order}
                       </p>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Group: {groups.find(g => g.id === contestant.group_id)?.group_name || 'Unassigned'}
+                      </p>
+                      {(contestant.age || contestant.hometown || contestant.occupation) && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          {contestant.age && `${contestant.age} years old`}
+                          {contestant.age && (contestant.hometown || contestant.occupation) && ' • '}
+                          {contestant.hometown}
+                          {contestant.hometown && contestant.occupation && ' • '}
+                          {contestant.occupation}
+                        </p>
+                      )}
                       {contestant.bio && (
                         <p className="text-sm text-gray-600 max-w-md">{contestant.bio}</p>
                       )}

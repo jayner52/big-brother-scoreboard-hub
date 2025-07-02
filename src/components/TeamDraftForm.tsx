@@ -21,6 +21,7 @@ export const TeamDraftForm: React.FC = () => {
   const [formData, setFormData] = useState({
     participant_name: '',
     team_name: '',
+    email: '',
     player_1: '',
     player_2: '',
     player_3: '',
@@ -153,6 +154,7 @@ export const TeamDraftForm: React.FC = () => {
           user_id: user.id,
           participant_name: formData.participant_name,
           team_name: formData.team_name,
+          email: formData.email,
           player_1: formData.player_1,
           player_2: formData.player_2,
           player_3: formData.player_3,
@@ -172,6 +174,7 @@ export const TeamDraftForm: React.FC = () => {
       setFormData({
         participant_name: '',
         team_name: '',
+        email: '',
         player_1: '',
         player_2: '',
         player_3: '',
@@ -320,7 +323,7 @@ export const TeamDraftForm: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="participant_name" className="text-lg font-semibold">Your Name</Label>
               <Input
@@ -340,6 +343,17 @@ export const TeamDraftForm: React.FC = () => {
                 value={formData.team_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, team_name: e.target.value }))}
                 placeholder="Enter your team name"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email" className="text-lg font-semibold">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter your email"
                 className="mt-2"
               />
             </div>

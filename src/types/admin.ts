@@ -42,6 +42,30 @@ export interface ContestantWithBio {
   occupation?: string;
 }
 
+export interface ContestantGroup {
+  id: string;
+  group_name: string;
+  sort_order: number;
+}
+
+export interface EnhancedPoolSettings {
+  id: string;
+  season_name: string;
+  entry_fee_amount: number;
+  entry_fee_currency: string;
+  payment_method_1: string;
+  payment_details_1: string;
+  payment_method_2?: string;
+  payment_details_2?: string;
+  registration_deadline?: string;
+  draft_open: boolean;
+  season_active: boolean;
+  number_of_groups: number;
+  picks_per_team: number;
+  enable_free_pick: boolean;
+  group_names: string[];
+}
+
 export interface WeeklyEventForm {
   week: number;
   nominees: string[];

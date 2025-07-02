@@ -155,6 +155,7 @@ export type Database = {
           bonus_points: number
           created_at: string
           current_rank: number | null
+          email: string | null
           id: string
           participant_name: string
           payment_confirmed: boolean
@@ -174,6 +175,7 @@ export type Database = {
           bonus_points?: number
           created_at?: string
           current_rank?: number | null
+          email?: string | null
           id?: string
           participant_name: string
           payment_confirmed?: boolean
@@ -193,6 +195,7 @@ export type Database = {
           bonus_points?: number
           created_at?: string
           current_rank?: number | null
+          email?: string | null
           id?: string
           participant_name?: string
           payment_confirmed?: boolean
@@ -213,15 +216,19 @@ export type Database = {
         Row: {
           created_at: string
           draft_open: boolean
+          enable_free_pick: boolean | null
           entry_fee_amount: number
           entry_fee_currency: string
+          group_names: string[] | null
           id: string
           jury_phase_active: boolean | null
           jury_start_week: number | null
+          number_of_groups: number | null
           payment_details_1: string
           payment_details_2: string | null
           payment_method_1: string
           payment_method_2: string | null
+          picks_per_team: number | null
           registration_deadline: string | null
           season_active: boolean
           season_name: string
@@ -230,15 +237,19 @@ export type Database = {
         Insert: {
           created_at?: string
           draft_open?: boolean
+          enable_free_pick?: boolean | null
           entry_fee_amount?: number
           entry_fee_currency?: string
+          group_names?: string[] | null
           id?: string
           jury_phase_active?: boolean | null
           jury_start_week?: number | null
+          number_of_groups?: number | null
           payment_details_1?: string
           payment_details_2?: string | null
           payment_method_1?: string
           payment_method_2?: string | null
+          picks_per_team?: number | null
           registration_deadline?: string | null
           season_active?: boolean
           season_name?: string
@@ -247,15 +258,19 @@ export type Database = {
         Update: {
           created_at?: string
           draft_open?: boolean
+          enable_free_pick?: boolean | null
           entry_fee_amount?: number
           entry_fee_currency?: string
+          group_names?: string[] | null
           id?: string
           jury_phase_active?: boolean | null
           jury_start_week?: number | null
+          number_of_groups?: number | null
           payment_details_1?: string
           payment_details_2?: string | null
           payment_method_1?: string
           payment_method_2?: string | null
+          picks_per_team?: number | null
           registration_deadline?: string | null
           season_active?: boolean
           season_name?: string

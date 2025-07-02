@@ -513,9 +513,9 @@ export const WeeklyEventsPanel: React.FC = () => {
                         </SelectTrigger>
                         <SelectContent>
                           {scoringRules
-                            .filter(r => r.category === 'special_events')
+                            .filter(r => r.category === 'special_events' && r.subcategory && r.subcategory.trim() !== '')
                             .map(rule => (
-                              <SelectItem key={rule.id} value={rule.subcategory || ''}>
+                              <SelectItem key={rule.id} value={rule.subcategory!}>
                                 {rule.description} ({rule.points > 0 ? '+' : ''}{rule.points}pts)
                               </SelectItem>
                             ))}

@@ -145,7 +145,7 @@ export const WeeklyEventsPanel: React.FC = () => {
       const events = [];
       
       // Add HOH winner
-      if (eventForm.hohWinner) {
+      if (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') {
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.hohWinner)?.id,
@@ -155,7 +155,7 @@ export const WeeklyEventsPanel: React.FC = () => {
       }
 
       // Add POV winner
-      if (eventForm.povWinner) {
+      if (eventForm.povWinner && eventForm.povWinner !== 'no-winner') {
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.povWinner)?.id,
@@ -185,7 +185,7 @@ export const WeeklyEventsPanel: React.FC = () => {
       }
 
       // Add evicted contestant
-      if (eventForm.evicted) {
+      if (eventForm.evicted && eventForm.evicted !== 'no-eviction') {
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.evicted)?.id,
@@ -195,7 +195,9 @@ export const WeeklyEventsPanel: React.FC = () => {
       }
 
       // Add survival points for non-evicted active contestants
-      const evictedId = contestants.find(c => c.name === eventForm.evicted)?.id;
+      const evictedId = eventForm.evicted && eventForm.evicted !== 'no-eviction' 
+        ? contestants.find(c => c.name === eventForm.evicted)?.id 
+        : null;
       const activeContestants = contestants.filter(c => c.isActive && c.id !== evictedId);
       
       activeContestants.forEach(contestant => {
@@ -234,7 +236,7 @@ export const WeeklyEventsPanel: React.FC = () => {
       }
 
       // Update evicted contestant status
-      if (eventForm.evicted) {
+      if (eventForm.evicted && eventForm.evicted !== 'no-eviction') {
         const { error: contestantError } = await supabase
           .from('contestants')
           .update({ is_active: false })
@@ -248,9 +250,9 @@ export const WeeklyEventsPanel: React.FC = () => {
         .from('weekly_results')
         .insert({
           week_number: eventForm.week,
-          hoh_winner: eventForm.hohWinner || null,
-          pov_winner: eventForm.povWinner || null,
-          evicted_contestant: eventForm.evicted || null,
+          hoh_winner: (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') ? eventForm.hohWinner : null,
+          pov_winner: (eventForm.povWinner && eventForm.povWinner !== 'no-winner') ? eventForm.povWinner : null,
+          evicted_contestant: (eventForm.evicted && eventForm.evicted !== 'no-eviction') ? eventForm.evicted : null,
         });
 
       if (weeklyError) throw weeklyError;
@@ -289,12 +291,12 @@ export const WeeklyEventsPanel: React.FC = () => {
     const preview: Record<string, number> = {};
     
     // HOH points
-    if (eventForm.hohWinner) {
+    if (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') {
       preview[eventForm.hohWinner] = (preview[eventForm.hohWinner] || 0) + calculatePoints('hoh_winner');
     }
     
     // POV points
-    if (eventForm.povWinner) {
+    if (eventForm.povWinner && eventForm.povWinner !== 'no-winner') {
       preview[eventForm.povWinner] = (preview[eventForm.povWinner] || 0) + calculatePoints('pov_winner');
     }
     
@@ -309,7 +311,8 @@ export const WeeklyEventsPanel: React.FC = () => {
     }
     
     // Survival points for all active except evicted
-    const activeContestants = contestants.filter(c => c.isActive && c.name !== eventForm.evicted);
+    const activeContestants = contestants.filter(c => c.isActive && 
+      (eventForm.evicted === 'no-eviction' || c.name !== eventForm.evicted));
     activeContestants.forEach(contestant => {
       preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('weekly_survival');
     });
@@ -353,7 +356,7 @@ export const WeeklyEventsPanel: React.FC = () => {
                   <SelectValue placeholder="Select HOH winner" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No winner</SelectItem>
+                  <SelectItem value="no-winner">No winner</SelectItem>
                   {activeContestants.map(contestant => (
                     <SelectItem key={contestant.id} value={contestant.name}>
                       {contestant.name}
@@ -370,7 +373,7 @@ export const WeeklyEventsPanel: React.FC = () => {
                   <SelectValue placeholder="Select POV winner" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No winner</SelectItem>
+                  <SelectItem value="no-winner">No winner</SelectItem>
                   {activeContestants.map(contestant => (
                     <SelectItem key={contestant.id} value={contestant.name}>
                       {contestant.name}
@@ -459,7 +462,7 @@ export const WeeklyEventsPanel: React.FC = () => {
                 <SelectValue placeholder="Select evicted contestant" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No eviction</SelectItem>
+                <SelectItem value="no-eviction">No eviction</SelectItem>
                 {activeContestants.map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
                     {contestant.name}

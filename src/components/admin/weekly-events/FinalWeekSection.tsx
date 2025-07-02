@@ -2,8 +2,9 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Trophy, Heart } from 'lucide-react';
+import { Crown, Trophy, Heart, Zap } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { useScoringRules } from '@/hooks/useScoringRules';
 
 interface FinalWeekSectionProps {
   eventForm: WeeklyEventForm;
@@ -16,6 +17,8 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
   setEventForm,
   activeContestants,
 }) => {
+  const { getWinnerPoints, getRunnerUpPoints, getHohPoints, getPointsForEvent } = useScoringRules();
+  
   if (!eventForm.isFinalWeek) {
     return null;
   }
@@ -24,13 +27,37 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
     <div className="space-y-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
       <h3 className="text-lg font-semibold text-yellow-800">Final Week Awards</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Final HoH Winner */}
+        <div>
+          <Label className="flex items-center gap-2 mb-2">
+            <Zap className="h-4 w-4 text-purple-500" />
+            Final HoH Winner
+            <Badge variant="secondary">{getHohPoints()} pts</Badge>
+          </Label>
+          <Select 
+            value={eventForm.hohWinner || ''} 
+            onValueChange={(value) => setEventForm(prev => ({ ...prev, hohWinner: value }))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select final HoH" />
+            </SelectTrigger>
+            <SelectContent>
+              {activeContestants.map(contestant => (
+                <SelectItem key={contestant.id} value={contestant.name}>
+                  {contestant.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Winner */}
         <div>
           <Label className="flex items-center gap-2 mb-2">
             <Crown className="h-4 w-4 text-yellow-500" />
             Winner
-            <Badge variant="secondary">15 pts</Badge>
+            <Badge variant="secondary">{getWinnerPoints()} pts</Badge>
           </Label>
           <Select 
             value={eventForm.winner || ''} 
@@ -54,7 +81,7 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
           <Label className="flex items-center gap-2 mb-2">
             <Trophy className="h-4 w-4 text-gray-500" />
             Runner-up
-            <Badge variant="secondary">10 pts</Badge>
+            <Badge variant="secondary">{getRunnerUpPoints()} pts</Badge>
           </Label>
           <Select 
             value={eventForm.runnerUp || ''} 
@@ -80,7 +107,7 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
           <Label className="flex items-center gap-2 mb-2">
             <Heart className="h-4 w-4 text-red-500" />
             America's Favorite
-            <Badge variant="secondary">5 pts</Badge>
+            <Badge variant="secondary">{getPointsForEvent('americas_favorite')} pts</Badge>
           </Label>
           <Select 
             value={eventForm.americasFavorite || ''} 
@@ -103,8 +130,7 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
 
       <div className="p-3 bg-blue-50 border border-blue-200 rounded">
         <p className="text-sm text-blue-700">
-          <strong>Final Week Rules:</strong> No nominations or POV ceremony. 
-          Only set winner, runner-up, and America's Favorite Player. 
+          <strong>Final Week Rules:</strong> Set Final HoH winner (Part 3), winner, runner-up, and America's Favorite Player. 
           Points will be awarded automatically based on placements.
         </p>
       </div>

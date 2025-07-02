@@ -17,6 +17,7 @@ import { SecondEvictionSection } from './weekly-events/SecondEvictionSection';
 import { ThirdEvictionSection } from './weekly-events/ThirdEvictionSection';
 import { JuryPhaseToggle } from './weekly-events/JuryPhaseToggle';
 import { HistoricalWeekSelector } from './weekly-events/HistoricalWeekSelector';
+import { useScoringRules } from '@/hooks/useScoringRules';
 
 export const WeeklyEventsPanel: React.FC = () => {
   const {
@@ -30,6 +31,8 @@ export const WeeklyEventsPanel: React.FC = () => {
     handleSubmitWeek,
     loadData
   } = useWeeklyEvents();
+  
+  const { getWinnerPoints, getRunnerUpPoints } = useScoringRules();
 
   if (loading) {
     return <div className="text-center py-8">Loading weekly events panel...</div>;
@@ -57,8 +60,8 @@ export const WeeklyEventsPanel: React.FC = () => {
             currentWeek={currentWeek}
           />
 
-          {/* Special Week Toggles */}
-          <div className="space-y-4">
+          {/* Special Week Toggles - Horizontal Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <JuryPhaseToggle
               eventForm={eventForm}
               setEventForm={setEventForm}

@@ -19,22 +19,24 @@ export const FinalWeekToggle: React.FC<FinalWeekToggleProps> = ({
   activeContestants,
 }) => {
   return (
-    <div className="flex items-center space-x-2 p-4 border rounded-lg bg-muted/20">
-      <Switch
-        checked={eventForm.isFinalWeek}
-        onCheckedChange={(checked) => setEventForm(prev => ({ 
-          ...prev, 
-          isFinalWeek: checked,
-          // Reset final week fields when toggling off
-          winner: checked ? prev.winner : '',
-          runnerUp: checked ? prev.runnerUp : '',
-          americasFavorite: checked ? prev.americasFavorite : ''
-        }))}
-      />
-      <Label className="font-semibold text-lg">Final Week (Finale Night)</Label>
+    <div className="flex flex-col items-start space-y-2 p-3 border rounded-lg bg-muted/20">
+      <div className="flex items-center space-x-2">
+        <Switch
+          checked={eventForm.isFinalWeek}
+          onCheckedChange={(checked) => setEventForm(prev => ({ 
+            ...prev, 
+            isFinalWeek: checked,
+            // Reset final week fields when toggling off
+            winner: checked ? prev.winner : '',
+            runnerUp: checked ? prev.runnerUp : '',
+            americasFavorite: checked ? prev.americasFavorite : ''
+          }))}
+        />
+        <Label className="font-semibold text-sm">Final Week</Label>
+      </div>
       {eventForm.isFinalWeek && (
-        <div className="text-sm text-muted-foreground ml-4">
-          Special finale week - only winner, runner-up, and AFP
+        <div className="text-xs text-muted-foreground">
+          Finale Night - Winner, Runner-up, AFP
         </div>
       )}
     </div>

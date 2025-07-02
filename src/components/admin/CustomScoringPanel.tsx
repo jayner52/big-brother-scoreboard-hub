@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Target } from 'lucide-react';
@@ -90,7 +91,7 @@ export const CustomScoringPanel: React.FC = () => {
   };
 
   const groupedRules = scoringRules.reduce((acc, rule) => {
-    const category = rule.category.replace(/_/g, ' ').toUpperCase();
+    const category = rule.category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     if (!acc[category]) acc[category] = [];
     acc[category].push(rule);
     return acc;
@@ -112,43 +113,44 @@ export const CustomScoringPanel: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="space-y-6">
+        <Accordion type="multiple" defaultValue={Object.keys(groupedRules)} className="space-y-4">
           {Object.entries(groupedRules).map(([category, rules]) => (
-            <div key={category} className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-                {category}
-              </h3>
-              <div className="grid gap-4">
-                {rules.map((rule) => (
-                  <div key={rule.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <Label className="font-medium">{rule.description}</Label>
-                      <p className="text-sm text-gray-600">{rule.subcategory}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={rule.is_active}
-                          onCheckedChange={(checked) => updateRule(rule.id, 'is_active', checked)}
-                        />
-                        <Label className="text-sm">Active</Label>
+            <AccordionItem key={category} value={category} className="border rounded-lg">
+              <AccordionTrigger className="px-4 py-3 font-semibold text-left">
+                {category} ({rules.length} rules)
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                <div className="grid gap-3">
+                  {rules.map((rule) => (
+                    <div key={rule.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex-1">
+                        <Label className="font-medium">{rule.description}</Label>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm">Points:</Label>
-                        <Input
-                          type="number"
-                          value={rule.points}
-                          onChange={(e) => updateRule(rule.id, 'points', parseInt(e.target.value) || 0)}
-                          className="w-20"
-                        />
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={rule.is_active}
+                            onCheckedChange={(checked) => updateRule(rule.id, 'is_active', checked)}
+                          />
+                          <Label className="text-sm">Active</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Label className="text-sm">Points:</Label>
+                          <Input
+                            type="number"
+                            value={rule.points}
+                            onChange={(e) => updateRule(rule.id, 'points', parseInt(e.target.value) || 0)}
+                            className="w-20"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
 
         <Button 
           onClick={saveRules} 

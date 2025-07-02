@@ -24,30 +24,22 @@ export const JuryPhaseToggle: React.FC<JuryPhaseToggleProps> = ({
   };
 
   return (
-    <Card className="border-2 border-amber-200 bg-amber-50">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-amber-800">
-          <Scale className="h-5 w-5" />
+    <div className="flex flex-col items-start space-y-2 p-3 border rounded-lg bg-amber-50 border-amber-200">
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="jury-phase"
+          checked={eventForm.isJuryPhase || false}
+          onCheckedChange={handleJuryToggle}
+        />
+        <Label htmlFor="jury-phase" className="font-semibold text-sm text-amber-800">
           Jury Phase
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="jury-phase"
-            checked={eventForm.isJuryPhase || false}
-            onCheckedChange={handleJuryToggle}
-          />
-          <Label htmlFor="jury-phase" className="font-medium">
-            Jury phase starts this week (remaining contestants get +2 jury points)
-          </Label>
+        </Label>
+      </div>
+      {eventForm.isJuryPhase && (
+        <div className="text-xs text-amber-700">
+          +2 jury points for remaining contestants
         </div>
-        {eventForm.isJuryPhase && (
-          <p className="text-sm text-amber-700 mt-2">
-            All remaining contestants will receive 2 points for making jury this week.
-          </p>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,8 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
     bonusQuestions,
     bonusAnswers,
     loading,
-    handleBonusAnswer
+    handleBonusAnswer,
+    refreshQuestions
   } = useBonusQuestions();
 
   const [globalEnabled, setGlobalEnabled] = useState(true);
@@ -31,6 +32,12 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
     sort_order: bonusQuestions.length + 1
   });
 
+  // Update global enabled state based on actual data
+  useEffect(() => {
+    const allActive = bonusQuestions.length > 0 && bonusQuestions.every(q => q.is_active);
+    setGlobalEnabled(allActive);
+  }, [bonusQuestions]);
+
   const handleGlobalToggle = async (enabled: boolean) => {
     try {
       const { error } = await supabase
@@ -39,15 +46,14 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
         .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all
 
       if (error) throw error;
-      setGlobalEnabled(enabled);
       
       toast({
         title: "Success",
         description: `All bonus questions ${enabled ? 'enabled' : 'disabled'}`,
       });
       
-      // Reload data
-      window.location.reload();
+      // Refresh data instead of page reload
+      await refreshQuestions();
     } catch (error) {
       console.error('Error updating global toggle:', error);
       toast({
@@ -72,8 +78,8 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
         description: `Question ${enabled ? 'enabled' : 'disabled'}`,
       });
       
-      // Reload data
-      window.location.reload();
+      // Refresh data instead of page reload
+      await refreshQuestions();
     } catch (error) {
       console.error('Error updating question toggle:', error);
       toast({
@@ -111,8 +117,8 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
       });
       setShowCreateForm(false);
       
-      // Reload data
-      window.location.reload();
+      // Refresh data instead of page reload
+      await refreshQuestions();
     } catch (error) {
       console.error('Error creating question:', error);
       toast({

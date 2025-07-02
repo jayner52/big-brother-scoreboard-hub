@@ -198,6 +198,7 @@ export const useBonusQuestions = () => {
     bonusQuestions,
     bonusAnswers,
     loading,
-    handleBonusAnswer
+    handleBonusAnswer,
+    refreshQuestions: loadData
   };
 };

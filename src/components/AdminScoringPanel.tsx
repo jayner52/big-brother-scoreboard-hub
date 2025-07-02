@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { ContestantManagement } from '@/components/admin/ContestantManagement';
+import { WeeklyEventsPanel } from '@/components/admin/WeeklyEventsPanel';
 
 export const AdminScoringPanel: React.FC = () => {
   const { toast } = useToast();
@@ -279,13 +281,23 @@ export const AdminScoringPanel: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        <Tabs defaultValue="weekly" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="weekly">Weekly Results</TabsTrigger>
+        <Tabs defaultValue="events" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="events">Weekly Events</TabsTrigger>
+            <TabsTrigger value="contestants">Contestants</TabsTrigger>
+            <TabsTrigger value="legacy">Legacy Scoring</TabsTrigger>
             <TabsTrigger value="bonus">Bonus Questions</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="weekly" className="space-y-4">
+          <TabsContent value="events" className="space-y-4">
+            <WeeklyEventsPanel />
+          </TabsContent>
+
+          <TabsContent value="contestants" className="space-y-4">
+            <ContestantManagement />
+          </TabsContent>
+
+          <TabsContent value="legacy" className="space-y-4">
             <form onSubmit={handleWeeklyUpdate} className="space-y-4">
               <div>
                 <Label htmlFor="week" className="font-semibold">Week Number</Label>

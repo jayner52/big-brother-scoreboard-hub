@@ -71,27 +71,33 @@ export type Database = {
       }
       contestants: {
         Row: {
+          bio: string | null
           created_at: string
           group_id: string | null
           id: string
           is_active: boolean
           name: string
+          photo_url: string | null
           sort_order: number | null
         }
         Insert: {
+          bio?: string | null
           created_at?: string
           group_id?: string | null
           id?: string
           is_active?: boolean
           name: string
+          photo_url?: string | null
           sort_order?: number | null
         }
         Update: {
+          bio?: string | null
           created_at?: string
           group_id?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          photo_url?: string | null
           sort_order?: number | null
         }
         Relationships: [
@@ -103,6 +109,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      detailed_scoring_rules: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          points: number
+          subcategory: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          points: number
+          subcategory?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          points?: number
+          subcategory?: string | null
+        }
+        Relationships: []
       }
       pool_entries: {
         Row: {
@@ -236,6 +272,85 @@ export type Database = {
         }
         Relationships: []
       }
+      special_events: {
+        Row: {
+          contestant_id: string
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          points_awarded: number | null
+          week_number: number
+        }
+        Insert: {
+          contestant_id: string
+          created_at?: string
+          description?: string | null
+          event_type: string
+          id?: string
+          points_awarded?: number | null
+          week_number: number
+        }
+        Update: {
+          contestant_id?: string
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          points_awarded?: number | null
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "special_events_contestant_id_fkey"
+            columns: ["contestant_id"]
+            isOneToOne: false
+            referencedRelation: "contestants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_events: {
+        Row: {
+          contestant_id: string
+          created_at: string
+          event_details: Json | null
+          event_type: string
+          id: string
+          points_awarded: number | null
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          contestant_id: string
+          created_at?: string
+          event_details?: Json | null
+          event_type: string
+          id?: string
+          points_awarded?: number | null
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          contestant_id?: string
+          created_at?: string
+          event_details?: Json | null
+          event_type?: string
+          id?: string
+          points_awarded?: number | null
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_events_contestant_id_fkey"
+            columns: ["contestant_id"]
+            isOneToOne: false
+            referencedRelation: "contestants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_results: {
         Row: {
           created_at: string
@@ -309,7 +424,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_contestant_points: {
+        Args: { contestant_id_param: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

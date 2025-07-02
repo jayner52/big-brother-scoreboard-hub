@@ -13,7 +13,7 @@ export const DoubleEvictionToggle: React.FC<DoubleEvictionToggleProps> = ({
   setEventForm,
 }) => {
   return (
-    <div className="flex items-center space-x-2 p-4 border rounded-lg bg-muted/20">
+    <div className="flex items-center space-x-2 p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
       <Switch
         checked={eventForm.isDoubleEviction}
         onCheckedChange={(checked) => setEventForm(prev => ({ 
@@ -28,10 +28,10 @@ export const DoubleEvictionToggle: React.FC<DoubleEvictionToggleProps> = ({
           secondEvicted: checked ? prev.secondEvicted : ''
         }))}
       />
-      <Label className="font-semibold text-lg">Double Eviction Week</Label>
+      <Label className="font-semibold text-lg text-blue-800">Double Eviction Week</Label>
       {eventForm.isDoubleEviction && (
-        <div className="text-sm text-muted-foreground ml-4">
-          Additional competition and eviction sections will appear below
+        <div className="text-sm text-blue-600 ml-4 font-medium">
+          Two separate evictions with competitions will occur this week
         </div>
       )}
     </div>

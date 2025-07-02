@@ -37,25 +37,32 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Navigation */}
-          <div className="text-center mb-6">
+          {/* How to Play Card */}
+          <div className="text-center mb-8">
             <Link to="/about">
-              <Button variant="outline" className="mb-4">
-                How to Play & Rules
-              </Button>
+              <div className="inline-block p-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <h3 className="text-xl font-bold">How to Play & Rules</h3>
+                </div>
+                <p className="text-purple-100">
+                  Learn the scoring system, draft rules, and how to win the pool!
+                </p>
+              </div>
             </Link>
           </div>
 
           {/* Tabbed Interface */}
           <Tabs defaultValue="draft" className="w-full">
-            <TabsList className="grid w-full grid-cols-7 mb-8">
+            <TabsList className="grid w-full grid-cols-6 mb-8">
               <TabsTrigger value="draft">Draft Team</TabsTrigger>
               <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
               <TabsTrigger value="picks">Everyone's Picks</TabsTrigger>
               <TabsTrigger value="results">Live Results</TabsTrigger>
               <TabsTrigger value="contestants">Contestant Values</TabsTrigger>
               <TabsTrigger value="bios">Contestant Bios</TabsTrigger>
-              <TabsTrigger value="prizes">Prize Pool</TabsTrigger>
             </TabsList>
 
             <TabsContent value="draft">
@@ -81,15 +88,11 @@ const Index = () => {
             <TabsContent value="bios">
               <ContestantBios />
             </TabsContent>
-
-            <TabsContent value="prizes">
-              <PrizePoolDisplay />
-            </TabsContent>
           </Tabs>
 
           {/* Footer */}
           <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">
-            <p>© 2024 Big Brother Fantasy Pool | May the best picks win! 🏆</p>
+            <p>© 2025 Big Brother Fantasy Pool | May the best picks win! 🏆</p>
           </footer>
         </div>
       </div>

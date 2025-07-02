@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContestantManagement } from '@/components/admin/ContestantManagement';
 import { WeeklyEventsPanel } from '@/components/admin/WeeklyEventsPanel';
 import { WeekByWeekOverview } from '@/components/admin/WeekByWeekOverview';
-import { BonusQuestionsPanel } from '@/components/admin/BonusQuestionsPanel';
+import { EnhancedBonusQuestionsPanel } from '@/components/admin/EnhancedBonusQuestionsPanel';
 import { PoolSettingsPanel } from '@/components/admin/PoolSettingsPanel';
 import { PoolEntriesManagement } from '@/components/PoolEntriesManagement';
 
@@ -50,7 +50,7 @@ export const AdminScoringPanel: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="bonus" className="space-y-6">
-            <BonusQuestionsPanel />
+            <EnhancedBonusQuestionsPanel />
           </TabsContent>
         </Tabs>
       </CardContent>

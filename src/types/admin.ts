@@ -86,6 +86,12 @@ export interface WeeklyEventForm {
   secondPovUsedOn?: string;
   secondReplacementNominee?: string;
   secondEvicted?: string;
+  thirdHohWinner?: string;
+  thirdNominees?: string[];
+  thirdPovWinner?: string;
+  thirdPovUsed?: boolean;
+  thirdPovUsedOn?: string;
+  thirdReplacementNominee?: string;
   thirdEvicted?: string;
   maxNominees: number;
   winner?: string;

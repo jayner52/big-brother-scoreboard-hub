@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Settings, DollarSign, Mail } from 'lucide-react';
 import { PrizePoolPanel } from '@/components/admin/PrizePoolPanel';
+import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
 
 interface PoolSettings {
   id: string;
@@ -383,7 +384,8 @@ export const PoolSettingsPanel: React.FC = () => {
 
       <Separator className="my-6" />
       
-      <div>
+      <div className="space-y-6">
+        <CustomScoringPanel />
         <PrizePoolPanel />
       </div>
     </div>

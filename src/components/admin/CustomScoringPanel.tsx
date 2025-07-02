@@ -1,0 +1,164 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Target } from 'lucide-react';
+
+interface ScoringRule {
+  id: string;
+  category: string;
+  subcategory: string;
+  points: number;
+  description: string;
+  is_active: boolean;
+}
+
+export const CustomScoringPanel: React.FC = () => {
+  const { toast } = useToast();
+  const [scoringRules, setScoringRules] = useState<ScoringRule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadScoringRules();
+  }, []);
+
+  const loadScoringRules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('detailed_scoring_rules')
+        .select('*')
+        .order('category', { ascending: true })
+        .order('subcategory', { ascending: true });
+
+      if (error) throw error;
+      setScoringRules(data || []);
+    } catch (error) {
+      console.error('Error loading scoring rules:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load scoring rules",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateRule = (id: string, field: keyof ScoringRule, value: any) => {
+    setScoringRules(prev => prev.map(rule => 
+      rule.id === id ? { ...rule, [field]: value } : rule
+    ));
+  };
+
+  const saveRules = async () => {
+    setSaving(true);
+    try {
+      const updates = scoringRules.map(rule => ({
+        id: rule.id,
+        points: rule.points,
+        is_active: rule.is_active
+      }));
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('detailed_scoring_rules')
+          .update({ points: update.points, is_active: update.is_active })
+          .eq('id', update.id);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success!",
+        description: "Scoring rules updated successfully",
+      });
+    } catch (error) {
+      console.error('Error saving scoring rules:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save scoring rules",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const groupedRules = scoringRules.reduce((acc, rule) => {
+    const category = rule.category.replace(/_/g, ' ').toUpperCase();
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(rule);
+    return acc;
+  }, {} as Record<string, ScoringRule[]>);
+
+  if (loading) {
+    return <div className="text-center py-8">Loading scoring rules...</div>;
+  }
+
+  return (
+    <Card>
+      <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
+        <CardTitle className="flex items-center gap-2">
+          <Target className="h-5 w-5" />
+          Custom Scoring Rules
+        </CardTitle>
+        <CardDescription className="text-orange-100">
+          Customize point values for all events and activities
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="space-y-6">
+          {Object.entries(groupedRules).map(([category, rules]) => (
+            <div key={category} className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                {category}
+              </h3>
+              <div className="grid gap-4">
+                {rules.map((rule) => (
+                  <div key={rule.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <Label className="font-medium">{rule.description}</Label>
+                      <p className="text-sm text-gray-600">{rule.subcategory}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={rule.is_active}
+                          onCheckedChange={(checked) => updateRule(rule.id, 'is_active', checked)}
+                        />
+                        <Label className="text-sm">Active</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm">Points:</Label>
+                        <Input
+                          type="number"
+                          value={rule.points}
+                          onChange={(e) => updateRule(rule.id, 'points', parseInt(e.target.value) || 0)}
+                          className="w-20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Button 
+          onClick={saveRules} 
+          disabled={saving}
+          className="w-full mt-6 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white"
+          size="lg"
+        >
+          {saving ? 'Saving...' : 'Save Scoring Rules'}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};

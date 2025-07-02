@@ -26,6 +26,7 @@ export interface PoolSettings {
   draft_open: boolean;
   season_active: boolean;
   enable_bonus_questions?: boolean;
+  picks_per_team?: number;
 }
 
 export interface BonusQuestion {

@@ -14,6 +14,7 @@ import { TripleEvictionToggle } from './weekly-events/TripleEvictionToggle';
 import { FinalWeekToggle } from './weekly-events/FinalWeekToggle';
 import { FinalWeekSection } from './weekly-events/FinalWeekSection';
 import { SecondEvictionSection } from './weekly-events/SecondEvictionSection';
+import { ThirdEvictionSection } from './weekly-events/ThirdEvictionSection';
 import { JuryPhaseToggle } from './weekly-events/JuryPhaseToggle';
 import { HistoricalWeekSelector } from './weekly-events/HistoricalWeekSelector';
 
@@ -127,6 +128,15 @@ export const WeeklyEventsPanel: React.FC = () => {
               {/* Second Eviction (only shown for double eviction weeks) */}
               {eventForm.isDoubleEviction && (
                 <SecondEvictionSection
+                  eventForm={eventForm}
+                  setEventForm={setEventForm}
+                  activeContestants={activeContestants}
+                />
+              )}
+
+              {/* Third Eviction (only shown for triple eviction weeks) */}
+              {eventForm.isTripleEviction && (
+                <ThirdEvictionSection
                   eventForm={eventForm}
                   setEventForm={setEventForm}
                   activeContestants={activeContestants}

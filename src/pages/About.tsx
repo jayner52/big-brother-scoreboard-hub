@@ -4,9 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Trophy, Users, Target, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { PrizePoolInAbout } from '@/components/PrizePoolInAbout';
+import { usePoolData } from '@/hooks/usePoolData';
 
 const About = () => {
   const navigate = useNavigate();
+  const { poolSettings, loading: poolLoading } = usePoolData();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -42,7 +45,7 @@ const About = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Select 5 houseguests from different groups to build your ultimate Big Brother team.
+                {poolLoading ? 'Loading...' : `Select ${poolSettings?.picks_per_team || 5} houseguests from different groups to build your ultimate Big Brother team.`}
               </p>
             </CardContent>
           </Card>
@@ -118,14 +121,34 @@ const About = () => {
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span>Being Evicted</span>
-                  <Badge variant="destructive">-5 points</Badge>
+                  <Badge variant="destructive">0 points</Badge>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-3">Special Events</h3>
+              <h3 className="text-lg font-semibold mb-3">Special Events & Achievements</h3>
               <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span>Making it to Jury</span>
+                  <Badge variant="secondary">+2 points</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span>Leaves not at eviction</span>
+                  <Badge variant="destructive">-3 points</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span>4 weeks, no comp wins</span>
+                  <Badge variant="secondary">+1 point</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span>2 rounds on block, survives</span>
+                  <Badge variant="secondary">+3 points</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span>4 rounds on block, survives</span>
+                  <Badge variant="secondary">+5 points</Badge>
+                </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span>Comes back after eviction</span>
                   <Badge variant="secondary">+5 points</Badge>
@@ -174,8 +197,8 @@ const About = () => {
             <div>
               <h3 className="font-semibold mb-2">Team Building</h3>
               <ul className="list-disc list-inside text-gray-600 space-y-1">
-                <li>Draft exactly 5 houseguests for your team</li>
-                <li>You must select one houseguest from each of the 4 groups, plus one "free pick" from any group</li>
+                <li>{poolLoading ? 'Loading...' : `Draft exactly ${poolSettings?.picks_per_team || 5} houseguests for your team`}</li>
+                <li>You must select one houseguest from each of the groups, plus additional picks as configured</li>
                 <li>No duplicate picks - each houseguest can only be on one team</li>
               </ul>
             </div>
@@ -200,6 +223,9 @@ const About = () => {
           </CardContent>
         </Card>
 
+        {/* Prize Pool Section */}
+        <PrizePoolInAbout />
+
         {/* Call to Action */}
         <div className="text-center">
           <Card className="inline-block p-8">
@@ -221,7 +247,7 @@ const About = () => {
 
         {/* Footer */}
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">
-          <p>Big Brother Fantasy Pool • May the odds be ever in your favor!</p>
+          <p>© 2025 Big Brother Fantasy Pool • May the odds be ever in your favor!</p>
         </footer>
       </div>
     </div>

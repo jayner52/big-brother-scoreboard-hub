@@ -16,6 +16,11 @@ export const TeamDraftForm: React.FC = () => {
   const { formData, updateFormData, updateBonusAnswer, resetForm } = useDraftForm();
   const { submitDraft } = useDraftSubmission();
 
+  // Add a refresh mechanism for pool settings
+  const refreshPoolSettings = () => {
+    window.location.reload(); // Simple refresh for now
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const success = await submitDraft(formData);

@@ -1,0 +1,143 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { PoolEntry, BonusQuestion } from '@/types/pool';
+
+export const EveryonesPicks: React.FC = () => {
+  const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
+  const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [entriesResult, questionsResult] = await Promise.all([
+        supabase.from('pool_entries').select('*').order('participant_name'),
+        supabase.from('bonus_questions').select('*').eq('is_active', true).order('sort_order')
+      ]);
+
+      if (entriesResult.error) throw entriesResult.error;
+      if (questionsResult.error) throw questionsResult.error;
+
+      const mappedEntries = entriesResult.data?.map(entry => ({
+        ...entry,
+        bonus_answers: entry.bonus_answers as Record<string, any>,
+        created_at: new Date(entry.created_at),
+        updated_at: new Date(entry.updated_at)
+      })) || [];
+
+      setPoolEntries(mappedEntries);
+      
+      // Map bonus questions to match our type interface
+      const mappedQuestions = (questionsResult.data || []).map(q => ({
+        ...q,
+        question_type: q.question_type as 'player_select' | 'dual_player_select' | 'yes_no' | 'number'
+      }));
+      setBonusQuestions(mappedQuestions);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading everyone's picks...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Team Picks */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Team Selections</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Participant</TableHead>
+                  <TableHead>Team Name</TableHead>
+                  <TableHead>Player 1</TableHead>
+                  <TableHead>Player 2</TableHead>
+                  <TableHead>Player 3</TableHead>
+                  <TableHead>Player 4</TableHead>
+                  <TableHead>Player 5</TableHead>
+                  <TableHead>Payment Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {poolEntries.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="font-medium">{entry.participant_name}</TableCell>
+                    <TableCell className="text-blue-600 font-semibold">{entry.team_name}</TableCell>
+                    <TableCell>{entry.player_1}</TableCell>
+                    <TableCell>{entry.player_2}</TableCell>
+                    <TableCell>{entry.player_3}</TableCell>
+                    <TableCell>{entry.player_4}</TableCell>
+                    <TableCell>{entry.player_5}</TableCell>
+                    <TableCell>
+                      <Badge variant={entry.payment_confirmed ? "default" : "destructive"}>
+                        {entry.payment_confirmed ? "Paid" : "Pending"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bonus Question Answers */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Bonus Question Answers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {bonusQuestions.map((question) => (
+              <div key={question.id} className="border rounded-lg p-4">
+                <h4 className="font-semibold mb-2">{question.question_text}</h4>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Participant</TableHead>
+                        <TableHead>Answer</TableHead>
+                        {question.answer_revealed && (
+                          <TableHead className="text-green-600">Correct Answer</TableHead>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {poolEntries.map((entry) => (
+                        <TableRow key={entry.id}>
+                          <TableCell>{entry.participant_name}</TableCell>
+                          <TableCell>
+                            {entry.bonus_answers[question.id] || "No answer"}
+                          </TableCell>
+                          {question.answer_revealed && (
+                            <TableCell className="text-green-600 font-semibold">
+                              {question.correct_answer}
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio, ContestantGroup } from '@/types/admin';
-import { Pencil, Save, X, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
+import { ContestantForm } from './contestants/ContestantForm';
+import { ContestantList } from './contestants/ContestantList';
 
 export const ContestantManagement: React.FC = () => {
   const { toast } = useToast();
@@ -150,7 +146,10 @@ export const ContestantManagement: React.FC = () => {
         group_id: data.group_id,
         sort_order: data.sort_order,
         bio: data.bio,
-        photo_url: data.photo_url
+        photo_url: data.photo_url,
+        hometown: data.hometown,
+        age: data.age,
+        occupation: data.occupation
       };
 
       setContestants(prev => [...prev, newContestant]);
@@ -177,6 +176,10 @@ export const ContestantManagement: React.FC = () => {
     setEditForm({});
   };
 
+  const handleFormChange = (updates: Partial<ContestantWithBio>) => {
+    setEditForm(prev => ({ ...prev, ...updates }));
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading contestants...</div>;
   }
@@ -195,251 +198,26 @@ export const ContestantManagement: React.FC = () => {
       </div>
 
       {showAddForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New Contestant</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={editForm.name || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Contestant name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="group_assignment">Group Assignment</Label>
-                <Select 
-                  value={editForm.group_id || ''} 
-                  onValueChange={(value) => setEditForm(prev => ({ ...prev, group_id: value || null }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select group" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">No Group</SelectItem>
-                    {groups.map(group => (
-                      <SelectItem key={group.id} value={group.id}>
-                        {group.group_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  value={editForm.age || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, age: parseInt(e.target.value) || null }))}
-                  placeholder="Age"
-                />
-              </div>
-              <div>
-                <Label htmlFor="hometown">Hometown</Label>
-                <Input
-                  id="hometown"
-                  value={editForm.hometown || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, hometown: e.target.value }))}
-                  placeholder="Hometown"
-                />
-              </div>
-              <div>
-                <Label htmlFor="occupation">Occupation</Label>
-                <Input
-                  id="occupation"
-                  value={editForm.occupation || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, occupation: e.target.value }))}
-                  placeholder="Occupation"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="photo_url">Photo URL</Label>
-              <Input
-                id="photo_url"
-                value={editForm.photo_url || ''}
-                onChange={(e) => setEditForm(prev => ({ ...prev, photo_url: e.target.value }))}
-                placeholder="Photo URL"
-              />
-            </div>
-            <div>
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                value={editForm.bio || ''}
-                onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
-                placeholder="Contestant bio"
-                rows={3}
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={editForm.isActive ?? true}
-                onCheckedChange={(checked) => setEditForm(prev => ({ ...prev, isActive: checked }))}
-              />
-              <Label>Active</Label>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleAddContestant}>Add Contestant</Button>
-              <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-            </div>
-          </CardContent>
-        </Card>
+        <ContestantForm
+          editForm={editForm}
+          groups={groups}
+          onFormChange={handleFormChange}
+          onSave={handleAddContestant}
+          onCancel={handleCancel}
+          isEditing={false}
+        />
       )}
 
-      <div className="grid gap-4">
-        {contestants.map((contestant) => (
-          <Card key={contestant.id}>
-            <CardContent className="p-4">
-              {editingId === contestant.id ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor={`name-${contestant.id}`}>Name</Label>
-                      <Input
-                        id={`name-${contestant.id}`}
-                        value={editForm.name || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`group-${contestant.id}`}>Group Assignment</Label>
-                      <Select 
-                        value={editForm.group_id || ''} 
-                        onValueChange={(value) => setEditForm(prev => ({ ...prev, group_id: value || null }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select group" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">No Group</SelectItem>
-                          {groups.map(group => (
-                            <SelectItem key={group.id} value={group.id}>
-                              {group.group_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor={`age-${contestant.id}`}>Age</Label>
-                      <Input
-                        id={`age-${contestant.id}`}
-                        type="number"
-                        value={editForm.age || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, age: parseInt(e.target.value) || null }))}
-                        placeholder="Age"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`hometown-${contestant.id}`}>Hometown</Label>
-                      <Input
-                        id={`hometown-${contestant.id}`}
-                        value={editForm.hometown || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, hometown: e.target.value }))}
-                        placeholder="Hometown"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`occupation-${contestant.id}`}>Occupation</Label>
-                      <Input
-                        id={`occupation-${contestant.id}`}
-                        value={editForm.occupation || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, occupation: e.target.value }))}
-                        placeholder="Occupation"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor={`photo-${contestant.id}`}>Photo URL</Label>
-                    <Input
-                      id={`photo-${contestant.id}`}
-                      value={editForm.photo_url || ''}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, photo_url: e.target.value }))}
-                      placeholder="Photo URL"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`bio-${contestant.id}`}>Bio</Label>
-                    <Textarea
-                      id={`bio-${contestant.id}`}
-                      value={editForm.bio || ''}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        checked={editForm.isActive ?? true}
-                        onCheckedChange={(checked) => setEditForm(prev => ({ ...prev, isActive: checked }))}
-                      />
-                      <Label>Active</Label>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={handleSave}>
-                        <Save className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={handleCancel}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start justify-between">
-                  <div className="flex gap-4">
-                    {contestant.photo_url && (
-                      <img 
-                        src={contestant.photo_url} 
-                        alt={contestant.name}
-                        className="w-16 h-16 rounded-full object-cover"
-                      />
-                    )}
-                    <div>
-                      <h3 className="font-semibold text-lg">{contestant.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {contestant.isActive ? 'Active' : 'Eliminated'} • Order: {contestant.sort_order}
-                      </p>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Group: {groups.find(g => g.id === contestant.group_id)?.group_name || 'Unassigned'}
-                      </p>
-                      {(contestant.age || contestant.hometown || contestant.occupation) && (
-                        <p className="text-sm text-gray-600 mb-2">
-                          {contestant.age && `${contestant.age} years old`}
-                          {contestant.age && (contestant.hometown || contestant.occupation) && ' • '}
-                          {contestant.hometown}
-                          {contestant.hometown && contestant.occupation && ' • '}
-                          {contestant.occupation}
-                        </p>
-                      )}
-                      {contestant.bio && (
-                        <p className="text-sm text-gray-600 max-w-md">{contestant.bio}</p>
-                      )}
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(contestant)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <ContestantList
+        contestants={contestants}
+        groups={groups}
+        editingId={editingId}
+        editForm={editForm}
+        onEdit={handleEdit}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        onFormChange={handleFormChange}
+      />
     </div>
   );
 };

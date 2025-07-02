@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantGroup, BonusQuestion, PoolSettings } from '@/types/pool';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
+import { BasicInfoForm } from '@/components/draft/BasicInfoForm';
+import { PaymentInfoDisplay } from '@/components/draft/PaymentInfoDisplay';
+import { TeamDraftSection } from '@/components/draft/TeamDraftSection';
+import { BonusQuestionsSection } from '@/components/draft/BonusQuestionsSection';
 
 export const TeamDraftForm: React.FC = () => {
   const { toast } = useToast();
@@ -193,6 +192,10 @@ export const TeamDraftForm: React.FC = () => {
     }
   };
 
+  const updateFormData = (updates: Partial<typeof formData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  };
+
   const updateBonusAnswer = (questionId: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -201,97 +204,6 @@ export const TeamDraftForm: React.FC = () => {
         [questionId]: value,
       },
     }));
-  };
-
-  const renderBonusQuestion = (question: BonusQuestion) => {
-    const currentAnswer = formData.bonus_answers[question.id];
-
-    switch (question.question_type) {
-      case 'player_select':
-        return (
-          <Select 
-            value={currentAnswer || ''} 
-            onValueChange={(value) => updateBonusAnswer(question.id, value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a player" />
-            </SelectTrigger>
-            <SelectContent>
-              {contestantGroups.flatMap(group => 
-                group.contestants?.map(contestant => (
-                  <SelectItem key={contestant.id} value={contestant.name}>
-                    {contestant.name}
-                  </SelectItem>
-                )) || []
-              )}
-            </SelectContent>
-          </Select>
-        );
-
-      case 'dual_player_select':
-        return (
-          <div className="space-y-2">
-            <Select 
-              value={currentAnswer?.player1 || ''} 
-              onValueChange={(value) => updateBonusAnswer(question.id, { ...currentAnswer, player1: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select first player" />
-              </SelectTrigger>
-              <SelectContent>
-                {contestantGroups.flatMap(group => 
-                  group.contestants?.map(contestant => (
-                    <SelectItem key={contestant.id} value={contestant.name}>
-                      {contestant.name}
-                    </SelectItem>
-                  )) || []
-                )}
-              </SelectContent>
-            </Select>
-            <Select 
-              value={currentAnswer?.player2 || ''} 
-              onValueChange={(value) => updateBonusAnswer(question.id, { ...currentAnswer, player2: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select second player" />
-              </SelectTrigger>
-              <SelectContent>
-                {contestantGroups.flatMap(group => 
-                  group.contestants?.map(contestant => (
-                    <SelectItem key={contestant.id} value={contestant.name}>
-                      {contestant.name}
-                    </SelectItem>
-                  )) || []
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-        );
-
-      case 'yes_no':
-        return (
-          <div className="flex items-center space-x-2">
-            <Switch
-              checked={currentAnswer === 'yes'}
-              onCheckedChange={(checked) => updateBonusAnswer(question.id, checked ? 'yes' : 'no')}
-            />
-            <Label>{currentAnswer === 'yes' ? 'Yes' : 'No'}</Label>
-          </div>
-        );
-
-      case 'number':
-        return (
-          <Input
-            type="number"
-            value={currentAnswer || ''}
-            onChange={(e) => updateBonusAnswer(question.id, parseInt(e.target.value) || 0)}
-            placeholder="Enter a number"
-          />
-        );
-
-      default:
-        return null;
-    }
   };
 
   if (loading) {
@@ -307,137 +219,40 @@ export const TeamDraftForm: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        {poolSettings && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h3 className="font-semibold text-lg mb-2">Entry Fee: ${poolSettings.entry_fee_amount} {poolSettings.entry_fee_currency}</h3>
-            <p className="text-sm mb-2">
-              <strong>{poolSettings.payment_method_1}:</strong> {poolSettings.payment_details_1}
-            </p>
-            {poolSettings.payment_method_2 && (
-              <p className="text-sm">
-                <strong>{poolSettings.payment_method_2}:</strong> {poolSettings.payment_details_2}
-              </p>
-            )}
-          </div>
-        )}
+        {poolSettings && <PaymentInfoDisplay poolSettings={poolSettings} />}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="participant_name" className="text-lg font-semibold">Your Name</Label>
-              <Input
-                id="participant_name"
-                type="text"
-                value={formData.participant_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, participant_name: e.target.value }))}
-                placeholder="Enter your name"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="team_name" className="text-lg font-semibold">Team Name</Label>
-              <Input
-                id="team_name"
-                type="text"
-                value={formData.team_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, team_name: e.target.value }))}
-                placeholder="Enter your team name"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="email" className="text-lg font-semibold">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Enter your email"
-                className="mt-2"
-              />
-            </div>
-          </div>
+          <BasicInfoForm
+            formData={{
+              participant_name: formData.participant_name,
+              team_name: formData.team_name,
+              email: formData.email,
+            }}
+            onFormDataChange={updateFormData}
+          />
 
           <Separator />
 
-          {/* Team Draft */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">Draft Your Team (5 Players)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {contestantGroups.map((group, groupIndex) => (
-                <div key={group.id} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{group.group_name}</Badge>
-                    {group.group_name === 'Free Pick' && (
-                      <span className="text-sm text-gray-500">(Any player)</span>
-                    )}
-                  </div>
-                  
-                  {groupIndex < 4 && (
-                    <Select 
-                      value={formData[`player_${groupIndex + 1}` as keyof typeof formData] as string} 
-                      onValueChange={(value) => setFormData(prev => ({ 
-                        ...prev, 
-                        [`player_${groupIndex + 1}`]: value 
-                      }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={`Select from ${group.group_name}`} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {group.contestants?.map(contestant => (
-                          <SelectItem key={contestant.id} value={contestant.name}>
-                            {contestant.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-
-                  {group.group_name === 'Free Pick' && (
-                    <Select 
-                      value={formData.player_5} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, player_5: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Free pick - any player" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {contestantGroups.flatMap(g => 
-                          g.contestants?.map(contestant => (
-                            <SelectItem key={contestant.id} value={contestant.name}>
-                              {contestant.name}
-                            </SelectItem>
-                          )) || []
-                        )}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          <TeamDraftSection
+            contestantGroups={contestantGroups}
+            formData={{
+              player_1: formData.player_1,
+              player_2: formData.player_2,
+              player_3: formData.player_3,
+              player_4: formData.player_4,
+              player_5: formData.player_5,
+            }}
+            onFormDataChange={updateFormData}
+          />
 
           <Separator />
 
-          {/* Bonus Questions */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">Bonus Predictions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {bonusQuestions.map((question) => (
-                <div key={question.id} className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {question.question_text}
-                    <Badge variant="secondary" className="ml-2">
-                      {question.points_value} pts
-                    </Badge>
-                  </Label>
-                  {renderBonusQuestion(question)}
-                </div>
-              ))}
-            </div>
-          </div>
+          <BonusQuestionsSection
+            bonusQuestions={bonusQuestions}
+            contestantGroups={contestantGroups}
+            bonusAnswers={formData.bonus_answers}
+            onBonusAnswerChange={updateBonusAnswer}
+          />
 
           <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold">
             Submit My Team & Predictions

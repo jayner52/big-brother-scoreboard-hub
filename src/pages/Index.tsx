@@ -16,6 +16,7 @@ import { Settings, BookOpen, LogOut, User, Users, Target, Trophy, DollarSign } f
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
+import { HouseguestProfiles } from '@/components/HouseguestProfiles';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -150,47 +151,8 @@ const Index = () => {
                 
                 {/* Enhanced User Status Panel with Multi-Team Support */}
                 {user && userEntry && (
-                  <div className="w-72 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-gray-800">
-                        Your Team{userEntry.allEntries?.length > 1 ? 's' : ''} Status
-                      </h3>
-                      <Button
-                        onClick={() => navigate('/auth')}
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-600 hover:text-gray-800"
-                      >
-                        Account
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Main Team:</span>
-                        <span className="font-medium text-gray-800">{userEntry.team_name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Points:</span>
-                        <span className="font-bold text-green-600">{userEntry.total_points}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Rank:</span>
-                        <span className="font-medium text-gray-800">#{userRank || 'TBD'}</span>
-                      </div>
-                      
-                      {userEntry.allEntries && userEntry.allEntries.length > 1 && (
-                        <div className="mt-2 pt-2 border-t border-white/20">
-                          <div className="text-xs text-gray-500">
-                            {userEntry.allEntries.length} team{userEntry.allEntries.length > 1 ? 's' : ''} total
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="text-xs text-gray-500 mt-3 border-t pt-2">
-                        <div>Players: {userEntry.player_1}, {userEntry.player_2}, {userEntry.player_3}, {userEntry.player_4}, {userEntry.player_5}</div>
-                      </div>
-                    </div>
+                  <div className="w-80">
+                    <HouseguestProfiles userId={user.id} />
                   </div>
                 )}
                 

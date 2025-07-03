@@ -8,7 +8,8 @@ export const useWeeklyEvents = () => {
   const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
   const [scoringRules, setScoringRules] = useState<DetailedScoringRule[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentWeek, setCurrentWeek] = useState(1);
+  const [currentGameWeek, setCurrentGameWeek] = useState(1);
+  const [editingWeek, setEditingWeek] = useState(1);
   
   const [eventForm, setEventForm] = useState<WeeklyEventForm>({
     week: 1,
@@ -80,7 +81,16 @@ export const useWeeklyEvents = () => {
         setScoringRules(mappedRules);
       }
 
-      // Get current week number
+      // Get current game week
+      const { data: currentWeekData } = await supabase
+        .from('current_game_week')
+        .select('week_number')
+        .single();
+      
+      const gameWeek = currentWeekData?.week_number || 1;
+      setCurrentGameWeek(gameWeek);
+      
+      // Get next editing week (highest existing week + 1)
       const { data: weeklyData } = await supabase
         .from('weekly_results')
         .select('week_number')
@@ -88,7 +98,7 @@ export const useWeeklyEvents = () => {
         .limit(1);
       
       const nextWeek = weeklyData?.[0]?.week_number ? weeklyData[0].week_number + 1 : 1;
-      setCurrentWeek(nextWeek);
+      setEditingWeek(nextWeek);
       setEventForm(prev => ({ ...prev, week: nextWeek, nominees: ['', ''], secondNominees: ['', ''] }));
 
     } catch (error) {
@@ -459,7 +469,8 @@ export const useWeeklyEvents = () => {
     contestants,
     scoringRules,
     loading,
-    currentWeek,
+    currentGameWeek,
+    editingWeek,
     eventForm,
     setEventForm,
     getPointsPreview,

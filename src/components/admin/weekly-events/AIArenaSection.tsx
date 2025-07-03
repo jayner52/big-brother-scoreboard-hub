@@ -56,19 +56,19 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
             checked={eventForm.aiArenaEnabled || false}
             onCheckedChange={handleAIArenaToggle}
           />
-          AI Arena
+          BB Arena
         </CardTitle>
       </CardHeader>
       {eventForm.aiArenaEnabled && (
         <CardContent className="space-y-4">
           <div>
-            <Label className="font-semibold">AI Arena Winner</Label>
+            <Label className="font-semibold">BB Arena Winner</Label>
             <Select 
               value={eventForm.aiArenaWinner || ''} 
               onValueChange={handleAIArenaWinner}
             >
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select AI Arena winner" />
+                <SelectValue placeholder="Select BB Arena winner" />
               </SelectTrigger>
               <SelectContent>
                 {currentNominees.length > 0 ? (
@@ -86,7 +86,7 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
             </Select>
             {currentNominees.length === 0 && (
               <p className="text-xs text-muted-foreground mt-1">
-                Set nominees first to select AI Arena winner
+                Set nominees first to select BB Arena winner
               </p>
             )}
             {eventForm.aiArenaWinner && (

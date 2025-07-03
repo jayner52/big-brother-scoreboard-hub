@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Crown, Shield, Users, Ban, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatEventType, getEventDisplayText } from '@/utils/eventFormatters';
+import { useCurrentWeek } from '@/contexts/CurrentWeekContext';
 
 interface WeeklyResult {
   week_number: number;
@@ -34,6 +35,7 @@ export const LiveResults: React.FC = () => {
   const [specialEvents, setSpecialEvents] = useState<SpecialEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSpoilers, setShowSpoilers] = useState(false);
+  const { currentWeek } = useCurrentWeek();
 
   useEffect(() => {
     loadWeeklyResults();
@@ -176,7 +178,7 @@ export const LiveResults: React.FC = () => {
               className="flex items-center gap-2"
             >
               {showSpoilers ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              {showSpoilers ? 'Hide Spoilers' : 'Show Historical Results'}
+              {showSpoilers ? 'Hide Current Week Spoilers' : 'Show Current Week Spoilers'}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -202,7 +204,7 @@ export const LiveResults: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {weeklyResults
-                    .filter((week, index) => showSpoilers || index === 0)
+                    .filter((week) => showSpoilers || week.week_number !== currentWeek)
                     .map((week) => (
                     <TableRow key={week.week_number}>
                       <TableCell className="font-bold">

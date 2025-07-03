@@ -8,6 +8,7 @@ import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { evaluateBonusAnswer, formatBonusAnswer, formatCorrectAnswers } from '@/utils/bonusQuestionUtils';
 
 export const EveryonesPicks: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
@@ -134,8 +135,11 @@ export const EveryonesPicks: React.FC = () => {
         <CardContent>
           <div className="space-y-4">
             {bonusQuestions.map((question) => (
-              <div key={question.id} className="border rounded-lg p-4">
-                <h4 className="font-semibold mb-2">{question.question_text}</h4>
+               <div key={question.id} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold">{question.question_text}</h4>
+                  <Badge variant="outline">{question.points_value} pts</Badge>
+                </div>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -148,41 +152,35 @@ export const EveryonesPicks: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {poolEntries.map((entry) => {
-                        const answer = entry.bonus_answers[question.id];
-                        let displayAnswer = "No answer";
-                        
-                        // Handle different answer types properly
-                        if (answer) {
-                          if (typeof answer === 'object' && answer.player1 && answer.player2) {
-                            // Handle dual_player_select answers
-                            displayAnswer = `${answer.player1} & ${answer.player2}`;
-                          } else if (typeof answer === 'string' || typeof answer === 'number') {
-                            displayAnswer = String(answer);
-                          } else {
-                            displayAnswer = String(answer);
-                          }
-                        }
-                        
-                        const isCorrect = question.answer_revealed && 
-                          JSON.stringify(answer) === JSON.stringify(question.correct_answer);
-                        
-                        return (
-                          <TableRow key={entry.id}>
-                            <TableCell className="font-semibold">{entry.team_name}</TableCell>
-                            <TableCell className={question.answer_revealed ? (isCorrect ? "text-green-600 font-semibold" : "text-red-600") : ""}>
-                              {displayAnswer}
-                            </TableCell>
-                            {question.answer_revealed && (
-                              <TableCell className="text-green-600 font-semibold">
-                                 {question.correct_answer && typeof question.correct_answer === 'object' && (question.correct_answer as any).player1
-                                   ? `${(question.correct_answer as any).player1} & ${(question.correct_answer as any).player2}`
-                                   : question.correct_answer || ''}
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        );
-                      })}
+                       {poolEntries.map((entry) => {
+                         const answer = entry.bonus_answers[question.id];
+                         const displayAnswer = formatBonusAnswer(answer, question.question_type) || "No answer";
+                         
+                         // Check if answer is correct using proper evaluation
+                         const isCorrect = question.answer_revealed && question.correct_answer 
+                           ? evaluateBonusAnswer(answer, question.correct_answer, question.question_type)
+                           : null;
+                         
+                         return (
+                           <TableRow key={entry.id}>
+                             <TableCell className="font-semibold">{entry.team_name}</TableCell>
+                             <TableCell>
+                               <div className="flex items-center gap-2">
+                                 <span className={isCorrect === true ? "text-green-600 font-semibold" : isCorrect === false ? "text-red-600" : ""}>
+                                   {displayAnswer}
+                                 </span>
+                                 {isCorrect === true && <span className="text-green-600">✓</span>}
+                                 {isCorrect === false && <span className="text-red-600">✗</span>}
+                               </div>
+                             </TableCell>
+                             {question.answer_revealed && (
+                               <TableCell className="text-green-600 font-semibold">
+                                 {formatCorrectAnswers(question.correct_answer, question.question_type)}
+                               </TableCell>
+                             )}
+                           </TableRow>
+                         );
+                       })}
                     </TableBody>
                   </Table>
                 </div>

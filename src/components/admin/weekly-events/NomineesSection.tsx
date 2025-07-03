@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Plus, Minus } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
 interface NomineesSectionProps {
   eventForm: WeeklyEventForm;
@@ -18,6 +19,13 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
   activeContestants,
   contestants,
 }) => {
+  const { evictedContestants } = useEvictedContestants();
+  
+  // Get contestants who are still in the game and not HoH
+  const eligibleNominees = activeContestants.filter(c => 
+    !evictedContestants.includes(c.name) &&
+    (c.name !== eventForm.hohWinner || eventForm.hohWinner === 'no-winner' || !eventForm.hohWinner)
+  );
   const addNominee = () => {
     if (eventForm.nominees.length < eventForm.maxNominees) {
       setEventForm(prev => ({ ...prev, nominees: [...prev.nominees, ''] }));
@@ -74,11 +82,9 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="no-nominee">No nominee</SelectItem>
-              {contestants
+              {eligibleNominees
                 .filter(c => 
-                  c.isActive &&
-                  (c.name !== eventForm.hohWinner || eventForm.hohWinner === 'no-winner' || !eventForm.hohWinner) &&
-                  (!eventForm.nominees.includes(c.name) || c.name === nominee)
+                  !eventForm.nominees.includes(c.name) || c.name === nominee
                 )
                 .map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>

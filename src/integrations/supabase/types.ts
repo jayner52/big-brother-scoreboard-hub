@@ -184,6 +184,27 @@ export type Database = {
           },
         ]
       }
+      current_game_week: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: []
+      }
       detailed_scoring_rules: {
         Row: {
           category: string
@@ -628,6 +649,10 @@ export type Database = {
       format_event_type: {
         Args: { event_type_input: string }
         Returns: string
+      }
+      update_current_game_week: {
+        Args: { new_week_number: number }
+        Returns: undefined
       }
     }
     Enums: {

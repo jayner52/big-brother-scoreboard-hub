@@ -2,6 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
 interface CompetitionWinnersProps {
   eventForm: WeeklyEventForm;
@@ -14,6 +15,11 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
   setEventForm,
   activeContestants,
 }) => {
+  const { evictedContestants } = useEvictedContestants();
+  
+  // Get contestants who are still in the game (not evicted)
+  const gameContestants = activeContestants.filter(c => !evictedContestants.includes(c.name));
+  
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
@@ -24,7 +30,7 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="no-winner">No winner</SelectItem>
-            {activeContestants.map(contestant => (
+            {gameContestants.map(contestant => (
               <SelectItem key={contestant.id} value={contestant.name}>
                 {contestant.name}
               </SelectItem>
@@ -41,7 +47,7 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="no-winner">No winner</SelectItem>
-            {activeContestants.map(contestant => (
+            {gameContestants.map(contestant => (
               <SelectItem key={contestant.id} value={contestant.name}>
                 {contestant.name}
               </SelectItem>

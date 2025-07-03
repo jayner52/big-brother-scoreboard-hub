@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Edit2, Check, X } from 'lucide-react';
 import { BonusQuestion, Contestant } from '@/types/pool';
 import { BonusAnswerInput } from './BonusAnswerInput';
+import { MultipleAnswersInput } from './MultipleAnswersInput';
 
 interface BonusQuestionCardProps {
   question: BonusQuestion;
@@ -95,12 +96,12 @@ export const BonusQuestionCard: React.FC<BonusQuestionCardProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <BonusAnswerInput
-          question={question}
-          currentAnswer={currentAnswer}
-          contestants={contestants}
-          onAnswerChange={handleAnswerChange}
-        />
+              <MultipleAnswersInput
+                question={question}
+                currentAnswers={Array.isArray(currentAnswer) ? currentAnswer : [currentAnswer || '']}
+                contestants={contestants}
+                onAnswersChange={(answers) => handleAnswerChange(answers.length === 1 ? answers[0] : answers)}
+              />
       </CardContent>
     </Card>
   );

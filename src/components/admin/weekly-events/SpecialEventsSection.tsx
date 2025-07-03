@@ -89,14 +89,21 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="custom">Custom Event</SelectItem>
-                      {scoringRules
-                        .filter(r => r.category === 'special_events' && r.subcategory && r.subcategory.trim() !== '')
-                        .map(rule => (
-                          <SelectItem key={rule.id} value={rule.subcategory!}>
-                            {rule.description} ({rule.points > 0 ? '+' : ''}{rule.points}pts)
-                          </SelectItem>
-                        ))}
+                       <SelectItem value="custom">Custom Event</SelectItem>
+                       {scoringRules
+                         .filter(r => r.category === 'weekly' && r.subcategory === 'bb_arena_winner')
+                         .map(rule => (
+                           <SelectItem key={rule.id} value={rule.subcategory!}>
+                             {rule.description} ({rule.points > 0 ? '+' : ''}{rule.points}pts)
+                           </SelectItem>
+                         ))}
+                       {scoringRules
+                         .filter(r => r.category === 'special_events' && r.subcategory && r.subcategory.trim() !== '')
+                         .map(rule => (
+                           <SelectItem key={rule.id} value={rule.subcategory!}>
+                             {rule.description} ({rule.points > 0 ? '+' : ''}{rule.points}pts)
+                           </SelectItem>
+                         ))}
                     </SelectContent>
                   </Select>
                 </div>

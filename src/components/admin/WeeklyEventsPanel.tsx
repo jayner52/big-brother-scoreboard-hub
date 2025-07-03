@@ -28,7 +28,8 @@ export const WeeklyEventsPanel: React.FC = () => {
     contestants,
     scoringRules,
     loading,
-    currentWeek,
+    currentGameWeek,
+    editingWeek,
     eventForm,
     setEventForm,
     getPointsPreview,
@@ -37,7 +38,7 @@ export const WeeklyEventsPanel: React.FC = () => {
   } = useWeeklyEvents();
   
   const { getWinnerPoints, getRunnerUpPoints } = useScoringRules();
-  const { isAutoSaving, saveCurrentWeekDraft } = useWeeklyEventsSave(eventForm, currentWeek);
+  const { isAutoSaving, saveCurrentWeekDraft } = useWeeklyEventsSave(eventForm, editingWeek);
   const { loadWeekData, clearWeekData, isLoading: isLoadingWeek } = useWeekDataLoader(contestants);
   const [isWeekComplete, setIsWeekComplete] = useState(false);
 
@@ -95,7 +96,11 @@ export const WeeklyEventsPanel: React.FC = () => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Award className="h-5 w-5" />
-              <span className="bg-purple text-white px-3 py-1 rounded font-bold text-xs">CURRENT WEEK</span>
+              {eventForm.week === currentGameWeek ? (
+                <span className="bg-green-500 text-white px-3 py-1 rounded font-bold text-xs">CURRENT WEEK</span>
+              ) : (
+                <span className="bg-blue-500 text-white px-3 py-1 rounded font-bold text-xs">EDITING WEEK</span>
+              )}
               Week {eventForm.week} Events
             </div>
             <WeekNavigator
@@ -181,13 +186,6 @@ export const WeeklyEventsPanel: React.FC = () => {
                   activeContestants={activeContestants}
                 />
 
-                {/* Evicted Contestant */}
-                <EvictionSection
-                  eventForm={eventForm}
-                  setEventForm={setEventForm}
-                  activeContestants={activeContestants}
-                  contestants={contestants}
-                />
               </div>
 
               {/* Second Eviction (only shown for double eviction weeks) */}
@@ -210,11 +208,19 @@ export const WeeklyEventsPanel: React.FC = () => {
                 />
               )}
 
-              {/* AI Arena Section */}
+              {/* BB Arena Section - positioned before eviction */}
               <AIArenaSection
                 eventForm={eventForm}
                 setEventForm={setEventForm}
                 activeContestants={activeContestants}
+              />
+
+              {/* Evicted Contestant */}
+              <EvictionSection
+                eventForm={eventForm}
+                setEventForm={setEventForm}
+                activeContestants={activeContestants}
+                contestants={contestants}
               />
 
               {/* Special Events */}

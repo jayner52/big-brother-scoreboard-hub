@@ -163,91 +163,26 @@ async function extractContestantImage(name: string, seasonNumber: number): Promi
   }
 }
 
-// Scrape the full cast list from Big Brother Wiki
+// Use the known Big Brother 26 cast list
 async function scrapeBB26CastList(): Promise<string[]> {
-  console.log('🔍 Scraping Big Brother 26 cast list from wiki...');
+  console.log('🔍 Using known Big Brother 26 cast list...');
   
-  try {
-    const wikiUrl = 'https://bigbrother.fandom.com/wiki/Big_Brother_26_(US)';
-    console.log(`📄 Fetching cast list from: ${wikiUrl}`);
-    
-    const response = await fetch(wikiUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch BB26 wiki page: ${response.status}`);
-    }
-    
-    const html = await response.text();
-    
-    // Look for contestant names in the cast section
-    // The wiki typically has contestant names in specific patterns
-    const contestantNames: string[] = [];
-    
-    // Pattern 1: Look for links to individual contestant pages
-    const linkPattern = /<a[^>]+href="\/wiki\/([^"]+)"[^>]*title="([^"]*)"[^>]*>([^<]+)<\/a>/gi;
-    const matches = [...html.matchAll(linkPattern)];
-    
-    for (const match of matches) {
-      const linkHref = match[1];
-      const linkTitle = match[2] || '';
-      const linkText = match[3];
-      
-      // Filter for likely contestant links (avoid general BB pages)
-      if (linkHref && linkText && 
-          !linkHref.includes('Big_Brother') && 
-          !linkHref.includes('Category:') &&
-          !linkHref.includes('Template:') &&
-          linkText.length > 2 && linkText.length < 30 &&
-          /^[A-Z][a-z]/.test(linkText) && // Starts with capital letter
-          linkText.includes(' ') && // Has space (first and last name)
-          !linkText.includes('(') && // No parentheses
-          !linkText.includes(':')) {
-        
-        const cleanName = linkText.trim();
-        if (!contestantNames.includes(cleanName)) {
-          contestantNames.push(cleanName);
-          console.log(`✅ Found contestant: ${cleanName}`);
-        }
-      }
-    }
-    
-    // If we didn't find enough contestants with the first method, try alternative patterns
-    if (contestantNames.length < 10) {
-      console.log('⚠️  Using fallback method to find more contestants...');
-      
-      // Look for text patterns that might contain contestant names
-      const namePattern = /\b([A-Z][a-z]+ [A-Z][a-z]+(?:-[A-Z][a-z]+)?)\b/g;
-      const potentialNames = [...html.matchAll(namePattern)];
-      
-      for (const match of potentialNames) {
-        const name = match[1];
-        if (name && 
-            !contestantNames.includes(name) &&
-            name.length < 30 &&
-            !name.includes('Big') &&
-            !name.includes('Brother') &&
-            !name.includes('House') &&
-            !name.includes('Season')) {
-          contestantNames.push(name);
-          console.log(`✅ Found additional contestant: ${name}`);
-        }
-      }
-    }
-    
-    console.log(`📊 Total contestants found: ${contestantNames.length}`);
-    return contestantNames.slice(0, 16); // Limit to expected cast size
-    
-  } catch (error) {
-    console.error('❌ Error scraping BB26 cast list:', error);
-    
-    // Fallback to known Season 26 contestants if scraping fails
-    console.log('⚠️  Using fallback contestant list...');
-    return [
-      "Angela Murray", "Brooklyn Rivera", "Cam Sullivan-Brown", "Cedric Hodges", 
-      "Chelsie Baham", "Joseph Rodriguez", "Kimo Apaka", "Leah Peters", 
-      "Makensy Manbeck", "Quinn Martin", "Rubina Bernabe", "T'Kor Clottey", 
-      "Tucker Des Lauriers", "Lisa Weintraub", "Kenney Kelley", "Matt Hardeman"
-    ];
-  }
+  // The actual Big Brother 26 contestants - all 16 houseguests
+  const bb26Cast = [
+    "Angela Murray", "Brooklyn Rivera", "Cam Sullivan-Brown", "Cedric Hodges", 
+    "Chelsie Baham", "Joseph Rodriguez", "Kimo Apaka", "Leah Peters", 
+    "Makensy Manbeck", "Quinn Martin", "Rubina Bernabe", "T'Kor Clottey", 
+    "Tucker Des Lauriers", "Lisa Weintraub", "Kenney Kelley", "Matt Hardeman"
+  ];
+  
+  console.log(`📊 Processing ${bb26Cast.length} Big Brother 26 contestants`);
+  
+  // Log each contestant for verification
+  bb26Cast.forEach((name, index) => {
+    console.log(`${index + 1}. ${name}`);
+  });
+  
+  return bb26Cast;
 }
 
 // Extract contestant details from individual wiki page

@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
+import { WeeklyEventForm } from '@/types/admin';
 import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
+import { useWeeklyEventsData } from '@/hooks/useWeeklyEventsData';
+import { useWeeklyEventsSubmission } from '@/hooks/useWeeklyEventsSubmission';
+import { getPointsPreview, calculatePoints } from '@/utils/weeklyEventsUtils';
 
 export const useWeeklyEvents = () => {
-  const { toast } = useToast();
-  const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
-  const [scoringRules, setScoringRules] = useState<DetailedScoringRule[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentGameWeek, setCurrentGameWeek] = useState(1);
-  const [editingWeek, setEditingWeek] = useState(1);
+  const {
+    contestants,
+    scoringRules,
+    loading,
+    currentGameWeek,
+    editingWeek,
+    loadData
+  } = useWeeklyEventsData();
+
+  const { handleSubmitWeek } = useWeeklyEventsSubmission(contestants, scoringRules);
   
   const [eventForm, setEventForm] = useState<WeeklyEventForm>({
     week: 1,
@@ -46,423 +52,24 @@ export const useWeeklyEvents = () => {
     americasFavorite: ''
   });
 
-  const loadData = async () => {
-    try {
-      // Load contestants
-      const { data: contestantsData } = await supabase
-        .from('contestants')
-        .select('*')
-        .order('name');
-      
-      if (contestantsData) {
-        const mapped = contestantsData.map(c => ({
-          id: c.id,
-          name: c.name,
-          isActive: c.is_active,
-          group_id: c.group_id,
-          sort_order: c.sort_order,
-          bio: c.bio,
-          photo_url: c.photo_url
-        }));
-        setContestants(mapped);
-      }
-
-      // Load scoring rules
-      const { data: rulesData } = await supabase
-        .from('detailed_scoring_rules')
-        .select('*')
-        .eq('is_active', true)
-        .order('category', { ascending: true });
-      
-      if (rulesData) {
-        const mappedRules = rulesData.map(r => ({
-          ...r,
-          created_at: new Date(r.created_at)
-        }));
-        setScoringRules(mappedRules);
-      }
-
-      // Get current game week
-      const { data: currentWeekData } = await supabase
-        .from('current_game_week')
-        .select('week_number')
-        .single();
-      
-      const gameWeek = currentWeekData?.week_number || 1;
-      setCurrentGameWeek(gameWeek);
-      
-      // Get next editing week (highest existing week + 1)
-      const { data: weeklyData } = await supabase
-        .from('weekly_results')
-        .select('week_number')
-        .order('week_number', { ascending: false })
-        .limit(1);
-      
-      const nextWeek = weeklyData?.[0]?.week_number ? weeklyData[0].week_number + 1 : 1;
-      setEditingWeek(nextWeek);
-      setEventForm(prev => ({ ...prev, week: nextWeek, nominees: ['', ''], secondNominees: ['', ''] }));
-
-    } catch (error) {
-      console.error('Error loading data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load admin data",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculatePoints = (eventType: string, customPoints?: number) => {
-    if (eventType === 'custom' && customPoints !== undefined) {
-      return customPoints;
-    }
-    const rule = scoringRules.find(r => 
-      r.subcategory === eventType || 
-      (r.category === 'competitions' && r.subcategory === eventType) ||
-      (r.category === 'weekly' && r.subcategory === eventType) ||
-      (r.category === 'final_placement' && r.subcategory === eventType) ||
-      (r.category === 'penalties' && r.subcategory === eventType) ||
-      (r.category === 'special_events' && r.subcategory === eventType) ||
-      (r.category === 'jury' && r.subcategory === eventType)
-    );
-    return rule?.points || 0;
-  };
+  // Update form week when editingWeek changes
+  useEffect(() => {
+    setEventForm(prev => ({ ...prev, week: editingWeek, nominees: ['', ''], secondNominees: ['', ''] }));
+  }, [editingWeek]);
 
   // Get evicted contestants for current week context
   const { evictedContestants: allEvictedUpToThisWeek } = useWeekAwareContestants(eventForm.week);
 
-  const getPointsPreview = () => {
-    const preview: Record<string, number> = {};
-    
-    // Initialize all contestants with 0 points
-    contestants.forEach(contestant => {
-      preview[contestant.name] = 0;
-    });
-    
-    // HOH points
-    if (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') {
-      preview[eventForm.hohWinner] = (preview[eventForm.hohWinner] || 0) + calculatePoints('hoh_winner');
-    }
-    
-    // POV points
-    if (eventForm.povWinner && eventForm.povWinner !== 'no-winner') {
-      preview[eventForm.povWinner] = (preview[eventForm.povWinner] || 0) + calculatePoints('pov_winner');
-    }
-    
-    // POV used on someone points (from scoring rules)
-    if (eventForm.povUsed && eventForm.povUsedOn) {
-      preview[eventForm.povUsedOn] = (preview[eventForm.povUsedOn] || 0) + calculatePoints('pov_used_on');
-    }
-    
-    // Nominee points (only add if nominee is not empty)
-    eventForm.nominees.filter(nominee => nominee).forEach(nominee => {
-      preview[nominee] = (preview[nominee] || 0) + calculatePoints('nominee');
-    });
-    
-    // Replacement nominee points
-    if (eventForm.replacementNominee) {
-      preview[eventForm.replacementNominee] = (preview[eventForm.replacementNominee] || 0) + calculatePoints('replacement_nominee');
-    }
-    
-    // BB Arena winner points
-    if (eventForm.aiArenaWinner) {
-      preview[eventForm.aiArenaWinner] = (preview[eventForm.aiArenaWinner] || 0) + calculatePoints('bb_arena_winner');
-    }
-    
-    // Survival points for contestants not evicted this week or previously
-    const evictedThisWeek = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
-      .filter(evicted => evicted && evicted !== 'no-eviction');
-    
-    const survivingContestants = contestants.filter(c => 
-      !evictedThisWeek.includes(c.name) && !allEvictedUpToThisWeek.includes(c.name)
-    );
-    
-    survivingContestants.forEach(contestant => {
-      preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('survival');
-    });
-    
-    // Jury phase points (dynamic scoring from rules)
-    if (eventForm.isJuryPhase) {
-      survivingContestants.forEach(contestant => {
-        preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('jury_member');
-      });
-    }
-    
-    // Special events points
-    eventForm.specialEvents.forEach(se => {
-      if (se.contestant && se.eventType) {
-        preview[se.contestant] = (preview[se.contestant] || 0) + calculatePoints(se.eventType, se.customPoints);
-      }
-    });
-    
-    // Double eviction second round points
-    if (eventForm.isDoubleEviction) {
-      // Second HOH points
-      if (eventForm.secondHohWinner && eventForm.secondHohWinner !== 'no-winner') {
-        preview[eventForm.secondHohWinner] = (preview[eventForm.secondHohWinner] || 0) + calculatePoints('hoh_winner');
-      }
-      
-      // Second POV points
-      if (eventForm.secondPovWinner && eventForm.secondPovWinner !== 'no-winner') {
-        preview[eventForm.secondPovWinner] = (preview[eventForm.secondPovWinner] || 0) + calculatePoints('pov_winner');
-      }
-      
-      // Second POV used on someone
-      if (eventForm.secondPovUsed && eventForm.secondPovUsedOn) {
-        preview[eventForm.secondPovUsedOn] = (preview[eventForm.secondPovUsedOn] || 0) + calculatePoints('pov_used_on');
-      }
-      
-      // Second nominees points
-      eventForm.secondNominees.filter(n => n).forEach(nominee => {
-        preview[nominee] = (preview[nominee] || 0) + calculatePoints('nominee');
-      });
-      
-      // Second replacement nominee points
-      if (eventForm.secondReplacementNominee) {
-        preview[eventForm.secondReplacementNominee] = (preview[eventForm.secondReplacementNominee] || 0) + calculatePoints('replacement_nominee');
-      }
-    }
-    
-    return preview;
+  const getFormPointsPreview = () => {
+    return getPointsPreview(eventForm, contestants, allEvictedUpToThisWeek, scoringRules);
   };
 
-  const handleSubmitWeek = async () => {
-    try {
-      // First delete existing data for this week to avoid duplicates
-      await Promise.all([
-        supabase.from('weekly_events').delete().eq('week_number', eventForm.week),
-        supabase.from('special_events').delete().eq('week_number', eventForm.week)
-      ]);
+  const calculateEventPoints = (eventType: string, customPoints?: number) => {
+    return calculatePoints(eventType, customPoints, scoringRules);
+  };
 
-      // Create weekly events entries
-      const events = [];
-      
-      // Add HOH winner
-      if (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') {
-        events.push({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === eventForm.hohWinner)?.id,
-          event_type: 'hoh_winner',
-          points_awarded: calculatePoints('hoh_winner')
-        });
-      }
-
-      // Add POV winner
-      if (eventForm.povWinner && eventForm.povWinner !== 'no-winner') {
-        events.push({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === eventForm.povWinner)?.id,
-          event_type: 'pov_winner',
-          points_awarded: calculatePoints('pov_winner')
-        });
-      }
-
-      // Add POV used on someone (1 point)
-      if (eventForm.povUsed && eventForm.povUsedOn) {
-        events.push({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === eventForm.povUsedOn)?.id,
-          event_type: 'pov_used_on',
-          points_awarded: 1
-        });
-      }
-
-      // Add nominees
-      eventForm.nominees.filter(n => n).forEach((nominee, index) => {
-        events.push({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === nominee)?.id,
-          event_type: 'nominee',
-          points_awarded: calculatePoints('nominee')
-        });
-      });
-
-      // Add replacement nominee
-      if (eventForm.replacementNominee) {
-        events.push({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === eventForm.replacementNominee)?.id,
-          event_type: 'replacement_nominee',
-          points_awarded: calculatePoints('replacement_nominee')
-        });
-      }
-
-      // Add evicted contestant
-      if (eventForm.evicted && eventForm.evicted !== 'no-eviction') {
-        events.push({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === eventForm.evicted)?.id,
-          event_type: 'evicted',
-          points_awarded: 0 // No points for being evicted
-        });
-      }
-
-    // Add survival points for non-evicted contestants
-    const currentWeekEvicted = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
-      .filter(name => name && name !== 'no-eviction');
-    
-    // Get all evicted contestants from database to determine who's active
-    const { data: allEvictedData } = await supabase
-      .from('weekly_events')
-      .select('contestants!inner(name)')
-      .eq('event_type', 'evicted');
-    
-    const allEvictedNames = allEvictedData?.map(event => (event.contestants as any).name) || [];
-    const currentlyEvicted = [...allEvictedNames, ...currentWeekEvicted];
-    
-    const survivingContestants = contestants.filter(c => !currentlyEvicted.includes(c.name));
-      
-    survivingContestants.forEach(contestant => {
-        events.push({
-          week_number: eventForm.week,
-          contestant_id: contestant.id,
-          event_type: 'survival',
-          points_awarded: calculatePoints('survival')
-        });
-      });
-
-      // Add BB Arena winner points
-      if (eventForm.aiArenaWinner) {
-        events.push({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === eventForm.aiArenaWinner)?.id,
-          event_type: 'bb_arena_winner',
-          points_awarded: calculatePoints('bb_arena_winner')
-        });
-      }
-
-      // Add jury points if jury phase starts this week
-      if (eventForm.isJuryPhase) {
-        survivingContestants.forEach(contestant => {
-          events.push({
-            week_number: eventForm.week,
-            contestant_id: contestant.id,
-            event_type: 'jury_member',
-            points_awarded: calculatePoints('jury_member')
-          });
-        });
-      }
-
-      // Filter out events with missing contestant_id
-      const validEvents = events.filter(e => e.contestant_id);
-      
-      if (validEvents.length > 0) {
-        const { error: eventsError } = await supabase
-          .from('weekly_events')
-          .insert(validEvents);
-
-        if (eventsError) throw eventsError;
-      }
-
-      // Insert special events
-      const specialEvents = eventForm.specialEvents
-        .filter(se => se.contestant && se.eventType)
-        .map(se => ({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === se.contestant)?.id,
-          event_type: se.eventType,
-          description: se.description,
-          points_awarded: calculatePoints(se.eventType, se.customPoints)
-        }))
-        .filter(se => se.contestant_id);
-
-      if (specialEvents.length > 0) {
-        const { error: specialError } = await supabase
-          .from('special_events')
-          .insert(specialEvents);
-
-        if (specialError) throw specialError;
-      }
-
-      // Update evicted contestant statuses
-      const evictedNames = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
-        .filter(name => name && name !== 'no-eviction');
-      
-      for (const evictedName of evictedNames) {
-        const { error: contestantError } = await supabase
-          .from('contestants')
-          .update({ is_active: false })
-          .eq('name', evictedName);
-
-        if (contestantError) throw contestantError;
-      }
-
-      // Update or insert into weekly_results table
-      const weekData = {
-        week_number: eventForm.week,
-        hoh_winner: (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') ? eventForm.hohWinner : null,
-        pov_winner: (eventForm.povWinner && eventForm.povWinner !== 'no-winner') ? eventForm.povWinner : null,
-        nominees: eventForm.nominees.filter(n => n),
-        pov_used: eventForm.povUsed,
-        pov_used_on: eventForm.povUsedOn || null,
-        replacement_nominee: eventForm.replacementNominee || null,
-        evicted_contestant: (eventForm.evicted && eventForm.evicted !== 'no-eviction') ? eventForm.evicted : null,
-        is_double_eviction: eventForm.isDoubleEviction,
-        is_triple_eviction: eventForm.isTripleEviction,
-        jury_phase_started: eventForm.isJuryPhase,
-        is_draft: false, // Mark as final when submitted
-        second_hoh_winner: eventForm.secondHohWinner || null,
-        second_pov_winner: eventForm.secondPovWinner || null,
-        second_nominees: eventForm.secondNominees.filter(n => n),
-        second_pov_used: eventForm.secondPovUsed,
-        second_pov_used_on: eventForm.secondPovUsedOn || null,
-        second_replacement_nominee: eventForm.secondReplacementNominee || null,
-        second_evicted_contestant: eventForm.secondEvicted || null,
-        third_hoh_winner: eventForm.thirdHohWinner || null,
-        third_pov_winner: eventForm.thirdPovWinner || null,
-        third_evicted_contestant: eventForm.thirdEvicted || null
-      };
-
-      // Check if week already exists
-      const { data: existingWeek } = await supabase
-        .from('weekly_results')
-        .select('id')
-        .eq('week_number', eventForm.week)
-        .single();
-
-      if (existingWeek) {
-        // Update existing week
-        const { error: updateError } = await supabase
-          .from('weekly_results')
-          .update(weekData)
-          .eq('week_number', eventForm.week);
-        
-        if (updateError) throw updateError;
-      } else {
-        // Insert new week
-        const { error: insertError } = await supabase
-          .from('weekly_results')
-          .insert(weekData);
-        
-        if (insertError) throw insertError;
-      }
-
-      toast({
-        title: "Success!",
-        description: `Week ${eventForm.week} events recorded successfully`,
-      });
-
-      // Update current game week to advance to next week
-      try {
-        const { error: weekUpdateError } = await supabase.rpc('update_current_game_week', { 
-          new_week_number: eventForm.week + 1 
-        });
-        if (weekUpdateError) {
-          console.error('Error updating current game week:', weekUpdateError);
-          throw weekUpdateError;
-        }
-        console.log(`Successfully advanced current game week to ${eventForm.week + 1}`);
-      } catch (error) {
-        console.error('Failed to update current game week:', error);
-        toast({
-          title: "Warning",
-          description: "Week submitted but failed to advance current game week",
-          variant: "destructive",
-        });
-      }
-
+  const submitWeek = async () => {
+    await handleSubmitWeek(eventForm, async () => {
       // Find next sequential week to edit
       const { data: completedWeeks } = await supabase
         .from('weekly_results')
@@ -507,23 +114,10 @@ export const useWeeklyEvents = () => {
         runnerUp: '',
         americasFavorite: ''
       });
-
-      // Reload data
+      
       loadData();
-
-    } catch (error) {
-      console.error('Error submitting week:', error);
-      toast({
-        title: "Error",
-        description: "Failed to record weekly events",
-        variant: "destructive",
-      });
-    }
+    });
   };
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   return {
     contestants,
@@ -533,9 +127,9 @@ export const useWeeklyEvents = () => {
     editingWeek,
     eventForm,
     setEventForm,
-    getPointsPreview,
-    handleSubmitWeek,
-    calculatePoints,
+    getPointsPreview: getFormPointsPreview,
+    handleSubmitWeek: submitWeek,
+    calculatePoints: calculateEventPoints,
     loadData
   };
 };

@@ -98,14 +98,17 @@ export const DraftWizard: React.FC = () => {
     <DraftLayoutWithSidebar formData={formData}>
       {/* Team Preview - Show when team is complete */}
       {hasCompletedTeam && user && (
-        <div className="mb-6">
+        <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
+            ✅ Your Team is Complete!
+          </h3>
           <HouseguestProfiles userId={user.id} />
         </div>
       )}
 
       <DraftWizardHeader seasonName={poolSettings?.season_name} />
       
-      <CardContent className="p-8">
+      <CardContent className="p-8 bg-gradient-to-b from-white to-orange-50">
         {/* Draft Persistence Alert */}
         <DraftFormPersistenceAlert 
           hasSavedData={hasSavedData}

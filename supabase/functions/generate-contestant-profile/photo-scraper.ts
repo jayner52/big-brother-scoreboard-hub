@@ -46,21 +46,31 @@ export async function scrapeGoldDerbyGallery(): Promise<Record<string, string>> 
       
       for (const name of contestantNames) {
         // Handle special characters and punctuation in names
-        const cleanName = name.toLowerCase().replace(/['']/g, '').replace(/[^a-z\s]/g, '');
-        const nameParts = cleanName.split(' ');
+        const cleanName = name.toLowerCase()
+          .replace(/[''`]/g, '')  // Remove apostrophes and backticks
+          .replace(/[-]/g, ' ')   // Replace hyphens with spaces
+          .replace(/[^a-z\s]/g, ''); // Remove other special chars
+        const nameParts = cleanName.split(' ').filter(part => part.length > 0);
         const firstName = nameParts[0];
         const lastName = nameParts[nameParts.length - 1];
         
         // Clean alt text similarly
-        const cleanAltText = altText.toLowerCase().replace(/['']/g, '').replace(/[^a-z\s]/g, '');
+        const cleanAltText = altText.toLowerCase()
+          .replace(/[''`]/g, '')
+          .replace(/[-]/g, ' ')
+          .replace(/[^a-z\s]/g, '');
         
-        // Try exact match first, then partial match
+        // Try exact match first, then partial match, then phonetic-like match
         const exactMatch = cleanAltText.includes(firstName) && cleanAltText.includes(lastName);
         const partialMatch = firstName.length > 3 && lastName.length > 3 && 
                            cleanAltText.includes(firstName.substring(0, 4)) && 
                            cleanAltText.includes(lastName.substring(0, 4));
         
-        if (exactMatch || partialMatch) {
+        // Special case for T'Kor - also try "tkor"
+        const specialMatch = (name.includes("T'Kor") || name.includes("T'kor")) && 
+                           (cleanAltText.includes('tkor') || cleanAltText.includes('kor'));
+        
+        if (exactMatch || partialMatch || specialMatch) {
           // Validate the image URL
           const isValid = await validatePhotoUrl(imageUrl);
           if (isValid) {

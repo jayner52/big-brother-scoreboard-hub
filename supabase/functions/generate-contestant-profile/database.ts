@@ -59,11 +59,15 @@ export async function processBatches(
           const groupIndex = (globalIndex - 1) % 4;
           
           // Get the group ID for this group name
-          const { data: groups } = await supabase
+          const { data: groups, error: groupError } = await supabase
             .from('contestant_groups')
             .select('id, group_name')
             .eq('group_name', groupNames[groupIndex])
             .single();
+          
+          if (groupError) {
+            console.log(`⚠️  Warning: Could not find group ${groupNames[groupIndex]}: ${groupError.message}`);
+          }
           
           const insertData = {
             name: contestant.name.trim(),

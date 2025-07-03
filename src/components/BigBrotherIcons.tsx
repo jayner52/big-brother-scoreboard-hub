@@ -1,5 +1,5 @@
 import React from 'react';
-import { Crown, Circle, X } from 'lucide-react';
+import { Crown, Ban, X } from 'lucide-react';
 
 interface BigBrotherIconProps {
   type: 'hoh' | 'pov' | 'evicted';
@@ -11,7 +11,7 @@ export const BigBrotherIcon: React.FC<BigBrotherIconProps> = ({ type, className 
     case 'hoh':
       return <Crown className={`${className} text-yellow-600`} />;
     case 'pov':
-      return <Circle className={`${className} text-green-600 fill-current`} />;
+      return <Ban className={`${className} text-green-600`} />;
     case 'evicted':
       return <X className={`${className} text-red-600`} />;
     default:

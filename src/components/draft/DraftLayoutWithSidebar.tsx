@@ -19,12 +19,14 @@ export const DraftLayoutWithSidebar: React.FC<DraftLayoutWithSidebarProps> = ({
     <div className={`flex flex-col lg:flex-row gap-6 ${className}`}>
       {/* Main Content Area */}
       <div className="flex-1 min-w-0">
-        {children}
+        <div className="bg-white rounded-lg shadow-lg border border-orange-200">
+          {children}
+        </div>
       </div>
       
       {/* Live Team Preview Sidebar */}
       <div className="lg:w-80 order-first lg:order-last">
-        <div className="sticky top-6">
+        <div className="sticky top-6 bg-gradient-to-b from-red-50 to-orange-50 rounded-lg shadow-lg border border-red-200">
           <LiveTeamPreview
             teamName={formData.team_name}
             participantName={formData.participant_name}

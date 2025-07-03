@@ -86,27 +86,34 @@ serve(async (req) => {
       
       if (season_number === 26) {
         // For BB26, generate profiles based on actual cast
-        systemPrompt = `You are a Big Brother database expert with access to Season 26 cast information. Generate accurate contestant profiles based on the real Season 26 cast members.
+        systemPrompt = `You are a Big Brother database expert with verified access to Season 26 cast information. You MUST return accurate, factual contestant profiles using ONLY real cast member data from the actual season that aired.
 
-Return ONLY a valid JSON object with the exact structure requested. Do not include any additional text, explanations, or markdown formatting.`;
+CRITICAL: Return ONLY a valid JSON object with the exact structure requested. Do not include any additional text, explanations, or markdown formatting.`;
 
-        userPrompt = `Generate a Big Brother Season 26 contestant profile using REAL cast member data.
+        userPrompt = `Generate a Big Brother Season 26 contestant profile using VERIFIED REAL cast member data.
 
-Season 26 Cast Members: Angela Murray, Brooklyn Rivera, Cam Sullivan-Brown, Cedric Hodges, Chelsie Baham, Joseph Rodriguez, Kimo Apaka, Leah Peters, Makensy Manbeck, Quinn Martin, Rubina Bernabe, T'Kor Clottey, Tucker Des Lauriers
+ACTUAL BB26 Cast with REAL details:
+- Angela Murray: 50, Long Beach CA, Real Estate Agent
+- Brooklyn Rivera: 34, Brooklyn NY, Business Administrator  
+- Cam Sullivan-Brown: 25, Bowie MD, Physical Therapist
+- Cedric Hodges: 21, Fayetteville GA, Former Marine
+- Chelsie Baham: 27, Rancho Cucamonga CA, Nonprofit Director
+- Joseph Rodriguez: 30, Tampa FL, Video Store Clerk
+- Kimo Apaka: 35, Hilo HI, Mattress Sales
+- Leah Peters: 26, Miami FL, VIP Cocktail Server
+- Makensy Manbeck: 22, Houston TX, Construction Project Manager
+- Quinn Martin: 25, Omaha NE, Nurse Recruiter
+- Rubina Bernabe: 35, Los Angeles CA, Event Coordinator
+- T'Kor Clottey: 23, London England, Crochet Business Owner
+- Tucker Des Lauriers: 30, Brooklyn NY, Marketing/Sales Executive
 
-For BB26, use these actual contestant names and their real details including:
-- Real ages (as of 2024)
-- Real occupations 
-- Real hometowns
-- Authentic personality traits based on their actual game play
-- Realistic bios based on their backgrounds
+REQUIREMENTS:
+- Use ONLY the real names, ages, hometowns, and occupations listed above
+- Write bios based on their actual BB26 gameplay and personalities
+- Use official CBS photo URLs or realistic CBS-style URLs
+- Include accurate details about their strategies and placements
 
-Season Details:
-- Theme: ${season_theme}
-- Format: ${season_format}  
-- Special Twists: ${special_twists}
-
-Return a JSON object with this exact structure using a REAL BB26 contestant:`;
+Return a JSON object with this exact structure using ONE REAL BB26 contestant:`;
       } else {
         // For other seasons, generate realistic fictional contestants
         systemPrompt = `You are an expert Big Brother casting director and reality TV producer. Generate realistic, diverse, and entertaining contestant profiles that would create compelling television. Consider the specified season theme, format, and casting requirements. Ensure each contestant has a unique personality and backstory that would create interesting dynamics in the house.
@@ -178,9 +185,9 @@ Return a JSON object with this exact structure:`;
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
           ],
-          temperature: 0.8,
+          temperature: season_number === 26 ? 0.1 : 0.8, // Very low temperature for real data
           max_tokens: 1500,
-          top_p: 0.9,
+          top_p: season_number === 26 ? 0.1 : 0.9, // More focused for real data
           frequency_penalty: 0.3,
           presence_penalty: 0.3,
         }),

@@ -38,12 +38,30 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex gap-3">
-            {contestant.photo_url && (
+            {contestant.photo_url ? (
               <img 
                 src={contestant.photo_url} 
                 alt={contestant.name}
-                className="w-16 h-16 rounded-full object-cover"
+                className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                onError={(e) => {
+                  // First fallback: try a generic CBS URL pattern
+                  const nameSlug = contestant.name.toLowerCase().replace(/\s+/g, '-');
+                  const fallbackUrl = `https://www.cbs.com/shows/big_brother/cast/26/${nameSlug}/`;
+                  
+                  if (e.currentTarget.src !== fallbackUrl) {
+                    e.currentTarget.src = fallbackUrl;
+                  } else {
+                    // Final fallback: generated avatar
+                    e.currentTarget.src = `https://api.dicebear.com/7.x/personas/svg?seed=${contestant.name}&backgroundColor=b6e3f4`;
+                  }
+                }}
               />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-2 border-gray-200">
+                <span className="text-lg font-semibold text-gray-600">
+                  {contestant.name.split(' ').map(n => n[0]).join('')}
+                </span>
+              </div>
             )}
             <div>
               <h3 className={`font-bold text-lg ${isEvicted ? 'text-red-600' : 'text-green-600'}`}>

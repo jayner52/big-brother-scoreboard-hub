@@ -32,6 +32,7 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   // Show configurations with predefined seasons
   const showConfigs = {
     'big-brother': {
@@ -61,9 +62,36 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
     count: 1
   });
 
+  const validateContestantData = (contestants: AIContestantProfile[]) => {
+    const issues: string[] = [];
+    
+    contestants.forEach((contestant, index) => {
+      if (!contestant.name || contestant.name.includes('Generated')) {
+        issues.push(`Contestant ${index + 1}: Invalid name`);
+      }
+      if (!contestant.age || contestant.age < 18 || contestant.age > 80) {
+        issues.push(`${contestant.name}: Invalid age (${contestant.age})`);
+      }
+      if (!contestant.hometown || !contestant.hometown.includes(',')) {
+        issues.push(`${contestant.name}: Invalid hometown format`);
+      }
+      if (!contestant.occupation || contestant.occupation === 'Unknown') {
+        issues.push(`${contestant.name}: Missing occupation`);
+      }
+    });
+    
+    if (issues.length > 0) {
+      console.warn('Data validation issues:', issues);
+      setError(`Data validation issues: ${issues.join(', ')}`);
+    }
+    
+    return issues.length === 0;
+  };
+
   const generateProfiles = async () => {
     setIsGenerating(true);
     setProgress(0);
+    setError(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-contestant-profile', {
@@ -76,6 +104,11 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
         throw new Error(data.error || 'Generation failed');
       }
 
+      // Validate the generated data
+      if (data.profiles && data.profiles.length > 0) {
+        validateContestantData(data.profiles);
+      }
+
       setProgress(100);
       onProfilesGenerated(data.profiles);
 
@@ -86,9 +119,11 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
 
     } catch (error) {
       console.error('Error generating profiles:', error);
+      const errorMessage = error.message || "Failed to generate contestant profiles";
+      setError(errorMessage);
       toast({
         title: "Generation Failed",
-        description: error.message || "Failed to generate contestant profiles",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -208,6 +243,21 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
             rows={2}
           />
         </div>
+
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {isGenerating && (
           <div className="space-y-2">

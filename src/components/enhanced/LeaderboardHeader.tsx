@@ -1,7 +1,6 @@
 import React from 'react';
 import { CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScoringBadges } from './ScoringBadges';
 import { CompletedWeek } from '@/hooks/useWeeklySnapshots';
 
 interface LeaderboardHeaderProps {
@@ -19,7 +18,9 @@ export const LeaderboardHeader: React.FC<LeaderboardHeaderProps> = ({
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
         <CardTitle className="text-2xl">Team Leaderboard</CardTitle>
-        <ScoringBadges />
+        <p className="text-sm text-white/80 mt-1">
+          {selectedWeek ? `Week ${selectedWeek} cumulative standings` : 'Current season standings'}
+        </p>
       </div>
       
       {completedWeeks.length > 0 && (

@@ -36,7 +36,7 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
     const points = houseguestPoints[playerName];
     
     return (
-      <span className={`${isEliminated ? 'line-through text-muted-foreground' : ''}`}>
+      <span className={`${isEliminated ? 'line-through text-red-500' : ''}`}>
         {playerName}
         {points !== undefined && ` (${points}pts)`}
       </span>

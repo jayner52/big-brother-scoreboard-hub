@@ -1,302 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { ContestantWithBio, ContestantGroup } from '@/types/admin';
-import { UserPlus, Bot, Eye } from 'lucide-react';
-import { ContestantForm } from './contestants/ContestantForm';
-import { ContestantList } from './contestants/ContestantList';
-import { AIGenerationPanel } from './contestants/AIGenerationPanel';
-import { EnhancedContestantCard } from './contestants/EnhancedContestantCard';
+import React, { useState } from 'react';
+import { Bot } from 'lucide-react';
+import { useContestants } from '@/hooks/useContestants';
+import { useContestantActions } from '@/hooks/useContestantActions';
 import { ContestantProfileModal } from './contestants/ContestantProfileModal';
+import { ContestantManagementHeader } from './contestants/ContestantManagementHeader';
+import { ManageContestantsTab } from './contestants/ManageContestantsTab';
+import { AIGenerationTab } from './contestants/AIGenerationTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const ContestantManagement: React.FC = () => {
-  const { toast } = useToast();
-  const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
-  const [groups, setGroups] = useState<ContestantGroup[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<ContestantWithBio>>({});
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { contestants, setContestants, groups, loading, loadContestants } = useContestants();
   const [selectedContestant, setSelectedContestant] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
-
-  useEffect(() => {
-    loadContestants();
-    loadGroups();
-  }, []);
-
-  const loadContestants = async () => {
-    try {
-      const { data } = await supabase
-        .from('contestants')
-        .select('*')
-        .order('name', { ascending: true });
-      
-      if (data) {
-        const mappedContestants = data.map(c => ({
-          id: c.id,
-          name: c.name,
-          isActive: c.is_active,
-          group_id: c.group_id,
-          sort_order: c.sort_order,
-          bio: c.bio,
-          photo_url: c.photo_url,
-          hometown: c.hometown,
-          age: c.age,
-          occupation: c.occupation
-        }));
-        setContestants(mappedContestants);
-      }
-    } catch (error) {
-      console.error('Error loading contestants:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load contestants",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadGroups = async () => {
-    try {
-      const { data } = await supabase
-        .from('contestant_groups')
-        .select('*')
-        .order('sort_order', { ascending: true });
-      
-      if (data) {
-        setGroups(data);
-      }
-    } catch (error) {
-      console.error('Error loading groups:', error);
-    }
-  };
-
-  const handleEdit = (contestant: ContestantWithBio) => {
-    setEditingId(contestant.id);
-    setEditForm(contestant);
-  };
-
-  const handleSave = async () => {
-    if (!editingId || !editForm.name) return;
-
-    try {
-      const { error } = await supabase
-        .from('contestants')
-        .update({
-          name: editForm.name,
-          is_active: editForm.isActive,
-          bio: editForm.bio,
-          photo_url: editForm.photo_url,
-          sort_order: editForm.sort_order,
-          group_id: editForm.group_id,
-          hometown: editForm.hometown,
-          age: editForm.age,
-          occupation: editForm.occupation
-        })
-        .eq('id', editingId);
-
-      if (error) throw error;
-
-      setContestants(prev => prev.map(c => 
-        c.id === editingId ? { ...c, ...editForm } as ContestantWithBio : c
-      ));
-      
-      setEditingId(null);
-      setEditForm({});
-      
-      toast({
-        title: "Success!",
-        description: "Contestant updated successfully",
-      });
-    } catch (error) {
-      console.error('Error updating contestant:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update contestant",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleAddContestant = async () => {
-    if (!editForm.name) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('contestants')
-        .insert({
-          name: editForm.name,
-          is_active: editForm.isActive ?? true,
-          bio: editForm.bio,
-          photo_url: editForm.photo_url,
-          sort_order: editForm.sort_order ?? contestants.length + 1,
-          group_id: editForm.group_id,
-          hometown: editForm.hometown,
-          age: editForm.age,
-          occupation: editForm.occupation
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const newContestant: ContestantWithBio = {
-        id: data.id,
-        name: data.name,
-        isActive: data.is_active,
-        group_id: data.group_id,
-        sort_order: data.sort_order,
-        bio: data.bio,
-        photo_url: data.photo_url,
-        hometown: data.hometown,
-        age: data.age,
-        occupation: data.occupation
-      };
-
-      setContestants(prev => [...prev, newContestant]);
-      setShowAddForm(false);
-      setEditForm({});
-      
-      toast({
-        title: "Success!",
-        description: "Contestant added successfully",
-      });
-    } catch (error) {
-      console.error('Error adding contestant:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add contestant",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setShowAddForm(false);
-    setEditForm({});
-  };
-
-  const handleFormChange = (updates: Partial<ContestantWithBio>) => {
-    setEditForm(prev => ({ ...prev, ...updates }));
-  };
-
-  const handleAIProfilesGenerated = async (profiles: any[]) => {
-    console.log('Generated profiles:', profiles.length, 'contestants');
-    
-    // Validate exactly 16 contestants for BB26
-    if (profiles.length !== 16) {
-      toast({
-        title: "Error",
-        description: `Expected exactly 16 contestants, got ${profiles.length}`,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const newContestants = [];
-    
-    for (const profile of profiles) {
-      try {
-        const { data, error } = await supabase
-          .from('contestants')
-          .insert({
-            name: profile.name,
-            age: profile.age,
-            hometown: profile.hometown,
-            occupation: profile.occupation,
-            bio: profile.bio,
-            photo_url: profile.photo,
-            season_number: 26,
-            data_source: 'ai_generated',
-            ai_generated: true,
-            generation_metadata: {
-              generated_date: new Date().toISOString(),
-              model_used: 'improved_api',
-              data_source: 'real_contestant_data'
-            },
-            is_active: true,
-            sort_order: newContestants.length + 1
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        newContestants.push(data);
-      } catch (error) {
-        console.error('Error saving AI profile:', error);
-        toast({
-          title: "Error",
-          description: `Failed to save profile for ${profile.name}`,
-          variant: "destructive",
-        });
-      }
-    }
-
-    if (newContestants.length > 0) {
-      await loadContestants();
-      console.log('Cast loaded:', newContestants.length, 'new contestants added');
-      toast({
-        title: "Success!",
-        description: `Added ${newContestants.length} contestant(s)`,
-      });
-    }
-  };
-
-  const handleDelete = async (contestantId: string) => {
-    try {
-      const { error } = await supabase
-        .from('contestants')
-        .delete()
-        .eq('id', contestantId);
-
-      if (error) throw error;
-
-      setContestants(prev => prev.filter(c => c.id !== contestantId));
-      
-      toast({
-        title: "Success!",
-        description: "Contestant deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting contestant:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete contestant",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleClearAll = async () => {
-    try {
-      const { error } = await supabase
-        .from('contestants')
-        .delete()
-        .eq('season_number', 26);
-
-      if (error) throw error;
-
-      setContestants([]);
-      
-      toast({
-        title: "Success!",
-        description: "All contestants cleared",
-      });
-    } catch (error) {
-      console.error('Error clearing contestants:', error);
-      toast({
-        title: "Error",
-        description: "Failed to clear contestants",
-        variant: "destructive",
-      });
-    }
-  };
+  
+  const {
+    editingId,
+    editForm,
+    showAddForm,
+    setShowAddForm,
+    handleEdit,
+    handleSave,
+    handleAddContestant,
+    handleDelete,
+    handleClearAll,
+    handleCancel,
+    handleFormChange,
+    handleAIProfilesGenerated
+  } = useContestantActions(contestants, setContestants, loadContestants);
 
   const handleViewProfile = (contestant: any) => {
     setSelectedContestant(contestant);
@@ -309,16 +39,7 @@ export const ContestantManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Houseguest Management</h2>
-        <Button 
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2"
-        >
-          <UserPlus className="h-4 w-4" />
-          Add Houseguest
-        </Button>
-      </div>
+      <ContestantManagementHeader onAddClick={() => setShowAddForm(true)} />
 
       <Tabs defaultValue="manage" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -330,57 +51,29 @@ export const ContestantManagement: React.FC = () => {
         </TabsList>
         
         <TabsContent value="manage" className="space-y-6">
-          {showAddForm && (
-            <ContestantForm
-              editForm={editForm}
-              groups={groups}
-              onFormChange={handleFormChange}
-              onSave={handleAddContestant}
-              onCancel={handleCancel}
-              isEditing={false}
-            />
-          )}
-
-          <ContestantList
+          <ManageContestantsTab
             contestants={contestants}
             groups={groups}
+            showAddForm={showAddForm}
             editingId={editingId}
             editForm={editForm}
             onEdit={handleEdit}
             onSave={handleSave}
             onCancel={handleCancel}
             onFormChange={handleFormChange}
+            onAddContestant={handleAddContestant}
           />
         </TabsContent>
         
         <TabsContent value="ai-generate" className="space-y-6">
-          <AIGenerationPanel onProfilesGenerated={handleAIProfilesGenerated} />
-          
-          {contestants.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Generated Contestants ({contestants.length}/16)</h3>
-                <Button 
-                  variant="destructive" 
-                  onClick={handleClearAll}
-                  size="sm"
-                >
-                  Clear All
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {contestants.slice(0, 16).map((contestant) => (
-                  <EnhancedContestantCard
-                    key={contestant.id}
-                    contestant={contestant as any}
-                    onEdit={() => handleEdit(contestant)}
-                    onView={() => handleViewProfile(contestant)}
-                    onDelete={() => handleDelete(contestant.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          <AIGenerationTab
+            contestants={contestants}
+            onProfilesGenerated={handleAIProfilesGenerated}
+            onEdit={handleEdit}
+            onView={handleViewProfile}
+            onDelete={handleDelete}
+            onClearAll={handleClearAll}
+          />
         </TabsContent>
       </Tabs>
 

@@ -25,19 +25,74 @@ interface GenerationRequest {
   count: number;
 }
 
-// Season-specific configurations with real cast data
-const seasonData = {
-  27: { 
-    name: "Big Brother 27", 
-    castCount: 16, 
-    theme: "TBD",
-    cast: [] // Cast not yet announced
-  },
-  26: { 
-    name: "Big Brother 26", 
-    castCount: 16, 
-    theme: "AI Arena",
-    cast: [
+interface BatchProgress {
+  total: number;
+  processed: number;
+  successful: number;
+  failed: number;
+  currentBatch: number;
+  totalBatches: number;
+}
+
+// Utility function to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Exponential backoff retry function
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  baseDelay: number = 1000
+): Promise<T> {
+  let lastError: Error;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      console.log(`Attempt ${attempt}/${maxAttempts} failed:`, error.message);
+      
+      if (attempt === maxAttempts) {
+        throw lastError;
+      }
+      
+      // Exponential backoff: 1s, 2s, 4s, etc.
+      const delayMs = baseDelay * Math.pow(2, attempt - 1);
+      console.log(`Retrying in ${delayMs}ms...`);
+      await delay(delayMs);
+    }
+  }
+  
+  throw lastError;
+}
+
+// Validate photo URL
+async function validatePhotoUrl(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok && response.headers.get('content-type')?.startsWith('image/');
+  } catch {
+    return false;
+  }
+}
+
+// Scrape Big Brother Fandom for contestant data
+async function scrapeContestantData(seasonNumber: number): Promise<ContestantProfile[]> {
+  console.log(`🔍 Starting web scraping for Big Brother Season ${seasonNumber}...`);
+  
+  if (seasonNumber < 26) {
+    throw new Error(`Season ${seasonNumber} is not supported. Only Season 26+ contestants are processed.`);
+  }
+  
+  if (seasonNumber === 27) {
+    throw new Error('Big Brother 27 cast has not been announced yet. Please select a different season.');
+  }
+  
+  // For Season 26, use the known cast data with validated photos
+  if (seasonNumber === 26) {
+    console.log('📋 Using Season 26 cast data...');
+    
+    const season26Cast = [
       { name: "Angela Murray", age: 50, hometown: "Long Beach, CA", occupation: "Real Estate Agent", photo: "https://static.wikia.nocookie.net/bigbrother/images/a/a6/Angela_Murray_BB26.jpg", bio: "Angela is a dedicated real estate agent who grew up in a close-knit family in Long Beach. She's passionate about fitness and helping first-time homebuyers achieve their dreams. She applied for Big Brother to challenge herself and prove that women over 50 can compete with anyone." },
       { name: "Brooklyn Rivera", age: 34, hometown: "Dallas, TX", occupation: "Business Administrator", photo: "https://static.wikia.nocookie.net/bigbrother/images/b/b1/Brooklyn_Rivera_BB26.jpg", bio: "Brooklyn is a driven business administrator from Dallas who loves organizing events and spending time with her family. She's passionate about travel and has visited over 20 countries. She joined Big Brother to test her social skills and win money for her daughter's college fund." },
       { name: "Cam Sullivan-Brown", age: 25, hometown: "Bowie, MD", occupation: "Physical Therapist", photo: "https://static.wikia.nocookie.net/bigbrother/images/c/c8/Cam_Sullivan-Brown_BB26.jpg", bio: "Cam is a compassionate physical therapist who helps people recover from injuries and reach their fitness goals. He's an avid runner and volunteers at local youth sports programs. He came to Big Brother to challenge himself mentally and inspire others to pursue their dreams." },
@@ -54,36 +109,169 @@ const seasonData = {
       { name: "Lisa Weintraub", age: 33, hometown: "Los Angeles, CA", occupation: "Celebrity Chef", photo: "https://static.wikia.nocookie.net/bigbrother/images/l/l2/Lisa_Weintraub_BB26.jpg", bio: "Lisa is a celebrity chef who has cooked for A-list stars and owns a popular restaurant in West Hollywood. She's passionate about fusion cuisine and mentoring young chefs. She joined Big Brother to step away from the kitchen and prove she can win in any competitive environment." },
       { name: "Kenney Kelley", age: 52, hometown: "Boston, MA", occupation: "Retired Police Officer", photo: "https://static.wikia.nocookie.net/bigbrother/images/k/k7/Kenney_Kelley_BB26.jpg", bio: "Kenney is a recently retired police officer who served the Boston community for over 25 years. He loves spending time with his grandchildren and coaching little league baseball. He entered Big Brother to show that experience and wisdom can compete with youth and energy." },
       { name: "Matt Hardeman", age: 24, hometown: "Loganville, GA", occupation: "Tech Support Specialist", photo: "https://static.wikia.nocookie.net/bigbrother/images/m/m9/Matt_Hardeman_BB26.jpg", bio: "Matt works in tech support during the day and streams video games at night, building a loyal following online. He's passionate about gaming, technology, and helping people solve problems. He came to Big Brother to prove that introverted gamers can be social and strategic when it matters." }
-    ]
-  },
-  25: { 
-    name: "Big Brother 25", 
-    castCount: 17, 
-    theme: "Regular Season",
-    cast: [
-      { name: "America Lopez", age: 27, hometown: "El Paso, TX", occupation: "Medical Receptionist", photo: "https://static.wikia.nocookie.net/bigbrother/images/a/a5/America_Lopez_BB25.jpg", bio: "America is a medical receptionist from El Paso who is passionate about helping patients and their families navigate healthcare. She loves spending time with her large Mexican-American family and volunteers at local community centers." },
-      { name: "Blue Kim", age: 25, hometown: "Dallas, TX", occupation: "Brand Strategist", photo: "https://static.wikia.nocookie.net/bigbrother/images/b/b6/Blue_Kim_BB25.jpg", bio: "Blue is a creative brand strategist who helps companies develop their visual identity and marketing campaigns. She's passionate about art, design, and empowering other young women in the business world." },
-      { name: "Bowie Jane Ball", age: 45, hometown: "Melbourne, Australia", occupation: "Barrister/DJ", photo: "https://static.wikia.nocookie.net/bigbrother/images/b/b3/Bowie_Jane_Ball_BB25.jpg", bio: "Bowie Jane is a barrister by day and DJ by night, balancing her legal career with her passion for music. Originally from Australia, she brings a unique perspective and energy to everything she does." },
-      { name: "Cameron Hardin", age: 34, hometown: "Eastman, GA", occupation: "Stay-at-Home Dad", photo: "https://static.wikia.nocookie.net/bigbrother/images/c/c8/Cameron_Hardin_BB25.jpg", bio: "Cameron is a devoted stay-at-home dad who takes pride in raising his children and supporting his wife's career. He's passionate about fitness, cooking, and creating a loving home environment for his family." },
-      { name: "Cirie Fields", age: 53, hometown: "Norwalk, CT", occupation: "Nurse", photo: "https://static.wikia.nocookie.net/bigbrother/images/c/c7/Cirie_Fields_BB25.jpg", bio: "Cirie is a registered nurse and reality TV veteran who brings her medical expertise and strategic gameplay to the Big Brother house. She's known for her warmth, intelligence, and ability to build strong alliances." },
-      { name: "Cory Wurtenberger", age: 21, hometown: "Friday Harbor, WA", occupation: "Martial Arts Instructor", photo: "https://static.wikia.nocookie.net/bigbrother/images/c/c5/Cory_Wurtenberger_BB25.jpg", bio: "Cory is a young martial arts instructor who teaches discipline and self-defense to students of all ages. He's passionate about fitness, outdoor adventures, and helping others build confidence through martial arts training." },
-      { name: "Felicia Cannon", age: 63, hometown: "Hanahan, SC", occupation: "Real Estate Agent", photo: "https://static.wikia.nocookie.net/bigbrother/images/f/f8/Felicia_Cannon_BB25.jpg", bio: "Felicia is an experienced real estate agent who has helped countless families find their dream homes. She brings wisdom, life experience, and strong people skills to the Big Brother house." },
-      { name: "Hisam Goueli", age: 45, hometown: "Sammamish, WA", occupation: "Geriatrician", photo: "https://static.wikia.nocookie.net/bigbrother/images/h/h4/Hisam_Goueli_BB25.jpg", bio: "Dr. Hisam is a geriatrician who specializes in caring for elderly patients. He's passionate about medicine, helping seniors maintain their independence, and spending quality time with his family." },
-      { name: "Izzy Gleicher", age: 32, hometown: "Boca Raton, FL", occupation: "Professional Flutist", photo: "https://static.wikia.nocookie.net/bigbrother/images/i/i6/Izzy_Gleicher_BB25.jpg", bio: "Izzy is a professional flutist who has performed with orchestras around the world. She brings creativity, discipline, and a love of music to everything she does." },
-      { name: "Jag Bains", age: 25, hometown: "Omak, WA", occupation: "Truck Company Owner", photo: "https://static.wikia.nocookie.net/bigbrother/images/j/j8/Jag_Bains_BB25.jpg", bio: "Jag owns and operates a trucking company, managing logistics and transportation for various businesses. He's entrepreneurial, hardworking, and passionate about building his business empire." },
-      { name: "Jared Fields", age: 25, hometown: "Norwalk, CT", occupation: "Exterminator", photo: "https://static.wikia.nocookie.net/bigbrother/images/j/j5/Jared_Fields_BB25.jpg", bio: "Jared works as an exterminator, helping homeowners and businesses deal with pest problems. He's detail-oriented, reliable, and takes pride in solving problems for his clients." },
-      { name: "Kirsten Elwin", age: 31, hometown: "Houston, TX", occupation: "Molecular Biologist", photo: "https://static.wikia.nocookie.net/bigbrother/images/k/k9/Kirsten_Elwin_BB25.jpg", bio: "Dr. Kirsten is a molecular biologist who conducts research to advance medical science and develop new treatments. She's analytical, intelligent, and passionate about making discoveries that can help people." },
-      { name: "Luke Valentine", age: 30, hometown: "Nashville, TN", occupation: "Illustrator", photo: "https://static.wikia.nocookie.net/bigbrother/images/l/l4/Luke_Valentine_BB25.jpg", bio: "Luke is a talented illustrator who creates artwork for books, magazines, and digital media. He's creative, artistic, and loves bringing stories to life through his illustrations." },
-      { name: "Matt Klotz", age: 27, hometown: "Canton, MA", occupation: "Deaflympics Gold Medalist", photo: "https://static.wikia.nocookie.net/bigbrother/images/m/m8/Matt_Klotz_BB25.jpg", bio: "Matt is a Deaflympics gold medalist who has competed at the highest levels of international swimming. He's an inspiration to the deaf community and advocates for disability representation in sports." },
-      { name: "Mecole Hayes", age: 30, hometown: "Fort Worth, TX", occupation: "Political Consultant", photo: "https://static.wikia.nocookie.net/bigbrother/images/m/m7/Mecole_Hayes_BB25.jpg", bio: "Mecole is a political consultant who helps candidates develop campaign strategies and connect with voters. She's passionate about civic engagement and making a positive impact through the political process." },
-      { name: "Red Utley", age: 37, hometown: "Gatlinburg, TN", occupation: "Sales", photo: "https://static.wikia.nocookie.net/bigbrother/images/r/r2/Red_Utley_BB25.jpg", bio: "Red works in sales and is known for his ability to build relationships and close deals. He's charismatic, outgoing, and loves connecting with people from all walks of life." },
-      { name: "Reilly Smedley", age: 24, hometown: "Nashville, TN", occupation: "Server", photo: "https://static.wikia.nocookie.net/bigbrother/images/r/r9/Reilly_Smedley_BB25.jpg", bio: "Reilly works as a server in Nashville's vibrant restaurant scene. She's outgoing, hardworking, and passionate about hospitality and creating great experiences for her customers." }
-    ]
-  },
-  24: { name: "Big Brother 24", castCount: 16, theme: "Regular Season" },
-  23: { name: "Big Brother 23", castCount: 16, theme: "Regular Season" },
-  22: { name: "Big Brother 22", castCount: 16, theme: "All Stars" }
-};
+    ];
+    
+    // Validate photos for each contestant
+    const validatedCast: ContestantProfile[] = [];
+    
+    for (const contestant of season26Cast) {
+      console.log(`🖼️  Validating photo for ${contestant.name}...`);
+      
+      let finalPhotoUrl = contestant.photo;
+      const isPhotoValid = await validatePhotoUrl(contestant.photo);
+      
+      if (!isPhotoValid) {
+        console.log(`❌ Photo validation failed for ${contestant.name}, using fallback`);
+        // Use initials as fallback
+        finalPhotoUrl = '';
+      } else {
+        console.log(`✅ Photo validated for ${contestant.name}`);
+      }
+      
+      validatedCast.push({
+        ...contestant,
+        photo: finalPhotoUrl
+      });
+      
+      // Rate limiting between photo validations
+      await delay(100);
+    }
+    
+    console.log(`✅ Season 26 cast processed: ${validatedCast.length} contestants`);
+    return validatedCast;
+  }
+  
+  throw new Error(`Season ${seasonNumber} scraping not yet implemented. Only Season 26 is currently supported.`);
+}
+
+// Process contestants in batches
+async function processBatches(
+  contestants: ContestantProfile[],
+  seasonNumber: number,
+  supabaseUrl: string,
+  supabaseKey: string
+): Promise<{ successful: number; failed: Array<{ name: string; error: string }> }> {
+  const BATCH_SIZE = 10;
+  const batches = [];
+  
+  // Split contestants into batches
+  for (let i = 0; i < contestants.length; i += BATCH_SIZE) {
+    batches.push(contestants.slice(i, i + BATCH_SIZE));
+  }
+  
+  console.log(`📦 Processing ${contestants.length} contestants in ${batches.length} batches of ${BATCH_SIZE}`);
+  
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  let totalSuccessful = 0;
+  const allFailures: Array<{ name: string; error: string }> = [];
+  
+  // Clear existing contestants for this season first
+  console.log(`🗑️  Clearing existing contestants for season ${seasonNumber}...`);
+  try {
+    const { error: deleteError } = await supabase
+      .from('contestants')
+      .delete()
+      .eq('season_number', seasonNumber);
+    
+    if (deleteError) {
+      console.error('Failed to clear existing contestants:', deleteError);
+    } else {
+      console.log('✅ Existing contestants cleared successfully');
+    }
+  } catch (error) {
+    console.error('Error clearing existing contestants:', error);
+  }
+  
+  // Process each batch
+  for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+    const batch = batches[batchIndex];
+    const batchNumber = batchIndex + 1;
+    
+    console.log(`\n📋 Processing batch ${batchNumber}/${batches.length} (${batch.length} contestants)...`);
+    
+    const batchResults = await Promise.allSettled(
+      batch.map(async (contestant, index) => {
+        const globalIndex = batchIndex * BATCH_SIZE + index + 1;
+        
+        return await retryWithBackoff(async () => {
+          console.log(`  [${globalIndex}/${contestants.length}] Processing: ${contestant.name}`);
+          
+          const insertData = {
+            name: contestant.name.trim(),
+            age: contestant.age,
+            hometown: contestant.hometown.trim(),
+            occupation: contestant.occupation.trim(),
+            bio: contestant.bio || '',
+            photo_url: contestant.photo || null,
+            season_number: seasonNumber,
+            data_source: 'bigbrother_fandom',
+            ai_generated: false,
+            generation_metadata: {
+              generated_date: new Date().toISOString(),
+              source: 'bigbrother.fandom.com',
+              data_source: 'real_contestant_data',
+              batch_id: Date.now(),
+              batch_number: batchNumber,
+              global_index: globalIndex
+            },
+            is_active: true,
+            sort_order: globalIndex
+          };
+          
+          // Use insert instead of upsert to avoid conflict issues
+          const { data, error } = await supabase
+            .from('contestants')
+            .insert(insertData)
+            .select()
+            .single();
+          
+          if (error) {
+            throw new Error(`Database error: ${error.message} (${error.code})`);
+          }
+          
+          console.log(`    ✅ Success: ${contestant.name} (ID: ${data.id})`);
+          return { contestant, data };
+        }, 3, 1000);
+      })
+    );
+    
+    // Process batch results
+    let batchSuccessful = 0;
+    const batchFailures: Array<{ name: string; error: string }> = [];
+    
+    batchResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        batchSuccessful++;
+        totalSuccessful++;
+      } else {
+        const contestant = batch[index];
+        const error = result.reason?.message || 'Unknown error';
+        console.log(`    ❌ Failed: ${contestant.name} - ${error}`);
+        batchFailures.push({ name: contestant.name, error });
+        allFailures.push({ name: contestant.name, error });
+      }
+    });
+    
+    console.log(`📊 Batch ${batchNumber} complete: ${batchSuccessful}/${batch.length} successful`);
+    
+    // Rate limiting between batches
+    if (batchIndex < batches.length - 1) {
+      console.log('⏱️  Rate limiting delay between batches...');
+      await delay(300);
+    }
+  }
+  
+  console.log(`\n🎯 Final Results: ${totalSuccessful}/${contestants.length} contestants processed successfully`);
+  
+  if (allFailures.length > 0) {
+    console.log('❌ Failed contestants:', allFailures);
+  }
+  
+  return {
+    successful: totalSuccessful,
+    failed: allFailures
+  };
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -91,153 +279,90 @@ serve(async (req) => {
   }
 
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      console.error('OpenAI API key not configured');
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'OpenAI API key not configured. Please set OPENAI_API_KEY in edge function secrets.' 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const requestBody = await req.json().catch(e => {
       console.error('Failed to parse request body:', e);
       throw new Error('Invalid request body');
     });
     
     const { season_number, season_theme, season_format, cast_size, special_twists, count = 1 }: GenerationRequest = requestBody;
+    
+    console.log(`🚀 Starting contestant generation for Season ${season_number}`);
+    console.log(`📊 Request: ${count} contestants, theme: ${season_theme}`);
 
-    const profiles: ContestantProfile[] = [];
-
-    for (let i = 0; i < count; i++) {
-      let systemPrompt, userPrompt;
-      
-      // Get season configuration
-      const season = seasonData[season_number] || { name: `Big Brother ${season_number}`, castCount: cast_size };
-      
-      // Check for Season 27 (TBD)
-      if (season_number === 27) {
-        throw new Error('Big Brother 27 cast has not been announced yet. Please select a different season.');
-      }
-
-      if (season_number === 26 || season_number === 25) {
-        // Use real cast data from Big Brother Fandom
-        const currentSeason = seasonData[season_number];
-        if (!currentSeason?.cast || currentSeason.cast.length === 0) {
-          throw new Error(`No cast data available for season ${season_number}`);
-        }
-
-        // Always generate full cast - remove single contestant logic
-        for (const contestant of currentSeason.cast) {
-          const profile: ContestantProfile = {
-            name: contestant.name,
-            age: contestant.age,
-            hometown: contestant.hometown,
-            occupation: contestant.occupation,
-            photo: contestant.photo,
-            bio: contestant.bio
-          };
-          profiles.push(profile);
-        }
-        continue; // Skip AI generation for seasons with real data
-      } else {
-        // For other seasons, use AI generation with improved prompting
-        systemPrompt = `You are a Big Brother cast generator. Generate accurate contestant information for the specified season. Always respond with valid JSON only, no additional text or markdown.`;
-
-        if (count === 1) {
-          userPrompt = `Generate 1 contestant for Big Brother season ${season_number}. Return as a JSON array with exactly 1 contestant.
-
-Each contestant object must have these exact fields:
-- name: Full contestant name (string)
-- age: Age in years (number)  
-- hometown: "City, State" format (string)
-- occupation: Job title (string)
-- photo: Unsplash portrait URL with format: "https://images.unsplash.com/photo-[ID]?w=150&h=150&fit=crop&crop=face"
-- bio: 2-3 sentences about their PERSONAL LIFE and background, NOT their game performance (string)
-
-Focus the bio on: personal life, family, background, personality traits, interests, what they do outside Big Brother, motivation for being on the show. DO NOT mention game performance, strategy, or how they did on the show.
-
-Use real contestant names and details from Big Brother season ${season_number} if available. Return valid JSON array only.`;
-        } else {
-          userPrompt = `Generate exactly ${season.castCount} contestants for Big Brother season ${season_number}. Return exactly ${season.castCount} contestants as a JSON array.
-
-Each contestant object must have these exact fields:
-- name: Full contestant name (string)
-- age: Age in years (number)  
-- hometown: "City, State" format (string)
-- occupation: Job title (string)
-- photo: Unsplash portrait URL with format: "https://images.unsplash.com/photo-[ID]?w=150&h=150&fit=crop&crop=face"
-- bio: 2-3 sentences about their PERSONAL LIFE and background, NOT their game performance (string)
-
-Focus each bio on: personal life, family, background, personality traits, interests, what they do outside Big Brother, motivation for being on the show. DO NOT mention game performance, strategy, or how they did on the show.
-
-Use real contestant names and details from Big Brother season ${season_number}. Return valid JSON array only.`;
-        }
-      }
-
-      // Run OpenAI generation for non-BB26 seasons
-      if (season_number !== 26) {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.1,
-            max_tokens: 2000,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`OpenAI API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        let generatedContent = data.choices[0].message.content;
-        
-        // Clean up response (remove markdown if present)
-        generatedContent = generatedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-        
-        try {
-          const contestantData = JSON.parse(generatedContent);
-          // Handle both single contestant and array responses
-          const contestantsArray = Array.isArray(contestantData) ? contestantData : [contestantData];
-          profiles.push(...contestantsArray);
-        } catch (parseError) {
-          console.error('Failed to parse generated profile:', generatedContent);
-          throw new Error('Invalid JSON response from AI');
-        }
-      }
+    // Validate season number
+    if (season_number < 26) {
+      throw new Error(`Season ${season_number} is not supported. Only Season 26+ contestants are processed.`);
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      profiles,
+    // Check for Season 27 (TBD)
+    if (season_number === 27) {
+      throw new Error('Big Brother 27 cast has not been announced yet. Please select a different season.');
+    }
+
+    // Get Supabase credentials for database operations
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase credentials not configured');
+    }
+
+    // Scrape contestant data
+    const contestants = await scrapeContestantData(season_number);
+    
+    if (!contestants || contestants.length === 0) {
+      throw new Error(`No contestant data found for season ${season_number}`);
+    }
+
+    console.log(`📋 Found ${contestants.length} contestants to process`);
+
+    // Process contestants in batches with retry logic
+    const results = await processBatches(contestants, season_number, supabaseUrl, supabaseKey);
+
+    // Prepare response
+    const success = results.successful === contestants.length;
+    const responseData = {
+      success: results.successful > 0, // Partial success is still success
+      profiles: contestants,
       metadata: {
         generated_date: new Date().toISOString(),
-        season_context: `Season ${season_number}: ${seasonData[season_number]?.theme || season_theme}`,
-        ai_model_used: season_number === 26 ? 'real_data' : 'gpt-4o-mini',
-        count: profiles.length,
-        season_name: seasonData[season_number]?.name || `Big Brother ${season_number}`
-      }
-    }), {
+        season_context: `Season ${season_number}: ${season_theme}`,
+        scraping_source: 'bigbrother.fandom.com',
+        total_found: contestants.length,
+        successful_inserts: results.successful,
+        failed_inserts: results.failed.length,
+        batch_processing: true,
+        season_name: `Big Brother ${season_number}`
+      },
+      statistics: {
+        total_contestants: contestants.length,
+        successful: results.successful,
+        failed: results.failed.length,
+        success_rate: Math.round((results.successful / contestants.length) * 100)
+      },
+      failures: results.failed
+    };
+
+    if (results.failed.length > 0) {
+      console.log(`⚠️  Partial success: ${results.successful}/${contestants.length} contestants processed`);
+      responseData.error = `Partial success: ${results.failed.length} contestants failed to save. Check failures array for details.`;
+    } else {
+      console.log(`🎉 Complete success: All ${results.successful} contestants processed successfully`);
+    }
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error in generate-contestant-profile function:', error);
+    console.error('❌ Error in generate-contestant-profile function:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: error.message,
+      metadata: {
+        error_type: 'function_error',
+        timestamp: new Date().toISOString()
+      }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

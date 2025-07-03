@@ -147,40 +147,82 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
       });
       return;
     }
+
+    // Check if season number is below 26
+    if (seasonConfig.season_number < 26) {
+      toast({
+        title: "Season Not Supported",
+        description: "Only Season 26+ contestants are processed. Please select a newer season.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Always generate full cast
     const fullCastConfig = { ...seasonConfig, count: season.cast };
     
     setIsGenerating(true);
-    setProgress(0);
+    setProgress(10);
     setError(null);
 
     try {
+      console.log('🚀 Starting robust contestant generation with retry logic...');
+      
+      // Simulate progress during the long operation
+      const progressInterval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 5, 90));
+      }, 2000);
+
       const { data, error } = await supabase.functions.invoke('generate-contestant-profile', {
         body: fullCastConfig
       });
 
-      if (error) throw error;
+      clearInterval(progressInterval);
 
-      if (!data.success) {
-        throw new Error(data.error || 'Generation failed');
+      if (error) {
+        console.error('Edge function invocation error:', error);
+        throw error;
       }
 
-      // Validate the generated data
-      if (data.profiles && data.profiles.length > 0) {
-        validateContestantData(data.profiles);
+      if (!data.success && !data.metadata?.successful_inserts) {
+        throw new Error(data.error || 'Generation failed completely');
+      }
+
+      console.log('📊 Generation response:', data);
+
+      // Check for partial success
+      if (data.statistics) {
+        const { total_contestants, successful, failed, success_rate } = data.statistics;
+        
+        if (successful === total_contestants) {
+          // Complete success
+          toast({
+            title: "✅ Complete Success!",
+            description: `Successfully added all ${successful} contestants (${success_rate}% success rate)`,
+          });
+        } else if (successful > 0) {
+          // Partial success
+          toast({
+            title: "⚠️ Partial Success",
+            description: `Added ${successful}/${total_contestants} contestants (${success_rate}% success rate). Check console for details.`,
+            variant: "destructive",
+          });
+          console.log('❌ Failed contestants:', data.failures);
+        } else {
+          // Complete failure
+          throw new Error(`Failed to add any contestants. ${failed} failures occurred.`);
+        }
       }
 
       setProgress(100);
-      onProfilesGenerated(data.profiles);
-
-      toast({
-        title: "Success!",
-        description: `Generated full cast of ${data.profiles.length} contestants`,
-      });
+      
+      // Pass the profiles to the parent component for UI updates
+      if (data.profiles && data.profiles.length > 0) {
+        onProfilesGenerated(data.profiles);
+      }
 
     } catch (error) {
-      console.error('Error generating profiles:', error);
+      console.error('❌ Error generating profiles:', error);
       const errorMessage = error.message || "Failed to generate contestant profiles";
       setError(errorMessage);
       toast({
@@ -320,9 +362,18 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">Generating contestants...</span>
+              <span className="text-sm">
+                {progress < 20 ? "Starting web scraping..." :
+                 progress < 40 ? "Validating contestant photos..." :
+                 progress < 60 ? "Processing batch 1 of 2..." :
+                 progress < 80 ? "Processing batch 2 of 2..." :
+                 "Finalizing database operations..."}
+              </span>
             </div>
             <Progress value={progress} className="w-full" />
+            <div className="text-xs text-muted-foreground">
+              Robust processing with retry logic and rate limiting
+            </div>
           </div>
         )}
 

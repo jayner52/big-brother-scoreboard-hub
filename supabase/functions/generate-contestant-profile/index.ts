@@ -62,10 +62,22 @@ serve(async (req) => {
   try {
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+      console.error('OpenAI API key not configured');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'OpenAI API key not configured. Please set OPENAI_API_KEY in edge function secrets.' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const { season_number, season_theme, season_format, cast_size, special_twists, count = 1 }: GenerationRequest = await req.json();
+    const requestBody = await req.json().catch(e => {
+      console.error('Failed to parse request body:', e);
+      throw new Error('Invalid request body');
+    });
+    
+    const { season_number, season_theme, season_format, cast_size, special_twists, count = 1 }: GenerationRequest = requestBody;
 
     const profiles: ContestantProfile[] = [];
 

@@ -68,77 +68,84 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-4">
-        <Button 
-          onClick={onSaveProgress}
-          variant="outline"
-          className="flex-1"
-          disabled={isAutoSaving}
-        >
-          <Save className="h-4 w-4 mr-2" />
-          Save Progress
-        </Button>
-        
-        {/* AI Populate Button */}
-        {onAIPopulate && (
-          <Button 
-            onClick={onAIPopulate}
-            disabled={isAIPopulating}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-          >
-            {isAIPopulating ? (
-              <>
-                <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Populating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                AI Populate
-              </>
-            )}
-          </Button>
-        )}
-        
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="default">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Clear Week
+      {/* Action Buttons - Organized by workflow */}
+      <div className="space-y-3">
+        {/* Primary Action Row - AI and Manual Entry */}
+        <div className="flex gap-3">
+          {onAIPopulate && (
+            <Button 
+              onClick={onAIPopulate}
+              disabled={isAIPopulating}
+              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
+              size="lg"
+            >
+              {isAIPopulating ? (
+                <>
+                  <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Analyzing Live Feeds...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Populate Week {weekNumber}
+                </>
+              )}
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Clear Week {weekNumber} Data?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete all data for Week {weekNumber}, including competitions, nominations, evictions, and special events. This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={onClearWeek} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Clear All Data
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        
-        <Button 
-          onClick={() => {
-            onSubmitWeek();
-            if (isComplete) {
-              // Advance to next week after completion
-              setTimeout(() => {
-                window.location.reload(); // Simple approach to refresh and load next week
-              }, 1000);
-            }
-          }} 
-          className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-          size="default"
-        >
-          {isComplete ? 'Complete & Advance Week' : 'Complete Week'} {weekNumber}
-        </Button>
+          )}
+          
+          <Button 
+            onClick={onSaveProgress}
+            variant="outline"
+            className="flex-1 border-2 hover:bg-muted/50"
+            disabled={isAutoSaving}
+            size="lg"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {isAutoSaving ? 'Auto-saving...' : 'Save Progress'}
+          </Button>
+        </div>
+
+        {/* Secondary Action Row - Management */}
+        <div className="flex gap-3">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear Week Data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear Week {weekNumber} Data?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete all data for Week {weekNumber}, including competitions, nominations, evictions, and special events. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onClearWeek} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Clear All Data
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
+          <Button 
+            onClick={() => {
+              onSubmitWeek();
+              if (isComplete) {
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1000);
+              }
+            }} 
+            className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md"
+            size="lg"
+          >
+            <CheckCircle className="h-4 w-4 mr-2" />
+            {isComplete ? 'Finalize & Advance' : `Complete Week ${weekNumber}`}
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Key, Target, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Crown, Key, Target, Shield, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
 import { getSpecialEventIcon, getSpecialEventLegend } from '@/utils/specialEventIcons';
@@ -39,6 +40,7 @@ export const HouseguestValues: React.FC = () => {
   const [houseguestGroups, setHouseguestGroups] = useState<ContestantGroup[]>([]);
   const [houseguestStats, setHouseguestStats] = useState<HouseguestStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSpoilers, setShowSpoilers] = useState(false);
   const { evictedContestants } = useActiveContestants();
 
   useEffect(() => {
@@ -226,10 +228,23 @@ export const HouseguestValues: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Houseguest Performance & Values</CardTitle>
-          <p className="text-sm text-gray-600">
-            Track how each houseguest is performing and their fantasy value
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Houseguest Performance & Values</CardTitle>
+              <p className="text-sm text-gray-600">
+                Track how each houseguest is performing and their fantasy value
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSpoilers(!showSpoilers)}
+              className="flex items-center gap-2"
+            >
+              {showSpoilers ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showSpoilers ? 'Hide Status' : 'Show Status'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -239,13 +254,11 @@ export const HouseguestValues: React.FC = () => {
                   <TableHead>Rank</TableHead>
                   <TableHead>Houseguest</TableHead>
                   <TableHead>Group</TableHead>
-                  <TableHead>Status</TableHead>
+                  {showSpoilers && <TableHead>Status</TableHead>}
                   <TableHead>HOH Wins</TableHead>
                   <TableHead>Veto Wins</TableHead>
                   <TableHead>Block at Eviction</TableHead>
                   <TableHead>Saved by Veto</TableHead>
-                  <TableHead>Prizes</TableHead>
-                  <TableHead>Punishments</TableHead>
                   <TableHead>Special Events</TableHead>
                   <TableHead>Times Selected</TableHead>
                   <TableHead className="font-bold text-green-600">Points Earned</TableHead>
@@ -263,60 +276,62 @@ export const HouseguestValues: React.FC = () => {
                       <TableCell className="font-semibold">
                         {stat.houseguest_name}
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {stat.group_name}
-                        </Badge>
-                      </TableCell>
                        <TableCell>
-                         <div className="flex flex-wrap gap-1">
-                           {!houseguestStats.find(s => s.houseguest_name === houseguest?.name)?.elimination_week ? (
-                             <>
-                               <Badge variant="default">Active</Badge>
-                                {stat.current_hoh && (
-                                  <Badge className="flex items-center gap-1 bg-yellow-500 text-white">
-                                    <Crown className="h-3 w-3" />
-                                    HoH
-                                  </Badge>
-                                )}
-                                {stat.current_pov_winner && (
-                                  <Badge className="flex items-center gap-1 bg-green-500 text-white">
-                                    <Key className="h-3 w-3" />
-                                    Veto
-                                  </Badge>
-                                )}
-                                {stat.currently_nominated && (
-                                  <Badge variant="destructive" className="flex items-center gap-1">
-                                    <Target className="h-3 w-3" />
-                                    Nominee
-                                  </Badge>
-                                )}
-                                {stat.pov_used_on && (
-                                  <Badge className="flex items-center gap-1 bg-orange-500 text-white">
-                                    <Shield className="h-3 w-3" />
-                                    Saved
-                                  </Badge>
-                                )}
-                             </>
-                           ) : (
-                             <>
-                               <Badge variant="destructive">
-                                 {stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
-                               </Badge>
-                               {stat.final_placement && (
-                                 <Badge variant="outline">
-                                   {stat.final_placement === 1 ? "Winner" : 
-                                    stat.final_placement === 2 ? "Runner-up" :
-                                    `${stat.final_placement}th Place`}
-                                 </Badge>
-                               )}
-                               {stat.americas_favorite && (
-                                 <Badge variant="secondary">AFP</Badge>
-                               )}
-                             </>
-                           )}
-                         </div>
+                         <Badge variant="outline" className="text-xs">
+                           {stat.group_name}
+                         </Badge>
                        </TableCell>
+                       {showSpoilers && (
+                         <TableCell>
+                           <div className="flex flex-wrap gap-1">
+                             {!houseguestStats.find(s => s.houseguest_name === houseguest?.name)?.elimination_week ? (
+                               <>
+                                 <Badge variant="default">Active</Badge>
+                                  {stat.current_hoh && (
+                                    <Badge className="flex items-center gap-1 bg-yellow-500 text-white">
+                                      <Crown className="h-3 w-3" />
+                                      HoH
+                                    </Badge>
+                                  )}
+                                  {stat.current_pov_winner && (
+                                    <Badge className="flex items-center gap-1 bg-green-500 text-white">
+                                      <Key className="h-3 w-3" />
+                                      Veto
+                                    </Badge>
+                                  )}
+                                  {stat.currently_nominated && (
+                                    <Badge variant="destructive" className="flex items-center gap-1">
+                                      <Target className="h-3 w-3" />
+                                      Nominee
+                                    </Badge>
+                                  )}
+                                  {stat.pov_used_on && (
+                                    <Badge className="flex items-center gap-1 bg-orange-500 text-white">
+                                      <Shield className="h-3 w-3" />
+                                      Saved
+                                    </Badge>
+                                  )}
+                               </>
+                             ) : (
+                               <>
+                                 <Badge variant="destructive">
+                                   {stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
+                                 </Badge>
+                                 {stat.final_placement && (
+                                   <Badge variant="outline">
+                                     {stat.final_placement === 1 ? "Winner" : 
+                                      stat.final_placement === 2 ? "Runner-up" :
+                                      `${stat.final_placement}th Place`}
+                                   </Badge>
+                                 )}
+                                 {stat.americas_favorite && (
+                                   <Badge variant="secondary">AFP</Badge>
+                                 )}
+                               </>
+                             )}
+                           </div>
+                         </TableCell>
+                       )}
                       <TableCell className="text-center">
                         {stat.hoh_wins}
                       </TableCell>
@@ -338,12 +353,6 @@ export const HouseguestValues: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-center">
                         {stat.times_saved_by_veto}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {stat.prizes_won}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {stat.punishments}
                       </TableCell>
                        <TableCell>
                          {stat.special_events && stat.special_events.length > 0 ? (

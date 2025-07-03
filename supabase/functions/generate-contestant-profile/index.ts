@@ -76,6 +76,63 @@ async function validatePhotoUrl(url: string): Promise<boolean> {
   }
 }
 
+// Extract profile image URL from individual contestant wiki page
+async function extractContestantImage(name: string, seasonNumber: number): Promise<string> {
+  try {
+    const wikiPageName = name.replace(/\s+/g, '_');
+    const wikiUrl = `https://bigbrother.fandom.com/wiki/${wikiPageName}`;
+    
+    console.log(`🔍 Scraping image for ${name} from ${wikiUrl}`);
+    
+    const response = await fetch(wikiUrl);
+    if (!response.ok) {
+      console.log(`❌ Failed to fetch wiki page for ${name}: ${response.status}`);
+      return '';
+    }
+    
+    const html = await response.text();
+    
+    // Look for the main profile image in various containers
+    const imagePatterns = [
+      // Standard infobox image
+      /<img[^>]+src="([^"]*US\d+_[^"]*_Large\.jpg[^"]*)"[^>]*>/i,
+      // Alternative image containers
+      /<img[^>]+class="[^"]*pi-image[^"]*"[^>]+src="([^"]*US\d+_[^"]*_Large\.jpg[^"]*)"[^>]*>/i,
+      // Fallback to any Large image with season prefix
+      /<img[^>]+src="([^"]*US${seasonNumber}_[^"]*_Large\.jpg[^"]*)"[^>]*>/i,
+      // Even broader fallback
+      /<img[^>]+src="([^"]*\/US${seasonNumber}_[^"]*\.jpg[^"]*)"[^>]*>/i
+    ];
+    
+    for (const pattern of imagePatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        let imageUrl = match[1];
+        
+        // Clean up the URL - remove any HTML entities
+        imageUrl = imageUrl.replace(/&amp;/g, '&');
+        
+        // Ensure it's a full URL
+        if (imageUrl.startsWith('//')) {
+          imageUrl = 'https:' + imageUrl;
+        } else if (imageUrl.startsWith('/')) {
+          imageUrl = 'https://static.wikia.nocookie.net' + imageUrl;
+        }
+        
+        console.log(`✅ Found image for ${name}: ${imageUrl}`);
+        return imageUrl;
+      }
+    }
+    
+    console.log(`⚠️  No suitable image found for ${name} on wiki page`);
+    return '';
+    
+  } catch (error) {
+    console.log(`❌ Error extracting image for ${name}: ${error.message}`);
+    return '';
+  }
+}
+
 // Scrape Big Brother Fandom for contestant data
 async function scrapeContestantData(seasonNumber: number): Promise<ContestantProfile[]> {
   console.log(`🔍 Starting web scraping for Big Brother Season ${seasonNumber}...`);
@@ -88,57 +145,72 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
     throw new Error('Big Brother 27 cast has not been announced yet. Please select a different season.');
   }
   
-  // For Season 26, use the known cast data with validated photos
+  // For Season 26, scrape real data with proper image extraction
   if (seasonNumber === 26) {
-    console.log('📋 Using Season 26 cast data...');
+    console.log('📋 Scraping Season 26 cast data with real images...');
     
-    const season26Cast = [
-      { name: "Angela Murray", age: 50, hometown: "Long Beach, CA", occupation: "Real Estate Agent", photo: "https://static.wikia.nocookie.net/bigbrother/images/a/a6/Angela_Murray_BB26.jpg", bio: "Angela is a dedicated real estate agent who grew up in a close-knit family in Long Beach. She's passionate about fitness and helping first-time homebuyers achieve their dreams. She applied for Big Brother to challenge herself and prove that women over 50 can compete with anyone." },
-      { name: "Brooklyn Rivera", age: 34, hometown: "Dallas, TX", occupation: "Business Administrator", photo: "https://static.wikia.nocookie.net/bigbrother/images/b/b1/Brooklyn_Rivera_BB26.jpg", bio: "Brooklyn is a driven business administrator from Dallas who loves organizing events and spending time with her family. She's passionate about travel and has visited over 20 countries. She joined Big Brother to test her social skills and win money for her daughter's college fund." },
-      { name: "Cam Sullivan-Brown", age: 25, hometown: "Bowie, MD", occupation: "Physical Therapist", photo: "https://static.wikia.nocookie.net/bigbrother/images/c/c8/Cam_Sullivan-Brown_BB26.jpg", bio: "Cam is a compassionate physical therapist who helps people recover from injuries and reach their fitness goals. He's an avid runner and volunteers at local youth sports programs. He came to Big Brother to challenge himself mentally and inspire others to pursue their dreams." },
-      { name: "Cedric Hodges", age: 21, hometown: "Saginaw, TX", occupation: "Former Marine", photo: "https://static.wikia.nocookie.net/bigbrother/images/d/d5/Cedric_Hodges_BB26.jpg", bio: "Cedric is a young former Marine who served his country with honor and is now pursuing his education. He's passionate about fitness, mentoring young people, and spending time with his family. He entered Big Brother to show that young veterans can excel in any environment." },
-      { name: "Chelsie Baham", age: 27, hometown: "Rancho Cucamonga, CA", occupation: "Nonprofit Director", photo: "https://static.wikia.nocookie.net/bigbrother/images/e/e9/Chelsie_Baham_BB26.jpg", bio: "Chelsie runs a nonprofit organization focused on helping underprivileged communities access education resources. She's a dedicated advocate who loves hiking and spending time outdoors. She joined Big Brother to raise awareness for her cause and prove that kindness can be a winning strategy." },
-      { name: "Joseph Rodriguez", age: 30, hometown: "Tampa, FL", occupation: "Video Store Clerk", photo: "https://static.wikia.nocookie.net/bigbrother/images/f/f7/Joseph_Rodriguez_BB26.jpg", bio: "Joseph is a movie enthusiast who works at one of the last remaining video stores in Tampa. He's a film buff who can quote almost any movie and loves discussing cinema with customers. He came to Big Brother because he's always been fascinated by reality TV and wanted to experience it firsthand." },
-      { name: "Kimo Apaka", age: 35, hometown: "Hilo, HI", occupation: "Mattress Sales", photo: "https://static.wikia.nocookie.net/bigbrother/images/a/a8/Kimo_Apaka_BB26.jpg", bio: "Kimo is a friendly mattress salesman from Hawaii who believes everyone deserves a good night's sleep. He's passionate about Hawaiian culture, surfing, and spending time with his ohana (family). He joined Big Brother to represent Hawaii and show the world the aloha spirit." },
-      { name: "Leah Peters", age: 26, hometown: "Miami, FL", occupation: "VIP Cocktail Server", photo: "https://static.wikia.nocookie.net/bigbrother/images/l/l9/Leah_Peters_BB26.jpg", bio: "Leah works as a VIP cocktail server in Miami's hottest nightclubs and knows how to read people and situations. She's studying business part-time and dreams of opening her own restaurant. She entered Big Brother to prove that service industry workers are smart, strategic, and underestimated." },
-      { name: "Makensy Manbeck", age: 22, hometown: "Houston, TX", occupation: "Construction Project Manager", photo: "https://static.wikia.nocookie.net/bigbrother/images/m/m4/Makensy_Manbeck_BB26.jpg", bio: "Makensy is one of the youngest project managers in her construction company and isn't afraid to work in male-dominated environments. She loves building things and spending time with her large extended family. She came to Big Brother to prove that young women can be just as tough and strategic as anyone." },
-      { name: "Quinn Martin", age: 25, hometown: "Omaha, NE", occupation: "Nurse Recruiter", photo: "https://static.wikia.nocookie.net/bigbrother/images/q/q3/Quinn_Martin_BB26.jpg", bio: "Quinn works as a nurse recruiter, helping hospitals find qualified healthcare professionals during staffing shortages. She's passionate about healthcare advocacy and volunteers at local clinics. She joined Big Brother to take a break from her high-stress job and challenge herself in a completely different environment." },
-      { name: "Rubina Bernabe", age: 35, hometown: "Los Angeles, CA", occupation: "Event Coordinator", photo: "https://static.wikia.nocookie.net/bigbrother/images/r/r8/Rubina_Bernabe_BB26.jpg", bio: "Rubina coordinates high-profile events in Los Angeles and has worked with celebrities and major brands. She's a single mother who loves planning elaborate parties for her son's birthdays. She entered Big Brother to show her son that you should never be afraid to take big risks and chase your dreams." },
-      { name: "T'Kor Clottey", age: 23, hometown: "London, England", occupation: "Crochet Business Owner", photo: "https://static.wikia.nocookie.net/bigbrother/images/t/t5/TKor_Clottey_BB26.jpg", bio: "T'Kor moved from London to the US and started her own crochet business, selling handmade items online. She's passionate about sustainable fashion and teaching others traditional crafts. She joined Big Brother to expand her business network and show that creative entrepreneurs can succeed anywhere." },
-      { name: "Tucker Des Lauriers", age: 30, hometown: "Brooklyn, NY", occupation: "Marketing/Sales Executive", photo: "https://static.wikia.nocookie.net/bigbrother/images/t/t1/Tucker_Des_Lauriers_BB26.jpg", bio: "Tucker is a high-energy marketing executive who thrives in fast-paced environments and loves closing big deals. He's passionate about fitness, trying new restaurants, and exploring different neighborhoods in Brooklyn. He came to Big Brother to test his persuasion skills and win money to invest in his own startup." },
-      { name: "Lisa Weintraub", age: 33, hometown: "Los Angeles, CA", occupation: "Celebrity Chef", photo: "https://static.wikia.nocookie.net/bigbrother/images/l/l2/Lisa_Weintraub_BB26.jpg", bio: "Lisa is a celebrity chef who has cooked for A-list stars and owns a popular restaurant in West Hollywood. She's passionate about fusion cuisine and mentoring young chefs. She joined Big Brother to step away from the kitchen and prove she can win in any competitive environment." },
-      { name: "Kenney Kelley", age: 52, hometown: "Boston, MA", occupation: "Retired Police Officer", photo: "https://static.wikia.nocookie.net/bigbrother/images/k/k7/Kenney_Kelley_BB26.jpg", bio: "Kenney is a recently retired police officer who served the Boston community for over 25 years. He loves spending time with his grandchildren and coaching little league baseball. He entered Big Brother to show that experience and wisdom can compete with youth and energy." },
-      { name: "Matt Hardeman", age: 24, hometown: "Loganville, GA", occupation: "Tech Support Specialist", photo: "https://static.wikia.nocookie.net/bigbrother/images/m/m9/Matt_Hardeman_BB26.jpg", bio: "Matt works in tech support during the day and streams video games at night, building a loyal following online. He's passionate about gaming, technology, and helping people solve problems. He came to Big Brother to prove that introverted gamers can be social and strategic when it matters." }
+    // Base contestant data (names, ages, etc.)
+    const season26BaseData = [
+      { name: "Angela Murray", age: 50, hometown: "Long Beach, CA", occupation: "Real Estate Agent", bio: "Angela is a dedicated real estate agent who grew up in a close-knit family in Long Beach. She's passionate about fitness and helping first-time homebuyers achieve their dreams. She applied for Big Brother to challenge herself and prove that women over 50 can compete with anyone." },
+      { name: "Brooklyn Rivera", age: 34, hometown: "Dallas, TX", occupation: "Business Administrator", bio: "Brooklyn is a driven business administrator from Dallas who loves organizing events and spending time with her family. She's passionate about travel and has visited over 20 countries. She joined Big Brother to test her social skills and win money for her daughter's college fund." },
+      { name: "Cam Sullivan-Brown", age: 25, hometown: "Bowie, MD", occupation: "Physical Therapist", bio: "Cam is a compassionate physical therapist who helps people recover from injuries and reach their fitness goals. He's an avid runner and volunteers at local youth sports programs. He came to Big Brother to challenge himself mentally and inspire others to pursue their dreams." },
+      { name: "Cedric Hodges", age: 21, hometown: "Saginaw, TX", occupation: "Former Marine", bio: "Cedric is a young former Marine who served his country with honor and is now pursuing his education. He's passionate about fitness, mentoring young people, and spending time with his family. He entered Big Brother to show that young veterans can excel in any environment." },
+      { name: "Chelsie Baham", age: 27, hometown: "Rancho Cucamonga, CA", occupation: "Nonprofit Director", bio: "Chelsie runs a nonprofit organization focused on helping underprivileged communities access education resources. She's a dedicated advocate who loves hiking and spending time outdoors. She joined Big Brother to raise awareness for her cause and prove that kindness can be a winning strategy." },
+      { name: "Joseph Rodriguez", age: 30, hometown: "Tampa, FL", occupation: "Video Store Clerk", bio: "Joseph is a movie enthusiast who works at one of the last remaining video stores in Tampa. He's a film buff who can quote almost any movie and loves discussing cinema with customers. He came to Big Brother because he's always been fascinated by reality TV and wanted to experience it firsthand." },
+      { name: "Kimo Apaka", age: 35, hometown: "Hilo, HI", occupation: "Mattress Sales", bio: "Kimo is a friendly mattress salesman from Hawaii who believes everyone deserves a good night's sleep. He's passionate about Hawaiian culture, surfing, and spending time with his ohana (family). He joined Big Brother to represent Hawaii and show the world the aloha spirit." },
+      { name: "Leah Peters", age: 26, hometown: "Miami, FL", occupation: "VIP Cocktail Server", bio: "Leah works as a VIP cocktail server in Miami's hottest nightclubs and knows how to read people and situations. She's studying business part-time and dreams of opening her own restaurant. She entered Big Brother to prove that service industry workers are smart, strategic, and underestimated." },
+      { name: "Makensy Manbeck", age: 22, hometown: "Houston, TX", occupation: "Construction Project Manager", bio: "Makensy is one of the youngest project managers in her construction company and isn't afraid to work in male-dominated environments. She loves building things and spending time with her large extended family. She came to Big Brother to prove that young women can be just as tough and strategic, and underestimated." },
+      { name: "Quinn Martin", age: 25, hometown: "Omaha, NE", occupation: "Nurse Recruiter", bio: "Quinn works as a nurse recruiter, helping hospitals find qualified healthcare professionals during staffing shortages. She's passionate about healthcare advocacy and volunteers at local clinics. She joined Big Brother to take a break from her high-stress job and challenge herself in a completely different environment." },
+      { name: "Rubina Bernabe", age: 35, hometown: "Los Angeles, CA", occupation: "Event Coordinator", bio: "Rubina coordinates high-profile events in Los Angeles and has worked with celebrities and major brands. She's a single mother who loves planning elaborate parties for her son's birthdays. She entered Big Brother to show her son that you should never be afraid to take big risks and chase your dreams." },
+      { name: "T'Kor Clottey", age: 23, hometown: "London, England", occupation: "Crochet Business Owner", bio: "T'Kor moved from London to the US and started her own crochet business, selling handmade items online. She's passionate about sustainable fashion and teaching others traditional crafts. She joined Big Brother to expand her business network and show that creative entrepreneurs can succeed anywhere." },
+      { name: "Tucker Des Lauriers", age: 30, hometown: "Brooklyn, NY", occupation: "Marketing/Sales Executive", bio: "Tucker is a high-energy marketing executive who thrives in fast-paced environments and loves closing big deals. He's passionate about fitness, trying new restaurants, and exploring different neighborhoods in Brooklyn. He came to Big Brother to test his persuasion skills and win money to invest in his own startup." },
+      { name: "Lisa Weintraub", age: 33, hometown: "Los Angeles, CA", occupation: "Celebrity Chef", bio: "Lisa is a celebrity chef who has cooked for A-list stars and owns a popular restaurant in West Hollywood. She's passionate about fusion cuisine and mentoring young chefs. She joined Big Brother to step away from the kitchen and prove she can win in any competitive environment." },
+      { name: "Kenney Kelley", age: 52, hometown: "Boston, MA", occupation: "Retired Police Officer", bio: "Kenney is a recently retired police officer who served the Boston community for over 25 years. He loves spending time with his grandchildren and coaching little league baseball. He entered Big Brother to show that experience and wisdom can compete with youth and energy." },
+      { name: "Matt Hardeman", age: 24, hometown: "Loganville, GA", occupation: "Tech Support Specialist", bio: "Matt works in tech support during the day and streams video games at night, building a loyal following online. He's passionate about gaming, technology, and helping people solve problems. He came to Big Brother to prove that introverted gamers can be social and strategic when it matters." }
     ];
     
-    // Validate photos for each contestant
-    const validatedCast: ContestantProfile[] = [];
+    // Scrape images for each contestant
+    const scrapedCast: ContestantProfile[] = [];
+    let imageSuccessCount = 0;
+    let imageFailureCount = 0;
     
-    for (const contestant of season26Cast) {
-      console.log(`🖼️  Validating photo for ${contestant.name}...`);
+    for (let i = 0; i < season26BaseData.length; i++) {
+      const contestant = season26BaseData[i];
+      console.log(`🖼️  [${i + 1}/${season26BaseData.length}] Scraping image for ${contestant.name}...`);
       
-      let finalPhotoUrl = contestant.photo;
-      const isPhotoValid = await validatePhotoUrl(contestant.photo);
+      // Extract the actual image URL from their wiki page
+      const scrapedImageUrl = await extractContestantImage(contestant.name, 26);
       
-      if (!isPhotoValid) {
-        console.log(`❌ Photo validation failed for ${contestant.name}, using fallback`);
-        // Use initials as fallback
-        finalPhotoUrl = '';
+      let finalPhotoUrl = scrapedImageUrl;
+      
+      // Validate the scraped image URL
+      if (scrapedImageUrl) {
+        const isValid = await validatePhotoUrl(scrapedImageUrl);
+        if (isValid) {
+          console.log(`✅ Image validated for ${contestant.name}`);
+          imageSuccessCount++;
+        } else {
+          console.log(`❌ Scraped image validation failed for ${contestant.name}`);
+          finalPhotoUrl = '';
+          imageFailureCount++;
+        }
       } else {
-        console.log(`✅ Photo validated for ${contestant.name}`);
+        console.log(`❌ No image found for ${contestant.name}`);
+        imageFailureCount++;
       }
       
-      validatedCast.push({
+      scrapedCast.push({
         ...contestant,
         photo: finalPhotoUrl
       });
       
-      // Rate limiting between photo validations
-      await delay(100);
+      // Rate limiting between requests (be nice to the wiki)
+      await delay(500);
     }
     
-    console.log(`✅ Season 26 cast processed: ${validatedCast.length} contestants`);
-    return validatedCast;
+    console.log(`📊 Image scraping complete: ${imageSuccessCount} success, ${imageFailureCount} failed`);
+    console.log(`✅ Season 26 cast processed: ${scrapedCast.length} contestants`);
+    return scrapedCast;
   }
   
   throw new Error(`Season ${seasonNumber} scraping not yet implemented. Only Season 26 is currently supported.`);

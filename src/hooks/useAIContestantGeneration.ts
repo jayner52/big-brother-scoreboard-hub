@@ -49,6 +49,25 @@ export const useAIContestantGeneration = (
     
     console.log('Starting database inserts for', profiles.length, 'contestants...');
     
+    // Clear existing contestants before full cast generation to avoid duplicates
+    if (profiles.length > 1) {
+      console.log('Clearing existing contestants before full cast generation...');
+      try {
+        const { error: deleteError } = await supabase
+          .from('contestants')
+          .delete()
+          .eq('season_number', 26);
+        
+        if (deleteError) {
+          console.error('Failed to clear existing contestants:', deleteError);
+        } else {
+          console.log('✅ Existing contestants cleared successfully');
+        }
+      } catch (error) {
+        console.error('Error clearing existing contestants:', error);
+      }
+    }
+
     // Attempt to save each profile with detailed error handling
     for (let i = 0; i < profiles.length; i++) {
       const profile = profiles[i];
@@ -63,11 +82,11 @@ export const useAIContestantGeneration = (
           bio: profile.bio || '',
           photo_url: profile.photo || profile.photo_url || null,
           season_number: 26,
-          data_source: 'ai_generated',
-          ai_generated: true,
+          data_source: 'bigbrother_fandom',
+          ai_generated: false,
           generation_metadata: {
             generated_date: new Date().toISOString(),
-            model_used: 'improved_api',
+            source: 'bigbrother.fandom.com',
             data_source: 'real_contestant_data',
             batch_id: Date.now()
           },
@@ -77,28 +96,42 @@ export const useAIContestantGeneration = (
         
         console.log('Insert data:', insertData);
         
+        // Use upsert to handle potential duplicates
         const { data, error } = await supabase
           .from('contestants')
-          .insert(insertData)
+          .upsert(insertData, { 
+            onConflict: 'name,season_number',
+            ignoreDuplicates: false 
+          })
           .select()
           .single();
 
         if (error) {
-          console.error(`Database insert failed for ${profile.name}:`, {
+          console.error(`Database upsert failed for ${profile.name}:`, {
             error: error.message,
             details: error.details,
             hint: error.hint,
             code: error.code
           });
-          throw new Error(`Database error: ${error.message}`);
+          
+          // Try regular insert as fallback
+          console.log(`Trying regular insert for ${profile.name}...`);
+          const { data: insertData2, error: insertError } = await supabase
+            .from('contestants')
+            .insert(insertData)
+            .select()
+            .single();
+            
+          if (insertError) {
+            throw new Error(`Database error: ${insertError.message}`);
+          }
+          
+          console.log(`✅ Successfully inserted (fallback): ${profile.name} (ID: ${insertData2.id})`);
+          newContestants.push(insertData2);
+        } else {
+          console.log(`✅ Successfully upserted: ${profile.name} (ID: ${data.id})`);
+          newContestants.push(data);
         }
-        
-        if (!data) {
-          throw new Error('No data returned from database insert');
-        }
-        
-        console.log(`✅ Successfully inserted: ${profile.name} (ID: ${data.id})`);
-        newContestants.push(data);
       } catch (error) {
         console.error(`❌ Failed to save ${profile.name}:`, error);
         failedSaves.push({ 

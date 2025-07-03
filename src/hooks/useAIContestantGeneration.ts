@@ -10,11 +10,11 @@ export const useAIContestantGeneration = (
     console.log('Generated profiles received:', profiles.length, 'contestants');
     console.log('Sample profile data:', profiles[0]);
     
-    // Validate exactly 16 contestants for BB26
-    if (profiles.length !== 16) {
+    // Validate input
+    if (!profiles || profiles.length === 0) {
       toast({
         title: "Error",
-        description: `Expected exactly 16 contestants, got ${profiles.length}`,
+        description: "No profiles received from AI generation",
         variant: "destructive",
       });
       return;
@@ -22,76 +22,129 @@ export const useAIContestantGeneration = (
     
     const newContestants = [];
     const failedSaves = [];
+    let validationErrors = [];
     
+    // Pre-validate all profiles before attempting database inserts
     for (const profile of profiles) {
+      const missingFields = [];
+      if (!profile.name || profile.name.trim() === '') missingFields.push('name');
+      if (!profile.age || profile.age < 18 || profile.age > 80) missingFields.push('age');
+      if (!profile.hometown || profile.hometown.trim() === '') missingFields.push('hometown');
+      if (!profile.occupation || profile.occupation.trim() === '') missingFields.push('occupation');
+      
+      if (missingFields.length > 0) {
+        validationErrors.push(`${profile.name || 'Unknown'}: missing ${missingFields.join(', ')}`);
+      }
+    }
+    
+    if (validationErrors.length > 0) {
+      console.error('Validation errors:', validationErrors);
+      toast({
+        title: "Validation Error",
+        description: `${validationErrors.length} profiles have missing data. Check console for details.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log('Starting database inserts for', profiles.length, 'contestants...');
+    
+    // Attempt to save each profile with detailed error handling
+    for (let i = 0; i < profiles.length; i++) {
+      const profile = profiles[i];
       try {
-        // Validate required fields
-        if (!profile.name || !profile.age || !profile.hometown || !profile.occupation) {
-          throw new Error(`Missing required fields for ${profile.name || 'Unknown'}`);
-        }
-
-        console.log(`Saving contestant: ${profile.name}`);
+        console.log(`[${i + 1}/${profiles.length}] Inserting contestant: ${profile.name}`);
+        
+        const insertData = {
+          name: profile.name.trim(),
+          age: parseInt(profile.age),
+          hometown: profile.hometown.trim(),
+          occupation: profile.occupation.trim(),
+          bio: profile.bio || '',
+          photo_url: profile.photo || profile.photo_url || null,
+          season_number: 26,
+          data_source: 'ai_generated',
+          ai_generated: true,
+          generation_metadata: {
+            generated_date: new Date().toISOString(),
+            model_used: 'improved_api',
+            data_source: 'real_contestant_data',
+            batch_id: Date.now()
+          },
+          is_active: true,
+          sort_order: i + 1
+        };
+        
+        console.log('Insert data:', insertData);
         
         const { data, error } = await supabase
           .from('contestants')
-          .insert({
-            name: profile.name,
-            age: profile.age,
-            hometown: profile.hometown,
-            occupation: profile.occupation,
-            bio: profile.bio,
-            photo_url: profile.photo, // Correctly map 'photo' to 'photo_url'
-            season_number: 26,
-            data_source: 'ai_generated',
-            ai_generated: true,
-            generation_metadata: {
-              generated_date: new Date().toISOString(),
-              model_used: 'improved_api',
-              data_source: 'real_contestant_data'
-            },
-            is_active: true,
-            sort_order: newContestants.length + 1
-          })
+          .insert(insertData)
           .select()
           .single();
 
         if (error) {
-          console.error(`Database error for ${profile.name}:`, error);
-          throw error;
+          console.error(`Database insert failed for ${profile.name}:`, {
+            error: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          throw new Error(`Database error: ${error.message}`);
         }
         
-        console.log(`Successfully saved: ${profile.name}`);
+        if (!data) {
+          throw new Error('No data returned from database insert');
+        }
+        
+        console.log(`✅ Successfully inserted: ${profile.name} (ID: ${data.id})`);
         newContestants.push(data);
       } catch (error) {
-        console.error(`Error saving AI profile for ${profile.name}:`, error);
-        failedSaves.push({ name: profile.name, error: error.message });
+        console.error(`❌ Failed to save ${profile.name}:`, error);
+        failedSaves.push({ 
+          name: profile.name, 
+          error: error.message,
+          index: i + 1
+        });
       }
     }
 
-    // Show results
+    console.log(`Insert complete: ${newContestants.length} successful, ${failedSaves.length} failed`);
+
+    // Reload contestants data only if we have successful saves
     if (newContestants.length > 0) {
-      await loadContestants();
-      console.log('Cast loaded:', newContestants.length, 'new contestants added');
+      console.log('Reloading contestants list...');
+      try {
+        await loadContestants();
+        console.log('✅ Contestants list reloaded successfully');
+      } catch (error) {
+        console.error('❌ Failed to reload contestants:', error);
+      }
     }
 
-    if (failedSaves.length > 0) {
-      console.error('Failed saves:', failedSaves);
-      toast({
-        title: "Partial Success",
-        description: `Saved ${newContestants.length}/${profiles.length} contestants. ${failedSaves.length} failed.`,
-        variant: "destructive",
-      });
-    } else if (newContestants.length > 0) {
+    // Show appropriate success/error messages
+    if (newContestants.length === profiles.length) {
+      // Complete success
       toast({
         title: "Success!",
-        description: `Added ${newContestants.length} contestant(s)`,
+        description: `Successfully added all ${newContestants.length} contestants`,
       });
-    } else {
+    } else if (newContestants.length > 0) {
+      // Partial success
       toast({
-        title: "Error",
-        description: "No contestants were saved to the database",
+        title: "Partial Success",
+        description: `Added ${newContestants.length}/${profiles.length} contestants. ${failedSaves.length} failed - check console for details.`,
         variant: "destructive",
       });
+      console.log('Failed saves details:', failedSaves);
+    } else {
+      // Complete failure
+      toast({
+        title: "Save Failed",
+        description: `Failed to save any contestants to database. Check console for details.`,
+        variant: "destructive",
+      });
+      console.error('All saves failed:', failedSaves);
     }
   };
 

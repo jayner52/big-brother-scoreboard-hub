@@ -10,27 +10,23 @@ export const useWeekStatus = (weekNumber: number) => {
 
   const determineWeekStatus = async () => {
     try {
+      // Get current week from current_game_week table
+      const { data: currentWeekData } = await supabase
+        .from('current_game_week')
+        .select('week_number')
+        .single();
+
+      const currentWeekNumber = currentWeekData?.week_number || 1;
+      setCurrentWeek(currentWeekNumber);
+
       // Get all weekly results to determine status
       const { data: weeklyResults } = await supabase
         .from('weekly_results')
         .select('week_number, is_draft')
         .order('week_number', { ascending: true });
 
-      if (!weeklyResults) {
-        setWeekStatus('current');
-        setCurrentWeek(1);
-        setLoading(false);
-        return;
-      }
-
-      // Find the current week (lowest week number where is_draft is true)
-      const currentWeekResult = weeklyResults.find(result => result.is_draft === true);
-      const currentWeekNumber = currentWeekResult?.week_number || 1;
-      
-      setCurrentWeek(currentWeekNumber);
-
       // Determine status for the requested week
-      const weekResult = weeklyResults.find(result => result.week_number === weekNumber);
+      const weekResult = weeklyResults?.find(result => result.week_number === weekNumber);
       
       if (weekResult && weekResult.is_draft === false) {
         setWeekStatus('completed');

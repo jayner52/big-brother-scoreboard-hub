@@ -445,9 +445,23 @@ export const useWeeklyEvents = () => {
       });
 
       // Update current game week to advance to next week
-      await supabase.rpc('update_current_game_week', { 
-        new_week_number: eventForm.week + 1 
-      });
+      try {
+        const { error: weekUpdateError } = await supabase.rpc('update_current_game_week', { 
+          new_week_number: eventForm.week + 1 
+        });
+        if (weekUpdateError) {
+          console.error('Error updating current game week:', weekUpdateError);
+          throw weekUpdateError;
+        }
+        console.log(`Successfully advanced current game week to ${eventForm.week + 1}`);
+      } catch (error) {
+        console.error('Failed to update current game week:', error);
+        toast({
+          title: "Warning",
+          description: "Week submitted but failed to advance current game week",
+          variant: "destructive",
+        });
+      }
 
       // Find next sequential week to edit
       const { data: completedWeeks } = await supabase

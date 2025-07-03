@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Key, Target, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
-import { SpecialEventsBadge } from '@/components/admin/SpecialEventsBadge';
+import { getSpecialEventIcon, getSpecialEventLegend } from '@/utils/specialEventIcons';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
 
 interface HouseguestStats {
@@ -203,8 +203,27 @@ export const HouseguestValues: React.FC = () => {
     return <div className="text-center py-8">Loading houseguest values...</div>;
   }
 
+  const eventLegend = getSpecialEventLegend();
+
   return (
     <div className="space-y-6">
+      {/* Special Events Legend */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Special Events Legend</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 text-sm">
+            {Object.entries(eventLegend).map(([icon, description]) => (
+              <div key={icon} className="flex items-center gap-2">
+                <span className="text-lg">{icon}</span>
+                <span>{description}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Houseguest Performance & Values</CardTitle>
@@ -328,7 +347,13 @@ export const HouseguestValues: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         {stat.special_events && stat.special_events.length > 0 ? (
-                          <SpecialEventsBadge events={stat.special_events} />
+                          <div className="flex flex-wrap gap-1">
+                            {stat.special_events.map((event, index) => (
+                              <span key={index} className="text-lg" title={event.description || event.event_type}>
+                                {getSpecialEventIcon(event.event_type)}
+                              </span>
+                            ))}
+                          </div>
                         ) : (
                           <span className="text-gray-400 text-sm">None</span>
                         )}

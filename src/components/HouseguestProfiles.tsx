@@ -82,7 +82,7 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
     <div className="w-full">
       {/* Navigation */}
       {userEntries.length > 1 && (
-        <div className="flex items-center justify-center gap-4 mb-4">
+        <div className="flex items-center justify-center gap-4 mb-2">
           <Button
             variant="outline"
             size="sm"
@@ -105,68 +105,63 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
         </div>
       )}
 
-      {/* Horizontal Team Layout */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            {/* Team Info */}
-            <div className="flex items-center gap-4">
-              <Users className="h-6 w-6 text-primary" />
-              <div>
-                <h3 className="text-xl font-bold text-primary">{currentEntry.team_name}</h3>
-                <p className="text-sm text-muted-foreground">by {currentEntry.participant_name}</p>
-              </div>
-            </div>
-
-            {/* Total Points */}
-            <div className="text-right">
-              <div className="text-3xl font-bold text-primary">{totalPoints}</div>
-              <div className="text-sm text-muted-foreground">Total Points</div>
+      {/* Compact Horizontal Team Layout */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 p-4">
+        {/* Top Row: Team Info and Total Points */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <Users className="h-5 w-5 text-primary" />
+            <div>
+              <h3 className="text-lg font-bold text-primary">{currentEntry.team_name}</h3>
+              <p className="text-xs text-muted-foreground">by {currentEntry.participant_name}</p>
             </div>
           </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold text-primary">{totalPoints}</div>
+            <div className="text-xs text-muted-foreground">Total Points</div>
+          </div>
+        </div>
 
-          {/* Status Badges */}
-          <div className="flex items-center gap-2 mb-6">
-            <Badge variant={currentEntry.payment_confirmed ? "default" : "destructive"}>
-              {currentEntry.payment_confirmed ? "Payment Confirmed" : "Payment Pending"}
+        {/* Status Badges */}
+        <div className="flex items-center gap-2 mb-3">
+          <Badge variant={currentEntry.payment_confirmed ? "default" : "destructive"} className="text-xs">
+            {currentEntry.payment_confirmed ? "Payment Confirmed" : "Payment Pending"}
+          </Badge>
+          {currentEntry.current_rank && (
+            <Badge variant="outline" className="text-xs">
+              Rank #{currentEntry.current_rank}
             </Badge>
-            {currentEntry.current_rank && (
-              <Badge variant="outline">
-                Rank #{currentEntry.current_rank}
-              </Badge>
-            )}
-          </div>
+          )}
+        </div>
 
-          {/* Team Players - Horizontal Grid */}
-          <div className="grid grid-cols-5 gap-4 mb-6">
-            {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
-              <div key={index} className="text-center p-4 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                <div className="font-semibold text-sm mb-2">{player}</div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  {houseguestPoints[player] || 0}
-                </div>
-                <div className="text-xs text-muted-foreground">points</div>
+        {/* Team Players - Compact Horizontal */}
+        <div className="grid grid-cols-5 gap-2 mb-3">
+          {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
+            <div key={index} className="text-center p-2 border rounded bg-muted/20 hover:bg-muted/40 transition-colors">
+              <div className="font-medium text-xs mb-1 truncate" title={player}>{player}</div>
+              <div className="text-lg font-bold text-primary">
+                {houseguestPoints[player] || 0}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Points Breakdown - Horizontal */}
-          <div className="grid grid-cols-3 gap-6 pt-4 border-t">
-            <div className="text-center">
-              <div className="text-xl font-bold">{currentEntry.weekly_points}</div>
-              <div className="text-sm text-muted-foreground">Weekly Points</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold">{currentEntry.bonus_points}</div>
-              <div className="text-sm text-muted-foreground">Bonus Points</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-primary">{totalPoints}</div>
-              <div className="text-sm text-muted-foreground">Final Total</div>
-            </div>
+        {/* Points Breakdown - Compact Horizontal */}
+        <div className="grid grid-cols-3 gap-4 pt-2 border-t border-white/20">
+          <div className="text-center">
+            <div className="text-sm font-bold">{currentEntry.weekly_points}</div>
+            <div className="text-xs text-muted-foreground">Weekly</div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="text-center">
+            <div className="text-sm font-bold">{currentEntry.bonus_points}</div>
+            <div className="text-xs text-muted-foreground">Bonus</div>
+          </div>
+          <div className="text-center">
+            <div className="text-sm font-bold text-primary">{totalPoints}</div>
+            <div className="text-xs text-muted-foreground">Total</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

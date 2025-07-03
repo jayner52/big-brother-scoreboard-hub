@@ -16,16 +16,16 @@ export const useActiveContestants = () => {
         .select('*')
         .order('name');
 
-      // Load evicted contestants from weekly_events
+      // Load evicted contestants from weekly_events with proper join
       const { data: evictionData } = await supabase
         .from('weekly_events')
         .select(`
-          contestants!inner(name),
+          contestants(name),
           event_type
         `)
         .eq('event_type', 'evicted');
 
-      const evicted = evictionData?.map(event => (event.contestants as any).name) || [];
+      const evicted = evictionData?.map(event => event.contestants?.name).filter(Boolean) || [];
       
       const contestants = contestantsData?.map(c => ({
         id: c.id,

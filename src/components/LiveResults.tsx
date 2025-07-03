@@ -123,12 +123,12 @@ export const LiveResults: React.FC = () => {
                     {showSpoilers ? 'Hide Spoilers' : 'Show Spoilers'}
                   </Button>
                 )}
-                {weeklyResults[0].is_double_eviction && !weeklyResults[0].is_draft && (
-                  <Badge variant="destructive">Double Eviction</Badge>
-                )}
-                {weeklyResults[0].is_triple_eviction && !weeklyResults[0].is_draft && (
-                  <Badge variant="destructive">Triple Eviction</Badge>
-                )}
+                 {weeklyResults[0].is_double_eviction && (
+                   <Badge variant="destructive">Double Eviction</Badge>
+                 )}
+                 {weeklyResults[0].is_triple_eviction && (
+                   <Badge variant="destructive">Triple Eviction</Badge>
+                 )}
                 {weeklyResults[0].jury_phase_started && (
                   <Badge className="bg-purple-500">Jury Started</Badge>
                 )}
@@ -205,16 +205,16 @@ export const LiveResults: React.FC = () => {
         </Card>
       )}
 
-      {/* All Weekly Results */}
+      {/* Completed Weekly Results */}
       <Card>
         <CardHeader>
-          <CardTitle>Complete Season Results</CardTitle>
+          <CardTitle>Completed Weeks</CardTitle>
         </CardHeader>
         <CardContent>
-          {weeklyResults.length === 0 ? (
+          {weeklyResults.filter(week => !week.is_draft).length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No results posted yet. Check back after the first week!</p>
+              <p>No completed weeks yet. Check back after the first week is finalized!</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -227,17 +227,16 @@ export const LiveResults: React.FC = () => {
                     <TableHead>Nominees</TableHead>
                     <TableHead>Evicted</TableHead>
                     <TableHead>Special Events</TableHead>
-                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {weeklyResults.map((week) => (
+                  {weeklyResults.filter(week => !week.is_draft).map((week) => (
                     <TableRow key={week.week_number}>
                       <TableCell className="font-bold">
                          <div className="flex items-center gap-2">
                            Week {week.week_number}
-                           {week.is_double_eviction && !week.is_draft && <Badge variant="outline" className="text-xs">2x</Badge>}
-                           {week.is_triple_eviction && !week.is_draft && <Badge variant="outline" className="text-xs">3x</Badge>}
+                           {week.is_double_eviction && <Badge variant="outline" className="text-xs">2x</Badge>}
+                           {week.is_triple_eviction && <Badge variant="outline" className="text-xs">3x</Badge>}
                            {week.jury_phase_started && <Badge variant="outline" className="text-xs bg-purple-100">Jury</Badge>}
                          </div>
                       </TableCell>
@@ -270,22 +269,19 @@ export const LiveResults: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         {week.nominees?.length ? (
-                          <div className="text-sm">
+                          <div className="text-sm space-y-1">
                             {week.nominees.map((nominee, index) => (
                               <div key={index} className="flex items-center gap-1">
                                 {week.pov_used && week.pov_used_on === nominee ? (
-                                  <>
-                                    <span className="line-through text-gray-500">{nominee}</span>
-                                    <Ban className="h-3 w-3 text-blue-500" />
-                                  </>
+                                  <span className="line-through text-gray-500">{nominee}</span>
                                 ) : (
                                   <span>{nominee}</span>
                                 )}
                               </div>
-                            )).reduce((prev, curr, index) => index === 0 ? [curr] : [...prev, ', ', curr], [])}
+                            ))}
                             {week.replacement_nominee && (
-                              <div className="text-xs text-orange-600 mt-1">
-                                +{week.replacement_nominee}
+                              <div className="text-xs text-orange-600">
+                                Replacement: {week.replacement_nominee}
                               </div>
                             )}
                           </div>
@@ -317,18 +313,6 @@ export const LiveResults: React.FC = () => {
                          ) : (
                            <span className="text-gray-400">None</span>
                          )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          week.hoh_winner && week.pov_winner && week.evicted_contestant && !week.is_draft
-                            ? "default"
-                            : "secondary"
-                        }>
-                          {week.is_draft ? "In Progress" : 
-                           week.hoh_winner && week.pov_winner && week.evicted_contestant
-                            ? "Complete"
-                            : "In Progress"}
-                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))}

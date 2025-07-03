@@ -40,7 +40,7 @@ export const WeeklyEventsPanel: React.FC = () => {
       .eq('week_number', newWeek)
       .maybeSingle();
     
-    setIsWeekComplete(!weekResult?.is_draft);
+    setIsWeekComplete(weekResult && !weekResult.is_draft);
   };
 
   const handleMarkComplete = (complete: boolean) => {

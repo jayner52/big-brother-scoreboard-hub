@@ -27,6 +27,7 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
     hohWinner: eventForm.secondHohWinner || '',
     povWinner: eventForm.secondPovWinner || '',
     povUsed: eventForm.secondPovUsed,
+    povUsedOn: eventForm.secondPovUsedOn || '',
     replacementNominee: eventForm.secondReplacementNominee,
     evicted: eventForm.secondEvicted || ''
   };
@@ -40,6 +41,7 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
         secondHohWinner: updated.hohWinner,
         secondPovWinner: updated.povWinner,
         secondPovUsed: updated.povUsed,
+        secondPovUsedOn: updated.povUsedOn,
         secondReplacementNominee: updated.replacementNominee,
         secondEvicted: updated.evicted
       };
@@ -74,6 +76,7 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
         <EvictionSection
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
+          evictionLabel="Second Evicted Contestant"
         />
       </CardContent>
     </Card>

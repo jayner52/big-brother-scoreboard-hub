@@ -162,27 +162,26 @@ export const useWeeklyEvents = () => {
       preview[eventForm.replacementNominee] = (preview[eventForm.replacementNominee] || 0) + calculatePoints('replacement_nominee');
     }
     
+    // BB Arena winner points
+    if (eventForm.aiArenaWinner) {
+      preview[eventForm.aiArenaWinner] = (preview[eventForm.aiArenaWinner] || 0) + calculatePoints('bb_arena_winner');
+    }
+    
     // Survival points for contestants not evicted this week or previously
     const evictedThisWeek = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
       .filter(evicted => evicted && evicted !== 'no-eviction');
     
-    // Get all previously evicted contestants from the preview data
-    const allEvictedNames = Object.keys(preview).filter(name => {
-      // Check if this contestant has been evicted in any previous week
-      return contestants.some(c => c.name === name && !c.isActive);
-    });
-    
-    const allCurrentlyEvicted = [...allEvictedNames, ...evictedThisWeek];
-    const survivingContestants = contestants.filter(c => !allCurrentlyEvicted.includes(c.name));
+    // Use eviction-based logic instead of isActive flag
+    const survivingContestants = contestants.filter(c => !evictedThisWeek.includes(c.name));
     
     survivingContestants.forEach(contestant => {
       preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('survival');
     });
     
-    // Jury phase points (only on the first week jury starts, not every week)
+    // Jury phase points (dynamic scoring from rules)
     if (eventForm.isJuryPhase) {
       survivingContestants.forEach(contestant => {
-        preview[contestant.name] = (preview[contestant.name] || 0) + 2; // 2 points for jury start
+        preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('jury_member');
       });
     }
     

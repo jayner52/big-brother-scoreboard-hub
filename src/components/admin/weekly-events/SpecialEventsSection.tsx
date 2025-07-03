@@ -12,6 +12,7 @@ interface SpecialEventsSectionProps {
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   activeContestants: ContestantWithBio[];
   scoringRules: DetailedScoringRule[];
+  allContestants?: ContestantWithBio[];
 }
 
 export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
@@ -19,7 +20,10 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   setEventForm,
   activeContestants,
   scoringRules,
+  allContestants,
 }) => {
+  // Use all contestants (active + evicted) for special events dropdown
+  const eligibleContestants = allContestants || activeContestants;
   const addSpecialEvent = () => {
     setEventForm(prev => ({
       ...prev,
@@ -70,13 +74,13 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                     <SelectTrigger>
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {activeContestants.map(contestant => (
-                        <SelectItem key={contestant.id} value={contestant.name}>
-                          {contestant.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                     <SelectContent>
+                       {eligibleContestants.map(contestant => (
+                         <SelectItem key={contestant.id} value={contestant.name}>
+                           {contestant.name} {!activeContestants.some(c => c.id === contestant.id) && '(Evicted)'}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
                   </Select>
                 </div>
                 <div className="col-span-3">

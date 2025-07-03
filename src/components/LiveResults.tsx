@@ -51,27 +51,46 @@ export const LiveResults: React.FC = () => {
       if (error) throw error;
       setWeeklyResults(data || []);
 
-      // Load special events
-      const { data: specialData, error: specialError } = await supabase
-        .from('special_events')
-        .select(`
-          week_number,
-          event_type,
-          description,
-          contestants(name)
-        `)
-        .order('week_number', { ascending: false });
+      // Load special events from both special_events and weekly_events (for BB Arena)
+      const [specialData, bbArenaData] = await Promise.all([
+        supabase
+          .from('special_events')
+          .select(`
+            week_number,
+            event_type,
+            description,
+            contestants(name)
+          `)
+          .order('week_number', { ascending: false }),
+        supabase
+          .from('weekly_events')
+          .select(`
+            week_number,
+            event_type,
+            contestants(name)
+          `)
+          .eq('event_type', 'bb_arena_winner')
+          .order('week_number', { ascending: false })
+      ]);
 
-      if (specialError) throw specialError;
+      if (specialData.error) throw specialData.error;
+      if (bbArenaData.error) throw bbArenaData.error;
       
-      const mappedSpecialEvents = (specialData || []).map(event => ({
+      const mappedSpecialEvents = (specialData.data || []).map(event => ({
         week_number: event.week_number,
         event_type: event.event_type,
         description: event.description,
         houseguest_name: (event.contestants as any)?.name || 'Unknown'
       }));
+
+      const mappedBBArenaEvents = (bbArenaData.data || []).map(event => ({
+        week_number: event.week_number,
+        event_type: 'bb_arena_winner',
+        description: 'BB Arena Winner',
+        houseguest_name: (event.contestants as any)?.name || 'Unknown'
+      }));
       
-      setSpecialEvents(mappedSpecialEvents);
+      setSpecialEvents([...mappedSpecialEvents, ...mappedBBArenaEvents]);
     } catch (error) {
       console.error('Error loading weekly results:', error);
     } finally {
@@ -104,10 +123,10 @@ export const LiveResults: React.FC = () => {
                     {showSpoilers ? 'Hide Spoilers' : 'Show Spoilers'}
                   </Button>
                 )}
-                {weeklyResults[0].is_double_eviction && (
+                {weeklyResults[0].is_double_eviction && !weeklyResults[0].is_draft && (
                   <Badge variant="destructive">Double Eviction</Badge>
                 )}
-                {weeklyResults[0].is_triple_eviction && (
+                {weeklyResults[0].is_triple_eviction && !weeklyResults[0].is_draft && (
                   <Badge variant="destructive">Triple Eviction</Badge>
                 )}
                 {weeklyResults[0].jury_phase_started && (
@@ -171,15 +190,15 @@ export const LiveResults: React.FC = () => {
             {(!weeklyResults[0].is_draft || showSpoilers) && specialEvents.filter(event => event.week_number === weeklyResults[0].week_number).length > 0 && (
               <div className="mt-6">
                 <h4 className="font-semibold mb-2">Special Events This Week</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {specialEvents
-                    .filter(event => event.week_number === weeklyResults[0].week_number)
-                    .map((event, index) => (
-                      <div key={index} className="bg-purple-50 p-2 rounded text-sm">
-                        <span className="font-medium">{event.houseguest_name}</span>: {getEventDisplayText(event.event_type, event.description)}
-                      </div>
-                    ))}
-                </div>
+                 <div className="flex flex-wrap gap-2">
+                   {specialEvents
+                     .filter(event => event.week_number === weeklyResults[0].week_number)
+                     .map((event, index) => (
+                       <Badge key={index} variant="outline" className="text-xs">
+                         <span className="font-medium">{event.houseguest_name}</span>: {getEventDisplayText(event.event_type, event.description)}
+                       </Badge>
+                     ))}
+                 </div>
               </div>
             )}
           </CardContent>
@@ -215,12 +234,12 @@ export const LiveResults: React.FC = () => {
                   {weeklyResults.map((week) => (
                     <TableRow key={week.week_number}>
                       <TableCell className="font-bold">
-                        <div className="flex items-center gap-2">
-                          Week {week.week_number}
-                          {week.is_double_eviction && <Badge variant="outline" className="text-xs">2x</Badge>}
-                          {week.is_triple_eviction && <Badge variant="outline" className="text-xs">3x</Badge>}
-                          {week.jury_phase_started && <Badge variant="outline" className="text-xs bg-purple-100">Jury</Badge>}
-                        </div>
+                         <div className="flex items-center gap-2">
+                           Week {week.week_number}
+                           {week.is_double_eviction && !week.is_draft && <Badge variant="outline" className="text-xs">2x</Badge>}
+                           {week.is_triple_eviction && !week.is_draft && <Badge variant="outline" className="text-xs">3x</Badge>}
+                           {week.jury_phase_started && <Badge variant="outline" className="text-xs bg-purple-100">Jury</Badge>}
+                         </div>
                       </TableCell>
                       <TableCell>
                         {week.hoh_winner ? (
@@ -284,20 +303,20 @@ export const LiveResults: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {specialEvents.filter(event => event.week_number === week.week_number).length > 0 ? (
-                          <div className="text-xs space-y-1">
-                            {specialEvents
-                              .filter(event => event.week_number === week.week_number)
-                              .slice(0, 2)
-                              .map((event, index) => (
-                                <div key={index} className="bg-purple-100 px-2 py-1 rounded">
-                                  {event.houseguest_name}: {getEventDisplayText(event.event_type, event.description)}
-                                </div>
-                              ))}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">None</span>
-                        )}
+                         {specialEvents.filter(event => event.week_number === week.week_number).length > 0 ? (
+                           <div className="flex flex-wrap gap-1">
+                             {specialEvents
+                               .filter(event => event.week_number === week.week_number)
+                               .slice(0, 2)
+                               .map((event, index) => (
+                                 <Badge key={index} variant="outline" className="text-xs">
+                                   {event.houseguest_name}: {getEventDisplayText(event.event_type, event.description)}
+                                 </Badge>
+                               ))}
+                           </div>
+                         ) : (
+                           <span className="text-gray-400">None</span>
+                         )}
                       </TableCell>
                       <TableCell>
                         <Badge variant={

@@ -7,11 +7,13 @@ import { useActiveContestants } from '@/hooks/useActiveContestants';
 interface EvictionSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
+  evictionLabel?: string;
 }
 
 export const EvictionSection: React.FC<EvictionSectionProps> = ({
   eventForm,
   setEventForm,
+  evictionLabel = "Evicted Contestant",
 }) => {
   const { activeContestants } = useActiveContestants();
   // Calculate final nominees (after POV ceremony) and exclude BB Arena winner
@@ -39,7 +41,7 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
 
   return (
     <div>
-      <Label className="font-semibold">Evicted Contestant</Label>
+      <Label className="font-semibold">{evictionLabel}</Label>
       <Select value={eventForm.evicted} onValueChange={(value) => setEventForm(prev => ({ ...prev, evicted: value }))}>
         <SelectTrigger className="mt-1">
           <SelectValue placeholder="Select evicted contestant" />

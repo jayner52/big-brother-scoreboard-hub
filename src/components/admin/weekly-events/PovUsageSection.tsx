@@ -22,19 +22,6 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Switch
-          checked={eventForm.povUsed}
-          onCheckedChange={(checked) => setEventForm(prev => ({ 
-            ...prev, 
-            povUsed: checked,
-            povUsedOn: checked ? prev.povUsedOn : '',
-            replacementNominee: checked ? prev.replacementNominee : ''
-          }))}
-        />
-        <Label>POV was used</Label>
-      </div>
-
       {eventForm.povUsed && (
         <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <div>

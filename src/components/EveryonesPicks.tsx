@@ -90,41 +90,40 @@ export const EveryonesPicks: React.FC = () => {
           <CardTitle>Team Selections</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
+          <div className="space-y-3">
             {enhancedPoolEntries.map((entry) => (
-              <div key={entry.id} className="bg-white border rounded-lg p-4 shadow-sm">
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                  {/* Team Info */}
-                  <div className="lg:w-48 flex-shrink-0">
-                    <div className="font-semibold text-lg">{entry.participant_name}</div>
-                    <div className="text-blue-600 font-medium">{entry.team_name}</div>
-                    <Badge variant={entry.payment_confirmed ? "default" : "destructive"} className="mt-1">
+              <div key={entry.id} className="bg-background border rounded-lg p-3 shadow-sm">
+                <div className="flex items-center gap-4">
+                  {/* Team Info - more compact */}
+                  <div className="flex-shrink-0 min-w-[140px]">
+                    <div className="font-semibold text-base">{entry.participant_name}</div>
+                    <div className="text-primary text-sm font-medium">{entry.team_name}</div>
+                    <Badge variant={entry.payment_confirmed ? "default" : "destructive"} className="text-xs">
                       {entry.payment_confirmed ? "Paid" : "Pending"}
                     </Badge>
                   </div>
                   
-                  {/* Players Grid */}
-                  <div className="flex-1">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                      {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3 text-center">
-                          <div className="font-medium text-sm mb-1">Player {index + 1}</div>
-                          <div className="text-sm">{player}</div>
-                          {houseguestPoints[player] !== undefined && (
-                            <div className="text-xs text-blue-600 font-semibold mt-1">
-                              {houseguestPoints[player]} pts
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                  {/* Players - horizontal layout */}
+                  <div className="flex-1 grid grid-cols-5 gap-2">
+                    {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
+                      <div key={index} className="bg-muted/50 rounded p-2 text-center min-h-[60px] flex flex-col justify-center">
+                        <div className="text-xs text-muted-foreground mb-1">P{index + 1}</div>
+                        <div className="text-sm font-medium">{player}</div>
+                        {houseguestPoints[player] !== undefined && (
+                          <div className="text-xs text-primary font-semibold">
+                            {houseguestPoints[player]}pts
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Total Points - right aligned */}
+                  <div className="flex-shrink-0 text-right min-w-[80px]">
+                    <div className="text-lg font-bold text-green-600">
+                      {entry.totalPoints}
                     </div>
-                    
-                    {/* Total Points */}
-                    <div className="mt-3 text-right">
-                      <span className="text-lg font-bold text-green-600">
-                        Total: {entry.totalPoints} pts
-                      </span>
-                    </div>
+                    <div className="text-xs text-muted-foreground">Total</div>
                   </div>
                 </div>
               </div>

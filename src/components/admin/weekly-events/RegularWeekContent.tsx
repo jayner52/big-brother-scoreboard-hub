@@ -33,22 +33,24 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
         )}
         
         {/* Competition Winners */}
-        <CompetitionWinners
-          eventForm={eventForm}
-          setEventForm={setEventForm}
-        />
+        <div className="space-y-4">
+          <CompetitionWinners
+            eventForm={eventForm}
+            setEventForm={setEventForm}
+          />
 
-        {/* Nominees */}
-        <NomineesSection
-          eventForm={eventForm}
-          setEventForm={setEventForm}
-        />
+          {/* Nominees */}
+          <NomineesSection
+            eventForm={eventForm}
+            setEventForm={setEventForm}
+          />
 
-        {/* POV Usage and Replacement */}
-        <PovUsageSection
-          eventForm={eventForm}
-          setEventForm={setEventForm}
-        />
+          {/* POV Usage and Replacement */}
+          <PovUsageSection
+            eventForm={eventForm}
+            setEventForm={setEventForm}
+          />
+        </div>
       </div>
 
       {/* Second Eviction (only shown for double eviction weeks) */}
@@ -82,6 +84,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
       <EvictionSection
         eventForm={eventForm}
         setEventForm={setEventForm}
+        evictionLabel={eventForm.isDoubleEviction ? "First Evicted Contestant" : "Evicted Contestant"}
       />
 
       {/* Special Events */}
@@ -90,6 +93,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
         setEventForm={setEventForm}
         activeContestants={activeContestants}
         scoringRules={scoringRules}
+        allContestants={contestants}
       />
     </>
   );

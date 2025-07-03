@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 export const EveryonesPicks: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);
-  const { houseguestPoints } = useHouseguestPoints();
+  const [error, setError] = useState<string | null>(null);
+  const { houseguestPoints, loading: pointsLoading, error: pointsError } = useHouseguestPoints();
 
   useEffect(() => {
     loadData();
@@ -18,6 +22,9 @@ export const EveryonesPicks: React.FC = () => {
 
   const loadData = async () => {
     try {
+      setError(null);
+      setLoading(true);
+      
       const [entriesResult, questionsResult] = await Promise.all([
         supabase.from('pool_entries').select('*').order('participant_name'),
         supabase.from('bonus_questions').select('*').eq('is_active', true).order('sort_order')
@@ -43,17 +50,39 @@ export const EveryonesPicks: React.FC = () => {
       setBonusQuestions(mappedQuestions);
     } catch (error) {
       console.error('Error loading data:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load data');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
+  // Memoize expensive calculations
+  const enhancedPoolEntries = useMemo(() => {
+    return poolEntries.map(entry => ({
+      ...entry,
+      totalPoints: [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
+        .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0)
+    }));
+  }, [poolEntries, houseguestPoints]);
+
+  if (loading || pointsLoading) {
     return <div className="text-center py-8">Loading everyone's picks...</div>;
   }
 
+  if (error || pointsError) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          {error || pointsError || 'Failed to load data'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <ErrorBoundary>
+      <div className="space-y-6">
       {/* Team Picks */}
       <Card>
         <CardHeader>
@@ -75,7 +104,7 @@ export const EveryonesPicks: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {poolEntries.map((entry) => (
+                {enhancedPoolEntries.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell className="font-medium">{entry.participant_name}</TableCell>
                     <TableCell className="text-blue-600 font-semibold">{entry.team_name}</TableCell>
@@ -145,6 +174,7 @@ export const EveryonesPicks: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 };

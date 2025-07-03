@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ContestantManagement } from '@/components/admin/ContestantManagement';
-import { WeeklyEventsPanel } from '@/components/admin/WeeklyEventsPanel';
-import { WeekByWeekOverview } from '@/components/admin/WeekByWeekOverview';
-import { EnhancedBonusQuestionsPanel } from '@/components/admin/EnhancedBonusQuestionsPanel';
-import { PoolSettingsPanel } from '@/components/admin/PoolSettingsPanel';
-import { PoolEntriesManagement } from '@/components/PoolEntriesManagement';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+
+// Lazy load components for better performance
+const ContestantManagement = React.lazy(() => import('@/components/admin/ContestantManagement').then(m => ({ default: m.ContestantManagement })));
+const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEventsPanel').then(m => ({ default: m.WeeklyEventsPanel })));
+const WeekByWeekOverview = React.lazy(() => import('@/components/admin/WeekByWeekOverview').then(m => ({ default: m.WeekByWeekOverview })));
+const EnhancedBonusQuestionsPanel = React.lazy(() => import('@/components/admin/EnhancedBonusQuestionsPanel').then(m => ({ default: m.EnhancedBonusQuestionsPanel })));
+const PoolSettingsPanel = React.lazy(() => import('@/components/admin/PoolSettingsPanel').then(m => ({ default: m.PoolSettingsPanel })));
+const PoolEntriesManagement = React.lazy(() => import('@/components/PoolEntriesManagement').then(m => ({ default: m.PoolEntriesManagement })));
 
 
 export const AdminScoringPanel: React.FC = () => {
@@ -30,27 +33,51 @@ export const AdminScoringPanel: React.FC = () => {
           </TabsList>
 
           <TabsContent value="events" className="space-y-4">
-            <WeeklyEventsPanel />
+            <ErrorBoundary>
+              <Suspense fallback={<div className="text-center py-8">Loading weekly events...</div>}>
+                <WeeklyEventsPanel />
+              </Suspense>
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="contestants" className="space-y-4">
-            <ContestantManagement />
+            <ErrorBoundary>
+              <Suspense fallback={<div className="text-center py-8">Loading contestant management...</div>}>
+                <ContestantManagement />
+              </Suspense>
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="entries" className="space-y-4">
-            <PoolEntriesManagement />
+            <ErrorBoundary>
+              <Suspense fallback={<div className="text-center py-8">Loading pool entries...</div>}>
+                <PoolEntriesManagement />
+              </Suspense>
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
-            <PoolSettingsPanel />
+            <ErrorBoundary>
+              <Suspense fallback={<div className="text-center py-8">Loading pool settings...</div>}>
+                <PoolSettingsPanel />
+              </Suspense>
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="legacy" className="space-y-4">
-            <WeekByWeekOverview />
+            <ErrorBoundary>
+              <Suspense fallback={<div className="text-center py-8">Loading week overview...</div>}>
+                <WeekByWeekOverview />
+              </Suspense>
+            </ErrorBoundary>
           </TabsContent>
 
           <TabsContent value="bonus" className="space-y-6">
-            <EnhancedBonusQuestionsPanel />
+            <ErrorBoundary>
+              <Suspense fallback={<div className="text-center py-8">Loading bonus questions...</div>}>
+                <EnhancedBonusQuestionsPanel />
+              </Suspense>
+            </ErrorBoundary>
           </TabsContent>
         </Tabs>
       </CardContent>

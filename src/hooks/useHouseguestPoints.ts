@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useHouseguestPoints = () => {
   const [houseguestPoints, setHouseguestPoints] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadHouseguestPoints();
@@ -11,7 +12,10 @@ export const useHouseguestPoints = () => {
 
   const loadHouseguestPoints = async () => {
     try {
-      // Get all data in parallel to reduce loading time
+      setError(null);
+      setLoading(true);
+      
+      // Optimized query to get all contestant points at once
       const [contestantsResult, weeklyEventsResult, specialEventsResult] = await Promise.all([
         supabase.from('contestants').select('id, name'),
         supabase.from('weekly_events').select('contestant_id, points_awarded'),
@@ -44,10 +48,17 @@ export const useHouseguestPoints = () => {
       setHouseguestPoints(pointsMap);
     } catch (error) {
       console.error('Error loading houseguest points:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load points');
     } finally {
       setLoading(false);
     }
   };
 
-  return { houseguestPoints, loading, refreshPoints: loadHouseguestPoints };
+  // Memoize the return value to prevent unnecessary re-renders
+  return useMemo(() => ({
+    houseguestPoints,
+    loading,
+    error,
+    refreshPoints: loadHouseguestPoints
+  }), [houseguestPoints, loading, error]);
 };

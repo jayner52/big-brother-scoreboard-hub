@@ -33,7 +33,7 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
 
   const updateNominee = (index: number, value: string) => {
     const newNominees = [...eventForm.nominees];
-    newNominees[index] = value;
+    newNominees[index] = value === 'no-nominee' ? '' : value;
     setEventForm(prev => ({ ...prev, nominees: newNominees }));
   };
 
@@ -64,14 +64,14 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
         {eventForm.nominees.map((nominee, index) => (
           <Select 
             key={index}
-            value={nominee || ''} 
+            value={nominee || 'no-nominee'} 
             onValueChange={(value) => updateNominee(index, value)}
           >
             <SelectTrigger>
               <SelectValue placeholder={`Nominee ${index + 1}`} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">No nominee</SelectItem>
+              <SelectItem value="no-nominee">No nominee</SelectItem>
               {activeContestants
                 .filter(c => 
                   (c.name !== eventForm.hohWinner || eventForm.hohWinner === 'no-winner' || !eventForm.hohWinner) &&

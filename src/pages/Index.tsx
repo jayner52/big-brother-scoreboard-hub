@@ -51,24 +51,28 @@ const Index = () => {
 
   const loadUserEntry = async (userId: string) => {
     try {
-      // Get user's pool entry
-      const { data: entryData } = await supabase
+      // Get user's pool entries (support multiple teams)
+      const { data: entriesData } = await supabase
         .from('pool_entries')
         .select('*')
-        .eq('user_id', userId)
-        .single();
+        .eq('user_id', userId);
 
-      if (entryData) {
-        setUserEntry(entryData);
+      if (entriesData && entriesData.length > 0) {
+        // For now, show the first entry, but we can enhance this later
+        const mainEntry = entriesData[0];
+        setUserEntry({
+          ...mainEntry,
+          allEntries: entriesData // Store all entries for future use
+        });
         
-        // Get user's rank
+        // Get user's rank based on their best team
         const { data: allEntries } = await supabase
           .from('pool_entries')
           .select('*')
           .order('total_points', { ascending: false });
         
         if (allEntries) {
-          const rank = allEntries.findIndex(entry => entry.id === entryData.id) + 1;
+          const rank = allEntries.findIndex(entry => entry.id === mainEntry.id) + 1;
           setUserRank(rank);
         }
       }
@@ -115,7 +119,7 @@ const Index = () => {
               {/* How to Play Button - Always Visible */}
               <Link to="/about">
                 <Button 
-                  className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
+                  className="bg-purple hover:bg-purple/90 text-purple-foreground flex items-center gap-2"
                   size="sm"
                 >
                   <BookOpen className="h-4 w-4" />
@@ -144,11 +148,13 @@ const Index = () => {
                   </Button>
                 </Link>
                 
-                {/* User Status Panel */}
+                {/* Enhanced User Status Panel with Multi-Team Support */}
                 {user && userEntry && (
                   <div className="w-72 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-gray-800">Your Team Status</h3>
+                      <h3 className="font-semibold text-gray-800">
+                        Your Team{userEntry.allEntries?.length > 1 ? 's' : ''} Status
+                      </h3>
                       <Button
                         onClick={() => navigate('/auth')}
                         variant="ghost"
@@ -161,7 +167,7 @@ const Index = () => {
                     
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Team:</span>
+                        <span className="text-gray-600">Main Team:</span>
                         <span className="font-medium text-gray-800">{userEntry.team_name}</span>
                       </div>
                       <div className="flex justify-between">
@@ -172,6 +178,15 @@ const Index = () => {
                         <span className="text-gray-600">Rank:</span>
                         <span className="font-medium text-gray-800">#{userRank || 'TBD'}</span>
                       </div>
+                      
+                      {userEntry.allEntries && userEntry.allEntries.length > 1 && (
+                        <div className="mt-2 pt-2 border-t border-white/20">
+                          <div className="text-xs text-gray-500">
+                            {userEntry.allEntries.length} team{userEntry.allEntries.length > 1 ? 's' : ''} total
+                          </div>
+                        </div>
+                      )}
+                      
                       <div className="text-xs text-gray-500 mt-3 border-t pt-2">
                         <div>Players: {userEntry.player_1}, {userEntry.player_2}, {userEntry.player_3}, {userEntry.player_4}, {userEntry.player_5}</div>
                       </div>

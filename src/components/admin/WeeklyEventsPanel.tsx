@@ -107,18 +107,36 @@ export const WeeklyEventsPanel: React.FC = () => {
         
         if (data.populated_fields.pov_winner && data.confidence_scores.pov_winner >= 0.95) {
           updates.povWinner = data.populated_fields.pov_winner;
+          // Auto-set POV usage based on data
+          if (data.populated_fields.pov_used !== undefined) {
+            updates.povUsed = data.populated_fields.pov_used;
+          }
         }
         
         if (data.populated_fields.evicted && data.confidence_scores.evicted >= 0.95) {
           updates.evicted = data.populated_fields.evicted;
         }
         
-        if (data.populated_fields.nominees && data.confidence_scores.nominees >= 0.95) {
-          updates.nominees = data.populated_fields.nominees.slice(0, 2); // Limit to 2 nominees
+        // Handle nominees - use final nominees if available, otherwise initial nominees
+        const nomineesToUse = data.populated_fields.final_nominees || data.populated_fields.nominees;
+        if (nomineesToUse && data.confidence_scores.nominees >= 0.95) {
+          updates.nominees = nomineesToUse.slice(0, 2); // Ensure max 2 for form
+        }
+        
+        // Handle AI Arena winner and enable toggle
+        if (data.populated_fields.ai_arena_winner && data.confidence_scores.ai_arena_winner >= 0.95) {
+          // Enable AI Arena toggle
+          updates.specialEvents = updates.specialEvents || [];
+          updates.specialEvents.push({
+            contestant: data.populated_fields.ai_arena_winner,
+            eventType: 'bb_arena_winner',
+            description: 'AI Arena Winner',
+            customPoints: undefined
+          });
         }
         
         if (data.populated_fields.special_events) {
-          updates.specialEvents = data.populated_fields.special_events;
+          updates.specialEvents = [...(updates.specialEvents || []), ...data.populated_fields.special_events];
         }
         
         // Update form with populated data

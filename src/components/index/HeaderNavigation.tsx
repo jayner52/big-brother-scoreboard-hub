@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Settings, BookOpen, LogOut, User } from 'lucide-react';
+import { Settings, BookOpen, LogOut, User, Users } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface HeaderNavigationProps {
@@ -57,6 +57,20 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
             How to Play
           </Button>
         </Link>
+        
+        {/* My Team(s) Button - Only for logged in users */}
+        {user && (
+          <Link to="/my-teams">
+            <Button 
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Users className="h-4 w-4" />
+              My Team(s)
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Right Side - Admin and User Status */}

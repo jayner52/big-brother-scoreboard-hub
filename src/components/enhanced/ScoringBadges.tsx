@@ -11,10 +11,10 @@ export const ScoringBadges: React.FC = () => {
   const badges = [];
   
   // Group scoring rules by category for better display
-  const competitionRules = scoringRules.filter(r => r.category === 'competitions');
-  const nominationRules = scoringRules.filter(r => r.subcategory === 'nominee');
-  const evictionRules = scoringRules.filter(r => r.subcategory === 'evicted');
-  const specialRules = scoringRules.filter(r => r.category === 'special_events');
+  const competitionRules = scoringRules.filter(r => r.category === 'competitions' && r.is_active);
+  const nominationRules = scoringRules.filter(r => r.subcategory === 'nominee' && r.is_active);
+  const evictionRules = scoringRules.filter(r => r.subcategory === 'evicted' && r.is_active);
+  const specialRules = scoringRules.filter(r => r.category === 'special_events' && r.is_active);
   
   // Add main competition badges with direct points display
   competitionRules.forEach(rule => {

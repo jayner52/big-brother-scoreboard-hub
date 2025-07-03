@@ -1,0 +1,114 @@
+-- Fix the generate_weekly_snapshots function to be truly cumulative
+-- This ensures Week 1 shows Week 1 only, Week 2 shows Weeks 1+2, etc.
+
+DROP FUNCTION IF EXISTS public.generate_weekly_snapshots(integer);
+
+CREATE OR REPLACE FUNCTION public.generate_weekly_snapshots(week_num integer)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $function$
+BEGIN
+  -- Delete existing snapshots for this week (in case of re-generation)
+  DELETE FROM public.weekly_team_snapshots WHERE week_number = week_num;
+  
+  -- Generate new snapshots with truly cumulative points calculation
+  WITH team_cumulative_stats AS (
+    SELECT 
+      pe.id as pool_entry_id,
+      pe.participant_name,
+      pe.team_name,
+      pe.player_1,
+      pe.player_2,
+      pe.player_3,
+      pe.player_4,
+      pe.player_5,
+      pe.payment_confirmed,
+      -- Calculate weekly points earned from week 1 through the selected week (truly cumulative)
+      COALESCE((
+        SELECT SUM(we.points_awarded)
+        FROM weekly_events we
+        WHERE we.contestant_id IN (
+          SELECT c.id FROM contestants c 
+          WHERE c.name IN (pe.player_1, pe.player_2, pe.player_3, pe.player_4, pe.player_5)
+        )
+        AND we.week_number >= 1 
+        AND we.week_number <= week_num
+      ), 0) as cumulative_weekly_points,
+      
+      -- Calculate bonus points earned through the selected week
+      COALESCE((
+        SELECT SUM(bq.points_value)
+        FROM bonus_questions bq
+        WHERE bq.answer_revealed = true
+        AND bq.created_at <= (
+          SELECT MAX(wr.created_at) 
+          FROM weekly_results wr 
+          WHERE wr.week_number <= week_num 
+          AND wr.is_draft = false
+        )
+        AND (
+          -- Handle different question types for correct answers
+          (bq.question_type = 'player_select' AND pe.bonus_answers->>bq.id = bq.correct_answer) OR
+          (bq.question_type = 'dual_player_select' AND pe.bonus_answers->>bq.id = bq.correct_answer) OR
+          (bq.question_type = 'yes_no' AND pe.bonus_answers->>bq.id = bq.correct_answer) OR
+          (bq.question_type = 'number' AND pe.bonus_answers->>bq.id = bq.correct_answer)
+        )
+      ), 0) as cumulative_bonus_points,
+      
+      -- Calculate points earned in this specific week only (for points_change calculation)
+      COALESCE((
+        SELECT SUM(we.points_awarded)
+        FROM weekly_events we
+        WHERE we.contestant_id IN (
+          SELECT c.id FROM contestants c 
+          WHERE c.name IN (pe.player_1, pe.player_2, pe.player_3, pe.player_4, pe.player_5)
+        )
+        AND we.week_number = week_num
+      ), 0) as current_week_points
+      
+    FROM public.pool_entries pe
+  ),
+  ranked_teams AS (
+    SELECT 
+      *,
+      (cumulative_weekly_points + cumulative_bonus_points) as total_cumulative_points,
+      ROW_NUMBER() OVER (ORDER BY (cumulative_weekly_points + cumulative_bonus_points) DESC) as current_rank
+    FROM team_cumulative_stats
+  ),
+  previous_week_stats AS (
+    SELECT 
+      wts.pool_entry_id,
+      wts.total_points as prev_total_points,
+      wts.rank_position as prev_rank
+    FROM public.weekly_team_snapshots wts
+    WHERE wts.week_number = week_num - 1
+  )
+  INSERT INTO public.weekly_team_snapshots (
+    pool_entry_id,
+    week_number,
+    weekly_points,
+    bonus_points,
+    total_points,
+    rank_position,
+    points_change,
+    rank_change
+  )
+  SELECT 
+    rt.pool_entry_id,
+    week_num,
+    rt.cumulative_weekly_points,
+    rt.cumulative_bonus_points,
+    rt.total_cumulative_points,
+    rt.current_rank,
+    -- Points change: if this is week 1, show current week points, otherwise show difference from previous week
+    CASE 
+      WHEN week_num = 1 THEN rt.current_week_points
+      ELSE COALESCE(rt.total_cumulative_points - pws.prev_total_points, rt.current_week_points)
+    END as points_change,
+    -- Rank change: positive means rank improved (went up), negative means rank dropped
+    COALESCE(pws.prev_rank - rt.current_rank, 0) as rank_change
+  FROM ranked_teams rt
+  LEFT JOIN previous_week_stats pws ON rt.pool_entry_id = pws.pool_entry_id;
+END;
+$function$;

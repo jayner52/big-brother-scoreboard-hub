@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Target } from 'lucide-react';
+import { Target, Plus, Save, X } from 'lucide-react';
 
 interface ScoringRule {
   id: string;
@@ -23,6 +23,11 @@ export const CustomScoringPanel: React.FC = () => {
   const [scoringRules, setScoringRules] = useState<ScoringRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showAddSpecialEvent, setShowAddSpecialEvent] = useState(false);
+  const [newSpecialEvent, setNewSpecialEvent] = useState({
+    description: '',
+    points: 5
+  });
 
   useEffect(() => {
     loadScoringRules();
@@ -54,6 +59,38 @@ export const CustomScoringPanel: React.FC = () => {
     setScoringRules(prev => prev.map(rule => 
       rule.id === id ? { ...rule, [field]: value } : rule
     ));
+  };
+
+  const handleAddSpecialEvent = async () => {
+    try {
+      const { error } = await supabase
+        .from('detailed_scoring_rules')
+        .insert({
+          category: 'special_events',
+          subcategory: 'custom_event',
+          description: newSpecialEvent.description,
+          points: newSpecialEvent.points,
+          is_active: true
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Special event rule added",
+      });
+
+      setNewSpecialEvent({ description: '', points: 5 });
+      setShowAddSpecialEvent(false);
+      await loadScoringRules();
+    } catch (error) {
+      console.error('Error adding special event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add special event",
+        variant: "destructive",
+      });
+    }
   };
 
   const saveRules = async () => {
@@ -118,8 +155,57 @@ export const CustomScoringPanel: React.FC = () => {
             <AccordionItem key={category} value={category} className="border rounded-lg">
               <AccordionTrigger className="px-4 py-3 font-semibold text-left">
                 {category} ({rules.length} rules)
+                {category === 'Special Events' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAddSpecialEvent(!showAddSpecialEvent);
+                    }}
+                    className="ml-2 h-7"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Event
+                  </Button>
+                )}
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4">
+                {category === 'Special Events' && showAddSpecialEvent && (
+                  <div className="mb-4 p-4 border rounded-lg bg-muted/30">
+                    <h4 className="font-semibold mb-3">Add New Special Event Rule</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="new-description">Event Description</Label>
+                        <Input
+                          id="new-description"
+                          value={newSpecialEvent.description}
+                          onChange={(e) => setNewSpecialEvent({ ...newSpecialEvent, description: e.target.value })}
+                          placeholder="e.g., Won luxury competition, Received punishment..."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="new-points">Points Value</Label>
+                        <Input
+                          id="new-points"
+                          type="number"
+                          value={newSpecialEvent.points}
+                          onChange={(e) => setNewSpecialEvent({ ...newSpecialEvent, points: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={handleAddSpecialEvent} size="sm">
+                        <Save className="h-3 w-3 mr-1" />
+                        Add Event
+                      </Button>
+                      <Button variant="outline" onClick={() => setShowAddSpecialEvent(false)} size="sm">
+                        <X className="h-3 w-3 mr-1" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 <div className="grid gap-3">
                   {rules.map((rule) => (
                     <div key={rule.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">

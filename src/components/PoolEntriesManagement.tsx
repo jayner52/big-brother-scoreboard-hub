@@ -7,7 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Trash2, Users, Lock, Unlock } from 'lucide-react';
+import { Trash2, Users, Lock, Unlock, Check, X, CreditCard } from 'lucide-react';
+import { UserPaymentButton } from '@/components/enhanced/UserPaymentButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface PoolEntry {
@@ -22,6 +23,8 @@ interface PoolEntry {
   payment_confirmed: boolean;
   total_points: number;
   created_at: string;
+  email: string;
+  user_id: string;
 }
 
 interface PoolSettings {
@@ -34,15 +37,22 @@ export const PoolEntriesManagement: React.FC = () => {
   const [entries, setEntries] = useState<PoolEntry[]>([]);
   const [settings, setSettings] = useState<PoolSettings>({ draft_open: true, draft_locked: false });
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
+    getCurrentUser();
   }, []);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUserId(user?.id || null);
+  };
 
   const loadData = async () => {
     try {
       const [entriesResult, settingsResult] = await Promise.all([
-        supabase.from('pool_entries').select('*').order('created_at', { ascending: false }),
+        supabase.from('pool_entries').select('id, participant_name, team_name, player_1, player_2, player_3, player_4, player_5, payment_confirmed, total_points, created_at, email, user_id').order('created_at', { ascending: false }),
         supabase.from('pool_settings').select('draft_open, draft_locked').single()
       ]);
 
@@ -112,6 +122,33 @@ export const PoolEntriesManagement: React.FC = () => {
     }
   };
 
+  const updatePaymentStatus = async (entryId: string, confirmed: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('pool_entries')
+        .update({ payment_confirmed: confirmed })
+        .eq('id', entryId);
+
+      if (error) throw error;
+
+      setEntries(prev => prev.map(entry => 
+        entry.id === entryId ? { ...entry, payment_confirmed: confirmed } : entry
+      ));
+
+      toast({
+        title: "Success!",
+        description: `Payment status ${confirmed ? 'confirmed' : 'marked as pending'}`,
+      });
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update payment status",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading pool entries...</div>;
   }
@@ -153,6 +190,7 @@ export const PoolEntriesManagement: React.FC = () => {
                 <TableRow>
                   <TableHead>Participant</TableHead>
                   <TableHead>Team Name</TableHead>
+                  <TableHead>Email</TableHead>
                   <TableHead>Team</TableHead>
                   <TableHead>Payment</TableHead>
                   <TableHead>Points</TableHead>
@@ -167,6 +205,7 @@ export const PoolEntriesManagement: React.FC = () => {
                       {entry.participant_name}
                     </TableCell>
                     <TableCell>{entry.team_name}</TableCell>
+                    <TableCell className="text-sm">{entry.email}</TableCell>
                     <TableCell className="text-sm">
                       {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].join(', ')}
                     </TableCell>
@@ -182,27 +221,61 @@ export const PoolEntriesManagement: React.FC = () => {
                       {new Date(entry.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm">
-                            <Trash2 className="h-4 w-4" />
+                      <div className="flex gap-2 flex-wrap">
+                        {/* User can mark their own payment as sent */}
+                        {currentUserId === entry.user_id && !entry.payment_confirmed && (
+                          <UserPaymentButton 
+                            entryId={entry.id}
+                            paymentConfirmed={entry.payment_confirmed}
+                          />
+                        )}
+                        
+                        {/* Admin controls */}
+                        {!entry.payment_confirmed && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updatePaymentStatus(entry.id, true)}
+                            className="text-green-600 hover:bg-green-50 h-7"
+                          >
+                            <Check className="h-3 w-3 mr-1" />
+                            Confirm
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Pool Entry</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete {entry.participant_name}'s entry? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteEntry(entry.id)}>
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                        )}
+                        {entry.payment_confirmed && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updatePaymentStatus(entry.id, false)}
+                            className="text-red-600 hover:bg-red-50 h-7"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Pending
+                          </Button>
+                        )}
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" className="h-7">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Pool Entry</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete {entry.participant_name}'s entry? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteEntry(entry.id)}>
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

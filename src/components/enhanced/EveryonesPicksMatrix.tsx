@@ -160,28 +160,29 @@ export const EveryonesPicksMatrix: React.FC = () => {
         <CardContent>
           <div className="space-y-4">
             {poolEntries.map((entry) => (
-              <div key={entry.id} className="bg-muted/30 border rounded-lg p-4">
+              <div key={entry.id} className="bg-gradient-to-br from-background to-muted/20 border rounded-xl p-4 hover:shadow-md transition-all duration-200">
                 <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <div className="font-semibold text-lg">{entry.team_name}</div>
-                    <div className="text-sm text-muted-foreground">{entry.participant_name}</div>
-                    <Badge variant={entry.payment_confirmed ? "default" : "destructive"} className="text-xs">
-                      {entry.payment_confirmed ? "Paid" : "Pending"}
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <div className="font-bold text-base">{entry.team_name}</div>
+                      <div className="text-xs text-muted-foreground">{entry.participant_name}</div>
+                    </div>
+                    <Badge variant={entry.payment_confirmed ? "default" : "secondary"} className="text-xs px-2 py-0.5">
+                      {entry.payment_confirmed ? "✓" : "○"}
                     </Badge>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-primary">
+                    <div className="text-xl font-bold text-primary">
                       {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
                         .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0)}
                     </div>
-                    <div className="text-xs text-muted-foreground">Total Points</div>
+                    <div className="text-xs text-muted-foreground">pts</div>
                   </div>
                 </div>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-5 gap-2">
                   {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
-                    <div key={index} className="bg-background rounded p-2 text-center text-sm">
-                      <div className="text-xs text-muted-foreground mb-1">Player {index + 1}</div>
-                      <div className="font-medium">{renderPlayerName(player)}</div>
+                    <div key={index} className="bg-background/60 rounded-lg p-2 text-center">
+                      <div className="text-xs font-medium truncate" title={player}>{renderPlayerName(player)}</div>
                     </div>
                   ))}
                 </div>

@@ -17,7 +17,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         <TableHeader>
           <TableRow className="bg-gray-50">
             <TableHead className="font-bold">Rank</TableHead>
-            {showHistoricalColumns && <TableHead className="font-bold text-center">Change</TableHead>}
+            {showHistoricalColumns && <TableHead className="font-bold text-center">Rank Δ</TableHead>}
             <TableHead className="font-bold">Team Name</TableHead>
             <TableHead className="font-bold">Participant</TableHead>
             <TableHead className="font-bold">Player 1</TableHead>
@@ -26,7 +26,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             <TableHead className="font-bold">Player 4</TableHead>
             <TableHead className="font-bold">Player 5</TableHead>
             <TableHead className="font-bold text-center">Weekly Pts</TableHead>
-            {showHistoricalColumns && <TableHead className="font-bold text-center">Pts Change</TableHead>}
+            {showHistoricalColumns && <TableHead className="font-bold text-center">Pts Δ</TableHead>}
             <TableHead className="font-bold text-center">Bonus Pts</TableHead>
             <TableHead className="font-bold text-center bg-yellow-100">Total</TableHead>
             <TableHead className="font-bold text-center">Payment</TableHead>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useLeaderboardData } from '@/hooks/useLeaderboardData';
 import { LeaderboardHeader } from './LeaderboardHeader';
 import { LeaderboardTable } from './LeaderboardTable';
+import { ScoringBadges } from './ScoringBadges';
 
 export const EnhancedTeamLeaderboard: React.FC = () => {
   const {
@@ -43,6 +44,7 @@ export const EnhancedTeamLeaderboard: React.FC = () => {
           completedWeeks={completedWeeks}
           onWeekChange={handleWeekChange}
         />
+        <ScoringBadges />
       </CardHeader>
       
       <CardContent className="p-0">

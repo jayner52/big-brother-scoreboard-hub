@@ -352,7 +352,7 @@ const Index = () => {
             </TabsList>
 
             {/* Team Summary Banner - Show when user has draft progress */}
-            {Object.values(formData).some(player => player && player.trim()) && (
+            {[formData.player_1, formData.player_2, formData.player_3, formData.player_4, formData.player_5].some(player => typeof player === 'string' && player.trim()) && (
               <div className="mb-6">
                 <TeamSummaryBanner formData={formData} />
               </div>

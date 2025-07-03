@@ -19,7 +19,7 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
     formData.player_3,
     formData.player_4,
     formData.player_5,
-  ].filter(player => player.trim());
+  ].filter(player => typeof player === 'string' && player.trim());
 
   const teamName = formData.team_name || 'Your Team';
   const completionPercentage = (selectedPlayers.length / 5) * 100;

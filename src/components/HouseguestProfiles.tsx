@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+import { useUserPaymentUpdate } from '@/hooks/useUserPaymentUpdate';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserTeamsProps {
   userId?: string;
@@ -16,6 +18,9 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const { houseguestPoints } = useHouseguestPoints();
+  const { evictedContestants } = useEvictedContestants();
+  const { updatePaymentStatus, updating } = useUserPaymentUpdate();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadUserEntries();
@@ -50,19 +55,45 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
     }
   };
 
+  const handlePaymentToggle = async (entryId: string, currentStatus: boolean) => {
+    const success = await updatePaymentStatus(entryId, !currentStatus);
+    if (success) {
+      // Update local state
+      setUserEntries(prev => prev.map(entry => 
+        entry.id === entryId ? { ...entry, payment_confirmed: !currentStatus } : entry
+      ));
+    }
+  };
+
+  const renderPlayerName = (playerName: string) => {
+    const isEliminated = evictedContestants.includes(playerName);
+    const points = houseguestPoints[playerName] || 0;
+    
+    return (
+      <div className={`flex flex-col items-center transition-colors ${isEliminated ? 'opacity-60' : ''}`}>
+        <span className={`font-medium text-xs mb-1 ${isEliminated ? 'text-red-500 line-through' : 'text-foreground'}`} title={playerName}>
+          {playerName.split(' ')[0]}
+        </span>
+        <div className={`rounded-full px-2 py-0.5 ${isEliminated ? 'bg-red-100' : 'bg-primary/10'}`}>
+          <span className={`text-xs font-semibold ${isEliminated ? 'text-red-700' : 'text-primary'}`}>
+            {points}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
-    return <div className="text-center py-4">Loading your teams...</div>;
+    return <div className="text-center py-2 text-sm text-muted-foreground">Loading team...</div>;
   }
 
   if (userEntries.length === 0) {
     return (
-      <Card>
-        <CardContent className="text-center py-8">
-          <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-lg font-semibold mb-2">No Teams Found</p>
-          <p className="text-muted-foreground">You haven't created any teams yet.</p>
-        </CardContent>
-      </Card>
+      <div className="bg-muted/30 border rounded-lg p-3 text-center">
+        <Users className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
+        <p className="text-sm font-medium mb-1">No Teams Found</p>
+        <p className="text-xs text-muted-foreground">You haven't created any teams yet.</p>
+      </div>
     );
   }
 
@@ -79,85 +110,87 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   };
 
   return (
-    <div className="w-full">
-      {/* Navigation */}
-      {userEntries.length > 1 && (
-        <div className="flex items-center justify-center gap-4 mb-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={prevEntry}
-            disabled={userEntries.length <= 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Team {currentEntryIndex + 1} of {userEntries.length}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={nextEntry}
-            disabled={userEntries.length <= 1}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
-      {/* Team Dashboard */}
-      <div className="w-full bg-card border rounded-lg p-4">
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Sleek Team Banner */}
+      <div className="bg-gradient-to-r from-primary/5 via-background to-primary/5 border rounded-xl p-4 shadow-sm">
         <div className="flex items-center justify-between">
-          {/* Left: Team Info */}
-          <div className="flex items-center gap-3">
-            <div className="bg-primary p-2 rounded-lg">
-              <Users className="h-4 w-4 text-primary-foreground" />
+          {/* Left: Team Info & Navigation */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <Users className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">{currentEntry.team_name}</h3>
+                <p className="text-xs text-muted-foreground">{currentEntry.participant_name}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-lg">{currentEntry.team_name}</h3>
-              <p className="text-sm text-muted-foreground">by {currentEntry.participant_name}</p>
-            </div>
+            
+            {/* Team Navigation */}
+            {userEntries.length > 1 && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={prevEntry}
+                  className="h-6 w-6 p-0"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                <span className="text-xs text-muted-foreground px-2">
+                  {currentEntryIndex + 1}/{userEntries.length}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={nextEntry}
+                  className="h-6 w-6 p-0"
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
           </div>
           
-          {/* Center: Player Cards */}
-          <div className="flex items-center gap-2">
+          {/* Center: Compact Player Cards */}
+          <div className="flex items-center gap-1">
             {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
-              <div key={index} className="flex flex-col items-center bg-muted rounded-lg px-3 py-2">
-                <span className="font-medium text-xs mb-1" title={player}>
-                  {player.split(' ')[0]}
-                </span>
-                <div className="bg-primary/10 rounded-full px-2 py-0.5">
-                  <span className="text-sm font-semibold text-primary">
-                    {houseguestPoints[player] || 0}
-                  </span>
-                </div>
+              <div key={index} className="bg-background/50 rounded-lg px-2 py-1 border">
+                {renderPlayerName(player)}
               </div>
             ))}
           </div>
           
-          {/* Right: Status & Score */}
+          {/* Right: Status & Actions */}
           <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-1">
-              <Badge 
-                variant={currentEntry.payment_confirmed ? "default" : "destructive"} 
-                className="text-xs"
-              >
-                {currentEntry.payment_confirmed ? "✓ Paid" : "⏳ Pending"}
-              </Badge>
-              {currentEntry.current_rank && (
-                <Badge variant="outline" className="text-xs">
-                  Rank #{currentEntry.current_rank}
-                </Badge>
-              )}
-            </div>
-            <div className="bg-muted rounded-lg px-4 py-3 text-center">
-              <div className="text-2xl font-bold text-primary">
+            {/* Payment Toggle */}
+            <Button
+              variant={currentEntry.payment_confirmed ? "default" : "outline"}
+              size="sm"
+              onClick={() => handlePaymentToggle(currentEntry.id, currentEntry.payment_confirmed)}
+              disabled={updating}
+              className="h-8 px-3 text-xs"
+            >
+              <CreditCard className="h-3 w-3 mr-1" />
+              {updating ? "..." : currentEntry.payment_confirmed ? "Paid" : "Pay"}
+            </Button>
+            
+            {/* Score Display */}
+            <div className="bg-primary/10 rounded-lg px-3 py-1 border">
+              <div className="text-lg font-bold text-primary">
                 {totalPoints}
               </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                POINTS
+              <div className="text-xs text-muted-foreground text-center">
+                pts
               </div>
             </div>
+            
+            {/* Rank Badge */}
+            {currentEntry.current_rank && (
+              <Badge variant="outline" className="text-xs">
+                #{currentEntry.current_rank}
+              </Badge>
+            )}
           </div>
         </div>
       </div>

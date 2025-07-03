@@ -152,17 +152,8 @@ const Index = () => {
                 
                 {/* Enhanced User Status Panel with Multi-Team Support */}
                 {user && userEntry && (
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1">
                     <HouseguestProfiles userId={user.id} />
-                    {!userEntry.payment_confirmed && (
-                      <div className="flex justify-end">
-                        <UserPaymentButton 
-                          entryId={userEntry.id}
-                          paymentConfirmed={userEntry.payment_confirmed}
-                          className="text-xs"
-                        />
-                      </div>
-                    )}
                   </div>
                 )}
                 

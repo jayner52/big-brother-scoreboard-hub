@@ -79,6 +79,8 @@ export interface WeeklyEventForm {
   isTripleEviction: boolean;
   isFinalWeek: boolean;
   isJuryPhase: boolean;
+  aiArenaEnabled?: boolean;
+  aiArenaWinner?: string;
   secondHohWinner?: string;
   secondNominees: string[];
   secondPovWinner?: string;

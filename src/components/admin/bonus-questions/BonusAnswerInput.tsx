@@ -41,7 +41,6 @@ export const BonusAnswerInput: React.FC<BonusAnswerInputProps> = ({
             <SelectValue placeholder="Select creature type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Clear Selection</SelectItem>
             {creatureOptions.map(option => (
               <SelectItem key={option} value={option}>
                 {option}
@@ -73,7 +72,6 @@ export const BonusAnswerInput: React.FC<BonusAnswerInputProps> = ({
             <SelectValue placeholder="Select correct answer" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Clear Selection</SelectItem>
             {contestants.map(contestant => (
               <SelectItem key={contestant.id} value={contestant.name}>
                 {contestant.name}
@@ -137,6 +135,15 @@ export const BonusAnswerInput: React.FC<BonusAnswerInputProps> = ({
             ))}
           </SelectContent>
         </Select>
+        {(currentAnswer?.player1 || currentAnswer?.player2) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onAnswerChange({ player1: '', player2: '' })}
+          >
+            Clear Selection
+          </Button>
+        )}
       </div>
     );
   }

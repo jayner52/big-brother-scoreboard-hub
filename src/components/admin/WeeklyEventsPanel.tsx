@@ -20,6 +20,7 @@ import { ThirdEvictionSection } from './weekly-events/ThirdEvictionSection';
 import { JuryPhaseToggle } from './weekly-events/EnhancedJuryPhaseToggle';
 import { WeekNavigator } from './weekly-events/WeekNavigator';
 import { WeekControls } from './weekly-events/WeekControls';
+import { AIArenaSection } from './weekly-events/AIArenaSection';
 import { useScoringRules } from '@/hooks/useScoringRules';
 
 export const WeeklyEventsPanel: React.FC = () => {
@@ -208,6 +209,13 @@ export const WeeklyEventsPanel: React.FC = () => {
                   contestants={contestants}
                 />
               )}
+
+              {/* AI Arena Section */}
+              <AIArenaSection
+                eventForm={eventForm}
+                setEventForm={setEventForm}
+                activeContestants={activeContestants}
+              />
 
               {/* Special Events */}
               <SpecialEventsSection

@@ -149,18 +149,35 @@ export const EveryonesPicks: React.FC = () => {
                     </TableHeader>
                     <TableBody>
                       {poolEntries.map((entry) => {
+                        const answer = entry.bonus_answers[question.id];
+                        let displayAnswer = "No answer";
+                        
+                        // Handle different answer types properly
+                        if (answer) {
+                          if (typeof answer === 'object' && answer.player1 && answer.player2) {
+                            // Handle dual_player_select answers
+                            displayAnswer = `${answer.player1} & ${answer.player2}`;
+                          } else if (typeof answer === 'string' || typeof answer === 'number') {
+                            displayAnswer = String(answer);
+                          } else {
+                            displayAnswer = String(answer);
+                          }
+                        }
+                        
                         const isCorrect = question.answer_revealed && 
-                          entry.bonus_answers[question.id] === question.correct_answer;
+                          JSON.stringify(answer) === JSON.stringify(question.correct_answer);
                         
                         return (
                           <TableRow key={entry.id}>
                             <TableCell className="font-semibold">{entry.team_name}</TableCell>
                             <TableCell className={question.answer_revealed ? (isCorrect ? "text-green-600 font-semibold" : "text-red-600") : ""}>
-                              {entry.bonus_answers[question.id] || "No answer"}
+                              {displayAnswer}
                             </TableCell>
                             {question.answer_revealed && (
                               <TableCell className="text-green-600 font-semibold">
-                                {question.correct_answer}
+                                 {question.correct_answer && typeof question.correct_answer === 'object' && (question.correct_answer as any).player1
+                                   ? `${(question.correct_answer as any).player1} & ${(question.correct_answer as any).player2}`
+                                   : question.correct_answer || ''}
                               </TableCell>
                             )}
                           </TableRow>

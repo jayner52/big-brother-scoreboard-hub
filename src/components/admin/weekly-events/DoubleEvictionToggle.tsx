@@ -13,7 +13,7 @@ export const DoubleEvictionToggle: React.FC<DoubleEvictionToggleProps> = ({
   setEventForm,
 }) => {
   return (
-    <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+    <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1">
       <Switch
         checked={eventForm.isDoubleEviction}
         onCheckedChange={(checked) => setEventForm(prev => ({ 

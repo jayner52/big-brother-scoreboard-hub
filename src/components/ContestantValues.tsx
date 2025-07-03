@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Key, Target, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
+import { useActiveContestants } from '@/hooks/useActiveContestants';
 
 interface ContestantStats {
   contestant_name: string;
@@ -31,6 +32,7 @@ export const ContestantValues: React.FC = () => {
   const [contestantGroups, setContestantGroups] = useState<ContestantGroup[]>([]);
   const [contestantStats, setContestantStats] = useState<ContestantStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const { evictedContestants } = useActiveContestants();
 
   useEffect(() => {
     loadData();
@@ -55,7 +57,7 @@ export const ContestantValues: React.FC = () => {
       // Map contestants to match our type interface
       const mappedContestants = (contestantsResult.data || []).map(c => ({
         ...c,
-        isActive: c.is_active
+        isActive: !evictedContestants.includes(c.name) // Determine based on eviction status
       }));
       
       setContestants(mappedContestants);
@@ -287,7 +289,7 @@ export const ContestantValues: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {contestantGroups.map(group => {
               const groupContestants = contestants.filter(c => c.group_id === group.id);
-              const activeCount = groupContestants.filter(c => c.isActive).length;
+              const activeCount = groupContestants.filter(c => !evictedContestants.includes(c.name)).length;
               
               return (
                 <div key={group.id} className="border rounded-lg p-4">
@@ -296,16 +298,19 @@ export const ContestantValues: React.FC = () => {
                     {activeCount} of {groupContestants.length} still active
                   </p>
                   <div className="space-y-1">
-                    {groupContestants.map(contestant => (
-                      <div key={contestant.id} className="flex justify-between items-center">
-                        <span className={contestant.isActive ? '' : 'line-through text-gray-400'}>
-                          {contestant.name}
-                        </span>
-                        <Badge variant={contestant.isActive ? "default" : "destructive"} className="text-xs">
-                          {contestant.isActive ? "Active" : "Out"}
-                        </Badge>
-                      </div>
-                    ))}
+                    {groupContestants.map(contestant => {
+                      const isEvicted = evictedContestants.includes(contestant.name);
+                      return (
+                        <div key={contestant.id} className="flex justify-between items-center">
+                          <span className={isEvicted ? 'line-through text-gray-400' : ''}>
+                            {contestant.name}
+                          </span>
+                          <Badge variant={isEvicted ? "destructive" : "default"} className="text-xs">
+                            {isEvicted ? "Out" : "Active"}
+                          </Badge>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );

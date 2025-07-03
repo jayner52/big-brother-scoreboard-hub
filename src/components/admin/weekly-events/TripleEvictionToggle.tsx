@@ -13,7 +13,7 @@ export const TripleEvictionToggle: React.FC<TripleEvictionToggleProps> = ({
   setEventForm,
 }) => {
   return (
-    <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+    <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-2 py-1">
       <Switch
         checked={eventForm.isTripleEviction}
         onCheckedChange={(checked) => setEventForm(prev => ({ 

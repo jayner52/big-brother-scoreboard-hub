@@ -4,18 +4,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { useActiveContestants } from '@/hooks/useActiveContestants';
 
 interface PovUsageSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
-  activeContestants: ContestantWithBio[];
 }
 
 export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
   eventForm,
   setEventForm,
-  activeContestants,
 }) => {
+  const { activeContestants } = useActiveContestants();
   if (!eventForm.povWinner || eventForm.povWinner === 'no-winner') {
     return null;
   }

@@ -162,13 +162,18 @@ export const useWeeklyEvents = () => {
       preview[eventForm.replacementNominee] = (preview[eventForm.replacementNominee] || 0) + calculatePoints('replacement_nominee');
     }
     
-    // Survival points for all active contestants except those evicted this week
+    // Survival points for contestants not evicted this week or previously
     const evictedThisWeek = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
       .filter(evicted => evicted && evicted !== 'no-eviction');
     
-    const survivingContestants = contestants.filter(c => 
-      c.isActive && !evictedThisWeek.includes(c.name)
-    );
+    // Get all previously evicted contestants from the preview data
+    const allEvictedNames = Object.keys(preview).filter(name => {
+      // Check if this contestant has been evicted in any previous week
+      return contestants.some(c => c.name === name && !c.isActive);
+    });
+    
+    const allCurrentlyEvicted = [...allEvictedNames, ...evictedThisWeek];
+    const survivingContestants = contestants.filter(c => !allCurrentlyEvicted.includes(c.name));
     
     survivingContestants.forEach(contestant => {
       preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('survival');
@@ -290,15 +295,22 @@ export const useWeeklyEvents = () => {
         });
       }
 
-      // Add survival points for non-evicted active contestants
-      const evictedIds = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
-        .filter(name => name && name !== 'no-eviction')
-        .map(name => contestants.find(c => c.name === name)?.id)
-        .filter(id => id);
+    // Add survival points for non-evicted contestants
+    const currentWeekEvicted = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
+      .filter(name => name && name !== 'no-eviction');
+    
+    // Get all evicted contestants from database to determine who's active
+    const { data: allEvictedData } = await supabase
+      .from('weekly_events')
+      .select('contestants!inner(name)')
+      .eq('event_type', 'evicted');
+    
+    const allEvictedNames = allEvictedData?.map(event => (event.contestants as any).name) || [];
+    const currentlyEvicted = [...allEvictedNames, ...currentWeekEvicted];
+    
+    const survivingContestants = contestants.filter(c => !currentlyEvicted.includes(c.name));
       
-      const activeContestants = contestants.filter(c => c.isActive && !evictedIds.includes(c.id));
-      
-      activeContestants.forEach(contestant => {
+    survivingContestants.forEach(contestant => {
         events.push({
           week_number: eventForm.week,
           contestant_id: contestant.id,
@@ -319,7 +331,7 @@ export const useWeeklyEvents = () => {
 
       // Add jury points if jury phase starts this week
       if (eventForm.isJuryPhase) {
-        activeContestants.forEach(contestant => {
+        survivingContestants.forEach(contestant => {
           events.push({
             week_number: eventForm.week,
             contestant_id: contestant.id,

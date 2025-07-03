@@ -79,54 +79,54 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            {userEntries.length > 1 ? 'Your Teams' : 'Your Team'}
-          </CardTitle>
-          {userEntries.length > 1 && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={prevEntry}
-                disabled={userEntries.length <= 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {currentEntryIndex + 1} of {userEntries.length}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={nextEntry}
-                disabled={userEntries.length <= 1}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+    <div className="w-full">
+      {/* Navigation */}
+      {userEntries.length > 1 && (
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={prevEntry}
+            disabled={userEntries.length <= 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Team {currentEntryIndex + 1} of {userEntries.length}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={nextEntry}
+            disabled={userEntries.length <= 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Team Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-primary">{currentEntry.team_name}</h3>
-              <p className="text-sm text-muted-foreground">by {currentEntry.participant_name}</p>
+      )}
+
+      {/* Horizontal Team Layout */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            {/* Team Info */}
+            <div className="flex items-center gap-4">
+              <Users className="h-6 w-6 text-primary" />
+              <div>
+                <h3 className="text-xl font-bold text-primary">{currentEntry.team_name}</h3>
+                <p className="text-sm text-muted-foreground">by {currentEntry.participant_name}</p>
+              </div>
             </div>
+
+            {/* Total Points */}
             <div className="text-right">
-              <div className="text-2xl font-bold text-primary">{totalPoints}</div>
+              <div className="text-3xl font-bold text-primary">{totalPoints}</div>
               <div className="text-sm text-muted-foreground">Total Points</div>
             </div>
           </div>
 
-          {/* Payment Status */}
-          <div className="flex items-center gap-2">
+          {/* Status Badges */}
+          <div className="flex items-center gap-2 mb-6">
             <Badge variant={currentEntry.payment_confirmed ? "default" : "destructive"}>
               {currentEntry.payment_confirmed ? "Payment Confirmed" : "Payment Pending"}
             </Badge>
@@ -137,12 +137,12 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
             )}
           </div>
 
-          {/* Team Players */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* Team Players - Horizontal Grid */}
+          <div className="grid grid-cols-5 gap-4 mb-6">
             {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
-              <div key={index} className="text-center p-3 border rounded-lg bg-card">
-                <div className="font-semibold text-sm mb-1">{player}</div>
-                <div className="text-lg font-bold text-primary">
+              <div key={index} className="text-center p-4 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="font-semibold text-sm mb-2">{player}</div>
+                <div className="text-2xl font-bold text-primary mb-1">
                   {houseguestPoints[player] || 0}
                 </div>
                 <div className="text-xs text-muted-foreground">points</div>
@@ -150,23 +150,23 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
             ))}
           </div>
 
-          {/* Points Breakdown */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+          {/* Points Breakdown - Horizontal */}
+          <div className="grid grid-cols-3 gap-6 pt-4 border-t">
             <div className="text-center">
-              <div className="text-lg font-bold">{currentEntry.weekly_points}</div>
-              <div className="text-xs text-muted-foreground">Weekly Points</div>
+              <div className="text-xl font-bold">{currentEntry.weekly_points}</div>
+              <div className="text-sm text-muted-foreground">Weekly Points</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold">{currentEntry.bonus_points}</div>
-              <div className="text-xs text-muted-foreground">Bonus Points</div>
+              <div className="text-xl font-bold">{currentEntry.bonus_points}</div>
+              <div className="text-sm text-muted-foreground">Bonus Points</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-primary">{totalPoints}</div>
-              <div className="text-xs text-muted-foreground">Total Points</div>
+              <div className="text-xl font-bold text-primary">{totalPoints}</div>
+              <div className="text-sm text-muted-foreground">Final Total</div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

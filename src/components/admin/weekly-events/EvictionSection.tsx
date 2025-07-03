@@ -2,21 +2,18 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
-import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+import { useActiveContestants } from '@/hooks/useActiveContestants';
 
 interface EvictionSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
-  activeContestants: ContestantWithBio[];
-  contestants: ContestantWithBio[];
 }
 
 export const EvictionSection: React.FC<EvictionSectionProps> = ({
   eventForm,
   setEventForm,
-  activeContestants,
-  contestants,
 }) => {
+  const { activeContestants } = useActiveContestants();
   // Calculate final nominees (after POV ceremony) and exclude BB Arena winner
   const getFinalNominees = () => {
     let finalNominees = [...eventForm.nominees.filter(n => n)];
@@ -39,7 +36,6 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
   };
 
   const finalNominees = getFinalNominees();
-  const { evictedContestants } = useEvictedContestants();
 
   return (
     <div>
@@ -57,14 +53,12 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
               </SelectItem>
             ))
            ) : (
-             activeContestants
-               .filter(c => !evictedContestants.includes(c.name))
-               .map(contestant => (
-                 <SelectItem key={contestant.id} value={contestant.name}>
-                   {contestant.name}
-                 </SelectItem>
-               ))
-           )}
+              activeContestants.map(contestant => (
+                <SelectItem key={contestant.id} value={contestant.name}>
+                  {contestant.name}
+                </SelectItem>
+              ))
+            )}
         </SelectContent>
       </Select>
       {finalNominees.length > 0 && (

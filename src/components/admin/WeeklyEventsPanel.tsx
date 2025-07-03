@@ -168,22 +168,18 @@ export const WeeklyEventsPanel: React.FC = () => {
                 <CompetitionWinners
                   eventForm={eventForm}
                   setEventForm={setEventForm}
-                  activeContestants={activeContestants}
                 />
 
                 {/* Nominees */}
                 <NomineesSection
                   eventForm={eventForm}
                   setEventForm={setEventForm}
-                  activeContestants={activeContestants}
-                  contestants={contestants}
                 />
 
                 {/* POV Usage and Replacement */}
                 <PovUsageSection
                   eventForm={eventForm}
                   setEventForm={setEventForm}
-                  activeContestants={activeContestants}
                 />
 
               </div>
@@ -219,8 +215,6 @@ export const WeeklyEventsPanel: React.FC = () => {
               <EvictionSection
                 eventForm={eventForm}
                 setEventForm={setEventForm}
-                activeContestants={activeContestants}
-                contestants={contestants}
               />
 
               {/* Special Events */}

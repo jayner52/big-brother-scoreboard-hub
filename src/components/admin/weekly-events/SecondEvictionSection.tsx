@@ -56,30 +56,24 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
         <CompetitionWinners
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
-          activeContestants={activeContestants}
         />
 
         {/* Second Nominees */}
         <NomineesSection
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
-          activeContestants={activeContestants}
-          contestants={contestants}
         />
 
         {/* Second POV Usage */}
         <PovUsageSection
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
-          activeContestants={activeContestants}
         />
 
         {/* Second Evicted Contestant */}
         <EvictionSection
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
-          activeContestants={activeContestants}
-          contestants={contestants}
         />
       </CardContent>
     </Card>

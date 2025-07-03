@@ -2,23 +2,18 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
-import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+import { useActiveContestants } from '@/hooks/useActiveContestants';
 
 interface CompetitionWinnersProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
-  activeContestants: ContestantWithBio[];
 }
 
 export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
   eventForm,
   setEventForm,
-  activeContestants,
 }) => {
-  const { evictedContestants } = useEvictedContestants();
-  
-  // Get contestants who are still in the game (not evicted) - use all contestants, not just activeContestants
-  const gameContestants = activeContestants.filter(c => !evictedContestants.includes(c.name));
+  const { activeContestants } = useActiveContestants();
   
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -30,7 +25,7 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="no-winner">No winner</SelectItem>
-            {gameContestants.map(contestant => (
+            {activeContestants.map(contestant => (
               <SelectItem key={contestant.id} value={contestant.name}>
                 {contestant.name}
               </SelectItem>
@@ -47,7 +42,7 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="no-winner">No winner</SelectItem>
-            {gameContestants.map(contestant => (
+            {activeContestants.map(contestant => (
               <SelectItem key={contestant.id} value={contestant.name}>
                 {contestant.name}
               </SelectItem>

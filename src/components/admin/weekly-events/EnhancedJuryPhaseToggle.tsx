@@ -56,14 +56,14 @@ export const JuryPhaseToggle: React.FC<JuryPhaseToggleProps> = ({
   const canStartJury = !juryWeekExists || juryWeekExists === eventForm.week;
 
   return (
-    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
       <Switch
         id="jury-phase"
         checked={eventForm.isJuryPhase || false}
         onCheckedChange={handleJuryToggle}
         disabled={!canStartJury}
       />
-      <span className="text-sm font-medium text-amber-800">Jury Phase</span>
+      <span className="text-sm font-medium text-amber-800">Jury Starts</span>
     </div>
   );
 };

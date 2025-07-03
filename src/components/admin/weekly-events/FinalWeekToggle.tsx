@@ -19,7 +19,7 @@ export const FinalWeekToggle: React.FC<FinalWeekToggleProps> = ({
   activeContestants,
 }) => {
   return (
-    <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
+    <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg px-2 py-1">
       <Switch
         checked={eventForm.isFinalWeek}
         onCheckedChange={(checked) => setEventForm(prev => ({ 

@@ -6,6 +6,7 @@ import { Crown, Key, Target, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
 import { SpecialEventsBadge } from '@/components/admin/SpecialEventsBadge';
+import { useActiveContestants } from '@/hooks/useActiveContestants';
 
 interface HouseguestStats {
   houseguest_name: string;
@@ -38,6 +39,7 @@ export const HouseguestValues: React.FC = () => {
   const [houseguestGroups, setHouseguestGroups] = useState<ContestantGroup[]>([]);
   const [houseguestStats, setHouseguestStats] = useState<HouseguestStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const { evictedContestants } = useActiveContestants();
 
   useEffect(() => {
     loadData();
@@ -66,7 +68,7 @@ export const HouseguestValues: React.FC = () => {
       // Map houseguests to match our type interface
       const mappedHouseguests = (houseguestsResult.data || []).map(c => ({
         ...c,
-        isActive: c.is_active
+        isActive: !evictedContestants.includes(c.name) // Determine based on eviction status
       }));
       
       setHouseguests(mappedHouseguests);
@@ -355,7 +357,7 @@ export const HouseguestValues: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {houseguestGroups.map(group => {
               const groupHouseguests = houseguests.filter(c => c.group_id === group.id);
-              const activeCount = groupHouseguests.filter(c => c.isActive).length;
+              const activeCount = groupHouseguests.filter(c => !evictedContestants.includes(c.name)).length;
               
               return (
                 <div key={group.id} className="border rounded-lg p-4">
@@ -364,16 +366,19 @@ export const HouseguestValues: React.FC = () => {
                     {activeCount} of {groupHouseguests.length} still active
                   </p>
                   <div className="space-y-1">
-                    {groupHouseguests.map(houseguest => (
-                      <div key={houseguest.id} className="flex justify-between items-center">
-                        <span className={houseguest.isActive ? '' : 'line-through text-gray-400'}>
-                          {houseguest.name}
-                        </span>
-                        <Badge variant={houseguest.isActive ? "default" : "destructive"} className="text-xs">
-                          {houseguest.isActive ? "Active" : "Out"}
-                        </Badge>
-                      </div>
-                    ))}
+                    {groupHouseguests.map(houseguest => {
+                      const isEvicted = evictedContestants.includes(houseguest.name);
+                      return (
+                        <div key={houseguest.id} className="flex justify-between items-center">
+                          <span className={isEvicted ? 'line-through text-gray-400' : ''}>
+                            {houseguest.name}
+                          </span>
+                          <Badge variant={isEvicted ? "destructive" : "default"} className="text-xs">
+                            {isEvicted ? "Out" : "Active"}
+                          </Badge>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );

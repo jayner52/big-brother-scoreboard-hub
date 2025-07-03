@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { useScoringRules } from '@/hooks/useScoringRules';
 
 interface AIArenaSectionProps {
   eventForm: WeeklyEventForm;
@@ -16,6 +17,7 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
   setEventForm,
   activeContestants,
 }) => {
+  const { getPointsForEvent } = useScoringRules();
   const handleAIArenaToggle = (enabled: boolean) => {
     if (!enabled) {
       // Clear AI Arena data when disabled
@@ -39,8 +41,24 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
     }));
   };
 
-  // Get current nominees for AI Arena selection
-  const currentNominees = eventForm.nominees.filter(nominee => nominee && nominee !== '');
+  // Get final nominees for AI Arena selection (after POV ceremony)
+  const getFinalNominees = () => {
+    let finalNominees = [...eventForm.nominees.filter(n => n)];
+    
+    if (eventForm.povUsed && eventForm.povUsedOn) {
+      // Remove the person saved by POV
+      finalNominees = finalNominees.filter(n => n !== eventForm.povUsedOn);
+      // Add replacement nominee if there is one
+      if (eventForm.replacementNominee) {
+        finalNominees.push(eventForm.replacementNominee);
+      }
+    }
+    
+    return finalNominees;
+  };
+
+  const currentNominees = getFinalNominees();
+  const bbArenaPoints = getPointsForEvent('bb_arena_winner');
 
   return (
     <Card className="bg-purple-50 border-purple-200">
@@ -85,7 +103,7 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
             )}
             {eventForm.aiArenaWinner && (
               <p className="text-xs text-purple-700 mt-1">
-                Winner is safe from eviction (points from scoring rules)
+                Winner is safe from eviction (+{bbArenaPoints} points)
               </p>
             )}
           </div>

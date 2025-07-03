@@ -85,35 +85,67 @@ serve(async (req) => {
       let systemPrompt, userPrompt;
       
       if (season_number === 26) {
-        // For BB26, generate profiles based on actual cast
-        systemPrompt = `You are a Big Brother database expert with verified access to Season 26 cast information. You MUST return accurate, factual contestant profiles using ONLY real cast member data from the actual season that aired.
+        // For BB26, use hardcoded real cast data as primary source
+        const realBB26Cast = [
+          { name: "Angela Murray", age: 50, hometown: "Long Beach, CA", occupation: "Real Estate Agent", bio: "Fierce competitor who won HOH twice and survived seven nominations before placing 6th. Known for her strategic gameplay and strong social connections." },
+          { name: "Brooklyn Rivera", age: 34, hometown: "Dallas, TX", occupation: "Business Administrator", bio: "Strategic player who formed strong alliances and navigated complex house dynamics with intelligence and social awareness." },
+          { name: "Cam Sullivan-Brown", age: 25, hometown: "Bowie, MD", occupation: "Physical Therapist", bio: "Athletic competitor who balanced physical prowess with strategic thinking, forming key relationships in the house." },
+          { name: "Cedric Hodges", age: 21, hometown: "Saginaw, TX", occupation: "Former Marine", bio: "Young but disciplined player who brought military precision to his strategic gameplay and competition performance." },
+          { name: "Chelsie Baham", age: 27, hometown: "Rancho Cucamonga, CA", occupation: "Nonprofit Director", bio: "Winner of Big Brother 26 who masterfully controlled the game with strategic moves and competition wins when needed." },
+          { name: "Joseph Rodriguez", age: 30, hometown: "Tampa, FL", occupation: "Video Store Clerk", bio: "Entertainment enthusiast who brought humor and unpredictability to the house while playing a floater strategy." },
+          { name: "Kimo Apaka", age: 35, hometown: "Hilo, HI", occupation: "Mattress Sales", bio: "Laid-back islander who used his calm demeanor to build trust and navigate through multiple weeks safely." },
+          { name: "Leah Peters", age: 26, hometown: "Miami, FL", occupation: "VIP Cocktail Server", bio: "Social butterfly who used her interpersonal skills to gather information and influence house dynamics." },
+          { name: "Makensy Manbeck", age: 22, hometown: "Houston, TX", occupation: "Construction Project Manager", bio: "Young powerhouse who dominated competitions in the late game, winning multiple HOHs and POVs to secure her final placement." },
+          { name: "Quinn Martin", age: 25, hometown: "Omaha, NE", occupation: "Nurse Recruiter", bio: "Superfan who came into the game with extensive Big Brother knowledge and strategic planning." },
+          { name: "Rubina Bernabe", age: 35, hometown: "Los Angeles, CA", occupation: "Event Coordinator", bio: "Organized and detail-oriented player who carefully managed her social game and strategic positioning." },
+          { name: "T'Kor Clottey", age: 23, hometown: "London, England", occupation: "Crochet Business Owner", bio: "Creative entrepreneur who brought a unique perspective and formed genuine connections throughout her time in the house." },
+          { name: "Tucker Des Lauriers", age: 30, hometown: "Brooklyn, NY", occupation: "Marketing/Sales Executive", bio: "Charismatic player who made big moves early in the game and wasn't afraid to take risks to advance his position." }
+        ];
 
-CRITICAL: Return ONLY a valid JSON object with the exact structure requested. Do not include any additional text, explanations, or markdown formatting.`;
+        // Return a random contestant from the real cast
+        const randomIndex = Math.floor(Math.random() * realBB26Cast.length);
+        const selectedContestant = realBB26Cast[randomIndex];
+        
+        const profile: ContestantProfile = {
+          name: selectedContestant.name,
+          age: selectedContestant.age,
+          hometown: selectedContestant.hometown,
+          occupation: selectedContestant.occupation,
+          bio: selectedContestant.bio,
+          relationship_status: "Single",
+          family_info: "Details about family background",
+          physical_description: {
+            height: "5'6\"",
+            build: "Average",
+            hair_color: "Brown",
+            eye_color: "Brown",
+            distinguishing_features: "None noted"
+          },
+          personality_traits: {
+            archetype: "Strategist",
+            strengths: ["Strategic thinking", "Social awareness", "Competition skills"],
+            weaknesses: ["Trust issues", "Overthinking", "Target visibility"],
+            catchphrase: "Let's make some moves!",
+            motivation: "Win the $750,000 prize"
+          },
+          gameplay_strategy: {
+            alliance_tendency: "Loyal with backup plans",
+            competition_strength: "Balanced",
+            threat_level: 7,
+            predicted_placement: "Late game",
+            strategy_description: "Balance social and strategic gameplay"
+          },
+          backstory: {
+            life_story: "Background story about their journey to Big Brother",
+            fun_facts: ["Fact 1", "Fact 2", "Fact 3"],
+            hobbies: ["Reading", "Fitness", "Cooking"],
+            fears: "Being betrayed by allies",
+            guilty_pleasure: "Reality TV shows"
+          }
+        };
 
-        userPrompt = `Generate a Big Brother Season 26 contestant profile using VERIFIED REAL cast member data.
-
-ACTUAL BB26 Cast with REAL details:
-- Angela Murray: 50, Long Beach CA, Real Estate Agent
-- Brooklyn Rivera: 34, Brooklyn NY, Business Administrator  
-- Cam Sullivan-Brown: 25, Bowie MD, Physical Therapist
-- Cedric Hodges: 21, Fayetteville GA, Former Marine
-- Chelsie Baham: 27, Rancho Cucamonga CA, Nonprofit Director
-- Joseph Rodriguez: 30, Tampa FL, Video Store Clerk
-- Kimo Apaka: 35, Hilo HI, Mattress Sales
-- Leah Peters: 26, Miami FL, VIP Cocktail Server
-- Makensy Manbeck: 22, Houston TX, Construction Project Manager
-- Quinn Martin: 25, Omaha NE, Nurse Recruiter
-- Rubina Bernabe: 35, Los Angeles CA, Event Coordinator
-- T'Kor Clottey: 23, London England, Crochet Business Owner
-- Tucker Des Lauriers: 30, Brooklyn NY, Marketing/Sales Executive
-
-REQUIREMENTS:
-- Use ONLY the real names, ages, hometowns, and occupations listed above
-- Write bios based on their actual BB26 gameplay and personalities
-- Use official CBS photo URLs or realistic CBS-style URLs
-- Include accurate details about their strategies and placements
-
-Return a JSON object with this exact structure using ONE REAL BB26 contestant:`;
+        profiles.push(profile);
+        continue; // Skip the AI generation for BB26
       } else {
         // For other seasons, generate realistic fictional contestants
         systemPrompt = `You are an expert Big Brother casting director and reality TV producer. Generate realistic, diverse, and entertaining contestant profiles that would create compelling television. Consider the specified season theme, format, and casting requirements. Ensure each contestant has a unique personality and backstory that would create interesting dynamics in the house.
@@ -134,7 +166,9 @@ Create a contestant that would fit this season's theme while being unique and me
 Return a JSON object with this exact structure:`;
       }
 
-      userPrompt += `
+      // Only run OpenAI generation for non-BB26 seasons
+      if (season_number !== 26) {
+        userPrompt += `
 {
   "name": "Full name",
   "age": 25,
@@ -173,39 +207,40 @@ Return a JSON object with this exact structure:`;
   }
 }`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: season_number === 26 ? 0.1 : 0.8, // Very low temperature for real data
-          max_tokens: 1500,
-          top_p: season_number === 26 ? 0.1 : 0.9, // More focused for real data
-          frequency_penalty: 0.3,
-          presence_penalty: 0.3,
-        }),
-      });
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.8,
+            max_tokens: 1500,
+            top_p: 0.9,
+            frequency_penalty: 0.3,
+            presence_penalty: 0.3,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
+        if (!response.ok) {
+          throw new Error(`OpenAI API error: ${response.status}`);
+        }
 
-      const data = await response.json();
-      const generatedContent = data.choices[0].message.content;
-      
-      try {
-        const profile = JSON.parse(generatedContent);
-        profiles.push(profile);
-      } catch (parseError) {
-        console.error('Failed to parse generated profile:', generatedContent);
-        throw new Error('Invalid JSON response from AI');
+        const data = await response.json();
+        const generatedContent = data.choices[0].message.content;
+        
+        try {
+          const profile = JSON.parse(generatedContent);
+          profiles.push(profile);
+        } catch (parseError) {
+          console.error('Failed to parse generated profile:', generatedContent);
+          throw new Error('Invalid JSON response from AI');
+        }
       }
     }
 

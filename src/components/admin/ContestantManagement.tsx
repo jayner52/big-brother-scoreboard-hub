@@ -187,6 +187,14 @@ export const ContestantManagement: React.FC = () => {
   };
 
   const handleAIProfilesGenerated = async (profiles: any[]) => {
+    console.log('Generated profiles:', profiles.length, 'contestants');
+    
+    // Debug: Check for Angela Murray specifically
+    const angelaProfile = profiles.find(p => p.name.includes('Angela'));
+    if (angelaProfile) {
+      console.log('Angela Murray check:', angelaProfile);
+    }
+    
     const newContestants = [];
     
     for (const profile of profiles) {
@@ -208,7 +216,8 @@ export const ContestantManagement: React.FC = () => {
             ai_generated: true,
             generation_metadata: {
               generated_date: new Date().toISOString(),
-              model_used: 'gpt-4o-mini'
+              model_used: 'gpt-4o-mini',
+              season_source: 'real_bb26_cast'
             },
             is_active: true,
             sort_order: contestants.length + newContestants.length + 1
@@ -230,9 +239,10 @@ export const ContestantManagement: React.FC = () => {
 
     if (newContestants.length > 0) {
       await loadContestants(); // Reload to get all data including new fields
+      console.log('Cast loaded:', newContestants.length, 'new contestants added');
       toast({
         title: "Success!",
-        description: `Added ${newContestants.length} AI-generated contestant(s)`,
+        description: `Added ${newContestants.length} real BB26 contestant(s)`,
       });
     }
   };

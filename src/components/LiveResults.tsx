@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Crown, Shield, Users, Ban } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Trophy, Crown, Shield, Users, Ban, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatEventType, getEventDisplayText } from '@/utils/eventFormatters';
 
@@ -32,6 +33,7 @@ export const LiveResults: React.FC = () => {
   const [weeklyResults, setWeeklyResults] = useState<WeeklyResult[]>([]);
   const [specialEvents, setSpecialEvents] = useState<SpecialEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSpoilers, setShowSpoilers] = useState(false);
 
   useEffect(() => {
     loadWeeklyResults();
@@ -165,7 +167,18 @@ export const LiveResults: React.FC = () => {
       {/* All Weekly Results */}
       <Card>
         <CardHeader>
-          <CardTitle>Complete Season Results</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            Complete Season Results
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSpoilers(!showSpoilers)}
+              className="flex items-center gap-2"
+            >
+              {showSpoilers ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showSpoilers ? 'Hide Spoilers' : 'Show Historical Results'}
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {weeklyResults.length === 0 ? (
@@ -188,7 +201,9 @@ export const LiveResults: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {weeklyResults.map((week) => (
+                  {weeklyResults
+                    .filter((week, index) => showSpoilers || index === 0)
+                    .map((week) => (
                     <TableRow key={week.week_number}>
                       <TableCell className="font-bold">
                         <div className="flex items-center gap-2">
@@ -201,8 +216,8 @@ export const LiveResults: React.FC = () => {
                       <TableCell>
                         {week.hoh_winner ? (
                           <div className="flex items-center gap-2">
-                            <Crown className="h-4 w-4 text-yellow-500" />
-                            <span className="font-semibold">{week.hoh_winner}</span>
+                            <Crown className="h-4 w-4 text-yellow-600 bg-yellow-100 rounded p-1" />
+                            <span className="font-semibold text-yellow-800">{week.hoh_winner}</span>
                           </div>
                         ) : (
                           <span className="text-gray-400">TBD</span>
@@ -212,8 +227,8 @@ export const LiveResults: React.FC = () => {
                         {week.pov_winner ? (
                           <div>
                             <div className="flex items-center gap-2">
-                              <Shield className="h-4 w-4 text-blue-500" />
-                              <span className="font-semibold">{week.pov_winner}</span>
+                              <Shield className="h-4 w-4 text-blue-600 bg-blue-100 rounded p-1" />
+                              <span className="font-semibold text-blue-800">{week.pov_winner}</span>
                             </div>
                             {week.pov_used && (
                               <div className="text-xs text-blue-600">

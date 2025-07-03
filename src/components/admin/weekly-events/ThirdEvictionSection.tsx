@@ -10,12 +10,14 @@ interface ThirdEvictionSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   activeContestants: ContestantWithBio[];
+  contestants: ContestantWithBio[];
 }
 
 export const ThirdEvictionSection: React.FC<ThirdEvictionSectionProps> = ({
   eventForm,
   setEventForm,
   activeContestants,
+  contestants,
 }) => {
   const remainingContestants = activeContestants.filter(c => 
     c.name !== eventForm.evicted && 

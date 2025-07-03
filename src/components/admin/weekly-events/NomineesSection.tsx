@@ -9,12 +9,14 @@ interface NomineesSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   activeContestants: ContestantWithBio[];
+  contestants: ContestantWithBio[];
 }
 
 export const NomineesSection: React.FC<NomineesSectionProps> = ({
   eventForm,
   setEventForm,
   activeContestants,
+  contestants,
 }) => {
   const addNominee = () => {
     if (eventForm.nominees.length < eventForm.maxNominees) {
@@ -72,8 +74,9 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="no-nominee">No nominee</SelectItem>
-              {activeContestants
+              {contestants
                 .filter(c => 
+                  c.isActive &&
                   (c.name !== eventForm.hohWinner || eventForm.hohWinner === 'no-winner' || !eventForm.hohWinner) &&
                   (!eventForm.nominees.includes(c.name) || c.name === nominee)
                 )

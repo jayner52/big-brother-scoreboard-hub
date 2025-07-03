@@ -11,12 +11,14 @@ interface SecondEvictionSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   activeContestants: ContestantWithBio[];
+  contestants: ContestantWithBio[];
 }
 
 export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
   eventForm,
   setEventForm,
   activeContestants,
+  contestants,
 }) => {
   // Create a modified form for second eviction data
   const secondEvictionForm = {
@@ -62,6 +64,7 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
           activeContestants={activeContestants}
+          contestants={contestants}
         />
 
         {/* Second POV Usage */}
@@ -76,6 +79,7 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
           activeContestants={activeContestants}
+          contestants={contestants}
         />
       </CardContent>
     </Card>

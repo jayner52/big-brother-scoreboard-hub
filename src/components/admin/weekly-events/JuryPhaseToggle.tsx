@@ -32,7 +32,7 @@ export const JuryPhaseToggle: React.FC<JuryPhaseToggleProps> = ({
           onCheckedChange={handleJuryToggle}
         />
         <Label htmlFor="jury-phase" className="font-semibold text-sm text-amber-800">
-          Jury Phase
+          Jury Starts
         </Label>
       </div>
       {eventForm.isJuryPhase && (

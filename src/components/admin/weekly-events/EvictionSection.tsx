@@ -7,12 +7,14 @@ interface EvictionSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   activeContestants: ContestantWithBio[];
+  contestants: ContestantWithBio[];
 }
 
 export const EvictionSection: React.FC<EvictionSectionProps> = ({
   eventForm,
   setEventForm,
   activeContestants,
+  contestants,
 }) => {
   // Calculate final nominees (after POV ceremony)
   const getFinalNominees = () => {
@@ -48,7 +50,7 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
               </SelectItem>
             ))
           ) : (
-            activeContestants.map(contestant => (
+            contestants.filter(c => c.isActive).map(contestant => (
               <SelectItem key={contestant.id} value={contestant.name}>
                 {contestant.name}
               </SelectItem>

@@ -17,7 +17,7 @@ import { FinalWeekToggle } from './weekly-events/FinalWeekToggle';
 import { FinalWeekSection } from './weekly-events/FinalWeekSection';
 import { SecondEvictionSection } from './weekly-events/SecondEvictionSection';
 import { ThirdEvictionSection } from './weekly-events/ThirdEvictionSection';
-import { JuryPhaseToggle } from './weekly-events/JuryPhaseToggle';
+import { JuryPhaseToggle } from './weekly-events/EnhancedJuryPhaseToggle';
 import { WeekNavigator } from './weekly-events/WeekNavigator';
 import { WeekControls } from './weekly-events/WeekControls';
 import { useScoringRules } from '@/hooks/useScoringRules';
@@ -94,6 +94,7 @@ export const WeeklyEventsPanel: React.FC = () => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Award className="h-5 w-5" />
+              <span className="bg-purple text-white px-3 py-1 rounded font-bold text-xs">CURRENT WEEK</span>
               Week {eventForm.week} Events
             </div>
             <WeekNavigator
@@ -169,6 +170,7 @@ export const WeeklyEventsPanel: React.FC = () => {
                   eventForm={eventForm}
                   setEventForm={setEventForm}
                   activeContestants={activeContestants}
+                  contestants={contestants}
                 />
 
                 {/* POV Usage and Replacement */}
@@ -183,6 +185,7 @@ export const WeeklyEventsPanel: React.FC = () => {
                   eventForm={eventForm}
                   setEventForm={setEventForm}
                   activeContestants={activeContestants}
+                  contestants={contestants}
                 />
               </div>
 
@@ -192,6 +195,7 @@ export const WeeklyEventsPanel: React.FC = () => {
                   eventForm={eventForm}
                   setEventForm={setEventForm}
                   activeContestants={activeContestants}
+                  contestants={contestants}
                 />
               )}
 
@@ -201,6 +205,7 @@ export const WeeklyEventsPanel: React.FC = () => {
                   eventForm={eventForm}
                   setEventForm={setEventForm}
                   activeContestants={activeContestants}
+                  contestants={contestants}
                 />
               )}
 

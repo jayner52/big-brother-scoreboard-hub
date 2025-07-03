@@ -167,7 +167,7 @@ export const useWeeklyEvents = () => {
     // Jury phase points (only on the first week jury starts, not every week)
     if (eventForm.isJuryPhase) {
       survivingContestants.forEach(contestant => {
-        preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('jury_member');
+        preview[contestant.name] = (preview[contestant.name] || 0) + 2; // 2 points for jury start
       });
     }
     

@@ -19,9 +19,9 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // Separate active and evicted contestants
-  const activeContestants = contestants.filter(c => c.isActive && !evictedThisWeek.includes(c.name));
-  const evictedContestants = contestants.filter(c => !c.isActive || evictedThisWeek.includes(c.name));
+  // Separate active and evicted contestants based on actual eviction events this week
+  const activeContestants = contestants.filter(c => !evictedThisWeek.includes(c.name));
+  const evictedContestants = contestants.filter(c => evictedThisWeek.includes(c.name));
 
   return (
     <Card className="bg-muted/50">
@@ -61,11 +61,11 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
                 const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
                 return (
                   <div key={contestant.name} className="flex justify-between">
-                    <span className={`font-medium ${isEvictedThisWeek ? 'line-through text-red-500' : 'text-muted-foreground line-through'}`}>
+                     <span className={`font-medium ${isEvictedThisWeek ? 'line-through text-red-500' : 'font-medium'}`}>
                       {contestant.name}:
                     </span>
-                    <span className={points > 0 ? 'text-green-600' : 'text-muted-foreground'}>
-                      {points > 0 ? '+' : ''}{points}pts {!points && '(evicted)'}
+                    <span className={points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}>
+                      {points > 0 ? '+' : ''}{points}pts {isEvictedThisWeek && ' (evicted this week)'}
                     </span>
                   </div>
                 );

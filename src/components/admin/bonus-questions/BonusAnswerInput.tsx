@@ -32,41 +32,65 @@ export const BonusAnswerInput: React.FC<BonusAnswerInputProps> = ({
 
   if (question.question_type === 'creature_select') {
     return (
-      <Select 
-        value={currentAnswer || ''} 
-        onValueChange={onAnswerChange}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select creature type" />
-        </SelectTrigger>
-        <SelectContent>
-          {creatureOptions.map(option => (
-            <SelectItem key={option} value={option}>
-              {option}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="space-y-2">
+        <Select 
+          value={currentAnswer || ''} 
+          onValueChange={onAnswerChange}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select creature type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Clear Selection</SelectItem>
+            {creatureOptions.map(option => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {currentAnswer && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onAnswerChange('')}
+          >
+            Clear Selection
+          </Button>
+        )}
+      </div>
     );
   }
 
   if (question.question_type === 'player_select') {
     return (
-      <Select 
-        value={currentAnswer || ''} 
-        onValueChange={onAnswerChange}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select correct answer" />
-        </SelectTrigger>
-        <SelectContent>
-          {contestants.map(contestant => (
-            <SelectItem key={contestant.id} value={contestant.name}>
-              {contestant.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="space-y-2">
+        <Select 
+          value={currentAnswer || ''} 
+          onValueChange={onAnswerChange}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select correct answer" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Clear Selection</SelectItem>
+            {contestants.map(contestant => (
+              <SelectItem key={contestant.id} value={contestant.name}>
+                {contestant.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {currentAnswer && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onAnswerChange('')}
+          >
+            Clear Selection
+          </Button>
+        )}
+      </div>
     );
   }
 
@@ -134,6 +158,16 @@ export const BonusAnswerInput: React.FC<BonusAnswerInputProps> = ({
         >
           No
         </Button>
+        {currentAnswer && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onAnswerChange('')}
+          >
+            Clear
+          </Button>
+        )}
       </div>
     );
   }

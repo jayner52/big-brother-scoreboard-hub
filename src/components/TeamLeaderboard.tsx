@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
+import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 
 export const TeamLeaderboard: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const { houseguestPoints } = useHouseguestPoints();
 
   useEffect(() => {
     loadPoolEntries();
@@ -91,11 +93,11 @@ export const TeamLeaderboard: React.FC = () => {
                   </TableCell>
                   <TableCell className="font-semibold text-blue-600">{entry.team_name}</TableCell>
                   <TableCell>{entry.participant_name}</TableCell>
-                  <TableCell>{entry.player_1}</TableCell>
-                  <TableCell>{entry.player_2}</TableCell>
-                  <TableCell>{entry.player_3}</TableCell>
-                  <TableCell>{entry.player_4}</TableCell>
-                  <TableCell>{entry.player_5}</TableCell>
+                  <TableCell>{entry.player_1} {houseguestPoints[entry.player_1] !== undefined && `(${houseguestPoints[entry.player_1]} pts)`}</TableCell>
+                  <TableCell>{entry.player_2} {houseguestPoints[entry.player_2] !== undefined && `(${houseguestPoints[entry.player_2]} pts)`}</TableCell>
+                  <TableCell>{entry.player_3} {houseguestPoints[entry.player_3] !== undefined && `(${houseguestPoints[entry.player_3]} pts)`}</TableCell>
+                  <TableCell>{entry.player_4} {houseguestPoints[entry.player_4] !== undefined && `(${houseguestPoints[entry.player_4]} pts)`}</TableCell>
+                  <TableCell>{entry.player_5} {houseguestPoints[entry.player_5] !== undefined && `(${houseguestPoints[entry.player_5]} pts)`}</TableCell>
                   <TableCell className="text-center">{entry.weekly_points}</TableCell>
                   <TableCell className="text-center">{entry.bonus_points}</TableCell>
                   <TableCell className="text-center font-bold text-lg bg-yellow-100">

@@ -14,6 +14,9 @@ interface WeekSummary {
   second_hoh_winner: string | null;
   second_pov_winner: string | null;
   second_evicted_contestant: string | null;
+  pov_used: boolean | null;
+  pov_used_on: string | null;
+  nominees: string[] | null;
 }
 
 interface ContestantScore {
@@ -176,7 +179,7 @@ const loadWeekByWeekData = async () => {
                       <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
                       <p className="text-sm font-medium text-orange-800">POV Used</p>
                       <p className="font-bold text-orange-900">
-                        {week.second_pov_winner ? "Yes" : "No"}
+                        {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
                       </p>
                     </div>
                     <div className="text-center p-3 bg-red-50 rounded-lg">
@@ -193,10 +196,10 @@ const loadWeekByWeekData = async () => {
                     )}
                   </div>
 
-                   {/* Points Summary for this week - show all surviving contestants */}
+                   {/* Points Summary for this week */}
                   {contestantScores[week.week_number] && (
                     <div>
-                      <h4 className="font-medium mb-2">Points Earned This Week (All Survivors)</h4>
+                      <h4 className="font-medium mb-2">Points Earned This Week</h4>
                       <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm">
                         {contestantScores[week.week_number]
                           .sort((a, b) => b.weeklyTotal - a.weeklyTotal)
@@ -206,6 +209,9 @@ const loadWeekByWeekData = async () => {
                               <span className="font-bold text-green-600">+{contestant.weeklyTotal}</span>
                             </div>
                           ))}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {(week.nominees || []).length > 0 && `Nominees: ${(week.nominees || []).join(', ')}`}
                       </div>
                     </div>
                   )}

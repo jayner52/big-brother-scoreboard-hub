@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Key, Target, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
+import { SpecialEventsBadge } from '@/components/admin/SpecialEventsBadge';
 
 interface HouseguestStats {
   houseguest_name: string;
@@ -25,6 +26,11 @@ interface HouseguestStats {
   pov_used_on?: boolean;
   final_placement?: number;
   americas_favorite?: boolean;
+  special_events?: Array<{
+    event_type: string;
+    description?: string;
+    points_awarded?: number;
+  }>;
 }
 
 export const HouseguestValues: React.FC = () => {
@@ -39,12 +45,13 @@ export const HouseguestValues: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [houseguestsResult, groupsResult, poolEntriesResult, weeklyEventsResult, specialEventsResult] = await Promise.all([
+      const [houseguestsResult, groupsResult, poolEntriesResult, weeklyEventsResult, specialEventsResult, weeklyResultsResult] = await Promise.all([
         supabase.from('contestants').select('*').order('sort_order'),
         supabase.from('contestant_groups').select('*').order('sort_order'),
         supabase.from('pool_entries').select('*'),
         supabase.from('weekly_events').select('*'),
-        supabase.from('special_events').select('*')
+        supabase.from('special_events').select('*'),
+        supabase.from('weekly_results').select('*').eq('is_draft', false).order('week_number', { ascending: false }).limit(1)
       ]);
 
       if (houseguestsResult.error) throw houseguestsResult.error;
@@ -52,6 +59,9 @@ export const HouseguestValues: React.FC = () => {
       if (poolEntriesResult.error) throw poolEntriesResult.error;
       if (weeklyEventsResult.error) throw weeklyEventsResult.error;
       if (specialEventsResult.error) throw specialEventsResult.error;
+      if (weeklyResultsResult.error) throw weeklyResultsResult.error;
+
+      const latestCompletedWeek = weeklyResultsResult.data?.[0];
 
       // Map houseguests to match our type interface
       const mappedHouseguests = (houseguestsResult.data || []).map(c => ({
@@ -115,6 +125,32 @@ export const HouseguestValues: React.FC = () => {
 
         const totalPointsEarned = weeklyPoints + specialPoints;
 
+        // Get special events for this houseguest
+        const houseguestSpecialEvents = (specialEventsResult.data || [])
+          .filter(event => event.contestant_id === houseguest.id)
+          .map(event => ({
+            event_type: event.event_type,
+            description: event.description,
+            points_awarded: event.points_awarded
+          }));
+
+        // Determine current status based on latest completed week
+        let currentStatus = {
+          current_hoh: false,
+          current_pov_winner: false,
+          currently_nominated: false,
+          pov_used_on: false
+        };
+
+        if (latestCompletedWeek && houseguest.isActive) {
+          currentStatus = {
+            current_hoh: latestCompletedWeek.hoh_winner === houseguest.name,
+            current_pov_winner: latestCompletedWeek.pov_winner === houseguest.name,
+            currently_nominated: (latestCompletedWeek.nominees || []).includes(houseguest.name),
+            pov_used_on: latestCompletedWeek.pov_used_on === houseguest.name
+          };
+        }
+
         return {
           houseguest_name: houseguest.name,
           total_points_earned: totalPointsEarned,
@@ -128,12 +164,10 @@ export const HouseguestValues: React.FC = () => {
           times_selected: timesSelected,
           elimination_week: eliminationWeek,
           group_name: group?.group_name,
-          current_hoh: houseguest.current_hoh,
-          current_pov_winner: houseguest.current_pov_winner,
-          currently_nominated: houseguest.currently_nominated,
-          pov_used_on: houseguest.pov_used_on,
+          ...currentStatus,
           final_placement: houseguest.final_placement,
-          americas_favorite: houseguest.americas_favorite
+          americas_favorite: houseguest.americas_favorite,
+          special_events: houseguestSpecialEvents
         };
       });
 
@@ -186,6 +220,7 @@ export const HouseguestValues: React.FC = () => {
                   <TableHead>Saved by Veto</TableHead>
                   <TableHead>Prizes</TableHead>
                   <TableHead>Punishments</TableHead>
+                  <TableHead>Special Events</TableHead>
                   <TableHead>Times Selected</TableHead>
                   <TableHead className="font-bold text-green-600">Points Earned</TableHead>
                 </TableRow>
@@ -283,6 +318,13 @@ export const HouseguestValues: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-center">
                         {stat.punishments}
+                      </TableCell>
+                      <TableCell>
+                        {stat.special_events && stat.special_events.length > 0 ? (
+                          <SpecialEventsBadge events={stat.special_events} />
+                        ) : (
+                          <span className="text-gray-400 text-sm">None</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         {stat.times_selected}

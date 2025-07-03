@@ -4,11 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
+import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 
 export const EveryonesPicks: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const { houseguestPoints } = useHouseguestPoints();
 
   useEffect(() => {
     loadData();
@@ -77,11 +79,11 @@ export const EveryonesPicks: React.FC = () => {
                   <TableRow key={entry.id}>
                     <TableCell className="font-medium">{entry.participant_name}</TableCell>
                     <TableCell className="text-blue-600 font-semibold">{entry.team_name}</TableCell>
-                    <TableCell>{entry.player_1}</TableCell>
-                    <TableCell>{entry.player_2}</TableCell>
-                    <TableCell>{entry.player_3}</TableCell>
-                    <TableCell>{entry.player_4}</TableCell>
-                    <TableCell>{entry.player_5}</TableCell>
+                    <TableCell>{entry.player_1} {houseguestPoints[entry.player_1] !== undefined && `(${houseguestPoints[entry.player_1]} pts)`}</TableCell>
+                    <TableCell>{entry.player_2} {houseguestPoints[entry.player_2] !== undefined && `(${houseguestPoints[entry.player_2]} pts)`}</TableCell>
+                    <TableCell>{entry.player_3} {houseguestPoints[entry.player_3] !== undefined && `(${houseguestPoints[entry.player_3]} pts)`}</TableCell>
+                    <TableCell>{entry.player_4} {houseguestPoints[entry.player_4] !== undefined && `(${houseguestPoints[entry.player_4]} pts)`}</TableCell>
+                    <TableCell>{entry.player_5} {houseguestPoints[entry.player_5] !== undefined && `(${houseguestPoints[entry.player_5]} pts)`}</TableCell>
                     <TableCell>
                       <Badge variant={entry.payment_confirmed ? "default" : "destructive"}>
                         {entry.payment_confirmed ? "Paid" : "Pending"}
@@ -109,7 +111,7 @@ export const EveryonesPicks: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Participant</TableHead>
+                        <TableHead>Team Name</TableHead>
                         <TableHead>Answer</TableHead>
                         {question.answer_revealed && (
                           <TableHead className="text-green-600">Correct Answer</TableHead>
@@ -117,19 +119,24 @@ export const EveryonesPicks: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {poolEntries.map((entry) => (
-                        <TableRow key={entry.id}>
-                          <TableCell>{entry.participant_name}</TableCell>
-                          <TableCell>
-                            {entry.bonus_answers[question.id] || "No answer"}
-                          </TableCell>
-                          {question.answer_revealed && (
-                            <TableCell className="text-green-600 font-semibold">
-                              {question.correct_answer}
+                      {poolEntries.map((entry) => {
+                        const isCorrect = question.answer_revealed && 
+                          entry.bonus_answers[question.id] === question.correct_answer;
+                        
+                        return (
+                          <TableRow key={entry.id}>
+                            <TableCell className="font-semibold">{entry.team_name}</TableCell>
+                            <TableCell className={question.answer_revealed ? (isCorrect ? "text-green-600 font-semibold" : "text-red-600") : ""}>
+                              {entry.bonus_answers[question.id] || "No answer"}
                             </TableCell>
-                          )}
-                        </TableRow>
-                      ))}
+                            {question.answer_revealed && (
+                              <TableCell className="text-green-600 font-semibold">
+                                {question.correct_answer}
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

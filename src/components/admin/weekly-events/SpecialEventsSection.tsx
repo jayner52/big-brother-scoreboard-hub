@@ -76,7 +76,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                     </SelectTrigger>
                      <SelectContent>
                        {eligibleContestants.map(contestant => {
-                         const isActive = activeContestants.some(c => c.id === contestant.id);
+                         const isActive = activeContestants.some(c => c.name === contestant.name);
                          return (
                            <SelectItem key={contestant.id} value={contestant.name}>
                              {contestant.name} {!isActive && '(Evicted)'}

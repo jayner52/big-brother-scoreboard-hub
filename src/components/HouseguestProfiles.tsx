@@ -105,60 +105,62 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
         </div>
       )}
 
-      {/* Compact Horizontal Team Layout */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 p-4">
-        {/* Top Row: Team Info and Total Points */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-primary" />
+      {/* Full-Width Horizontal Team Dashboard */}
+      <div className="w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 shadow-lg">
+        {/* Header Row */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div className="bg-primary/20 p-2 rounded-lg">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
             <div>
-              <h3 className="text-lg font-bold text-primary">{currentEntry.team_name}</h3>
-              <p className="text-xs text-muted-foreground">by {currentEntry.participant_name}</p>
+              <h3 className="text-xl font-bold text-primary">{currentEntry.team_name}</h3>
+              <p className="text-sm text-muted-foreground">by {currentEntry.participant_name}</p>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">{totalPoints}</div>
-            <div className="text-xs text-muted-foreground">Total Points</div>
+          
+          <div className="flex items-center gap-4">
+            {/* Status Badges */}
+            <Badge variant={currentEntry.payment_confirmed ? "default" : "destructive"}>
+              {currentEntry.payment_confirmed ? "Payment Confirmed" : "Payment Pending"}
+            </Badge>
+            {currentEntry.current_rank && (
+              <Badge variant="outline">Rank #{currentEntry.current_rank}</Badge>
+            )}
+            {/* Total Points */}
+            <div className="text-right bg-primary/10 rounded-lg px-4 py-2">
+              <div className="text-3xl font-bold text-primary">{totalPoints}</div>
+              <div className="text-xs text-muted-foreground">Total Points</div>
+            </div>
           </div>
         </div>
 
-        {/* Status Badges */}
-        <div className="flex items-center gap-2 mb-3">
-          <Badge variant={currentEntry.payment_confirmed ? "default" : "destructive"} className="text-xs">
-            {currentEntry.payment_confirmed ? "Payment Confirmed" : "Payment Pending"}
-          </Badge>
-          {currentEntry.current_rank && (
-            <Badge variant="outline" className="text-xs">
-              Rank #{currentEntry.current_rank}
-            </Badge>
-          )}
-        </div>
-
-        {/* Team Players - Compact Horizontal */}
-        <div className="grid grid-cols-5 gap-2 mb-3">
+        {/* Team Players - Full Width Grid */}
+        <div className="grid grid-cols-5 gap-4 mb-4">
           {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
-            <div key={index} className="text-center p-2 border rounded bg-muted/20 hover:bg-muted/40 transition-colors">
-              <div className="font-medium text-xs mb-1 truncate" title={player}>{player}</div>
-              <div className="text-lg font-bold text-primary">
+            <div key={index} className="bg-white/5 border border-white/10 rounded-lg p-4 text-center hover:bg-white/10 transition-all duration-200">
+              <div className="font-semibold text-sm mb-2 text-foreground" title={player}>{player}</div>
+              <div className="text-2xl font-bold text-primary mb-1">
                 {houseguestPoints[player] || 0}
               </div>
+              <div className="text-xs text-muted-foreground">points</div>
             </div>
           ))}
         </div>
 
-        {/* Points Breakdown - Compact Horizontal */}
-        <div className="grid grid-cols-3 gap-4 pt-2 border-t border-white/20">
-          <div className="text-center">
-            <div className="text-sm font-bold">{currentEntry.weekly_points}</div>
-            <div className="text-xs text-muted-foreground">Weekly</div>
+        {/* Points Breakdown - Full Width */}
+        <div className="grid grid-cols-3 gap-6 pt-4 border-t border-white/20">
+          <div className="text-center bg-blue-500/10 rounded-lg p-3">
+            <div className="text-xl font-bold text-blue-600">{currentEntry.weekly_points}</div>
+            <div className="text-sm text-blue-600/80">Weekly Points</div>
           </div>
-          <div className="text-center">
-            <div className="text-sm font-bold">{currentEntry.bonus_points}</div>
-            <div className="text-xs text-muted-foreground">Bonus</div>
+          <div className="text-center bg-green-500/10 rounded-lg p-3">
+            <div className="text-xl font-bold text-green-600">{currentEntry.bonus_points}</div>
+            <div className="text-sm text-green-600/80">Bonus Points</div>
           </div>
-          <div className="text-center">
-            <div className="text-sm font-bold text-primary">{totalPoints}</div>
-            <div className="text-xs text-muted-foreground">Total</div>
+          <div className="text-center bg-primary/10 rounded-lg p-3">
+            <div className="text-xl font-bold text-primary">{totalPoints}</div>
+            <div className="text-sm text-primary/80">Total Points</div>
           </div>
         </div>
       </div>

@@ -14,7 +14,11 @@ export const getSpecialEventIcon = (eventType: string): string => {
     'block_survival_4_weeks': '🛡️',
     'jury_member': '⚖️',
     'leaves_not_eviction': '🚪',
-    'no_comp_4_weeks': '😴'
+    'no_comp_4_weeks': '😴',
+    'costume_punishment': '🎭',
+    'granted_safety': '🛡️',
+    'wins_prize': '🎁',
+    'receives_punishment': '⚡'
   };
 
   return iconMap[eventType] || '📝';
@@ -32,9 +36,10 @@ export const getSpecialEventLegend = () => ({
   '🥈': 'Runner-up',
   '✨': 'Custom Event',
   '💪': '2-Week Block Survival',
-  '🛡️': '4-Week Block Survival',
+  '🛡️': 'Safety/4-Week Block Survival',
   '⚖️': 'Jury Member',
   '🚪': 'Left Not by Eviction',
   '😴': '4 Weeks No Comp Wins',
+  '🎭': 'Costume Punishment',
   '📝': 'Other Event'
 });

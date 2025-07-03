@@ -23,6 +23,8 @@ export const WeeklyEventsHeader: React.FC<WeeklyEventsHeaderProps> = ({
       return <span className="bg-gray-600 text-white px-3 py-1 rounded font-bold text-xs">COMPLETED</span>;
     } else if (week === currentGameWeek) {
       return <span className="bg-green-500 text-white px-3 py-1 rounded font-bold text-xs">CURRENT WEEK</span>;
+    } else if (week < currentGameWeek) {
+      return <span className="bg-gray-600 text-white px-3 py-1 rounded font-bold text-xs">COMPLETED</span>;
     } else {
       return <span className="bg-blue-500 text-white px-3 py-1 rounded font-bold text-xs">FUTURE WEEK</span>;
     }

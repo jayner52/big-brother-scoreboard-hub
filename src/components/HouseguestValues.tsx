@@ -345,19 +345,19 @@ export const HouseguestValues: React.FC = () => {
                       <TableCell className="text-center">
                         {stat.punishments}
                       </TableCell>
-                      <TableCell>
-                        {stat.special_events && stat.special_events.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {stat.special_events.map((event, index) => (
-                              <span key={index} className="text-lg" title={event.description || event.event_type}>
-                                {getSpecialEventIcon(event.event_type)}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 text-sm">None</span>
-                        )}
-                      </TableCell>
+                       <TableCell>
+                         {stat.special_events && stat.special_events.length > 0 ? (
+                           <div className="flex flex-wrap gap-1">
+                             {stat.special_events.map((event, index) => (
+                               <span key={index} className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full" title={event.description || event.event_type}>
+                                 {stat.houseguest_name} {getSpecialEventIcon(event.event_type)}
+                               </span>
+                             ))}
+                           </div>
+                         ) : (
+                           <span className="text-gray-400 text-sm">None</span>
+                         )}
+                       </TableCell>
                       <TableCell className="text-center">
                         {stat.times_selected}
                       </TableCell>

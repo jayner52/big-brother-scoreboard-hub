@@ -217,115 +217,97 @@ export const LiveResults: React.FC = () => {
               <p>No completed weeks yet. Check back after the first week is finalized!</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Week</TableHead>
-                    <TableHead>Head of Household</TableHead>
-                    <TableHead>Power of Veto</TableHead>
-                    <TableHead>Nominees</TableHead>
-                    <TableHead>Evicted</TableHead>
-                    <TableHead>Special Events</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {weeklyResults.filter(week => !week.is_draft).map((week) => (
-                    <TableRow key={week.week_number}>
-                      <TableCell className="font-bold">
-                         <div className="flex items-center gap-2">
-                           Week {week.week_number}
-                           {week.is_double_eviction && <Badge variant="outline" className="text-xs">2x</Badge>}
-                           {week.is_triple_eviction && <Badge variant="outline" className="text-xs">3x</Badge>}
-                           {week.jury_phase_started && <Badge variant="outline" className="text-xs bg-purple-100">Jury</Badge>}
-                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {week.hoh_winner ? (
-                          <div className="flex items-center gap-2">
-                            <Crown className="h-4 w-4 text-yellow-600 bg-yellow-100 rounded p-1" />
-                            <span className="font-semibold text-yellow-800">{week.hoh_winner}</span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">TBD</span>
+            <div className="space-y-6">
+              {weeklyResults.filter(week => !week.is_draft).map((week) => (
+                <div key={week.week_number} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Week {week.week_number}</h3>
+                    <div className="flex gap-2">
+                      {week.is_double_eviction && (
+                        <Badge variant="destructive">Double Eviction</Badge>
+                      )}
+                      {week.is_triple_eviction && (
+                        <Badge variant="destructive">Triple Eviction</Badge>
+                      )}
+                      {week.jury_phase_started && (
+                        <Badge className="bg-purple-500">Jury Started</Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Week Summary */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                      <Crown className="h-6 w-6 text-yellow-600 mx-auto mb-1" />
+                      <p className="text-sm font-medium text-yellow-800">HOH</p>
+                      <p className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</p>
+                    </div>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <Shield className="h-6 w-6 text-blue-600 mx-auto mb-1" />
+                      <p className="text-sm font-medium text-blue-800">POV</p>
+                      <p className="font-bold text-blue-900">{week.pov_winner || "N/A"}</p>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg">
+                      <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
+                      <p className="text-sm font-medium text-orange-800">POV Used</p>
+                      <p className="font-bold text-orange-900">
+                        {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
+                      </p>
+                    </div>
+                    <div className="text-center p-3 bg-red-50 rounded-lg">
+                      <Ban className="h-6 w-6 text-red-600 mx-auto mb-1" />
+                      <p className="text-sm font-medium text-red-800">Evicted</p>
+                      <p className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</p>
+                    </div>
+                  </div>
+
+                  {/* Nominees and Special Events */}
+                  <div className="text-xs text-gray-500 space-y-2">
+                    {(week.nominees || []).length > 0 && (
+                      <div>
+                        <span className="font-medium">Nominees: </span>
+                        {(week.nominees || []).map((nominee, index) => {
+                          const isSavedByVeto = week.pov_used && week.pov_used_on === nominee;
+                          const isSavedByArena = specialEvents.some(event => 
+                            event.week_number === week.week_number && 
+                            event.event_type === 'bb_arena_winner' && 
+                            event.houseguest_name === nominee
+                          );
+                          return (
+                            <span key={index}>
+                              {index > 0 && ', '}
+                              {isSavedByVeto || isSavedByArena ? (
+                                <span className="line-through">{nominee}</span>
+                              ) : (
+                                nominee
+                              )}
+                            </span>
+                          );
+                        })}
+                        {week.replacement_nominee && (
+                          <span>, Replacement: {week.replacement_nominee}</span>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        {week.pov_winner ? (
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <Shield className="h-4 w-4 text-blue-600 bg-blue-100 rounded p-1" />
-                              <span className="font-semibold text-blue-800">{week.pov_winner}</span>
-                            </div>
-                            {week.pov_used && (
-                              <div className="text-xs text-blue-600">
-                                Used on {week.pov_used_on}
+                      </div>
+                    )}
+
+                    {/* Special Events for this week */}
+                    {specialEvents?.filter(event => event.week_number === week.week_number).length > 0 && (
+                      <div>
+                        <span className="font-medium">Special Events: </span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-1">
+                          {specialEvents
+                            ?.filter(event => event.week_number === week.week_number)
+                            .map((event, index) => (
+                              <div key={index} className="bg-purple-50 p-2 rounded border-l-2 border-purple-200">
+                                <span className="font-medium">{event.houseguest_name}</span>: {getEventDisplayText(event.event_type, event.description)}
                               </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">TBD</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {week.nominees?.length ? (
-                          <div className="text-sm space-y-1">
-                             {week.nominees.map((nominee, index) => {
-                               const isSavedByVeto = week.pov_used && week.pov_used_on === nominee;
-                               const isSavedByArena = specialEvents.some(event => 
-                                 event.week_number === week.week_number && 
-                                 event.event_type === 'bb_arena_winner' && 
-                                 event.houseguest_name === nominee
-                               );
-                               return (
-                                 <div key={index} className="flex items-center gap-1">
-                                   {isSavedByVeto || isSavedByArena ? (
-                                     <span className="line-through text-gray-500">{nominee}</span>
-                                   ) : (
-                                     <span>{nominee}</span>
-                                   )}
-                                 </div>
-                               );
-                             })}
-                            {week.replacement_nominee && (
-                              <div className="text-xs text-orange-600">
-                                Replacement: {week.replacement_nominee}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">TBD</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {week.evicted_contestant ? (
-                          <Badge variant="destructive">
-                            {week.evicted_contestant}
-                          </Badge>
-                        ) : (
-                          <span className="text-gray-400">TBD</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                         {specialEvents.filter(event => event.week_number === week.week_number).length > 0 ? (
-                           <div className="flex flex-wrap gap-1">
-                             {specialEvents
-                               .filter(event => event.week_number === week.week_number)
-                               .slice(0, 2)
-                               .map((event, index) => (
-                                 <Badge key={index} variant="outline" className="text-xs">
-                                   {event.houseguest_name}: {getEventDisplayText(event.event_type, event.description)}
-                                 </Badge>
-                               ))}
-                           </div>
-                         ) : (
-                           <span className="text-gray-400">None</span>
-                         )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>

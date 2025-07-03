@@ -2,13 +2,13 @@ import React from 'react';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Award } from 'lucide-react';
 import { WeekNavigator } from './WeekNavigator';
+import { useWeekStatus } from '@/hooks/useWeekStatus';
 
 interface WeeklyEventsHeaderProps {
   week: number;
   currentGameWeek: number;
   onWeekChange: (week: number) => void;
   isLoadingWeek: boolean;
-  isWeekComplete?: boolean;
 }
 
 export const WeeklyEventsHeader: React.FC<WeeklyEventsHeaderProps> = ({
@@ -16,17 +16,19 @@ export const WeeklyEventsHeader: React.FC<WeeklyEventsHeaderProps> = ({
   currentGameWeek,
   onWeekChange,
   isLoadingWeek,
-  isWeekComplete = false,
 }) => {
+  const { weekStatus } = useWeekStatus(week);
+  
   const getWeekStatus = () => {
-    if (isWeekComplete) {
-      return <span className="bg-gray-600 text-white px-3 py-1 rounded font-bold text-xs">COMPLETED</span>;
-    } else if (week === currentGameWeek) {
-      return <span className="bg-green-500 text-white px-3 py-1 rounded font-bold text-xs">CURRENT WEEK</span>;
-    } else if (week < currentGameWeek) {
-      return <span className="bg-gray-600 text-white px-3 py-1 rounded font-bold text-xs">COMPLETED</span>;
-    } else {
-      return <span className="bg-blue-500 text-white px-3 py-1 rounded font-bold text-xs">FUTURE WEEK</span>;
+    switch (weekStatus) {
+      case 'completed':
+        return <span className="bg-gray-600 text-white px-3 py-1 rounded font-bold text-xs">COMPLETED</span>;
+      case 'current':
+        return <span className="bg-green-500 text-white px-3 py-1 rounded font-bold text-xs">CURRENT WEEK</span>;
+      case 'future':
+        return <span className="bg-blue-500 text-white px-3 py-1 rounded font-bold text-xs">FUTURE WEEK</span>;
+      default:
+        return <span className="bg-blue-500 text-white px-3 py-1 rounded font-bold text-xs">FUTURE WEEK</span>;
     }
   };
 

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { X, Plus, Zap } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
+import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 
 interface SpecialEventsSectionProps {
   eventForm: WeeklyEventForm;
@@ -22,8 +23,9 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   scoringRules,
   allContestants,
 }) => {
-  // Use all contestants (active + evicted) for special events dropdown
-  const eligibleContestants = allContestants || activeContestants;
+  // Use week-aware contestants for proper eviction status
+  const { allContestants: weekAwareContestants, evictedContestants } = useWeekAwareContestants(eventForm.week);
+  const eligibleContestants = weekAwareContestants.length > 0 ? weekAwareContestants : (allContestants || activeContestants);
   const addSpecialEvent = () => {
     setEventForm(prev => ({
       ...prev,
@@ -76,10 +78,10 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                     </SelectTrigger>
                      <SelectContent>
                        {eligibleContestants.map(contestant => {
-                         const isActive = activeContestants.some(c => c.name === contestant.name);
+                         const isEvicted = evictedContestants.includes(contestant.name);
                          return (
                            <SelectItem key={contestant.id} value={contestant.name}>
-                             {contestant.name} {!isActive && '(Evicted)'}
+                             {contestant.name} {isEvicted && '(Evicted)'}
                            </SelectItem>
                          );
                        })}

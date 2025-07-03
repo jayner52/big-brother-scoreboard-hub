@@ -84,7 +84,6 @@ export const WeeklyEventsPanel: React.FC = () => {
           currentGameWeek={currentGameWeek}
           onWeekChange={handleWeekChange}
           isLoadingWeek={isLoadingWeek}
-          isWeekComplete={isWeekComplete}
         />
         
         <CardContent className="p-6 space-y-6">

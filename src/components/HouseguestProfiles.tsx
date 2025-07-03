@@ -105,62 +105,46 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
         </div>
       )}
 
-      {/* Full-Width Horizontal Team Dashboard */}
-      <div className="w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 shadow-lg">
-        {/* Header Row */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary/20 p-2 rounded-lg">
-              <Users className="h-6 w-6 text-primary" />
+      {/* Ultra-Slim Horizontal Team Dashboard */}
+      <div className="w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-lg border border-white/20 py-3 px-4 shadow-lg">
+        <div className="flex items-center justify-between">
+          {/* Left: Team Info */}
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/20 p-1.5 rounded">
+              <Users className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-primary">{currentEntry.team_name}</h3>
-              <p className="text-sm text-muted-foreground">by {currentEntry.participant_name}</p>
+              <h3 className="font-bold text-primary text-sm">{currentEntry.team_name}</h3>
+              <p className="text-xs text-muted-foreground">by {currentEntry.participant_name}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            {/* Status Badges */}
-            <Badge variant={currentEntry.payment_confirmed ? "default" : "destructive"}>
-              {currentEntry.payment_confirmed ? "Payment Confirmed" : "Payment Pending"}
+          {/* Center: Players in Horizontal Line */}
+          <div className="flex items-center gap-3">
+            {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
+              <div key={index} className="flex items-center gap-1 bg-white/5 border border-white/10 rounded px-2 py-1">
+                <span className="font-medium text-xs text-foreground" title={player}>
+                  {player.split(' ')[0]}
+                </span>
+                <span className="text-sm font-bold text-primary">
+                  {houseguestPoints[player] || 0}
+                </span>
+              </div>
+            ))}
+          </div>
+          
+          {/* Right: Status & Total */}
+          <div className="flex items-center gap-3">
+            <Badge variant={currentEntry.payment_confirmed ? "default" : "destructive"} className="text-xs py-0.5 px-2">
+              {currentEntry.payment_confirmed ? "Paid" : "Pending"}
             </Badge>
             {currentEntry.current_rank && (
-              <Badge variant="outline">Rank #{currentEntry.current_rank}</Badge>
+              <Badge variant="outline" className="text-xs py-0.5 px-2">#{currentEntry.current_rank}</Badge>
             )}
-            {/* Total Points */}
-            <div className="text-right bg-primary/10 rounded-lg px-4 py-2">
-              <div className="text-3xl font-bold text-primary">{totalPoints}</div>
-              <div className="text-xs text-muted-foreground">Total Points</div>
+            <div className="bg-primary/10 rounded px-3 py-1 text-center">
+              <div className="text-lg font-bold text-primary">{totalPoints}</div>
+              <div className="text-xs text-muted-foreground">pts</div>
             </div>
-          </div>
-        </div>
-
-        {/* Team Players - Full Width Grid */}
-        <div className="grid grid-cols-5 gap-4 mb-4">
-          {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
-            <div key={index} className="bg-white/5 border border-white/10 rounded-lg p-4 text-center hover:bg-white/10 transition-all duration-200">
-              <div className="font-semibold text-sm mb-2 text-foreground" title={player}>{player}</div>
-              <div className="text-2xl font-bold text-primary mb-1">
-                {houseguestPoints[player] || 0}
-              </div>
-              <div className="text-xs text-muted-foreground">points</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Points Breakdown - Full Width */}
-        <div className="grid grid-cols-3 gap-6 pt-4 border-t border-white/20">
-          <div className="text-center bg-blue-500/10 rounded-lg p-3">
-            <div className="text-xl font-bold text-blue-600">{currentEntry.weekly_points}</div>
-            <div className="text-sm text-blue-600/80">Weekly Points</div>
-          </div>
-          <div className="text-center bg-green-500/10 rounded-lg p-3">
-            <div className="text-xl font-bold text-green-600">{currentEntry.bonus_points}</div>
-            <div className="text-sm text-green-600/80">Bonus Points</div>
-          </div>
-          <div className="text-center bg-primary/10 rounded-lg p-3">
-            <div className="text-xl font-bold text-primary">{totalPoints}</div>
-            <div className="text-sm text-primary/80">Total Points</div>
           </div>
         </div>
       </div>

@@ -76,90 +76,72 @@ async function validatePhotoUrl(url: string): Promise<boolean> {
   }
 }
 
-// Extract profile image URL from individual contestant wiki page
-async function extractContestantImage(name: string, seasonNumber: number): Promise<string> {
+// Scrape GoldDerby gallery for BB26 cast photos
+async function scrapeGoldDerbyGallery(): Promise<Record<string, string>> {
   try {
-    // Try different wiki page name variations
-    const nameVariations = [
-      name.replace(/\s+/g, '_'),
-      `${name.replace(/\s+/g, '_')}_(Big_Brother)`,
-      `${name.replace(/\s+/g, '_')}_(US${seasonNumber})`,
-      `${name.replace(/\s+/g, '_')}_(Season_${seasonNumber})`
-    ];
+    console.log('🖼️  Scraping GoldDerby gallery for BB26 cast photos...');
     
-    for (const wikiPageName of nameVariations) {
-      const wikiUrl = `https://bigbrother.fandom.com/wiki/${wikiPageName}`;
+    const galleryUrl = 'https://www.goldderby.com/gallery/big-brother-26-cast/';
+    const response = await fetch(galleryUrl);
+    
+    if (!response.ok) {
+      console.log(`❌ Failed to fetch GoldDerby gallery (${response.status})`);
+      return {};
+    }
+    
+    const html = await response.text();
+    
+    // Look for gallery images with contestant names
+    const imageRegex = /<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi;
+    const photoMap: Record<string, string> = {};
+    let matches;
+    
+    while ((matches = imageRegex.exec(html)) !== null) {
+      const imageUrl = matches[1];
+      const altText = matches[2].toLowerCase();
       
-      console.log(`🔍 Trying to scrape image for ${name} from ${wikiUrl}`);
+      // Skip non-cast images (logos, etc.)
+      if (!imageUrl.includes('.jpg') && !imageUrl.includes('.jpeg') && !imageUrl.includes('.png')) {
+        continue;
+      }
       
-      try {
-        const response = await fetch(wikiUrl);
-        if (!response.ok) {
-          console.log(`❌ Failed to fetch wiki page (${response.status}): ${wikiUrl}`);
-          continue; // Try next variation
-        }
+      // Skip small images (thumbnails, etc.)
+      if (imageUrl.includes('150x') || imageUrl.includes('100x') || imageUrl.includes('thumb')) {
+        continue;
+      }
+      
+      console.log(`🔍 Found image: ${imageUrl} with alt: ${altText}`);
+      
+      // Match contestant names in alt text
+      const contestantNames = [
+        "Angela Murray", "Brooklyn Rivera", "Cam Sullivan-Brown", "Cedric Hodges", 
+        "Chelsie Baham", "Joseph Rodriguez", "Kimo Apaka", "Leah Peters", 
+        "Makensy Manbeck", "Quinn Martin", "Rubina Bernabe", "T'Kor Clottey", 
+        "Tucker Des Lauriers", "Lisa Weintraub", "Kenney Kelley", "Matt Hardeman"
+      ];
+      
+      for (const name of contestantNames) {
+        const firstName = name.split(' ')[0].toLowerCase();
+        const lastName = name.split(' ')[1].toLowerCase();
         
-        const html = await response.text();
-        
-        // Look for the main profile image - search for img tags with Large in the src
-        const imageRegexPatterns = [
-          // Look for images with "Large" in the filename and US26 prefix
-          /<img[^>]+src="(https:\/\/static\.wikia\.nocookie\.net\/bigbrother\/images\/[^"]*US26[^"]*Large[^"]*\.jpg[^"]*)"[^>]*>/gi,
-          // Broader search for any US26 image
-          /<img[^>]+src="(https:\/\/static\.wikia\.nocookie\.net\/bigbrother\/images\/[^"]*US26[^"]*\.jpg[^"]*)"[^>]*>/gi,
-          // Even broader - any bigbrother image that might be the contestant
-          /<img[^>]+src="(https:\/\/static\.wikia\.nocookie\.net\/bigbrother\/images\/[^"]*\.jpg[^"]*)"[^>]*>/gi
-        ];
-        
-        for (const pattern of imageRegexPatterns) {
-          const matches = [...html.matchAll(pattern)];
-          
-          for (const match of matches) {
-            if (match && match[1]) {
-              let imageUrl = match[1];
-              
-              // Clean up the URL
-              imageUrl = imageUrl.replace(/&amp;/g, '&');
-              
-              // Check if this image URL contains the contestant's name or looks like a profile image
-              const nameWords = name.toLowerCase().split(' ');
-              const urlLower = imageUrl.toLowerCase();
-              
-              // Look for contestant name in URL or "Large" indicating it's a full-size profile image
-              const hasName = nameWords.some(word => urlLower.includes(word.toLowerCase()));
-              const isLargeImage = urlLower.includes('large');
-              const isUS26 = urlLower.includes('us26');
-              
-              if ((hasName || isLargeImage) && isUS26) {
-                console.log(`✅ Found potential image for ${name}: ${imageUrl}`);
-                
-                // Validate the image URL
-                const isValid = await validatePhotoUrl(imageUrl);
-                if (isValid) {
-                  console.log(`✅ Image validated for ${name}: ${imageUrl}`);
-                  return imageUrl;
-                } else {
-                  console.log(`❌ Image validation failed for ${name}: ${imageUrl}`);
-                }
-              }
-            }
+        if (altText.includes(firstName) && altText.includes(lastName)) {
+          // Validate the image URL
+          const isValid = await validatePhotoUrl(imageUrl);
+          if (isValid) {
+            photoMap[name] = imageUrl;
+            console.log(`✅ Matched ${name} to ${imageUrl}`);
+            break;
           }
         }
-        
-        console.log(`⚠️  No suitable image found for ${name} on ${wikiUrl}`);
-        
-      } catch (error) {
-        console.log(`❌ Error fetching ${wikiUrl}: ${error.message}`);
-        continue; // Try next variation
       }
     }
     
-    console.log(`❌ No working wiki page found for ${name} after trying all variations`);
-    return '';
+    console.log(`📸 Found ${Object.keys(photoMap).length} contestant photos from GoldDerby`);
+    return photoMap;
     
   } catch (error) {
-    console.log(`❌ Error extracting image for ${name}: ${error.message}`);
-    return '';
+    console.log(`❌ Error scraping GoldDerby gallery: ${error.message}`);
+    return {};
   }
 }
 
@@ -346,7 +328,11 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
       throw new Error('No contestants found in cast list');
     }
     
-    // Step 2: Process each contestant individually
+    // Step 2: Get contestant photos from GoldDerby
+    console.log('🖼️  Fetching photos from GoldDerby gallery...');
+    const photoMap = await scrapeGoldDerbyGallery();
+    
+    // Step 3: Process each contestant individually
     const scrapedCast: ContestantProfile[] = [];
     let imageSuccessCount = 0;
     let imageFailureCount = 0;
@@ -362,9 +348,16 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
         detailsSuccessCount++;
       }
       
-      // Use placeholder image for now - remove complex wiki scraping
-      const finalPhotoUrl = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face';
-      console.log(`📷 Using placeholder image for ${contestantName}`);
+      // Use GoldDerby photo if available, otherwise fallback to placeholder
+      let finalPhotoUrl = photoMap[contestantName];
+      if (finalPhotoUrl) {
+        console.log(`✅ Using GoldDerby photo for ${contestantName}: ${finalPhotoUrl}`);
+        imageSuccessCount++;
+      } else {
+        finalPhotoUrl = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face';
+        console.log(`⚠️  No GoldDerby photo found for ${contestantName}, using placeholder`);
+        imageFailureCount++;
+      }
       
       scrapedCast.push({
         name: contestantDetails.name || contestantName,
@@ -375,8 +368,8 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
         photo: finalPhotoUrl
       });
       
-      // Rate limiting between requests (be respectful to the wiki)
-      await delay(1500);
+      // Small delay to be respectful
+      await delay(100);
     }
     
     console.log(`\n📊 Season 26 scraping complete!`);

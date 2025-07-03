@@ -3,9 +3,13 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio, ContestantGroup } from '@/types/admin';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Bot, Eye } from 'lucide-react';
 import { ContestantForm } from './contestants/ContestantForm';
 import { ContestantList } from './contestants/ContestantList';
+import { AIGenerationPanel } from './contestants/AIGenerationPanel';
+import { EnhancedContestantCard } from './contestants/EnhancedContestantCard';
+import { ContestantProfileModal } from './contestants/ContestantProfileModal';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const ContestantManagement: React.FC = () => {
   const { toast } = useToast();
@@ -15,6 +19,8 @@ export const ContestantManagement: React.FC = () => {
   const [editForm, setEditForm] = useState<Partial<ContestantWithBio>>({});
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedContestant, setSelectedContestant] = useState<any>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   useEffect(() => {
     loadContestants();
@@ -180,6 +186,62 @@ export const ContestantManagement: React.FC = () => {
     setEditForm(prev => ({ ...prev, ...updates }));
   };
 
+  const handleAIProfilesGenerated = async (profiles: any[]) => {
+    const newContestants = [];
+    
+    for (const profile of profiles) {
+      try {
+        const { data, error } = await supabase
+          .from('contestants')
+          .insert({
+            name: profile.name,
+            age: profile.age,
+            hometown: profile.hometown,
+            occupation: profile.occupation,
+            bio: profile.bio,
+            relationship_status: profile.relationship_status,
+            family_info: profile.family_info,
+            physical_description: profile.physical_description,
+            personality_traits: profile.personality_traits,
+            gameplay_strategy: profile.gameplay_strategy,
+            backstory: profile.backstory,
+            ai_generated: true,
+            generation_metadata: {
+              generated_date: new Date().toISOString(),
+              model_used: 'gpt-4o-mini'
+            },
+            is_active: true,
+            sort_order: contestants.length + newContestants.length + 1
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        newContestants.push(data);
+      } catch (error) {
+        console.error('Error saving AI profile:', error);
+        toast({
+          title: "Error",
+          description: `Failed to save profile for ${profile.name}`,
+          variant: "destructive",
+        });
+      }
+    }
+
+    if (newContestants.length > 0) {
+      await loadContestants(); // Reload to get all data including new fields
+      toast({
+        title: "Success!",
+        description: `Added ${newContestants.length} AI-generated contestant(s)`,
+      });
+    }
+  };
+
+  const handleViewProfile = (contestant: any) => {
+    setSelectedContestant(contestant);
+    setShowProfileModal(true);
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading contestants...</div>;
   }
@@ -197,26 +259,64 @@ export const ContestantManagement: React.FC = () => {
         </Button>
       </div>
 
-      {showAddForm && (
-        <ContestantForm
-          editForm={editForm}
-          groups={groups}
-          onFormChange={handleFormChange}
-          onSave={handleAddContestant}
-          onCancel={handleCancel}
-          isEditing={false}
-        />
-      )}
+      <Tabs defaultValue="manage" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manage">Manage Contestants</TabsTrigger>
+          <TabsTrigger value="ai-generate" className="flex items-center gap-2">
+            <Bot className="h-4 w-4" />
+            AI Generator
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="manage" className="space-y-6">
+          {showAddForm && (
+            <ContestantForm
+              editForm={editForm}
+              groups={groups}
+              onFormChange={handleFormChange}
+              onSave={handleAddContestant}
+              onCancel={handleCancel}
+              isEditing={false}
+            />
+          )}
 
-      <ContestantList
-        contestants={contestants}
-        groups={groups}
-        editingId={editingId}
-        editForm={editForm}
-        onEdit={handleEdit}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        onFormChange={handleFormChange}
+          <ContestantList
+            contestants={contestants}
+            groups={groups}
+            editingId={editingId}
+            editForm={editForm}
+            onEdit={handleEdit}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            onFormChange={handleFormChange}
+          />
+        </TabsContent>
+        
+        <TabsContent value="ai-generate" className="space-y-6">
+          <AIGenerationPanel onProfilesGenerated={handleAIProfilesGenerated} />
+          
+          {contestants.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Generated Contestants</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {contestants.map((contestant) => (
+                  <EnhancedContestantCard
+                    key={contestant.id}
+                    contestant={contestant as any}
+                    onEdit={() => handleEdit(contestant)}
+                    onView={() => handleViewProfile(contestant)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      <ContestantProfileModal
+        contestant={selectedContestant}
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
       />
     </div>
   );

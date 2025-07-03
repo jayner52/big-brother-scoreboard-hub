@@ -1,0 +1,1 @@
+UPDATE contestants SET photo_url = '/images/rubina.jpg' WHERE name = 'Rubina';

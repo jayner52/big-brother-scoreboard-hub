@@ -83,7 +83,46 @@ export const EveryonesPicksMatrix: React.FC = () => {
     const answer = entry.bonus_answers[question.id];
     
     if (!answer) return <span className="text-muted-foreground">—</span>;
+
+    // Check if this question has been revealed and has a correct answer
+    if (question.answer_revealed && question.correct_answer) {
+      const isCorrect = answer === question.correct_answer;
+      
+      if (question.question_type === 'dual_player_select' && typeof answer === 'object') {
+        return (
+          <div className="space-y-1">
+            <div className={`px-2 py-1 rounded text-xs ${
+              isCorrect ? 'bg-green-100 text-green-800 font-medium' : 'bg-red-100 text-red-800'
+            }`}>
+              <div>{answer.player1}</div>
+              <div>{answer.player2}</div>
+            </div>
+            {isCorrect && (
+              <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                +{question.points_value} pts
+              </Badge>
+            )}
+          </div>
+        );
+      }
+      
+      return (
+        <div className="space-y-1">
+          <div className={`px-2 py-1 rounded text-sm ${
+            isCorrect ? 'bg-green-100 text-green-800 font-medium' : 'bg-red-100 text-red-800'
+          }`}>
+            {answer}
+          </div>
+          {isCorrect && (
+            <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+              +{question.points_value} pts
+            </Badge>
+          )}
+        </div>
+      );
+    }
     
+    // If not revealed, show answer or TBD
     if (question.question_type === 'dual_player_select' && typeof answer === 'object') {
       return (
         <div className="space-y-1">
@@ -93,7 +132,7 @@ export const EveryonesPicksMatrix: React.FC = () => {
       );
     }
     
-    return <span className="text-sm">{answer}</span>;
+    return <span className="text-sm text-muted-foreground">{answer || 'TBD'}</span>;
   };
 
   const getCorrectAnswerDisplay = (question: BonusQuestion) => {
@@ -161,31 +200,36 @@ export const EveryonesPicksMatrix: React.FC = () => {
           <div className="space-y-4">
             {poolEntries.map((entry) => (
               <div key={entry.id} className="bg-gradient-to-br from-background to-muted/20 border rounded-xl p-4 hover:shadow-md transition-all duration-200">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <div className="font-bold text-base">{entry.team_name}</div>
-                      <div className="text-xs text-muted-foreground">{entry.participant_name}</div>
-                    </div>
-                    <Badge variant={entry.payment_confirmed ? "default" : "secondary"} className="text-xs px-2 py-0.5">
-                      {entry.payment_confirmed ? "✓" : "○"}
-                    </Badge>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-primary">
-                      {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
-                        .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">pts</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-5 gap-2">
-                  {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
-                    <div key={index} className="bg-background/60 rounded-lg p-2 text-center">
-                      <div className="text-xs font-medium truncate" title={player}>{renderPlayerName(player)}</div>
-                    </div>
-                  ))}
-                </div>
+                 <div className="flex items-center justify-between mb-3">
+                   <div>
+                     <div className="font-bold text-base">{entry.team_name}</div>
+                     <div className="text-xs text-muted-foreground">{entry.participant_name}</div>
+                   </div>
+                   <div className="text-right">
+                     <div className="text-xl font-bold text-primary">
+                       {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
+                         .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0)}
+                     </div>
+                     <div className="text-xs text-muted-foreground">pts</div>
+                   </div>
+                 </div>
+                 <div className="grid grid-cols-5 gap-2">
+                   {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => {
+                     const points = houseguestPoints[player] || 0;
+                     return (
+                       <div key={index} className="bg-background/60 rounded-lg p-2 text-center space-y-1">
+                         <Badge variant="secondary" className="text-xs font-medium">
+                           {player}
+                         </Badge>
+                         {points > 0 && (
+                           <Badge variant="outline" className="text-xs">
+                             {points} pts
+                           </Badge>
+                         )}
+                       </div>
+                     );
+                   })}
+                 </div>
               </div>
             ))}
           </div>

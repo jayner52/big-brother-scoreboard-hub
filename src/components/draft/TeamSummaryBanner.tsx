@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Users, Trophy, Target, Clock } from 'lucide-react';
 import { DraftFormData } from '@/hooks/useDraftForm';
+import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 
 interface TeamSummaryBannerProps {
   formData: DraftFormData;
@@ -22,6 +23,15 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
 
   const teamName = formData.team_name || 'Your Team';
   const completionPercentage = (selectedPlayers.length / 5) * 100;
+  const { houseguestPoints } = useHouseguestPoints();
+  
+  const getPlayerPoints = (playerName: string) => {
+    return houseguestPoints[playerName] || 0;
+  };
+  
+  const totalTeamPoints = selectedPlayers.reduce((sum, player) => {
+    return sum + getPlayerPoints(player);
+  }, 0);
 
   return (
     <div className={`bg-gradient-to-r from-purple-50 via-blue-50 to-purple-50 border-b border-purple-100 py-3 px-4 ${className}`}>
@@ -32,11 +42,17 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
             <Trophy className="h-4 w-4 text-purple-600 flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-base text-foreground truncate">{teamName}</h3>
-              {formData.participant_name && (
-                <p className="text-xs text-muted-foreground truncate">
-                  Manager: {formData.participant_name}
-                </p>
-              )}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {formData.participant_name && (
+                  <span className="truncate">Manager: {formData.participant_name}</span>
+                )}
+                {selectedPlayers.length > 0 && (
+                  <>
+                    {formData.participant_name && <span>•</span>}
+                    <span className="font-medium text-purple-600">{totalTeamPoints} pts</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -71,15 +87,27 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
         {selectedPlayers.length > 0 && (
           <div className="mt-2 pt-2 border-t border-purple-100">
             <div className="flex flex-wrap gap-1">
-              {selectedPlayers.map((player, index) => (
-                <Badge 
-                  key={index} 
-                  variant="outline" 
-                  className="bg-purple-50 text-purple-600 border-purple-200 text-xs py-0 px-1.5 h-5"
-                >
-                  {player}
-                </Badge>
-              ))}
+              {selectedPlayers.map((player, index) => {
+                const points = getPlayerPoints(player);
+                return (
+                  <div key={index} className="flex items-center gap-1">
+                    <Badge 
+                      variant="outline" 
+                      className="bg-purple-50 text-purple-600 border-purple-200 text-xs py-0 px-1.5 h-5"
+                    >
+                      {player}
+                    </Badge>
+                    {points > 0 && (
+                      <Badge 
+                        variant="secondary" 
+                        className="bg-green-100 text-green-700 text-xs py-0 px-1 h-4"
+                      >
+                        {points}
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })}
               {Array.from({ length: 5 - selectedPlayers.length }, (_, index) => (
                 <Badge 
                   key={`empty-${index}`} 

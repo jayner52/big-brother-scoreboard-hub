@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BasicInfoForm } from '@/components/draft/BasicInfoForm';
 import { PaymentInfoDisplay } from '@/components/draft/PaymentInfoDisplay';
 import { PaymentValidationSection } from '@/components/draft/PaymentValidationSection';
@@ -13,7 +14,7 @@ import { useDraftForm } from '@/hooks/useDraftForm';
 import { useDraftSubmission } from '@/hooks/useDraftSubmission';
 import { useDraftValidation } from '@/hooks/useDraftValidation';
 import { useRandomPicks } from '@/hooks/useRandomPicks';
-import { Shuffle, AlertCircle } from 'lucide-react';
+import { Shuffle, AlertCircle, Trash2 } from 'lucide-react';
 
 export const TeamDraftForm: React.FC = () => {
   const { poolSettings, contestantGroups, bonusQuestions, loading } = usePoolData();
@@ -67,6 +68,32 @@ export const TeamDraftForm: React.FC = () => {
       </CardHeader>
       <CardContent className="p-6">
         {poolSettings && <PaymentInfoDisplay poolSettings={poolSettings} />}
+
+        {/* Clear Form Button */}
+        <div className="flex justify-end mb-4">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-destructive hover:text-destructive flex items-center gap-2">
+                <Trash2 className="h-4 w-4" />
+                Clear Form
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear Draft Form</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to clear your draft and bonus predictions? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={resetForm} className="bg-destructive hover:bg-destructive/90">
+                  Clear Form
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Validation Errors */}

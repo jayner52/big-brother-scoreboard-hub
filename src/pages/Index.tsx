@@ -18,6 +18,8 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
 
 import { UserPaymentButton } from '@/components/enhanced/UserPaymentButton';
+import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
+import { useDraftForm } from '@/hooks/useDraftForm';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -25,6 +27,7 @@ const Index = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userEntry, setUserEntry] = useState<any>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
+  const { formData } = useDraftForm();
 
   useEffect(() => {
     // Check for existing session
@@ -347,6 +350,13 @@ const Index = () => {
               <TabsTrigger value="contestants">Houseguest Values</TabsTrigger>
               <TabsTrigger value="bios">Houseguest Bios</TabsTrigger>
             </TabsList>
+
+            {/* Team Summary Banner - Show when user has draft progress */}
+            {Object.values(formData).some(player => player && player.trim()) && (
+              <div className="mb-6">
+                <TeamSummaryBanner formData={formData} />
+              </div>
+            )}
 
             <TabsContent value="draft">
               <TeamDraftForm />

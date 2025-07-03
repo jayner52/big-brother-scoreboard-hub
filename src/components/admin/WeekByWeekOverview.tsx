@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Crown, Shield, Users } from 'lucide-react';
+import { Trophy, Users } from 'lucide-react';
+import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 import { supabase } from '@/integrations/supabase/client';
 
 interface WeekSummary {
@@ -185,40 +186,40 @@ const loadWeekByWeekData = async () => {
                   </div>
                   
                    {/* Week Summary */}
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                      <Crown className="h-6 w-6 text-yellow-600 mx-auto mb-1" />
-                      <p className="text-sm font-medium text-yellow-800">HOH</p>
-                      <p className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</p>
-                    </div>
-                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                      <Shield className="h-6 w-6 text-blue-600 mx-auto mb-1" />
-                      <p className="text-sm font-medium text-blue-800">POV</p>
-                      <p className="font-bold text-blue-900">{week.pov_winner || "N/A"}</p>
-                      {week.second_pov_winner && (
-                        <p className="text-xs text-blue-600">2nd: {week.second_pov_winner}</p>
-                      )}
-                    </div>
-                    <div className="text-center p-3 bg-orange-50 rounded-lg">
-                      <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
-                      <p className="text-sm font-medium text-orange-800">POV Used</p>
-                      <p className="font-bold text-orange-900">
-                        {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
-                      </p>
-                    </div>
-                    <div className="text-center p-3 bg-red-50 rounded-lg">
-                      <Users className="h-6 w-6 text-red-600 mx-auto mb-1" />
-                      <p className="text-sm font-medium text-red-800">Evicted</p>
-                      <p className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</p>
-                    </div>
-                    {week.is_double_eviction && (
-                      <div className="text-center p-3 bg-red-100 rounded-lg">
-                        <Users className="h-6 w-6 text-red-700 mx-auto mb-1" />
-                        <p className="text-sm font-medium text-red-900">2nd Evicted</p>
-                        <p className="font-bold text-red-900">{week.second_evicted_contestant || "N/A"}</p>
-                      </div>
-                    )}
-                  </div>
+                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                     <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                       <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
+                       <p className="text-sm font-medium text-yellow-800">HOH</p>
+                       <p className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</p>
+                     </div>
+                     <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                       <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
+                       <p className="text-sm font-medium text-green-800">POV</p>
+                       <p className="font-bold text-green-900">{week.pov_winner || "N/A"}</p>
+                       {week.second_pov_winner && (
+                         <p className="text-xs text-green-600">2nd: {week.second_pov_winner}</p>
+                       )}
+                     </div>
+                     <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                       <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
+                       <p className="text-sm font-medium text-orange-800">POV Used</p>
+                       <p className="font-bold text-orange-900">
+                         {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
+                       </p>
+                     </div>
+                     <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                       <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
+                       <p className="text-sm font-medium text-red-800">Evicted</p>
+                       <p className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</p>
+                     </div>
+                     {week.is_double_eviction && (
+                       <div className="text-center p-3 bg-red-100 rounded-lg border border-red-300">
+                         <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
+                         <p className="text-sm font-medium text-red-900">2nd Evicted</p>
+                         <p className="font-bold text-red-900">{week.second_evicted_contestant || "N/A"}</p>
+                       </div>
+                     )}
+                   </div>
 
                    {/* Points Summary for this week */}
                   {contestantScores[week.week_number] && (

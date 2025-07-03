@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, Crown, Shield, Users, Ban, Eye, EyeOff } from 'lucide-react';
+import { Trophy, Users, Eye, EyeOff } from 'lucide-react';
+import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { formatEventType, getEventDisplayText } from '@/utils/eventFormatters';
 import { useCurrentWeek } from '@/contexts/CurrentWeekContext';
@@ -145,26 +146,26 @@ export const LiveResults: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                  <Crown className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+                <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <BigBrotherIcon type="hoh" className="h-8 w-8 mx-auto mb-2" />
                   <h4 className="font-semibold text-yellow-800">Head of Household</h4>
                   <p className="text-xl font-bold text-yellow-900">
                     {weeklyResults[0].hoh_winner || "TBD"}
                   </p>
                 </div>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <Shield className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-blue-800">Power of Veto</h4>
-                  <p className="text-xl font-bold text-blue-900">
+                <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                  <BigBrotherIcon type="pov" className="h-8 w-8 mx-auto mb-2" />
+                  <h4 className="font-semibold text-green-800">Power of Veto</h4>
+                  <p className="text-xl font-bold text-green-900">
                     {weeklyResults[0].pov_winner || "TBD"}
                   </p>
                   {weeklyResults[0].pov_used && (
-                    <p className="text-sm text-blue-600 mt-1">
+                    <p className="text-sm text-green-600 mt-1">
                       Used on {weeklyResults[0].pov_used_on}
                     </p>
                   )}
                 </div>
-                <div className="text-center p-4 bg-orange-50 rounded-lg">
+                <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
                   <Users className="h-8 w-8 text-orange-600 mx-auto mb-2" />
                   <h4 className="font-semibold text-orange-800">Nominees</h4>
                   <p className="text-sm font-bold text-orange-900">
@@ -176,8 +177,8 @@ export const LiveResults: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <Users className="h-8 w-8 text-red-600 mx-auto mb-2" />
+                <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                  <BigBrotherIcon type="evicted" className="h-8 w-8 mx-auto mb-2" />
                   <h4 className="font-semibold text-red-800">Evicted</h4>
                   <p className="text-xl font-bold text-red-900">
                     {weeklyResults[0].evicted_contestant || "TBD"}
@@ -235,31 +236,31 @@ export const LiveResults: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* Week Summary */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                      <Crown className="h-6 w-6 text-yellow-600 mx-auto mb-1" />
-                      <p className="text-sm font-medium text-yellow-800">HOH</p>
-                      <p className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</p>
-                    </div>
-                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                      <Shield className="h-6 w-6 text-blue-600 mx-auto mb-1" />
-                      <p className="text-sm font-medium text-blue-800">POV</p>
-                      <p className="font-bold text-blue-900">{week.pov_winner || "N/A"}</p>
-                    </div>
-                    <div className="text-center p-3 bg-orange-50 rounded-lg">
-                      <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
-                      <p className="text-sm font-medium text-orange-800">POV Used</p>
-                      <p className="font-bold text-orange-900">
-                        {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
-                      </p>
-                    </div>
-                    <div className="text-center p-3 bg-red-50 rounded-lg">
-                      <Ban className="h-6 w-6 text-red-600 mx-auto mb-1" />
-                      <p className="text-sm font-medium text-red-800">Evicted</p>
-                      <p className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</p>
-                    </div>
-                  </div>
+                   {/* Week Summary */}
+                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                     <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                       <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
+                       <p className="text-sm font-medium text-yellow-800">HOH</p>
+                       <p className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</p>
+                     </div>
+                     <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                       <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
+                       <p className="text-sm font-medium text-green-800">POV</p>
+                       <p className="font-bold text-green-900">{week.pov_winner || "N/A"}</p>
+                     </div>
+                     <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                       <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
+                       <p className="text-sm font-medium text-orange-800">POV Used</p>
+                       <p className="font-bold text-orange-900">
+                         {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
+                       </p>
+                     </div>
+                     <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                       <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
+                       <p className="text-sm font-medium text-red-800">Evicted</p>
+                       <p className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</p>
+                     </div>
+                   </div>
 
                   {/* Nominees and Special Events */}
                   <div className="text-xs text-gray-500 space-y-2">

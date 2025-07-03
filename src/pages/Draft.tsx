@@ -2,7 +2,7 @@ import React from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
 import { DraftWizard } from '@/components/draft/DraftWizard';
 import { EnhancedDraftSummaryBanner } from '@/components/draft/EnhancedDraftSummaryBanner';
-import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
+import { LiveTeamSummary } from '@/components/draft/LiveTeamSummary';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +21,7 @@ const Draft = () => {
 
 const DraftContent = ({ navigate }: { navigate: any }) => {
   const { poolSettings, loading } = usePoolData();
-  const { formData } = useDraftForm();
+  const { formData, updateFormData } = useDraftForm();
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -51,14 +51,15 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
             Select your 5 houseguests and answer bonus questions to build your winning team!
           </p>
           
-          {/* Enhanced Summary Banner */}
-          {poolSettings && <EnhancedDraftSummaryBanner poolSettings={poolSettings} />}
-        </div>
+        {/* Enhanced Summary Banner */}
+        {poolSettings && <EnhancedDraftSummaryBanner poolSettings={poolSettings} />}
+      </div>
 
-        {/* Fix 3: Team Summary Banner - ensure it renders properly */}
-        <div className="mb-8">
-          <TeamSummaryBanner formData={formData} />
-        </div>
+      {/* Live Team Summary - rebuilt from scratch */}
+      <LiveTeamSummary 
+        formData={formData} 
+        onPaymentUpdate={(confirmed) => updateFormData({ payment_confirmed: confirmed })}
+      />
 
         {/* Draft Wizard */}
         <DraftWizard />

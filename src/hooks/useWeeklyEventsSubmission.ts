@@ -225,16 +225,30 @@ export const useWeeklyEventsSubmission = (
         description: `Week ${eventForm.week} events recorded successfully`,
       });
 
-      // Fix 4: Update current game week to advance to next week dynamically
+      // Explicit step-by-step weekly advancement logic
       try {
+        const completedWeek = eventForm.week;
+        let nextWeek = completedWeek + 1;
+        
+        // Explicit rules: If Week N is marked complete → Set Week N+1 as current
+        // Week 1 complete → Week 2 current, Week 2 complete → Week 3 current, etc.
+        console.log(`Week ${completedWeek} completed, advancing to Week ${nextWeek}`);
+        
         const { error: weekUpdateError } = await supabase.rpc('update_current_game_week', { 
-          new_week_number: eventForm.week + 1 
+          new_week_number: nextWeek 
         });
+        
         if (weekUpdateError) {
           console.error('Error updating current game week:', weekUpdateError);
           throw weekUpdateError;
         }
-        console.log(`Successfully advanced current game week to ${eventForm.week + 1}`);
+        
+        toast({
+          title: "Success!",
+          description: `Week ${completedWeek} completed! Advanced to Week ${nextWeek}`,
+        });
+        
+        console.log(`Successfully advanced current game week from ${completedWeek} to ${nextWeek}`);
       } catch (error) {
         console.error('Failed to update current game week:', error);
         toast({

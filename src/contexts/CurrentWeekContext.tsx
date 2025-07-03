@@ -27,17 +27,22 @@ export const CurrentWeekProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const loadCurrentWeek = async () => {
     try {
-      // Get the highest week number that exists
+      // Get all completed weeks to calculate the current week as max(completed_weeks) + 1
       const { data: weeklyData } = await supabase
         .from('weekly_results')
-        .select('week_number')
-        .order('week_number', { ascending: false })
-        .limit(1);
+        .select('week_number, is_draft')
+        .eq('is_draft', false)
+        .order('week_number', { ascending: false });
       
-      const week = weeklyData?.[0]?.week_number ? weeklyData[0].week_number : 1;
-      setCurrentWeekState(week);
+      // Calculate current week as the highest completed week + 1
+      const completedWeeks = weeklyData?.map(w => w.week_number) || [];
+      const currentWeek = completedWeeks.length > 0 ? Math.max(...completedWeeks) + 1 : 1;
+      
+      console.log(`CurrentWeekContext: Completed weeks: [${completedWeeks.join(', ')}], Current week: ${currentWeek}`);
+      setCurrentWeekState(currentWeek);
     } catch (error) {
       console.error('Error loading current week:', error);
+      setCurrentWeekState(1);
     } finally {
       setIsCurrentWeekLoading(false);
     }

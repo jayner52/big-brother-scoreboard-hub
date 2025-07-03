@@ -37,6 +37,7 @@ export const LiveResults: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showSpoilers, setShowSpoilers] = useState(false);
   const { currentWeek } = useCurrentWeek();
+  const [currentWeekData, setCurrentWeekData] = useState<WeeklyResult | null>(null);
 
   useEffect(() => {
     loadWeeklyResults();
@@ -92,6 +93,23 @@ export const LiveResults: React.FC = () => {
       }));
       
       setSpecialEvents([...mappedSpecialEvents, ...mappedBBArenaEvents]);
+      
+      // Find the current week data or create placeholder
+      const currentWeekResult = data?.find(week => week.week_number === currentWeek);
+      setCurrentWeekData(currentWeekResult || {
+        week_number: currentWeek,
+        hoh_winner: null,
+        pov_winner: null,
+        evicted_contestant: null,
+        nominees: null,
+        pov_used: null,
+        pov_used_on: null,
+        replacement_nominee: null,
+        is_double_eviction: null,
+        is_triple_eviction: null,
+        jury_phase_started: null,
+        is_draft: true
+      });
     } catch (error) {
       console.error('Error loading weekly results:', error);
     } finally {
@@ -106,14 +124,14 @@ export const LiveResults: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Current Week Highlights */}
-      {weeklyResults.length > 0 && (
+      {currentWeekData && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-yellow-500" />
-              Week {weeklyResults[0].week_number} - {weeklyResults[0].is_draft ? 'In Progress' : 'Latest Results'}
+              Week {currentWeekData.week_number} - In Progress
               <div className="flex gap-2 ml-auto">
-                {weeklyResults[0].is_draft && (
+                {currentWeekData.is_draft && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -124,13 +142,13 @@ export const LiveResults: React.FC = () => {
                     {showSpoilers ? 'Hide Spoilers' : 'Show Spoilers'}
                   </Button>
                 )}
-                 {weeklyResults[0].is_double_eviction && (
+                 {currentWeekData.is_double_eviction && (
                    <Badge variant="destructive">Double Eviction</Badge>
                  )}
-                 {weeklyResults[0].is_triple_eviction && (
+                 {currentWeekData.is_triple_eviction && (
                    <Badge variant="destructive">Triple Eviction</Badge>
                  )}
-                {weeklyResults[0].jury_phase_started && (
+                {currentWeekData.jury_phase_started && (
                   <Badge className="bg-purple-500">Jury Started</Badge>
                 )}
               </div>
@@ -138,10 +156,10 @@ export const LiveResults: React.FC = () => {
           </CardHeader>
           <CardContent>
             {/* Show spoiler-protected content for in-progress weeks */}
-            {weeklyResults[0].is_draft && !showSpoilers ? (
+            {currentWeekData.is_draft && !showSpoilers ? (
               <div className="text-center py-8 text-gray-500">
                 <Eye className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-lg font-semibold mb-2">Week {weeklyResults[0].week_number} In Progress</p>
+                <p className="text-lg font-semibold mb-2">Week {currentWeekData.week_number} In Progress</p>
                 <p>Click "Show Spoilers" to see current results</p>
               </div>
             ) : (
@@ -150,18 +168,18 @@ export const LiveResults: React.FC = () => {
                   <BigBrotherIcon type="hoh" className="h-8 w-8 mx-auto mb-2" />
                   <h4 className="font-semibold text-yellow-800">Head of Household</h4>
                   <p className="text-xl font-bold text-yellow-900">
-                    {weeklyResults[0].hoh_winner || "TBD"}
+                    {currentWeekData.hoh_winner || "TBD"}
                   </p>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
                   <BigBrotherIcon type="pov" className="h-8 w-8 mx-auto mb-2" />
                   <h4 className="font-semibold text-green-800">Power of Veto</h4>
                   <p className="text-xl font-bold text-green-900">
-                    {weeklyResults[0].pov_winner || "TBD"}
+                    {currentWeekData.pov_winner || "TBD"}
                   </p>
-                  {weeklyResults[0].pov_used && (
+                  {currentWeekData.pov_used && (
                     <p className="text-sm text-green-600 mt-1">
-                      Used on {weeklyResults[0].pov_used_on}
+                      Used on {currentWeekData.pov_used_on}
                     </p>
                   )}
                 </div>
@@ -169,11 +187,11 @@ export const LiveResults: React.FC = () => {
                   <Users className="h-8 w-8 text-orange-600 mx-auto mb-2" />
                   <h4 className="font-semibold text-orange-800">Nominees</h4>
                   <p className="text-sm font-bold text-orange-900">
-                    {weeklyResults[0].nominees?.join(', ') || "TBD"}
+                    {currentWeekData.nominees?.join(', ') || "TBD"}
                   </p>
-                  {weeklyResults[0].replacement_nominee && (
+                  {currentWeekData.replacement_nominee && (
                     <p className="text-xs text-orange-600 mt-1">
-                      Replacement: {weeklyResults[0].replacement_nominee}
+                      Replacement: {currentWeekData.replacement_nominee}
                     </p>
                   )}
                 </div>
@@ -181,19 +199,19 @@ export const LiveResults: React.FC = () => {
                   <BigBrotherIcon type="evicted" className="h-8 w-8 mx-auto mb-2" />
                   <h4 className="font-semibold text-red-800">Evicted</h4>
                   <p className="text-xl font-bold text-red-900">
-                    {weeklyResults[0].evicted_contestant || "TBD"}
+                    {currentWeekData.evicted_contestant || "TBD"}
                   </p>
                 </div>
               </div>
             )}
 
             {/* Special Events for Current Week */}
-            {(!weeklyResults[0].is_draft || showSpoilers) && specialEvents.filter(event => event.week_number === weeklyResults[0].week_number).length > 0 && (
+            {(!currentWeekData.is_draft || showSpoilers) && specialEvents.filter(event => event.week_number === currentWeekData.week_number).length > 0 && (
               <div className="mt-6">
                 <h4 className="font-semibold mb-2">Special Events This Week</h4>
                  <div className="flex flex-wrap gap-2">
                    {specialEvents
-                     .filter(event => event.week_number === weeklyResults[0].week_number)
+                     .filter(event => event.week_number === currentWeekData.week_number)
                      .map((event, index) => (
                        <Badge key={index} variant="outline" className="text-xs">
                          <span className="font-medium">{event.houseguest_name}</span>: {getEventDisplayText(event.event_type, event.description)}

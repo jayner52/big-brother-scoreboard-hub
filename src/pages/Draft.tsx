@@ -2,7 +2,7 @@ import React from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
 import { DraftWizard } from '@/components/draft/DraftWizard';
 import { EnhancedDraftSummaryBanner } from '@/components/draft/EnhancedDraftSummaryBanner';
-import { LiveTeamSummary } from '@/components/draft/LiveTeamSummary';
+import { LiveDraftSummary } from '@/components/draft/LiveDraftSummary';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -55,8 +55,8 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
         {poolSettings && <EnhancedDraftSummaryBanner poolSettings={poolSettings} />}
       </div>
 
-      {/* Live Team Summary - rebuilt from scratch */}
-      <LiveTeamSummary 
+      {/* Live Draft Summary - built from scratch */}
+      <LiveDraftSummary 
         formData={formData} 
         onPaymentUpdate={(confirmed) => updateFormData({ payment_confirmed: confirmed })}
       />

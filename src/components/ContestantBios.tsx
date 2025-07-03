@@ -7,13 +7,21 @@ import { ContestantWithBio } from '@/types/admin';
 import { PoolSettings } from '@/types/pool';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
+import { ContestantProfileModal } from '@/components/admin/contestants/ContestantProfileModal';
 
 export const ContestantBios: React.FC = () => {
   const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
   const [poolSettings, setPoolSettings] = useState<PoolSettings | null>(null);
+  const [selectedContestant, setSelectedContestant] = useState<ContestantWithBio | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const { evictedContestants } = useEvictedContestants();
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
+
+  const handleContestantClick = (contestant: ContestantWithBio) => {
+    setSelectedContestant(contestant);
+    setShowProfileModal(true);
+  };
 
   useEffect(() => {
     loadContestants();
@@ -77,21 +85,40 @@ export const ContestantBios: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {contestants.map((contestant) => (
-          <Card key={contestant.id} className={`overflow-hidden transition-all duration-300 hover:shadow-lg ${
-            !contestant.isActive ? 'opacity-60 border-destructive/20' : ''
-          }`}>
+          <Card 
+            key={contestant.id} 
+            className={`overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer ${
+              !contestant.isActive ? 'opacity-60 border-destructive/20' : ''
+            }`}
+            onClick={() => handleContestantClick(contestant)}
+          >
              <div className="relative">
-               {contestant.photo_url ? (
-                 <img 
-                   src={contestant.photo_url} 
-                   alt={contestant.name}
-                   className="w-full h-32 object-cover"
-                 />
-               ) : (
-                 <div className="w-full h-32 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                   <Users className="h-8 w-8 text-muted-foreground" />
-                 </div>
-               )}
+                {contestant.photo_url ? (
+                  <img 
+                    src={contestant.photo_url} 
+                    alt={contestant.name}
+                    className="w-full h-32 object-cover"
+                    onError={(e) => {
+                      // Fallback to initials avatar if photo fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLDivElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className="w-full h-32 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center"
+                  style={{ display: contestant.photo_url ? 'none' : 'flex' }}
+                >
+                  {contestant.photo_url ? (
+                    <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold">
+                      {contestant.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
+                  ) : (
+                    <Users className="h-8 w-8 text-muted-foreground" />
+                  )}
+                </div>
               <div className="absolute top-2 right-2 flex flex-col gap-1">
                 <Badge variant={contestant.isActive ? "default" : "destructive"}>
                   {contestant.isActive ? 'Active' : 'Eliminated'}
@@ -155,6 +182,12 @@ export const ContestantBios: React.FC = () => {
           </Card>
         ))}
       </div>
+
+      <ContestantProfileModal
+        contestant={selectedContestant}
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
     </div>
   );
 };

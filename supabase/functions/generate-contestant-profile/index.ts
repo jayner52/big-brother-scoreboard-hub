@@ -27,6 +27,12 @@ interface GenerationRequest {
 
 // Season-specific configurations with real cast data
 const seasonData = {
+  27: { 
+    name: "Big Brother 27", 
+    castCount: 16, 
+    theme: "TBD",
+    cast: [] // Cast not yet announced
+  },
   26: { 
     name: "Big Brother 26", 
     castCount: 16, 
@@ -112,41 +118,29 @@ serve(async (req) => {
       // Get season configuration
       const season = seasonData[season_number] || { name: `Big Brother ${season_number}`, castCount: cast_size };
       
+      // Check for Season 27 (TBD)
+      if (season_number === 27) {
+        throw new Error('Big Brother 27 cast has not been announced yet. Please select a different season.');
+      }
+
       if (season_number === 26 || season_number === 25) {
         // Use real cast data from Big Brother Fandom
         const currentSeason = seasonData[season_number];
-        if (!currentSeason?.cast) {
+        if (!currentSeason?.cast || currentSeason.cast.length === 0) {
           throw new Error(`No cast data available for season ${season_number}`);
         }
 
-        if (count === 1) {
-          // Single contestant generation
-          const randomIndex = Math.floor(Math.random() * currentSeason.cast.length);
-          const selectedContestant = currentSeason.cast[randomIndex];
-          
+        // Always generate full cast - remove single contestant logic
+        for (const contestant of currentSeason.cast) {
           const profile: ContestantProfile = {
-            name: selectedContestant.name,
-            age: selectedContestant.age,
-            hometown: selectedContestant.hometown,
-            occupation: selectedContestant.occupation,
-            photo: selectedContestant.photo,
-            bio: selectedContestant.bio
+            name: contestant.name,
+            age: contestant.age,
+            hometown: contestant.hometown,
+            occupation: contestant.occupation,
+            photo: contestant.photo,
+            bio: contestant.bio
           };
-          
           profiles.push(profile);
-        } else {
-          // Full cast generation
-          for (const contestant of currentSeason.cast) {
-            const profile: ContestantProfile = {
-              name: contestant.name,
-              age: contestant.age,
-              hometown: contestant.hometown,
-              occupation: contestant.occupation,
-              photo: contestant.photo,
-              bio: contestant.bio
-            };
-            profiles.push(profile);
-          }
         }
         continue; // Skip AI generation for seasons with real data
       } else {

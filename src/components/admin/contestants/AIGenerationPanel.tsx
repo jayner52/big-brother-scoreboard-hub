@@ -38,6 +38,7 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
     'big-brother': {
       name: 'Big Brother',
       seasons: {
+        27: { cast: 16, theme: 'TBD', format: 'TBD', twists: 'Cast not yet announced' },
         26: { cast: 16, theme: 'AI Arena', format: 'Standard', twists: 'AI Arena competition, America\'s Veto' },
         25: { cast: 17, theme: 'Regular Season', format: 'Standard', twists: 'Invisible HOH, Comic-Verse Power' },
         24: { cast: 16, theme: 'Regular Season', format: 'Standard', twists: 'Backstage Boss, Festie Besties' },
@@ -56,12 +57,12 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
 
   const [selectedShow, setSelectedShow] = useState('big-brother');
   const [seasonConfig, setSeasonConfig] = useState({
-    season_number: 26,
-    season_theme: 'AI Arena',
-    season_format: 'Standard',
+    season_number: 27,
+    season_theme: 'TBD',
+    season_format: 'TBD',
     cast_size: 16,
-    special_twists: 'AI Arena competition, America\'s Veto',
-    count: 1
+    special_twists: 'Cast not yet announced',
+    count: 16
   });
 
   const validateContestantData = (contestants: AIContestantProfile[]) => {
@@ -136,8 +137,61 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
 
   const generateFullCast = async () => {
     const season = showConfigs[selectedShow].seasons[seasonConfig.season_number];
-    setSeasonConfig(prev => ({ ...prev, count: season.cast }));
-    await generateProfiles();
+    
+    // Check if Season 27 (TBD)
+    if (seasonConfig.season_number === 27) {
+      toast({
+        title: "Season 27 Not Available",
+        description: "Big Brother 27 cast has not been announced yet. Please select a different season.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Always generate full cast
+    const fullCastConfig = { ...seasonConfig, count: season.cast };
+    
+    setIsGenerating(true);
+    setProgress(0);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-contestant-profile', {
+        body: fullCastConfig
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || 'Generation failed');
+      }
+
+      // Validate the generated data
+      if (data.profiles && data.profiles.length > 0) {
+        validateContestantData(data.profiles);
+      }
+
+      setProgress(100);
+      onProfilesGenerated(data.profiles);
+
+      toast({
+        title: "Success!",
+        description: `Generated full cast of ${data.profiles.length} contestants`,
+      });
+
+    } catch (error) {
+      console.error('Error generating profiles:', error);
+      const errorMessage = error.message || "Failed to generate contestant profiles";
+      setError(errorMessage);
+      toast({
+        title: "Generation Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+      setProgress(0);
+    }
   };
 
   return (
@@ -272,30 +326,33 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
           </div>
         )}
 
-        {/* Generation Buttons */}
-        <div className="flex gap-4">
-          <Button 
-            onClick={() => {
-              setSeasonConfig(prev => ({ ...prev, count: 1 }));
-              generateProfiles();
-            }}
-            disabled={isGenerating}
-            className="flex items-center gap-2"
-          >
-            <Wand2 className="h-4 w-4" />
-            {isGenerating ? "Generating..." : "Generate Single Contestant"}
-          </Button>
-          
+        {/* Generation Button */}
+        <div className="flex justify-center">
           <Button 
             onClick={generateFullCast}
-            disabled={isGenerating}
-            variant="outline"
-            className="flex items-center gap-2"
+            disabled={isGenerating || seasonConfig.season_number === 27}
+            className="flex items-center gap-2 px-8"
           >
             <Users className="h-4 w-4" />
             {isGenerating ? "Generating..." : `Generate Full Cast (${showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})`}
           </Button>
         </div>
+
+        {seasonConfig.season_number === 27 && (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-amber-800">Season 27 Coming Soon</h4>
+                <p className="text-sm text-amber-700 mt-1">The Big Brother 27 cast has not been announced yet. Generation will be available once the official cast is revealed.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* AI Settings */}
         <div className="p-4 bg-muted rounded-lg">

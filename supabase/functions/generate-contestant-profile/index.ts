@@ -185,86 +185,141 @@ async function scrapeBB26CastList(): Promise<string[]> {
   return bb26Cast;
 }
 
-// Extract contestant details from individual wiki page
-async function extractContestantDetails(name: string): Promise<Partial<ContestantProfile>> {
-  console.log(`📋 Extracting details for ${name}...`);
+// Get contestant details from known Big Brother 26 data
+function getContestantDetails(name: string): Partial<ContestantProfile> {
+  console.log(`📋 Getting details for ${name}...`);
   
-  try {
-    // Try different wiki page name variations
-    const nameVariations = [
-      name.replace(/\s+/g, '_'),
-      `${name.replace(/\s+/g, '_')}_(Big_Brother)`,
-      `${name.replace(/\s+/g, '_')}_(US26)`,
-      `${name.replace(/\s+/g, '_')}_(Season_26)`
-    ];
-    
-    for (const wikiPageName of nameVariations) {
-      const wikiUrl = `https://bigbrother.fandom.com/wiki/${wikiPageName}`;
-      
-      try {
-        const response = await fetch(wikiUrl);
-        if (!response.ok) continue;
-        
-        const html = await response.text();
-        
-        // Extract basic info from infobox or text
-        const details: Partial<ContestantProfile> = {
-          name: name,
-          age: 25, // Default age, will try to extract
-          hometown: "Unknown", // Default hometown
-          occupation: "Unknown", // Default occupation
-          bio: `${name} is a contestant on Big Brother 26.` // Default bio
-        };
-        
-        // Try to extract age
-        const ageMatch = html.match(/Age[:\s]*(\d+)/i) || html.match(/(\d+)\s*years?\s*old/i);
-        if (ageMatch) {
-          details.age = parseInt(ageMatch[1]);
-        }
-        
-        // Try to extract hometown
-        const hometownMatch = html.match(/Hometown[:\s]*([^<\n]+)/i) || 
-                             html.match(/from\s+([A-Z][a-z]+,\s*[A-Z]{2})/i);
-        if (hometownMatch) {
-          details.hometown = hometownMatch[1].trim();
-        }
-        
-        // Try to extract occupation
-        const occupationMatch = html.match(/Occupation[:\s]*([^<\n]+)/i) ||
-                               html.match(/Job[:\s]*([^<\n]+)/i);
-        if (occupationMatch) {
-          details.occupation = occupationMatch[1].trim();
-        }
-        
-        console.log(`✅ Extracted details for ${name}: Age ${details.age}, ${details.hometown}, ${details.occupation}`);
-        return details;
-        
-      } catch (error) {
-        console.log(`❌ Failed to fetch ${wikiUrl}: ${error.message}`);
-        continue;
-      }
+  // Known Big Brother 26 contestant data
+  const bb26Data: Record<string, Partial<ContestantProfile>> = {
+    "Angela Murray": {
+      name: "Angela Murray",
+      age: 50,
+      hometown: "Syracuse, UT",
+      occupation: "Real Estate Agent",
+      bio: "Angela Murray is a 50-year-old real estate agent from Syracuse, UT. She's a mother and grandmother who brings life experience to the Big Brother house."
+    },
+    "Brooklyn Rivera": {
+      name: "Brooklyn Rivera", 
+      age: 34,
+      hometown: "Dallas, TX",
+      occupation: "Business Administrator",
+      bio: "Brooklyn Rivera is a 34-year-old business administrator from Dallas, TX. She's strategic and competitive with a strong business background."
+    },
+    "Cam Sullivan-Brown": {
+      name: "Cam Sullivan-Brown",
+      age: 25,
+      hometown: "Bowie, MD", 
+      occupation: "Physical Therapist",
+      bio: "Cam Sullivan-Brown is a 25-year-old physical therapist from Bowie, MD. He's athletic and brings a competitive spirit to the game."
+    },
+    "Cedric Hodges": {
+      name: "Cedric Hodges",
+      age: 21,
+      hometown: "Northridge, CA",
+      occupation: "Former Marine",
+      bio: "Cedric Hodges is a 21-year-old former Marine from Northridge, CA. He brings military discipline and strategic thinking to the house."
+    },
+    "Chelsie Baham": {
+      name: "Chelsie Baham",
+      age: 27,
+      hometown: "Rancho Cucamonga, CA",
+      occupation: "Nonprofit Director",
+      bio: "Chelsie Baham is a 27-year-old nonprofit director from Rancho Cucamonga, CA. She's passionate about helping others and strategic gameplay."
+    },
+    "Joseph Rodriguez": {
+      name: "Joseph Rodriguez",
+      age: 30,
+      hometown: "Tampa, FL",
+      occupation: "Video Store Clerk",
+      bio: "Joseph Rodriguez is a 30-year-old video store clerk from Tampa, FL. He's a film enthusiast with a laid-back personality."
+    },
+    "Kimo Apaka": {
+      name: "Kimo Apaka",
+      age: 35,
+      hometown: "Hilo, HI",
+      occupation: "Mattress Salesman",
+      bio: "Kimo Apaka is a 35-year-old mattress salesman from Hilo, HI. He brings island vibes and a relaxed approach to the game."
+    },
+    "Leah Peters": {
+      name: "Leah Peters",
+      age: 26,
+      hometown: "Miami, FL",
+      occupation: "VIP Cocktail Server",
+      bio: "Leah Peters is a 26-year-old VIP cocktail server from Miami, FL. She's social and knows how to work a room."
+    },
+    "Makensy Manbeck": {
+      name: "Makensy Manbeck",
+      age: 22,
+      hometown: "Houston, TX",
+      occupation: "Construction Project Manager",
+      bio: "Makensy Manbeck is a 22-year-old construction project manager from Houston, TX. She's young but brings leadership skills to the house."
+    },
+    "Quinn Martin": {
+      name: "Quinn Martin",
+      age: 25,
+      hometown: "Omaha, NE",
+      occupation: "Nurse Recruiter",
+      bio: "Quinn Martin is a 25-year-old nurse recruiter from Omaha, NE. He understands people and knows how to build relationships."
+    },
+    "Rubina Bernabe": {
+      name: "Rubina Bernabe",
+      age: 35,
+      hometown: "Los Angeles, CA",
+      occupation: "Event Bartender",
+      bio: "Rubina Bernabe is a 35-year-old event bartender from Los Angeles, CA. She's experienced in reading people and social dynamics."
+    },
+    "T'Kor Clottey": {
+      name: "T'Kor Clottey",
+      age: 23,
+      hometown: "Chicago, IL",
+      occupation: "Crochet Business Owner",
+      bio: "T'Kor Clottey is a 23-year-old crochet business owner from Chicago, IL. She's creative and entrepreneurial with a unique perspective."
+    },
+    "Tucker Des Lauriers": {
+      name: "Tucker Des Lauriers",
+      age: 30,
+      hometown: "Brooklyn, NY",
+      occupation: "Marketing/Sales Executive",
+      bio: "Tucker Des Lauriers is a 30-year-old marketing/sales executive from Brooklyn, NY. He's charismatic and knows how to sell his ideas."
+    },
+    "Lisa Weintraub": {
+      name: "Lisa Weintraub",
+      age: 33,
+      hometown: "Los Angeles, CA",
+      occupation: "Celebrity Chef",
+      bio: "Lisa Weintraub is a 33-year-old celebrity chef from Los Angeles, CA. She's used to high-pressure environments and competitive situations."
+    },
+    "Kenney Kelley": {
+      name: "Kenney Kelley",
+      age: 52,
+      hometown: "Boston, MA",
+      occupation: "Former Undercover Cop",
+      bio: "Kenney Kelley is a 52-year-old former undercover cop from Boston, MA. He brings investigative skills and street smarts to the game."
+    },
+    "Matt Hardeman": {
+      name: "Matt Hardeman",
+      age: 25,
+      hometown: "Loganville, GA",
+      occupation: "Tech Sales Rep",
+      bio: "Matt Hardeman is a 25-year-old tech sales rep from Loganville, GA. He's young, ambitious, and knows how to close deals."
     }
-    
-    // Return defaults if no page found
-    console.log(`⚠️  Using default details for ${name}`);
-    return {
-      name: name,
-      age: 25,
-      hometown: "Unknown",
-      occupation: "Unknown",
-      bio: `${name} is a contestant on Big Brother 26.`
-    };
-    
-  } catch (error) {
-    console.error(`❌ Error extracting details for ${name}:`, error);
-    return {
-      name: name,
-      age: 25,
-      hometown: "Unknown", 
-      occupation: "Unknown",
-      bio: `${name} is a contestant on Big Brother 26.`
-    };
+  };
+  
+  const details = bb26Data[name];
+  if (details) {
+    console.log(`✅ Found details for ${name}: Age ${details.age}, ${details.hometown}, ${details.occupation}`);
+    return details;
   }
+  
+  // Fallback for any missing contestants
+  console.log(`⚠️  Using default details for ${name}`);
+  return {
+    name: name,
+    age: 25,
+    hometown: "Unknown",
+    occupation: "Unknown",
+    bio: `${name} is a contestant on Big Brother 26.`
+  };
 }
 
 // Scrape Big Brother Fandom for contestant data
@@ -301,25 +356,15 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
       const contestantName = contestantNames[i];
       console.log(`\n🔄 [${i + 1}/${contestantNames.length}] Processing ${contestantName}...`);
       
-      // Extract contestant details
-      const contestantDetails = await extractContestantDetails(contestantName);
+      // Get contestant details from known data
+      const contestantDetails = getContestantDetails(contestantName);
       if (contestantDetails.hometown !== "Unknown") {
         detailsSuccessCount++;
       }
       
-      // Extract contestant image
-      const scrapedImageUrl = await extractContestantImage(contestantName, 26);
-      
-      let finalPhotoUrl = scrapedImageUrl;
-      
-      if (scrapedImageUrl) {
-        console.log(`✅ Successfully scraped image for ${contestantName}: ${scrapedImageUrl}`);
-        imageSuccessCount++;
-      } else {
-        console.log(`❌ Failed to scrape image for ${contestantName}, using placeholder`);
-        finalPhotoUrl = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face';
-        imageFailureCount++;
-      }
+      // Use placeholder image for now - remove complex wiki scraping
+      const finalPhotoUrl = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face';
+      console.log(`📷 Using placeholder image for ${contestantName}`);
       
       scrapedCast.push({
         name: contestantDetails.name || contestantName,

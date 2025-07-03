@@ -132,6 +132,11 @@ export const useWeeklyEvents = () => {
       preview[eventForm.povWinner] = (preview[eventForm.povWinner] || 0) + calculatePoints('pov_winner');
     }
     
+    // POV used on someone (1 point)
+    if (eventForm.povUsed && eventForm.povUsedOn) {
+      preview[eventForm.povUsedOn] = (preview[eventForm.povUsedOn] || 0) + 1;
+    }
+    
     // Nominee points (only add if nominee is not empty)
     eventForm.nominees.filter(nominee => nominee).forEach(nominee => {
       preview[nominee] = (preview[nominee] || 0) + calculatePoints('nominee');
@@ -225,6 +230,16 @@ export const useWeeklyEvents = () => {
           contestant_id: contestants.find(c => c.name === eventForm.povWinner)?.id,
           event_type: 'pov_winner',
           points_awarded: calculatePoints('pov_winner')
+        });
+      }
+
+      // Add POV used on someone (1 point)
+      if (eventForm.povUsed && eventForm.povUsedOn) {
+        events.push({
+          week_number: eventForm.week,
+          contestant_id: contestants.find(c => c.name === eventForm.povUsedOn)?.id,
+          event_type: 'pov_used_on',
+          points_awarded: 1
         });
       }
 

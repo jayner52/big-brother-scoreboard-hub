@@ -161,6 +161,15 @@ const Auth = () => {
             Join the Pool
           </h1>
           <p className="text-gray-600">Sign in or create an account to draft your team</p>
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+            <h3 className="font-semibold text-blue-800 mb-2">What to expect:</h3>
+            <ul className="text-blue-700 space-y-1">
+              <li>• Account creation is instant - no email confirmation required</li>
+              <li>• You can draft your team immediately after signing up</li>
+              <li>• Your picks are saved to your account automatically</li>
+              <li>• Access your rankings and status anytime</li>
+            </ul>
+          </div>
         </div>
 
         <Card>

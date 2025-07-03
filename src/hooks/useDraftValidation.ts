@@ -1,0 +1,52 @@
+import { DraftFormData } from './useDraftForm';
+import { BonusQuestion } from '@/types/pool';
+
+export const useDraftValidation = () => {
+  const validateDraftForm = (
+    formData: DraftFormData, 
+    bonusQuestions: BonusQuestion[] = []
+  ): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // Basic info validation
+    if (!formData.participant_name.trim()) {
+      errors.push("Please enter your name");
+    }
+    if (!formData.team_name.trim()) {
+      errors.push("Please enter a team name");
+    }
+    if (!formData.email.trim()) {
+      errors.push("Please enter your email address");
+    }
+
+    // Team selection validation
+    const players = ['player_1', 'player_2', 'player_3', 'player_4', 'player_5'] as const;
+    players.forEach((player, index) => {
+      if (!formData[player]) {
+        errors.push(`Please select Player ${index + 1}`);
+      }
+    });
+
+    // Bonus questions validation
+    bonusQuestions.forEach((question) => {
+      const answer = formData.bonus_answers[question.id];
+      if (!answer || 
+          (typeof answer === 'string' && !answer.trim()) ||
+          (typeof answer === 'object' && (!answer.player1 || !answer.player2))) {
+        errors.push(`Please answer: ${question.question_text}`);
+      }
+    });
+
+    // Payment confirmation validation
+    if (!formData.payment_confirmed) {
+      errors.push("Please confirm your payment");
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
+
+  return { validateDraftForm };
+};

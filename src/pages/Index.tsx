@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
 import { TeamDraftForm } from '@/components/TeamDraftForm';
 import { TeamLeaderboard } from '@/components/TeamLeaderboard';
@@ -11,9 +11,73 @@ import { PrizePoolDisplay } from '@/components/PrizePoolDisplay';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Settings, BookOpen } from 'lucide-react';
+import { Settings, BookOpen, LogOut, User } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { Badge } from '@/components/ui/badge';
 
 const Index = () => {
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userEntry, setUserEntry] = useState<any>(null);
+  const [userRank, setUserRank] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        loadUserEntry(session.user.id);
+      }
+    });
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          loadUserEntry(session.user.id);
+        } else {
+          setUserEntry(null);
+          setUserRank(null);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const loadUserEntry = async (userId: string) => {
+    try {
+      // Get user's pool entry
+      const { data: entryData } = await supabase
+        .from('pool_entries')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (entryData) {
+        setUserEntry(entryData);
+        
+        // Get user's rank
+        const { data: allEntries } = await supabase
+          .from('pool_entries')
+          .select('*')
+          .order('total_points', { ascending: false });
+        
+        if (allEntries) {
+          const rank = allEntries.findIndex(entry => entry.id === entryData.id) + 1;
+          setUserRank(rank);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user entry:', error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <PoolProvider>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -21,11 +85,28 @@ const Index = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-between items-start mb-4">
-              <Link to="/auth">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  Login / Sign Up
-                </Button>
-              </Link>
+              {!user ? (
+                <Link to="/auth">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    Login / Sign Up
+                  </Button>
+                </Link>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-1">
+                    <User className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-green-800">
+                      {userEntry?.participant_name || user.email}
+                    </span>
+                    {userRank && (
+                      <Badge variant="secondary">#{userRank}</Badge>
+                    )}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
               <h1 className="text-5xl font-bold bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
                 Big Brother Fantasy Pool
               </h1>
@@ -39,6 +120,28 @@ const Index = () => {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Draft your favorite houseguests and compete with friends as the drama unfolds in the Big Brother house!
             </p>
+            
+            {/* User Status Display */}
+            {user && userEntry && (
+              <div className="mt-4 max-w-lg mx-auto">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <h3 className="font-semibold text-gray-800 mb-2">Your Team: {userEntry.team_name}</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Current Rank:</span>
+                      <Badge variant="outline" className="ml-1">#{userRank}</Badge>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Total Points:</span>
+                      <Badge variant="default" className="ml-1">{userEntry.total_points}</Badge>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Team: {[userEntry.player_1, userEntry.player_2, userEntry.player_3, userEntry.player_4, userEntry.player_5].join(', ')}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* How to Play Card */}

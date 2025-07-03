@@ -18,6 +18,7 @@ import { SecondEvictionSection } from './weekly-events/SecondEvictionSection';
 import { ThirdEvictionSection } from './weekly-events/ThirdEvictionSection';
 import { JuryPhaseToggle } from './weekly-events/JuryPhaseToggle';
 import { ImprovedHistoricalWeekSelector } from './weekly-events/ImprovedHistoricalWeekSelector';
+import { WeekNavigator } from './weekly-events/WeekNavigator';
 import { useScoringRules } from '@/hooks/useScoringRules';
 
 export const WeeklyEventsPanel: React.FC = () => {
@@ -47,15 +48,26 @@ export const WeeklyEventsPanel: React.FC = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5" />
-            Week {eventForm.week} Events
-            {isAutoSaving && (
-              <div className="flex items-center gap-1 ml-auto text-purple-200">
-                <Save className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Saving...</span>
-              </div>
-            )}
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5" />
+              Week {eventForm.week} Events
+            </div>
+            <div className="flex items-center gap-4">
+              <WeekNavigator
+                currentWeek={eventForm.week}
+                onWeekChange={(week) => {
+                  setEventForm(prev => ({ ...prev, week }));
+                  // Load week data here
+                }}
+              />
+              {isAutoSaving && (
+                <div className="flex items-center gap-1 text-purple-200">
+                  <Save className="h-4 w-4 animate-spin" />
+                  <span className="text-sm">Saving...</span>
+                </div>
+              )}
+            </div>
           </CardTitle>
           <CardDescription className="text-purple-100">
             Record all events for the week and automatically calculate points

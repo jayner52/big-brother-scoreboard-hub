@@ -163,9 +163,178 @@ async function extractContestantImage(name: string, seasonNumber: number): Promi
   }
 }
 
+// Scrape the full cast list from Big Brother Wiki
+async function scrapeBB26CastList(): Promise<string[]> {
+  console.log('🔍 Scraping Big Brother 26 cast list from wiki...');
+  
+  try {
+    const wikiUrl = 'https://bigbrother.fandom.com/wiki/Big_Brother_26_(US)';
+    console.log(`📄 Fetching cast list from: ${wikiUrl}`);
+    
+    const response = await fetch(wikiUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch BB26 wiki page: ${response.status}`);
+    }
+    
+    const html = await response.text();
+    
+    // Look for contestant names in the cast section
+    // The wiki typically has contestant names in specific patterns
+    const contestantNames: string[] = [];
+    
+    // Pattern 1: Look for links to individual contestant pages
+    const linkPattern = /<a[^>]+href="\/wiki\/([^"]+)"[^>]*title="([^"]*)"[^>]*>([^<]+)<\/a>/gi;
+    const matches = [...html.matchAll(linkPattern)];
+    
+    for (const match of matches) {
+      const linkHref = match[1];
+      const linkTitle = match[2] || '';
+      const linkText = match[3];
+      
+      // Filter for likely contestant links (avoid general BB pages)
+      if (linkHref && linkText && 
+          !linkHref.includes('Big_Brother') && 
+          !linkHref.includes('Category:') &&
+          !linkHref.includes('Template:') &&
+          linkText.length > 2 && linkText.length < 30 &&
+          /^[A-Z][a-z]/.test(linkText) && // Starts with capital letter
+          linkText.includes(' ') && // Has space (first and last name)
+          !linkText.includes('(') && // No parentheses
+          !linkText.includes(':')) {
+        
+        const cleanName = linkText.trim();
+        if (!contestantNames.includes(cleanName)) {
+          contestantNames.push(cleanName);
+          console.log(`✅ Found contestant: ${cleanName}`);
+        }
+      }
+    }
+    
+    // If we didn't find enough contestants with the first method, try alternative patterns
+    if (contestantNames.length < 10) {
+      console.log('⚠️  Using fallback method to find more contestants...');
+      
+      // Look for text patterns that might contain contestant names
+      const namePattern = /\b([A-Z][a-z]+ [A-Z][a-z]+(?:-[A-Z][a-z]+)?)\b/g;
+      const potentialNames = [...html.matchAll(namePattern)];
+      
+      for (const match of potentialNames) {
+        const name = match[1];
+        if (name && 
+            !contestantNames.includes(name) &&
+            name.length < 30 &&
+            !name.includes('Big') &&
+            !name.includes('Brother') &&
+            !name.includes('House') &&
+            !name.includes('Season')) {
+          contestantNames.push(name);
+          console.log(`✅ Found additional contestant: ${name}`);
+        }
+      }
+    }
+    
+    console.log(`📊 Total contestants found: ${contestantNames.length}`);
+    return contestantNames.slice(0, 16); // Limit to expected cast size
+    
+  } catch (error) {
+    console.error('❌ Error scraping BB26 cast list:', error);
+    
+    // Fallback to known Season 26 contestants if scraping fails
+    console.log('⚠️  Using fallback contestant list...');
+    return [
+      "Angela Murray", "Brooklyn Rivera", "Cam Sullivan-Brown", "Cedric Hodges", 
+      "Chelsie Baham", "Joseph Rodriguez", "Kimo Apaka", "Leah Peters", 
+      "Makensy Manbeck", "Quinn Martin", "Rubina Bernabe", "T'Kor Clottey", 
+      "Tucker Des Lauriers", "Lisa Weintraub", "Kenney Kelley", "Matt Hardeman"
+    ];
+  }
+}
+
+// Extract contestant details from individual wiki page
+async function extractContestantDetails(name: string): Promise<Partial<ContestantProfile>> {
+  console.log(`📋 Extracting details for ${name}...`);
+  
+  try {
+    // Try different wiki page name variations
+    const nameVariations = [
+      name.replace(/\s+/g, '_'),
+      `${name.replace(/\s+/g, '_')}_(Big_Brother)`,
+      `${name.replace(/\s+/g, '_')}_(US26)`,
+      `${name.replace(/\s+/g, '_')}_(Season_26)`
+    ];
+    
+    for (const wikiPageName of nameVariations) {
+      const wikiUrl = `https://bigbrother.fandom.com/wiki/${wikiPageName}`;
+      
+      try {
+        const response = await fetch(wikiUrl);
+        if (!response.ok) continue;
+        
+        const html = await response.text();
+        
+        // Extract basic info from infobox or text
+        const details: Partial<ContestantProfile> = {
+          name: name,
+          age: 25, // Default age, will try to extract
+          hometown: "Unknown", // Default hometown
+          occupation: "Unknown", // Default occupation
+          bio: `${name} is a contestant on Big Brother 26.` // Default bio
+        };
+        
+        // Try to extract age
+        const ageMatch = html.match(/Age[:\s]*(\d+)/i) || html.match(/(\d+)\s*years?\s*old/i);
+        if (ageMatch) {
+          details.age = parseInt(ageMatch[1]);
+        }
+        
+        // Try to extract hometown
+        const hometownMatch = html.match(/Hometown[:\s]*([^<\n]+)/i) || 
+                             html.match(/from\s+([A-Z][a-z]+,\s*[A-Z]{2})/i);
+        if (hometownMatch) {
+          details.hometown = hometownMatch[1].trim();
+        }
+        
+        // Try to extract occupation
+        const occupationMatch = html.match(/Occupation[:\s]*([^<\n]+)/i) ||
+                               html.match(/Job[:\s]*([^<\n]+)/i);
+        if (occupationMatch) {
+          details.occupation = occupationMatch[1].trim();
+        }
+        
+        console.log(`✅ Extracted details for ${name}: Age ${details.age}, ${details.hometown}, ${details.occupation}`);
+        return details;
+        
+      } catch (error) {
+        console.log(`❌ Failed to fetch ${wikiUrl}: ${error.message}`);
+        continue;
+      }
+    }
+    
+    // Return defaults if no page found
+    console.log(`⚠️  Using default details for ${name}`);
+    return {
+      name: name,
+      age: 25,
+      hometown: "Unknown",
+      occupation: "Unknown",
+      bio: `${name} is a contestant on Big Brother 26.`
+    };
+    
+  } catch (error) {
+    console.error(`❌ Error extracting details for ${name}:`, error);
+    return {
+      name: name,
+      age: 25,
+      hometown: "Unknown", 
+      occupation: "Unknown",
+      bio: `${name} is a contestant on Big Brother 26.`
+    };
+  }
+}
+
 // Scrape Big Brother Fandom for contestant data
 async function scrapeContestantData(seasonNumber: number): Promise<ContestantProfile[]> {
-  console.log(`🔍 Starting real wiki scraping for Big Brother Season ${seasonNumber}...`);
+  console.log(`🔍 Starting comprehensive wiki scraping for Big Brother Season ${seasonNumber}...`);
   
   if (seasonNumber < 26) {
     throw new Error(`Season ${seasonNumber} is not supported. Only Season 26+ contestants are processed.`);
@@ -175,63 +344,66 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
     throw new Error('Big Brother 27 cast has not been announced yet. Please select a different season.');
   }
   
-  // For Season 26, scrape real data with proper image extraction
+  // For Season 26, scrape the complete cast list
   if (seasonNumber === 26) {
-    console.log('📋 Starting real wiki scraping for Season 26 cast...');
+    console.log('📋 Starting comprehensive Season 26 cast scraping...');
     
-    // Base contestant data (names, ages, etc.) - we'll scrape the images
-    const season26BaseData = [
-      { name: "Angela Murray", age: 50, hometown: "Long Beach, CA", occupation: "Real Estate Agent", bio: "Angela is a dedicated real estate agent who grew up in a close-knit family in Long Beach. She's passionate about fitness and helping first-time homebuyers achieve their dreams. She applied for Big Brother to challenge herself and prove that women over 50 can compete with anyone." },
-      { name: "Brooklyn Rivera", age: 34, hometown: "Dallas, TX", occupation: "Business Administrator", bio: "Brooklyn is a driven business administrator from Dallas who loves organizing events and spending time with her family. She's passionate about travel and has visited over 20 countries. She joined Big Brother to test her social skills and win money for her daughter's college fund." },
-      { name: "Cam Sullivan-Brown", age: 25, hometown: "Bowie, MD", occupation: "Physical Therapist", bio: "Cam is a compassionate physical therapist who helps people recover from injuries and reach their fitness goals. He's an avid runner and volunteers at local youth sports programs. He came to Big Brother to challenge himself mentally and inspire others to pursue their dreams." },
-      { name: "Cedric Hodges", age: 21, hometown: "Saginaw, TX", occupation: "Former Marine", bio: "Cedric is a young former Marine who served his country with honor and is now pursuing his education. He's passionate about fitness, mentoring young people, and spending time with his family. He entered Big Brother to show that young veterans can excel in any environment." },
-      { name: "Chelsie Baham", age: 27, hometown: "Rancho Cucamonga, CA", occupation: "Nonprofit Director", bio: "Chelsie runs a nonprofit organization focused on helping underprivileged communities access education resources. She's a dedicated advocate who loves hiking and spending time outdoors. She joined Big Brother to raise awareness for her cause and prove that kindness can be a winning strategy." }
-    ];
+    // Step 1: Get the full cast list
+    const contestantNames = await scrapeBB26CastList();
+    console.log(`📊 Processing ${contestantNames.length} contestants...`);
     
-    // Test with just Angela Murray first as requested
-    console.log('🧪 Testing image extraction with Angela Murray first...');
-    const testImageUrl = await extractContestantImage("Angela Murray", 26);
-    if (testImageUrl) {
-      console.log(`✅ Test successful! Angela Murray image: ${testImageUrl}`);
-    } else {
-      console.log(`❌ Test failed - could not extract Angela Murray's image`);
+    if (contestantNames.length === 0) {
+      throw new Error('No contestants found in cast list');
     }
     
-    // Now scrape images for all contestants
+    // Step 2: Process each contestant individually
     const scrapedCast: ContestantProfile[] = [];
     let imageSuccessCount = 0;
     let imageFailureCount = 0;
+    let detailsSuccessCount = 0;
     
-    for (let i = 0; i < season26BaseData.length; i++) {
-      const contestant = season26BaseData[i];
-      console.log(`🖼️  [${i + 1}/${season26BaseData.length}] Scraping image for ${contestant.name}...`);
+    for (let i = 0; i < contestantNames.length; i++) {
+      const contestantName = contestantNames[i];
+      console.log(`\n🔄 [${i + 1}/${contestantNames.length}] Processing ${contestantName}...`);
       
-      // Extract the actual image URL from their wiki page
-      const scrapedImageUrl = await extractContestantImage(contestant.name, 26);
+      // Extract contestant details
+      const contestantDetails = await extractContestantDetails(contestantName);
+      if (contestantDetails.hometown !== "Unknown") {
+        detailsSuccessCount++;
+      }
+      
+      // Extract contestant image
+      const scrapedImageUrl = await extractContestantImage(contestantName, 26);
       
       let finalPhotoUrl = scrapedImageUrl;
       
       if (scrapedImageUrl) {
-        console.log(`✅ Successfully scraped image for ${contestant.name}: ${scrapedImageUrl}`);
+        console.log(`✅ Successfully scraped image for ${contestantName}: ${scrapedImageUrl}`);
         imageSuccessCount++;
       } else {
-        console.log(`❌ Failed to scrape image for ${contestant.name}, using placeholder`);
-        // Use a placeholder image from Unsplash
+        console.log(`❌ Failed to scrape image for ${contestantName}, using placeholder`);
         finalPhotoUrl = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face';
         imageFailureCount++;
       }
       
       scrapedCast.push({
-        ...contestant,
+        name: contestantDetails.name || contestantName,
+        age: contestantDetails.age || 25,
+        hometown: contestantDetails.hometown || "Unknown",
+        occupation: contestantDetails.occupation || "Unknown",
+        bio: contestantDetails.bio || `${contestantName} is a contestant on Big Brother 26.`,
         photo: finalPhotoUrl
       });
       
       // Rate limiting between requests (be respectful to the wiki)
-      await delay(1000);
+      await delay(1500);
     }
     
-    console.log(`📊 Image scraping complete: ${imageSuccessCount} success, ${imageFailureCount} failed`);
-    console.log(`✅ Season 26 cast processed: ${scrapedCast.length} contestants`);
+    console.log(`\n📊 Season 26 scraping complete!`);
+    console.log(`📸 Images: ${imageSuccessCount} success, ${imageFailureCount} failed`);
+    console.log(`📋 Details: ${detailsSuccessCount} success, ${contestantNames.length - detailsSuccessCount} used defaults`);
+    console.log(`✅ Total contestants processed: ${scrapedCast.length}`);
+    
     return scrapedCast;
   }
   

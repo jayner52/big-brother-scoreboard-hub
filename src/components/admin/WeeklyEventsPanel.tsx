@@ -9,6 +9,7 @@ import { WeeklyEventsHeader } from './weekly-events/WeeklyEventsHeader';
 import { WeeklyEventsToggles } from './weekly-events/WeeklyEventsToggles';
 import { WeeklyEventsContent } from './weekly-events/WeeklyEventsContent';
 import { useScoringRules } from '@/hooks/useScoringRules';
+import { useToast } from '@/hooks/use-toast';
 
 export const WeeklyEventsPanel: React.FC = () => {
   const {
@@ -28,6 +29,8 @@ export const WeeklyEventsPanel: React.FC = () => {
   const { isAutoSaving, saveCurrentWeekDraft } = useWeeklyEventsSave(eventForm, editingWeek);
   const { loadWeekData, clearWeekData, isLoading: isLoadingWeek } = useWeekDataLoader(contestants);
   const [isWeekComplete, setIsWeekComplete] = useState(false);
+  const [isAIPopulating, setIsAIPopulating] = useState(false);
+  const { toast } = useToast();
 
   const handleWeekChange = async (newWeek: number) => {
     const weekData = await loadWeekData(newWeek);
@@ -78,6 +81,76 @@ export const WeeklyEventsPanel: React.FC = () => {
     setIsWeekComplete(false);
   };
 
+  const handleAIPopulate = async () => {
+    setIsAIPopulating(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('bb-ai-populate', {
+        body: {
+          week: eventForm.week,
+          season: 'current',
+          confidence_threshold: 0.95
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data?.success) {
+        // Populate form fields only if confidence >= 95%
+        const updates: any = {};
+        
+        if (data.populated_fields.hoh_winner && data.confidence_scores.hoh_winner >= 0.95) {
+          updates.hohWinner = data.populated_fields.hoh_winner;
+        }
+        
+        if (data.populated_fields.pov_winner && data.confidence_scores.pov_winner >= 0.95) {
+          updates.povWinner = data.populated_fields.pov_winner;
+        }
+        
+        if (data.populated_fields.evicted && data.confidence_scores.evicted >= 0.95) {
+          updates.evicted = data.populated_fields.evicted;
+        }
+        
+        if (data.populated_fields.nominees && data.confidence_scores.nominees >= 0.95) {
+          updates.nominees = data.populated_fields.nominees.slice(0, 2); // Limit to 2 nominees
+        }
+        
+        if (data.populated_fields.special_events) {
+          updates.specialEvents = data.populated_fields.special_events;
+        }
+        
+        // Update form with populated data
+        if (Object.keys(updates).length > 0) {
+          setEventForm(prev => ({...prev, ...updates}));
+          
+          toast({
+            title: "AI Population Successful!",
+            description: `Populated ${Object.keys(updates).length} fields with high confidence data from ${data.sources_used?.length || 0} sources.`,
+          });
+        } else {
+          toast({
+            title: "No High-Confidence Data Found",
+            description: "AI couldn't find reliable information with 95%+ confidence for this week.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        throw new Error(data?.message || 'Failed to populate data');
+      }
+    } catch (error) {
+      console.error('AI populate error:', error);
+      toast({
+        title: "AI Population Failed",
+        description: "Failed to populate with AI. Please try again or enter data manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAIPopulating(false);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading weekly events panel...</div>;
   }
@@ -106,7 +179,9 @@ export const WeeklyEventsPanel: React.FC = () => {
             onClearWeek={handleClearWeek}
             onSaveProgress={saveCurrentWeekDraft}
             onSubmitWeek={handleSubmitWeek}
+            onAIPopulate={handleAIPopulate}
             isAutoSaving={isAutoSaving}
+            isAIPopulating={isAIPopulating}
           />
 
           {/* Special Week Toggles */}

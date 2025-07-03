@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Save, Trash2, CheckCircle, Clock } from 'lucide-react';
+import { Save, Trash2, CheckCircle, Clock, Sparkles } from 'lucide-react';
 
 interface WeekControlsProps {
   weekNumber: number;
@@ -13,7 +13,9 @@ interface WeekControlsProps {
   onClearWeek: () => void;
   onSaveProgress: () => void;
   onSubmitWeek: () => void;
+  onAIPopulate?: () => void;
   isAutoSaving: boolean;
+  isAIPopulating?: boolean;
 }
 
 export const WeekControls: React.FC<WeekControlsProps> = ({
@@ -23,7 +25,9 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
   onClearWeek,
   onSaveProgress,
   onSubmitWeek,
-  isAutoSaving
+  onAIPopulate,
+  isAutoSaving,
+  isAIPopulating
 }) => {
   return (
     <div className="space-y-4">
@@ -75,6 +79,27 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
           <Save className="h-4 w-4 mr-2" />
           Save Progress
         </Button>
+        
+        {/* AI Populate Button */}
+        {onAIPopulate && (
+          <Button 
+            onClick={onAIPopulate}
+            disabled={isAIPopulating}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+          >
+            {isAIPopulating ? (
+              <>
+                <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Populating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Populate
+              </>
+            )}
+          </Button>
+        )}
         
         <AlertDialog>
           <AlertDialogTrigger asChild>

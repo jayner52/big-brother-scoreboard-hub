@@ -125,8 +125,8 @@ export const WeeklyEventsPanel: React.FC = () => {
             isAutoSaving={isAutoSaving}
           />
 
-          {/* Special Week Toggles - Horizontal Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Special Week Toggles - Compact Horizontal Layout */}
+          <div className="flex flex-wrap gap-3 items-center">
             <JuryPhaseToggle
               eventForm={eventForm}
               setEventForm={setEventForm}

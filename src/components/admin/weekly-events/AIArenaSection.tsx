@@ -33,16 +33,10 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
   };
 
   const handleAIArenaWinner = (winner: string) => {
-    setEventForm(prev => {
-      // Remove winner from nominees if they were nominated
-      const updatedNominees = prev.nominees.map(nominee => nominee === winner ? '' : nominee);
-      
-      return {
-        ...prev,
-        aiArenaWinner: winner,
-        nominees: updatedNominees
-      };
-    });
+    setEventForm(prev => ({
+      ...prev,
+      aiArenaWinner: winner
+    }));
   };
 
   // Get current nominees for AI Arena selection
@@ -91,7 +85,7 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
             )}
             {eventForm.aiArenaWinner && (
               <p className="text-xs text-purple-700 mt-1">
-                Winner will be removed from the block (+2 points)
+                Winner is safe from eviction (points from scoring rules)
               </p>
             )}
           </div>

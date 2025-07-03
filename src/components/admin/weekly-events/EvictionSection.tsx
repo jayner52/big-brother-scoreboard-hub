@@ -2,6 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
 interface EvictionSectionProps {
   eventForm: WeeklyEventForm;
@@ -16,7 +17,7 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
   activeContestants,
   contestants,
 }) => {
-  // Calculate final nominees (after POV ceremony)
+  // Calculate final nominees (after POV ceremony) and exclude BB Arena winner
   const getFinalNominees = () => {
     let finalNominees = [...eventForm.nominees.filter(n => n)];
     
@@ -29,10 +30,16 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
       }
     }
     
+    // Remove BB Arena winner (they are safe from eviction)
+    if (eventForm.aiArenaWinner) {
+      finalNominees = finalNominees.filter(n => n !== eventForm.aiArenaWinner);
+    }
+    
     return finalNominees;
   };
 
   const finalNominees = getFinalNominees();
+  const { evictedContestants } = useEvictedContestants();
 
   return (
     <div>
@@ -49,13 +56,15 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
                 {nominee}
               </SelectItem>
             ))
-          ) : (
-            contestants.filter(c => c.isActive).map(contestant => (
-              <SelectItem key={contestant.id} value={contestant.name}>
-                {contestant.name}
-              </SelectItem>
-            ))
-          )}
+           ) : (
+             activeContestants
+               .filter(c => !evictedContestants.includes(c.name))
+               .map(contestant => (
+                 <SelectItem key={contestant.id} value={contestant.name}>
+                   {contestant.name}
+                 </SelectItem>
+               ))
+           )}
         </SelectContent>
       </Select>
       {finalNominees.length > 0 && (

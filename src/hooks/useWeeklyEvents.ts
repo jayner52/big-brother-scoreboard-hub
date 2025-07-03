@@ -291,10 +291,12 @@ export const useWeeklyEvents = () => {
       }
 
       // Add survival points for non-evicted active contestants
-      const evictedId = eventForm.evicted && eventForm.evicted !== 'no-eviction' 
-        ? contestants.find(c => c.name === eventForm.evicted)?.id 
-        : null;
-      const activeContestants = contestants.filter(c => c.isActive && c.id !== evictedId);
+      const evictedIds = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
+        .filter(name => name && name !== 'no-eviction')
+        .map(name => contestants.find(c => c.name === name)?.id)
+        .filter(id => id);
+      
+      const activeContestants = contestants.filter(c => c.isActive && !evictedIds.includes(c.id));
       
       activeContestants.forEach(contestant => {
         events.push({
@@ -304,6 +306,16 @@ export const useWeeklyEvents = () => {
           points_awarded: calculatePoints('survival')
         });
       });
+
+      // Add BB Arena winner points
+      if (eventForm.aiArenaWinner) {
+        events.push({
+          week_number: eventForm.week,
+          contestant_id: contestants.find(c => c.name === eventForm.aiArenaWinner)?.id,
+          event_type: 'bb_arena_winner',
+          points_awarded: calculatePoints('bb_arena_winner')
+        });
+      }
 
       // Add jury points if jury phase starts this week
       if (eventForm.isJuryPhase) {
@@ -348,12 +360,15 @@ export const useWeeklyEvents = () => {
         if (specialError) throw specialError;
       }
 
-      // Update evicted contestant status
-      if (eventForm.evicted && eventForm.evicted !== 'no-eviction') {
+      // Update evicted contestant statuses
+      const evictedNames = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
+        .filter(name => name && name !== 'no-eviction');
+      
+      for (const evictedName of evictedNames) {
         const { error: contestantError } = await supabase
           .from('contestants')
           .update({ is_active: false })
-          .eq('name', eventForm.evicted);
+          .eq('name', evictedName);
 
         if (contestantError) throw contestantError;
       }

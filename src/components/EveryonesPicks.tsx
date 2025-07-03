@@ -90,39 +90,45 @@ export const EveryonesPicks: React.FC = () => {
           <CardTitle>Team Selections</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Participant</TableHead>
-                  <TableHead>Team Name</TableHead>
-                  <TableHead>Player 1</TableHead>
-                  <TableHead>Player 2</TableHead>
-                  <TableHead>Player 3</TableHead>
-                  <TableHead>Player 4</TableHead>
-                  <TableHead>Player 5</TableHead>
-                  <TableHead>Payment Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {enhancedPoolEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="font-medium">{entry.participant_name}</TableCell>
-                    <TableCell className="text-blue-600 font-semibold">{entry.team_name}</TableCell>
-                    <TableCell>{entry.player_1} {houseguestPoints[entry.player_1] !== undefined && `(${houseguestPoints[entry.player_1]} pts)`}</TableCell>
-                    <TableCell>{entry.player_2} {houseguestPoints[entry.player_2] !== undefined && `(${houseguestPoints[entry.player_2]} pts)`}</TableCell>
-                    <TableCell>{entry.player_3} {houseguestPoints[entry.player_3] !== undefined && `(${houseguestPoints[entry.player_3]} pts)`}</TableCell>
-                    <TableCell>{entry.player_4} {houseguestPoints[entry.player_4] !== undefined && `(${houseguestPoints[entry.player_4]} pts)`}</TableCell>
-                    <TableCell>{entry.player_5} {houseguestPoints[entry.player_5] !== undefined && `(${houseguestPoints[entry.player_5]} pts)`}</TableCell>
-                    <TableCell>
-                      <Badge variant={entry.payment_confirmed ? "default" : "destructive"}>
-                        {entry.payment_confirmed ? "Paid" : "Pending"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="grid gap-4">
+            {enhancedPoolEntries.map((entry) => (
+              <div key={entry.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                  {/* Team Info */}
+                  <div className="lg:w-48 flex-shrink-0">
+                    <div className="font-semibold text-lg">{entry.participant_name}</div>
+                    <div className="text-blue-600 font-medium">{entry.team_name}</div>
+                    <Badge variant={entry.payment_confirmed ? "default" : "destructive"} className="mt-1">
+                      {entry.payment_confirmed ? "Paid" : "Pending"}
+                    </Badge>
+                  </div>
+                  
+                  {/* Players Grid */}
+                  <div className="flex-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-3 text-center">
+                          <div className="font-medium text-sm mb-1">Player {index + 1}</div>
+                          <div className="text-sm">{player}</div>
+                          {houseguestPoints[player] !== undefined && (
+                            <div className="text-xs text-blue-600 font-semibold mt-1">
+                              {houseguestPoints[player]} pts
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Total Points */}
+                    <div className="mt-3 text-right">
+                      <span className="text-lg font-bold text-green-600">
+                        Total: {entry.totalPoints} pts
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

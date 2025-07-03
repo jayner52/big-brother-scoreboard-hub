@@ -17,7 +17,7 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
 }) => {
   const { evictedContestants } = useEvictedContestants();
   
-  // Get contestants who are still in the game (not evicted)
+  // Get contestants who are still in the game (not evicted) - use all contestants, not just activeContestants
   const gameContestants = activeContestants.filter(c => !evictedContestants.includes(c.name));
   
   return (

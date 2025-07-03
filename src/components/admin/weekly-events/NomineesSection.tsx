@@ -41,6 +41,16 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
     }
   };
 
+  // Ensure we always have at least 2 nominee slots
+  React.useEffect(() => {
+    if (eventForm.nominees.length < 2) {
+      setEventForm(prev => ({ 
+        ...prev, 
+        nominees: [...prev.nominees, ...Array(2 - prev.nominees.length).fill('')] 
+      }));
+    }
+  }, [eventForm.nominees.length, setEventForm]);
+
   const updateNominee = (index: number, value: string) => {
     const newNominees = [...eventForm.nominees];
     newNominees[index] = value === 'no-nominee' ? '' : value;

@@ -93,6 +93,17 @@ export const LiveResults: React.FC = () => {
               <Trophy className="h-5 w-5 text-yellow-500" />
               Week {weeklyResults[0].week_number} - {weeklyResults[0].is_draft ? 'In Progress' : 'Latest Results'}
               <div className="flex gap-2 ml-auto">
+                {weeklyResults[0].is_draft && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSpoilers(!showSpoilers)}
+                    className="flex items-center gap-2"
+                  >
+                    {showSpoilers ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showSpoilers ? 'Hide Spoilers' : 'Show Spoilers'}
+                  </Button>
+                )}
                 {weeklyResults[0].is_double_eviction && (
                   <Badge variant="destructive">Double Eviction</Badge>
                 )}
@@ -106,49 +117,58 @@ export const LiveResults: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                <Crown className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                <h4 className="font-semibold text-yellow-800">Head of Household</h4>
-                <p className="text-xl font-bold text-yellow-900">
-                  {weeklyResults[0].hoh_winner || "TBD"}
-                </p>
+            {/* Show spoiler-protected content for in-progress weeks */}
+            {weeklyResults[0].is_draft && !showSpoilers ? (
+              <div className="text-center py-8 text-gray-500">
+                <Eye className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg font-semibold mb-2">Week {weeklyResults[0].week_number} In Progress</p>
+                <p>Click "Show Spoilers" to see current results</p>
               </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <Shield className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                <h4 className="font-semibold text-blue-800">Power of Veto</h4>
-                <p className="text-xl font-bold text-blue-900">
-                  {weeklyResults[0].pov_winner || "TBD"}
-                </p>
-                {weeklyResults[0].pov_used && (
-                  <p className="text-sm text-blue-600 mt-1">
-                    Used on {weeklyResults[0].pov_used_on}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                  <Crown className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+                  <h4 className="font-semibold text-yellow-800">Head of Household</h4>
+                  <p className="text-xl font-bold text-yellow-900">
+                    {weeklyResults[0].hoh_winner || "TBD"}
                   </p>
-                )}
-              </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <Users className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                <h4 className="font-semibold text-orange-800">Nominees</h4>
-                <p className="text-sm font-bold text-orange-900">
-                  {weeklyResults[0].nominees?.join(', ') || "TBD"}
-                </p>
-                {weeklyResults[0].replacement_nominee && (
-                  <p className="text-xs text-orange-600 mt-1">
-                    Replacement: {weeklyResults[0].replacement_nominee}
+                </div>
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <Shield className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                  <h4 className="font-semibold text-blue-800">Power of Veto</h4>
+                  <p className="text-xl font-bold text-blue-900">
+                    {weeklyResults[0].pov_winner || "TBD"}
                   </p>
-                )}
+                  {weeklyResults[0].pov_used && (
+                    <p className="text-sm text-blue-600 mt-1">
+                      Used on {weeklyResults[0].pov_used_on}
+                    </p>
+                  )}
+                </div>
+                <div className="text-center p-4 bg-orange-50 rounded-lg">
+                  <Users className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+                  <h4 className="font-semibold text-orange-800">Nominees</h4>
+                  <p className="text-sm font-bold text-orange-900">
+                    {weeklyResults[0].nominees?.join(', ') || "TBD"}
+                  </p>
+                  {weeklyResults[0].replacement_nominee && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      Replacement: {weeklyResults[0].replacement_nominee}
+                    </p>
+                  )}
+                </div>
+                <div className="text-center p-4 bg-red-50 rounded-lg">
+                  <Users className="h-8 w-8 text-red-600 mx-auto mb-2" />
+                  <h4 className="font-semibold text-red-800">Evicted</h4>
+                  <p className="text-xl font-bold text-red-900">
+                    {weeklyResults[0].evicted_contestant || "TBD"}
+                  </p>
+                </div>
               </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg">
-                <Users className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                <h4 className="font-semibold text-red-800">Evicted</h4>
-                <p className="text-xl font-bold text-red-900">
-                  {weeklyResults[0].evicted_contestant || "TBD"}
-                </p>
-              </div>
-            </div>
+            )}
 
             {/* Special Events for Current Week */}
-            {specialEvents.filter(event => event.week_number === weeklyResults[0].week_number).length > 0 && (
+            {(!weeklyResults[0].is_draft || showSpoilers) && specialEvents.filter(event => event.week_number === weeklyResults[0].week_number).length > 0 && (
               <div className="mt-6">
                 <h4 className="font-semibold mb-2">Special Events This Week</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -169,18 +189,7 @@ export const LiveResults: React.FC = () => {
       {/* All Weekly Results */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Complete Season Results
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSpoilers(!showSpoilers)}
-              className="flex items-center gap-2"
-            >
-              {showSpoilers ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              {showSpoilers ? 'Hide Current Week Spoilers' : 'Show Current Week Spoilers'}
-            </Button>
-          </CardTitle>
+          <CardTitle>Complete Season Results</CardTitle>
         </CardHeader>
         <CardContent>
           {weeklyResults.length === 0 ? (
@@ -203,9 +212,7 @@ export const LiveResults: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {weeklyResults
-                    .filter((week) => showSpoilers || week.week_number !== currentWeek)
-                    .map((week) => (
+                  {weeklyResults.map((week) => (
                     <TableRow key={week.week_number}>
                       <TableCell className="font-bold">
                         <div className="flex items-center gap-2">

@@ -100,11 +100,19 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
         </AlertDialog>
         
         <Button 
-          onClick={onSubmitWeek} 
+          onClick={() => {
+            onSubmitWeek();
+            if (isComplete) {
+              // Advance to next week after completion
+              setTimeout(() => {
+                window.location.reload(); // Simple approach to refresh and load next week
+              }, 1000);
+            }
+          }} 
           className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
           size="default"
         >
-          {isComplete ? 'Update Week' : 'Complete Week'} {weekNumber}
+          {isComplete ? 'Complete & Advance Week' : 'Complete Week'} {weekNumber}
         </Button>
       </div>
     </div>

@@ -5,11 +5,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 
 export const EveryonesPicksMatrix: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const { evictedContestants } = useEvictedContestants();
+  const { houseguestPoints } = useHouseguestPoints();
 
   useEffect(() => {
     loadData();
@@ -110,17 +114,70 @@ export const EveryonesPicksMatrix: React.FC = () => {
     );
   }
 
+  const renderPlayerName = (playerName: string) => {
+    const isEliminated = evictedContestants.includes(playerName);
+    const points = houseguestPoints[playerName];
+    
+    return (
+      <span className={`${isEliminated ? 'line-through text-muted-foreground' : ''}`}>
+        {playerName}
+        {points !== undefined && ` (${points}pts)`}
+      </span>
+    );
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          Everyone's Bonus Predictions
-          <Badge variant="secondary">{poolEntries.length} Teams</Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="w-full">
-          <Table>
+    <div className="space-y-6">
+      {/* Team Display Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Team Selections
+            <Badge variant="secondary">{poolEntries.length} Teams</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {poolEntries.map((entry) => (
+              <div key={entry.id} className="bg-muted/30 border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="font-semibold text-lg">{entry.team_name}</div>
+                    <div className="text-sm text-muted-foreground">{entry.participant_name}</div>
+                    <Badge variant={entry.payment_confirmed ? "default" : "destructive"} className="text-xs">
+                      {entry.payment_confirmed ? "Paid" : "Pending"}
+                    </Badge>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-primary">
+                      {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
+                        .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Total Points</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-5 gap-3">
+                  {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
+                    <div key={index} className="bg-background rounded p-2 text-center text-sm">
+                      <div className="text-xs text-muted-foreground mb-1">Player {index + 1}</div>
+                      <div className="font-medium">{renderPlayerName(player)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bonus Questions Matrix */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Everyone's Bonus Predictions</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <ScrollArea className="w-full">
+            <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="sticky left-0 bg-muted/50 border-r min-w-[200px] font-bold">
@@ -162,8 +219,9 @@ export const EveryonesPicksMatrix: React.FC = () => {
               ))}
             </TableBody>
           </Table>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

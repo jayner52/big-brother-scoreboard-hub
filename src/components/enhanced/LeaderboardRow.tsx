@@ -3,6 +3,7 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
 interface LeaderboardRowProps {
   entry: any;
@@ -16,6 +17,7 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   showHistoricalColumns
 }) => {
   const { houseguestPoints } = useHouseguestPoints();
+  const { evictedContestants } = useEvictedContestants();
 
   const getRankChangeIcon = (rankChange: number) => {
     if (rankChange > 0) return <ChevronUp className="h-4 w-4 text-green-500" />;
@@ -27,6 +29,18 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
     if (pointsChange > 0) return "text-green-600";
     if (pointsChange < 0) return "text-red-600";
     return "text-gray-500";
+  };
+
+  const renderPlayerName = (playerName: string) => {
+    const isEliminated = evictedContestants.includes(playerName);
+    const points = houseguestPoints[playerName];
+    
+    return (
+      <span className={`${isEliminated ? 'line-through text-muted-foreground' : ''}`}>
+        {playerName}
+        {points !== undefined && ` (${points}pts)`}
+      </span>
+    );
   };
 
   const isSnapshot = 'pool_entries' in entry;
@@ -54,11 +68,11 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
       
       <TableCell className="font-semibold text-blue-600">{teamData.team_name}</TableCell>
       <TableCell>{teamData.participant_name}</TableCell>
-      <TableCell>{teamData.player_1} {houseguestPoints[teamData.player_1] !== undefined && `(${houseguestPoints[teamData.player_1]} pts)`}</TableCell>
-      <TableCell>{teamData.player_2} {houseguestPoints[teamData.player_2] !== undefined && `(${houseguestPoints[teamData.player_2]} pts)`}</TableCell>
-      <TableCell>{teamData.player_3} {houseguestPoints[teamData.player_3] !== undefined && `(${houseguestPoints[teamData.player_3]} pts)`}</TableCell>
-      <TableCell>{teamData.player_4} {houseguestPoints[teamData.player_4] !== undefined && `(${houseguestPoints[teamData.player_4]} pts)`}</TableCell>
-      <TableCell>{teamData.player_5} {houseguestPoints[teamData.player_5] !== undefined && `(${houseguestPoints[teamData.player_5]} pts)`}</TableCell>
+      <TableCell>{renderPlayerName(teamData.player_1)}</TableCell>
+      <TableCell>{renderPlayerName(teamData.player_2)}</TableCell>
+      <TableCell>{renderPlayerName(teamData.player_3)}</TableCell>
+      <TableCell>{renderPlayerName(teamData.player_4)}</TableCell>
+      <TableCell>{renderPlayerName(teamData.player_5)}</TableCell>
       <TableCell className="text-center">{entry.weekly_points}</TableCell>
       
       {showHistoricalColumns && (

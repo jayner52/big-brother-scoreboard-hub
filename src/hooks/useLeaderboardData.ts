@@ -51,16 +51,26 @@ export const useLeaderboardData = () => {
   };
 
   const handleWeekChange = async (weekStr: string) => {
+    setLoading(true);
+    
     if (weekStr === 'current') {
       setSelectedWeek(null);
-      loadCurrentPoolEntries();
+      await loadCurrentPoolEntries();
     } else {
       const week = parseInt(weekStr);
       setSelectedWeek(week);
+      
+      // Load snapshots for the selected week
       await loadSnapshotsForWeek(week);
       
-      // If no snapshots found for this week, generate them
-      if (snapshots.length === 0) {
+      // Check if we need to generate snapshots after loading attempt
+      const snapshotsResult = await supabase
+        .from('weekly_team_snapshots')
+        .select('id')
+        .eq('week_number', week)
+        .limit(1);
+      
+      if (!snapshotsResult.data || snapshotsResult.data.length === 0) {
         try {
           await supabase.rpc('generate_weekly_snapshots', { week_num: week });
           await loadSnapshotsForWeek(week);
@@ -68,10 +78,12 @@ export const useLeaderboardData = () => {
           console.error('Error generating snapshots:', error);
           // Fall back to current standings if snapshot generation fails
           setSelectedWeek(null);
-          loadCurrentPoolEntries();
+          await loadCurrentPoolEntries();
         }
       }
     }
+    
+    setLoading(false);
   };
 
   const displayData = selectedWeek && snapshots.length > 0 ? snapshots : poolEntries;

@@ -37,10 +37,7 @@ export const useDraftValidation = () => {
       }
     });
 
-    // Payment confirmation validation
-    if (!formData.payment_confirmed) {
-      errors.push("Please confirm your payment");
-    }
+    // Payment confirmation is now optional - removed this validation
 
     return {
       isValid: errors.length === 0,

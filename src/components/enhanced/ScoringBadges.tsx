@@ -32,14 +32,91 @@ export const ScoringBadges: React.FC = () => {
         <Tooltip>
           <TooltipTrigger>
             <Badge variant="secondary" className="bg-purple-500/20 text-purple-700 cursor-help">
-              Bonus: {bonusQuestions.map(q => q.points_value).join('/')} pts
+              Bonus Points
             </Badge>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
             <div className="space-y-1">
+              <div className="font-semibold text-sm mb-1">Bonus Questions:</div>
               {bonusQuestions.map(q => (
                 <div key={q.id} className="text-xs">
                   <span className="font-medium">{q.points_value} pts:</span> {q.question_text}
+                </div>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  // Add nominations badge
+  const nominationRules = scoringRules.filter(r => r.subcategory === 'nominee');
+  if (nominationRules.length > 0) {
+    badges.push(
+      <TooltipProvider key="nominations">
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge variant="secondary" className="bg-orange-500/20 text-orange-700 cursor-help">
+              Nominations
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <div className="space-y-1">
+              {nominationRules.map(rule => (
+                <div key={rule.id} className="text-xs">
+                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
+                </div>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  // Add evictions badge
+  const evictionRules = scoringRules.filter(r => r.subcategory === 'evicted');
+  if (evictionRules.length > 0) {
+    badges.push(
+      <TooltipProvider key="evictions">
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge variant="secondary" className="bg-red-500/20 text-red-700 cursor-help">
+              Evictions
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <div className="space-y-1">
+              {evictionRules.map(rule => (
+                <div key={rule.id} className="text-xs">
+                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
+                </div>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  // Add special events badge  
+  const specialRules = scoringRules.filter(r => r.category === 'special_events' || r.category === 'bonuses');
+  if (specialRules.length > 0) {
+    badges.push(
+      <TooltipProvider key="special-events">
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-700 cursor-help">
+              Special Events
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <div className="space-y-1">
+              <div className="font-semibold text-sm mb-1">Special Events & Bonuses:</div>
+              {specialRules.map(rule => (
+                <div key={rule.id} className="text-xs">
+                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
                 </div>
               ))}
             </div>

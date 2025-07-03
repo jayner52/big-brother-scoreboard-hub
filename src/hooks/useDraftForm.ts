@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface DraftFormData {
   participant_name: string;
@@ -13,6 +13,8 @@ export interface DraftFormData {
   payment_confirmed: boolean;
 }
 
+const DRAFT_STORAGE_KEY = 'bb_draft_form_data';
+
 export const useDraftForm = () => {
   const [formData, setFormData] = useState<DraftFormData>({
     participant_name: '',
@@ -26,6 +28,24 @@ export const useDraftForm = () => {
     bonus_answers: {},
     payment_confirmed: false,
   });
+
+  // Load saved data on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setFormData(parsed);
+      } catch (error) {
+        console.error('Error loading saved draft data:', error);
+      }
+    }
+  }, []);
+
+  // Save data to localStorage whenever formData changes
+  useEffect(() => {
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(formData));
+  }, [formData]);
 
   const updateFormData = (updates: Partial<DraftFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
@@ -42,7 +62,7 @@ export const useDraftForm = () => {
   };
 
   const resetForm = () => {
-    setFormData({
+    const newFormData = {
       participant_name: '',
       team_name: '',
       email: '',
@@ -53,13 +73,20 @@ export const useDraftForm = () => {
       player_5: '',
       bonus_answers: {},
       payment_confirmed: false,
-    });
+    };
+    setFormData(newFormData);
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
+  };
+
+  const clearSavedDraft = () => {
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
   };
 
   return {
     formData,
     updateFormData,
     updateBonusAnswer,
-    resetForm
+    resetForm,
+    clearSavedDraft
   };
 };

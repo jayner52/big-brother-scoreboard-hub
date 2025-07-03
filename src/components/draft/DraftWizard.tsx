@@ -12,6 +12,7 @@ import { usePoolData } from '@/hooks/usePoolData';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { useDraftSubmission } from '@/hooks/useDraftSubmission';
 import { useDraftValidation } from '@/hooks/useDraftValidation';
+import { DraftFormPersistenceAlert } from './DraftFormPersistenceAlert';
 
 const STEPS = [
   { id: 'info', title: 'Basic Info', description: 'Your name and team details' },
@@ -23,11 +24,18 @@ const STEPS = [
 export const DraftWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [hasSavedData, setHasSavedData] = useState(false);
   
   const { poolSettings, contestantGroups, bonusQuestions, loading } = usePoolData();
-  const { formData, updateFormData, updateBonusAnswer, resetForm } = useDraftForm();
+  const { formData, updateFormData, updateBonusAnswer, resetForm, clearSavedDraft } = useDraftForm();
   const { submitDraft } = useDraftSubmission();
   const { validateDraftForm } = useDraftValidation();
+
+  // Check for saved data on mount
+  React.useEffect(() => {
+    const savedData = localStorage.getItem('bb_draft_form_data');
+    setHasSavedData(!!savedData && savedData !== '{}');
+  }, []);
 
   const getCurrentStepValidation = () => {
     const step = STEPS[currentStep];
@@ -44,7 +52,7 @@ export const DraftWizard: React.FC = () => {
           return answer && (typeof answer === 'string' ? answer.trim() : answer.player1 && answer.player2);
         });
       case 'payment':
-        return formData.payment_confirmed;
+        return true; // Payment is now optional
       default:
         return false;
     }
@@ -152,6 +160,15 @@ export const DraftWizard: React.FC = () => {
       </CardHeader>
 
       <CardContent className="p-6">
+        {/* Draft Persistence Alert */}
+        <DraftFormPersistenceAlert 
+          hasSavedData={hasSavedData}
+          onClearSavedData={() => {
+            clearSavedDraft();
+            setHasSavedData(false);
+          }}
+        />
+
         {/* Step Navigation */}
         <div className="flex justify-between items-center mb-8">
           {STEPS.map((step, index) => (

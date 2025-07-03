@@ -1,5 +1,6 @@
 import React from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
+import { PaymentStatusPanel } from '@/components/admin/PaymentStatusPanel';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -32,8 +33,11 @@ const Admin = () => {
           </p>
         </div>
 
-        {/* Admin Panel */}
-        <AdminScoringPanel />
+        {/* Admin Panels */}
+        <div className="space-y-8">
+          <PaymentStatusPanel />
+          <AdminScoringPanel />
+        </div>
 
         {/* Footer */}
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">

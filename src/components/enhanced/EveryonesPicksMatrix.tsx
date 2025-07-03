@@ -204,11 +204,8 @@ export const EveryonesPicksMatrix: React.FC = () => {
                  <div className="flex items-center justify-between mb-4">
                    <div className="space-y-1">
                      <div className="text-lg font-bold text-foreground">{entry.team_name}</div>
-                     <div className="text-sm text-muted-foreground flex items-center gap-2">
+                     <div className="text-sm text-muted-foreground">
                        <span>Manager: {entry.participant_name}</span>
-                       <Badge variant={entry.payment_confirmed ? "default" : "destructive"} className="text-xs">
-                         {entry.payment_confirmed ? "Paid" : "Pending"}
-                       </Badge>
                      </div>
                    </div>
                    <div className="text-right bg-primary/10 rounded-lg px-3 py-2">
@@ -222,12 +219,27 @@ export const EveryonesPicksMatrix: React.FC = () => {
                  <div className="grid grid-cols-5 gap-3">
                    {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => {
                      const points = houseguestPoints[player] || 0;
+                     const isEvicted = evictedContestants.includes(player);
                      return (
                        <div key={index} className="bg-background/80 border rounded-lg p-3 text-center space-y-2 hover:bg-background transition-colors">
                          <div className="text-xs text-muted-foreground font-medium">P{index + 1}</div>
-                         <Badge variant="secondary" className="text-sm font-semibold px-2 py-1 bg-primary/10 text-primary border-primary/20">
-                           {player}
-                         </Badge>
+                         <div className="relative">
+                           <Badge 
+                             variant="secondary" 
+                             className={`text-sm font-semibold px-2 py-1 ${
+                               isEvicted 
+                                 ? 'bg-red-100 text-red-700 border-red-200 line-through opacity-60' 
+                                 : 'bg-primary/10 text-primary border-primary/20'
+                             }`}
+                           >
+                             {player}
+                           </Badge>
+                           {isEvicted && (
+                             <Badge variant="destructive" className="text-xs mt-1 bg-red-500 text-white">
+                               EVICTED
+                             </Badge>
+                           )}
+                         </div>
                          {points > 0 && (
                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                              {points} pts
@@ -249,14 +261,15 @@ export const EveryonesPicksMatrix: React.FC = () => {
           <CardTitle>Everyone's Bonus Predictions</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="w-full">
-            <Table>
+          <ScrollArea className="w-full overflow-x-auto">
+            <div className="min-w-[800px]">
+              <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead className="sticky left-0 bg-muted/50 border-r min-w-[200px] font-bold">
+                <TableHead className="sticky left-0 bg-muted/50 border-r min-w-[200px] font-bold z-10">
                   Question
                 </TableHead>
-                <TableHead className="text-center font-bold min-w-[120px] bg-green-50 border-r">
+                <TableHead className="sticky left-[200px] text-center font-bold min-w-[120px] bg-green-50 border-r z-10">
                   Correct Answer
                 </TableHead>
                 {poolEntries.map((entry) => (
@@ -272,7 +285,7 @@ export const EveryonesPicksMatrix: React.FC = () => {
             <TableBody>
               {bonusQuestions.map((question) => (
                 <TableRow key={question.id} className="hover:bg-muted/30">
-                  <TableCell className="sticky left-0 bg-background border-r font-medium max-w-[200px]">
+                  <TableCell className="sticky left-0 bg-background border-r font-medium max-w-[200px] z-10">
                     <div className="space-y-1">
                       <div className="text-sm">{question.question_text}</div>
                       <Badge variant="outline" className="text-xs">
@@ -280,7 +293,7 @@ export const EveryonesPicksMatrix: React.FC = () => {
                       </Badge>
                     </div>
                   </TableCell>
-                  <TableCell className="text-center bg-green-50 border-r">
+                  <TableCell className="sticky left-[200px] text-center bg-green-50 border-r z-10">
                     {getCorrectAnswerDisplay(question)}
                   </TableCell>
                   {poolEntries.map((entry) => (
@@ -291,7 +304,8 @@ export const EveryonesPicksMatrix: React.FC = () => {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+              </Table>
+            </div>
           </ScrollArea>
         </CardContent>
       </Card>

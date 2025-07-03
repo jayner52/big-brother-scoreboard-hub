@@ -117,6 +117,7 @@ export type Database = {
           current_hoh: boolean
           current_pov_winner: boolean
           currently_nominated: boolean
+          data_source: string | null
           family_info: string | null
           final_placement: number | null
           gameplay_strategy: Json | null
@@ -132,6 +133,7 @@ export type Database = {
           physical_description: Json | null
           pov_used_on: boolean
           relationship_status: string | null
+          season_number: number | null
           sort_order: number | null
           times_on_block_at_eviction: number | null
           times_saved_by_veto: number | null
@@ -148,6 +150,7 @@ export type Database = {
           current_hoh?: boolean
           current_pov_winner?: boolean
           currently_nominated?: boolean
+          data_source?: string | null
           family_info?: string | null
           final_placement?: number | null
           gameplay_strategy?: Json | null
@@ -163,6 +166,7 @@ export type Database = {
           physical_description?: Json | null
           pov_used_on?: boolean
           relationship_status?: string | null
+          season_number?: number | null
           sort_order?: number | null
           times_on_block_at_eviction?: number | null
           times_saved_by_veto?: number | null
@@ -179,6 +183,7 @@ export type Database = {
           current_hoh?: boolean
           current_pov_winner?: boolean
           currently_nominated?: boolean
+          data_source?: string | null
           family_info?: string | null
           final_placement?: number | null
           gameplay_strategy?: Json | null
@@ -194,6 +199,7 @@ export type Database = {
           physical_description?: Json | null
           pov_used_on?: boolean
           relationship_status?: string | null
+          season_number?: number | null
           sort_order?: number | null
           times_on_block_at_eviction?: number | null
           times_saved_by_veto?: number | null

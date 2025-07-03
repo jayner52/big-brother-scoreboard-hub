@@ -189,10 +189,14 @@ export const ContestantManagement: React.FC = () => {
   const handleAIProfilesGenerated = async (profiles: any[]) => {
     console.log('Generated profiles:', profiles.length, 'contestants');
     
-    // Debug: Check for Angela Murray specifically
-    const angelaProfile = profiles.find(p => p.name.includes('Angela'));
-    if (angelaProfile) {
-      console.log('Angela Murray check:', angelaProfile);
+    // Validate exactly 16 contestants for BB26
+    if (profiles.length !== 16) {
+      toast({
+        title: "Error",
+        description: `Expected exactly 16 contestants, got ${profiles.length}`,
+        variant: "destructive",
+      });
+      return;
     }
     
     const newContestants = [];
@@ -208,6 +212,8 @@ export const ContestantManagement: React.FC = () => {
             occupation: profile.occupation,
             bio: profile.bio,
             photo_url: profile.photo,
+            season_number: 26,
+            data_source: 'ai_generated',
             ai_generated: true,
             generation_metadata: {
               generated_date: new Date().toISOString(),
@@ -215,7 +221,7 @@ export const ContestantManagement: React.FC = () => {
               data_source: 'real_contestant_data'
             },
             is_active: true,
-            sort_order: contestants.length + newContestants.length + 1
+            sort_order: newContestants.length + 1
           })
           .select()
           .single();
@@ -238,6 +244,56 @@ export const ContestantManagement: React.FC = () => {
       toast({
         title: "Success!",
         description: `Added ${newContestants.length} contestant(s)`,
+      });
+    }
+  };
+
+  const handleDelete = async (contestantId: string) => {
+    try {
+      const { error } = await supabase
+        .from('contestants')
+        .delete()
+        .eq('id', contestantId);
+
+      if (error) throw error;
+
+      setContestants(prev => prev.filter(c => c.id !== contestantId));
+      
+      toast({
+        title: "Success!",
+        description: "Contestant deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting contestant:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete contestant",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleClearAll = async () => {
+    try {
+      const { error } = await supabase
+        .from('contestants')
+        .delete()
+        .eq('season_number', 26);
+
+      if (error) throw error;
+
+      setContestants([]);
+      
+      toast({
+        title: "Success!",
+        description: "All contestants cleared",
+      });
+    } catch (error) {
+      console.error('Error clearing contestants:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear contestants",
+        variant: "destructive",
       });
     }
   };
@@ -302,14 +358,24 @@ export const ContestantManagement: React.FC = () => {
           
           {contestants.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Generated Contestants</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {contestants.map((contestant) => (
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Generated Contestants ({contestants.length}/16)</h3>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleClearAll}
+                  size="sm"
+                >
+                  Clear All
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {contestants.slice(0, 16).map((contestant) => (
                   <EnhancedContestantCard
                     key={contestant.id}
                     contestant={contestant as any}
                     onEdit={() => handleEdit(contestant)}
                     onView={() => handleViewProfile(contestant)}
+                    onDelete={() => handleDelete(contestant.id)}
                   />
                 ))}
               </div>

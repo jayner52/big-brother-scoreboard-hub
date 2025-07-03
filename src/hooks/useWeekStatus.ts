@@ -10,32 +10,39 @@ export const useWeekStatus = (weekNumber: number) => {
 
   const determineWeekStatus = async () => {
     try {
-      // Get current week from current_game_week table
-      const { data: currentWeekData } = await supabase
-        .from('current_game_week')
-        .select('week_number')
-        .single();
-
-      const currentWeekNumber = currentWeekData?.week_number || 1;
-      setCurrentWeek(currentWeekNumber);
-
-      // Get all weekly results to determine status
+      // Get all weekly results to determine the current week dynamically
       const { data: weeklyResults } = await supabase
         .from('weekly_results')
         .select('week_number, is_draft')
         .order('week_number', { ascending: true });
+
+      // Calculate current week as highest completed week + 1
+      const completedWeeks = weeklyResults?.filter(result => result.is_draft === false) || [];
+      const highestCompletedWeek = completedWeeks.length > 0 
+        ? Math.max(...completedWeeks.map(w => w.week_number)) 
+        : 0;
+      
+      const calculatedCurrentWeek = highestCompletedWeek + 1;
+      setCurrentWeek(calculatedCurrentWeek);
+
+      // Log for debugging
+      console.log(`Week Status Debug: Completed weeks: [${completedWeeks.map(w => w.week_number).join(', ')}], Calculated current week: ${calculatedCurrentWeek}, Checking week: ${weekNumber}`);
 
       // Determine status for the requested week
       const weekResult = weeklyResults?.find(result => result.week_number === weekNumber);
       
       if (weekResult && weekResult.is_draft === false) {
         setWeekStatus('completed');
-      } else if (weekNumber === currentWeekNumber) {
+        console.log(`Week ${weekNumber} is COMPLETED (found in weekly_results with is_draft=false)`);
+      } else if (weekNumber === calculatedCurrentWeek) {
         setWeekStatus('current');
-      } else if (weekNumber < currentWeekNumber) {
+        console.log(`Week ${weekNumber} is CURRENT (matches calculated current week)`);
+      } else if (weekNumber < calculatedCurrentWeek) {
         setWeekStatus('completed');
+        console.log(`Week ${weekNumber} is COMPLETED (less than current week ${calculatedCurrentWeek})`);
       } else {
         setWeekStatus('future');
+        console.log(`Week ${weekNumber} is FUTURE (greater than current week ${calculatedCurrentWeek})`);
       }
     } catch (error) {
       console.error('Error determining week status:', error);

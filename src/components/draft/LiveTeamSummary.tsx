@@ -31,10 +31,7 @@ export const LiveTeamSummary: React.FC<LiveTeamSummaryProps> = ({
     return sum + (houseguestPoints[player] || 0);
   }, 0);
 
-  // Only show if we have some draft progress
-  if (selectedPlayers.length === 0 && !formData.team_name && !formData.participant_name) {
-    return null;
-  }
+  // Always show the team summary box - no hiding conditions
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg py-3 px-4 mb-6 shadow-sm">

@@ -225,13 +225,23 @@ export const useWeeklyEventsSubmission = (
         description: `Week ${eventForm.week} events recorded successfully`,
       });
 
-      // Explicit step-by-step weekly advancement logic
+      // Calculate next week based on all completed weeks (most reliable approach)
       try {
         const completedWeek = eventForm.week;
-        let nextWeek = completedWeek + 1;
         
-        // Explicit rules: If Week N is marked complete → Set Week N+1 as current
-        // Week 1 complete → Week 2 current, Week 2 complete → Week 3 current, etc.
+        // Get all completed weeks to calculate the proper next week
+        const { data: allWeeklyResults } = await supabase
+          .from('weekly_results')
+          .select('week_number, is_draft')
+          .eq('is_draft', false)
+          .order('week_number', { ascending: true });
+        
+        const completedWeeks = allWeeklyResults?.map(w => w.week_number) || [];
+        console.log(`All completed weeks after Week ${completedWeek}: [${completedWeeks.join(', ')}]`);
+        
+        // Next week = highest completed week + 1
+        const nextWeek = Math.max(...completedWeeks, completedWeek) + 1;
+        
         console.log(`Week ${completedWeek} completed, advancing to Week ${nextWeek}`);
         
         const { error: weekUpdateError } = await supabase.rpc('update_current_game_week', { 
@@ -244,11 +254,11 @@ export const useWeeklyEventsSubmission = (
         }
         
         toast({
-          title: "Success!",
-          description: `Week ${completedWeek} completed! Advanced to Week ${nextWeek}`,
+          title: "Week Completed!",
+          description: `Week ${completedWeek} completed! Week ${nextWeek} is now current`,
         });
         
-        console.log(`Successfully advanced current game week from ${completedWeek} to ${nextWeek}`);
+        console.log(`✅ Successfully advanced: Week ${completedWeek} → Week ${nextWeek} current`);
       } catch (error) {
         console.error('Failed to update current game week:', error);
         toast({

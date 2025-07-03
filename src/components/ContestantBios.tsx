@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, MapPin, Briefcase, Calendar } from 'lucide-react';
+import { Users, MapPin, Briefcase, Calendar, Crown, Shield, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
 import { PoolSettings } from '@/types/pool';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
 
 export const ContestantBios: React.FC = () => {
   const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
   const [poolSettings, setPoolSettings] = useState<PoolSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const { evictedContestants } = useEvictedContestants();
+  const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
 
   useEffect(() => {
     loadContestants();
@@ -26,7 +30,7 @@ export const ContestantBios: React.FC = () => {
         const mappedContestants = contestantsResult.data.map(c => ({
           id: c.id,
           name: c.name,
-          isActive: c.is_active,
+          isActive: !evictedContestants.includes(c.name),
           group_id: c.group_id,
           sort_order: c.sort_order,
           bio: c.bio,
@@ -35,6 +39,14 @@ export const ContestantBios: React.FC = () => {
           age: c.age,
           occupation: c.occupation
         }));
+        
+        // Sort: active contestants first, then eliminated
+        mappedContestants.sort((a, b) => {
+          if (a.isActive && !b.isActive) return -1;
+          if (!a.isActive && b.isActive) return 1;
+          return a.sort_order - b.sort_order;
+        });
+        
         setContestants(mappedContestants);
       }
 
@@ -80,10 +92,32 @@ export const ContestantBios: React.FC = () => {
                   <Users className="h-16 w-16 text-muted-foreground" />
                 </div>
               )}
-              <div className="absolute top-2 right-2">
+              <div className="absolute top-2 right-2 flex flex-col gap-1">
                 <Badge variant={contestant.isActive ? "default" : "destructive"}>
                   {contestant.isActive ? 'Active' : 'Eliminated'}
                 </Badge>
+                {contestant.isActive && (
+                  <>
+                    {hohWinner === contestant.name && (
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Crown className="h-3 w-3" />
+                        HOH
+                      </Badge>
+                    )}
+                    {povWinner === contestant.name && (
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Shield className="h-3 w-3" />
+                        POV
+                      </Badge>
+                    )}
+                    {nominees.includes(contestant.name) && (
+                      <Badge variant="destructive" className="flex items-center gap-1">
+                        <Target className="h-3 w-3" />
+                        Nominated
+                      </Badge>
+                    )}
+                  </>
+                )}
               </div>
             </div>
             

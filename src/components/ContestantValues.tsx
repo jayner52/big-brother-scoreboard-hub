@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Key, Target, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Crown, Key, Target, Shield, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
 
 interface ContestantStats {
   contestant_name: string;
@@ -30,7 +32,9 @@ export const ContestantValues: React.FC = () => {
   const [contestantGroups, setContestantGroups] = useState<ContestantGroup[]>([]);
   const [contestantStats, setContestantStats] = useState<ContestantStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSpoilers, setShowSpoilers] = useState(false);
   const { evictedContestants } = useActiveContestants();
+  const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
 
   useEffect(() => {
     loadData();
@@ -143,10 +147,23 @@ export const ContestantValues: React.FC = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Contestant Performance & Values</CardTitle>
-          <p className="text-sm text-gray-600">
-            Track how each contestant is performing and their fantasy value
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Contestant Performance & Values</CardTitle>
+              <p className="text-sm text-gray-600">
+                Track how each contestant is performing and their fantasy value
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSpoilers(!showSpoilers)}
+              className="flex items-center gap-2"
+            >
+              {showSpoilers ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showSpoilers ? 'Hide Status' : 'Show Status'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -156,7 +173,7 @@ export const ContestantValues: React.FC = () => {
                   <TableHead>Rank</TableHead>
                   <TableHead>Contestant</TableHead>
                   <TableHead>Group</TableHead>
-                  <TableHead>Status</TableHead>
+                  {showSpoilers && <TableHead>Status</TableHead>}
                   <TableHead>Points Earned</TableHead>
                   <TableHead>HOH Wins</TableHead>
                   <TableHead>Veto Wins</TableHead>
@@ -184,55 +201,51 @@ export const ContestantValues: React.FC = () => {
                           {stat.group_name}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {contestant?.isActive ? (
-                            <>
-                              <Badge variant="default">Active</Badge>
-                              {stat.current_hoh && (
-                                <Badge variant="secondary" className="flex items-center gap-1">
-                                  <Crown className="h-3 w-3" />
-                                  HOH
+                      {showSpoilers && (
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {contestant?.isActive ? (
+                              <>
+                                <Badge variant="default">Active</Badge>
+                                {hohWinner === stat.contestant_name && (
+                                  <Badge variant="secondary" className="flex items-center gap-1">
+                                    <Crown className="h-3 w-3" />
+                                    HOH
+                                  </Badge>
+                                )}
+                                {povWinner === stat.contestant_name && (
+                                  <Badge variant="secondary" className="flex items-center gap-1">
+                                    <Shield className="h-3 w-3" />
+                                    POV
+                                  </Badge>
+                                )}
+                                {nominees.includes(stat.contestant_name) && (
+                                  <Badge variant="destructive" className="flex items-center gap-1">
+                                    <Target className="h-3 w-3" />
+                                    Nominated
+                                  </Badge>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <Badge variant="destructive">
+                                  {stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
                                 </Badge>
-                              )}
-                              {stat.current_pov_winner && (
-                                <Badge variant="secondary" className="flex items-center gap-1">
-                                  <Key className="h-3 w-3" />
-                                  POV
-                                </Badge>
-                              )}
-                              {stat.currently_nominated && (
-                                <Badge variant="destructive" className="flex items-center gap-1">
-                                  <Target className="h-3 w-3" />
-                                  Nominated
-                                </Badge>
-                              )}
-                              {stat.pov_used_on && (
-                                <Badge variant="outline" className="flex items-center gap-1">
-                                  <Shield className="h-3 w-3" />
-                                  Saved
-                                </Badge>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <Badge variant="destructive">
-                                {stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
-                              </Badge>
-                              {stat.final_placement && (
-                                <Badge variant="outline">
-                                  {stat.final_placement === 1 ? "Winner" : 
-                                   stat.final_placement === 2 ? "Runner-up" :
-                                   `${stat.final_placement}th Place`}
-                                </Badge>
-                              )}
-                              {stat.americas_favorite && (
-                                <Badge variant="secondary">AFP</Badge>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
+                                {stat.final_placement && (
+                                  <Badge variant="outline">
+                                    {stat.final_placement === 1 ? "Winner" : 
+                                     stat.final_placement === 2 ? "Runner-up" :
+                                     `${stat.final_placement}th Place`}
+                                  </Badge>
+                                )}
+                                {stat.americas_favorite && (
+                                  <Badge variant="secondary">AFP</Badge>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
                       <TableCell className="text-center font-bold">
                         {stat.total_points_earned}
                       </TableCell>

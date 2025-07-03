@@ -26,7 +26,7 @@ export const ContestantManagement: React.FC = () => {
       const { data } = await supabase
         .from('contestants')
         .select('*')
-        .order('sort_order', { ascending: true });
+        .order('name', { ascending: true });
       
       if (data) {
         const mappedContestants = data.map(c => ({

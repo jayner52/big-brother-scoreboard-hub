@@ -155,7 +155,9 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
               />
             )}
             <div>
-              <h3 className="font-semibold text-lg">{contestant.name}</h3>
+              <h3 className={`font-semibold text-lg ${isEvicted ? 'text-red-600' : 'text-green-600'}`}>
+                {contestant.name}
+              </h3>
               <p className="text-sm text-muted-foreground mb-1">
                 {isEvicted ? 'Evicted' : 'Active'} • Order: {contestant.sort_order}
               </p>

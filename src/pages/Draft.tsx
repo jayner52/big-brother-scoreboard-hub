@@ -1,6 +1,7 @@
 import React from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
 import { TeamDraftForm } from '@/components/TeamDraftForm';
+import { DraftSummaryBox } from '@/components/draft/DraftSummaryBox';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -29,9 +30,12 @@ const Draft = () => {
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
               Draft Your Team
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 mb-8">
               Select your 5 houseguests and answer bonus questions to build your winning team!
             </p>
+            
+            {/* Centered Summary Box */}
+            <DraftSummaryBox />
           </div>
 
           {/* Draft Form */}

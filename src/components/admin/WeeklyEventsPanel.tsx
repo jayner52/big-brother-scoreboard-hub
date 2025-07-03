@@ -43,8 +43,19 @@ export const WeeklyEventsPanel: React.FC = () => {
     setIsWeekComplete(weekResult && !weekResult.is_draft);
   };
 
-  const handleMarkComplete = (complete: boolean) => {
+  const handleMarkComplete = async (complete: boolean) => {
     setIsWeekComplete(complete);
+    
+    // Generate weekly snapshot when week is marked complete
+    if (complete && eventForm.week) {
+      try {
+        await supabase.rpc('generate_weekly_snapshots', {
+          week_num: eventForm.week
+        });
+      } catch (error) {
+        console.error('Error generating weekly snapshot:', error);
+      }
+    }
   };
 
   const handleClearWeek = async () => {

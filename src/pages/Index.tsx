@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
 import { TeamDraftForm } from '@/components/TeamDraftForm';
-import { TeamLeaderboard } from '@/components/TeamLeaderboard';
+import { EnhancedTeamLeaderboard } from '@/components/enhanced/EnhancedTeamLeaderboard';
 import { EveryonesPicks } from '@/components/EveryonesPicks';
 import { LiveResults } from '@/components/LiveResults';
 import { HouseguestValues } from '@/components/HouseguestValues';
@@ -358,7 +358,7 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="leaderboard">
-              <TeamLeaderboard />
+              <EnhancedTeamLeaderboard />
             </TabsContent>
 
             <TabsContent value="picks">

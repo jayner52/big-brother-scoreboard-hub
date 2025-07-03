@@ -208,6 +208,7 @@ export type Database = {
       detailed_scoring_rules: {
         Row: {
           category: string
+          config_params: Json | null
           created_at: string
           description: string | null
           id: string
@@ -217,6 +218,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          config_params?: Json | null
           created_at?: string
           description?: string | null
           id?: string
@@ -226,6 +228,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          config_params?: Json | null
           created_at?: string
           description?: string | null
           id?: string
@@ -637,6 +640,53 @@ export type Database = {
           },
         ]
       }
+      weekly_team_snapshots: {
+        Row: {
+          bonus_points: number
+          created_at: string
+          id: string
+          points_change: number | null
+          pool_entry_id: string
+          rank_change: number | null
+          rank_position: number
+          total_points: number
+          week_number: number
+          weekly_points: number
+        }
+        Insert: {
+          bonus_points?: number
+          created_at?: string
+          id?: string
+          points_change?: number | null
+          pool_entry_id: string
+          rank_change?: number | null
+          rank_position: number
+          total_points?: number
+          week_number: number
+          weekly_points?: number
+        }
+        Update: {
+          bonus_points?: number
+          created_at?: string
+          id?: string
+          points_change?: number | null
+          pool_entry_id?: string
+          rank_change?: number | null
+          rank_position?: number
+          total_points?: number
+          week_number?: number
+          weekly_points?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_team_snapshots_pool_entry_id_fkey"
+            columns: ["pool_entry_id"]
+            isOneToOne: false
+            referencedRelation: "pool_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -649,6 +699,10 @@ export type Database = {
       format_event_type: {
         Args: { event_type_input: string }
         Returns: string
+      }
+      generate_weekly_snapshots: {
+        Args: { week_num: number }
+        Returns: undefined
       }
       update_current_game_week: {
         Args: { new_week_number: number }

@@ -105,45 +105,63 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
         </div>
       )}
 
-      {/* Ultra-Slim Horizontal Team Dashboard */}
-      <div className="w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-lg border border-white/20 py-3 px-4 shadow-lg">
+      {/* Enhanced Team Dashboard */}
+      <div className="w-full bg-gradient-to-r from-primary/5 via-background to-accent/5 rounded-xl border border-border/30 p-4 shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="flex items-center justify-between">
-          {/* Left: Team Info */}
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/20 p-1.5 rounded">
-              <Users className="h-4 w-4 text-primary" />
+          {/* Left: Team Info with Visual Impact */}
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-primary to-accent p-3 rounded-xl shadow-sm">
+              <Users className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-primary text-sm">{currentEntry.team_name}</h3>
-              <p className="text-xs text-muted-foreground">by {currentEntry.participant_name}</p>
+              <h3 className="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {currentEntry.team_name}
+              </h3>
+              <p className="text-sm text-muted-foreground font-medium">by {currentEntry.participant_name}</p>
             </div>
           </div>
           
-          {/* Center: Players in Horizontal Line */}
-          <div className="flex items-center gap-3">
+          {/* Center: Enhanced Player Cards */}
+          <div className="flex items-center gap-2">
             {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
-              <div key={index} className="flex items-center gap-1 bg-white/5 border border-white/10 rounded px-2 py-1">
-                <span className="font-medium text-xs text-foreground" title={player}>
-                  {player.split(' ')[0]}
-                </span>
-                <span className="text-sm font-bold text-primary">
-                  {houseguestPoints[player] || 0}
-                </span>
+              <div key={index} className="group relative">
+                <div className="flex flex-col items-center bg-card border border-border/50 rounded-lg px-3 py-2 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md">
+                  <span className="font-semibold text-xs text-foreground mb-1" title={player}>
+                    {player.split(' ')[0]}
+                  </span>
+                  <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-full px-2 py-0.5">
+                    <span className="text-sm font-bold text-primary">
+                      {houseguestPoints[player] || 0}
+                    </span>
+                  </div>
+                </div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 animate-pulse"></div>
               </div>
             ))}
           </div>
           
-          {/* Right: Status & Total */}
-          <div className="flex items-center gap-3">
-            <Badge variant={currentEntry.payment_confirmed ? "default" : "destructive"} className="text-xs py-0.5 px-2">
-              {currentEntry.payment_confirmed ? "Paid" : "Pending"}
-            </Badge>
-            {currentEntry.current_rank && (
-              <Badge variant="outline" className="text-xs py-0.5 px-2">#{currentEntry.current_rank}</Badge>
-            )}
-            <div className="bg-primary/10 rounded px-3 py-1 text-center">
-              <div className="text-lg font-bold text-primary">{totalPoints}</div>
-              <div className="text-xs text-muted-foreground">pts</div>
+          {/* Right: Enhanced Status & Score */}
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-2">
+              <Badge 
+                variant={currentEntry.payment_confirmed ? "default" : "destructive"} 
+                className="text-xs font-semibold shadow-sm"
+              >
+                {currentEntry.payment_confirmed ? "✓ Paid" : "⏳ Pending"}
+              </Badge>
+              {currentEntry.current_rank && (
+                <Badge variant="outline" className="text-xs font-bold border-primary/30 text-primary">
+                  Rank #{currentEntry.current_rank}
+                </Badge>
+              )}
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl px-4 py-3 text-center border border-primary/20 shadow-sm">
+              <div className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {totalPoints}
+              </div>
+              <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">
+                POINTS
+              </div>
             </div>
           </div>
         </div>

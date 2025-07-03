@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
+import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 
 export const useWeeklyEvents = () => {
   const { toast } = useToast();
@@ -171,8 +172,11 @@ export const useWeeklyEvents = () => {
     const evictedThisWeek = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
       .filter(evicted => evicted && evicted !== 'no-eviction');
     
-    // Use eviction-based logic instead of isActive flag
-    const survivingContestants = contestants.filter(c => !evictedThisWeek.includes(c.name));
+    // Get all evicted contestants up to current week, not just this week
+    const { evictedContestants: allEvictedUpToThisWeek } = useWeekAwareContestants(eventForm.week);
+    const survivingContestants = contestants.filter(c => 
+      !evictedThisWeek.includes(c.name) && !allEvictedUpToThisWeek.includes(c.name)
+    );
     
     survivingContestants.forEach(contestant => {
       preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('survival');
@@ -439,9 +443,19 @@ export const useWeeklyEvents = () => {
         description: `Week ${eventForm.week} events recorded successfully`,
       });
 
-      // Reset form for next week
+      // Find next sequential week to edit
+      const { data: completedWeeks } = await supabase
+        .from('weekly_results')
+        .select('week_number')
+        .eq('is_draft', false)
+        .order('week_number', { ascending: false });
+      
+      const highestCompletedWeek = completedWeeks?.[0]?.week_number || 0;
+      const nextWeek = highestCompletedWeek + 1;
+      
+      // Reset form for next sequential week
       setEventForm({
-        week: eventForm.week + 1,
+        week: nextWeek,
         nominees: ['', ''],
         hohWinner: '',
         povWinner: '',

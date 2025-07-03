@@ -14,8 +14,6 @@ interface ContestantStats {
   hoh_wins: number;
   veto_wins: number;
   times_on_block: number;
-  prizes_won: number;
-  punishments: number;
   times_selected: number;
   elimination_week?: number;
   group_name?: string;
@@ -88,15 +86,7 @@ export const ContestantValues: React.FC = () => {
           event.contestant_id === contestant.id && event.event_type === 'nominated'
         ).length;
 
-        // Count prizes
-        const prizesWon = (specialEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type.includes('prize')
-        ).length;
-
-        // Count punishments
-        const punishments = (specialEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type.includes('punishment')
-        ).length;
+        // Remove prize and punishment counting - now handled by emojis in special events
 
         // Find elimination week
         const evictionEvent = (weeklyEventsResult.data || []).find(event => 
@@ -122,8 +112,6 @@ export const ContestantValues: React.FC = () => {
           hoh_wins: hohWins,
           veto_wins: vetoWins,
           times_on_block: timesOnBlock,
-          prizes_won: prizesWon,
-          punishments: punishments,
           times_selected: timesSelected,
           elimination_week: eliminationWeek,
           group_name: group?.group_name,
@@ -173,8 +161,6 @@ export const ContestantValues: React.FC = () => {
                   <TableHead>HOH Wins</TableHead>
                   <TableHead>Veto Wins</TableHead>
                   <TableHead>Times on Block</TableHead>
-                  <TableHead>Prizes</TableHead>
-                  <TableHead>Punishments</TableHead>
                   <TableHead>Times Selected</TableHead>
                   <TableHead>Fantasy Value</TableHead>
                 </TableRow>
@@ -258,12 +244,6 @@ export const ContestantValues: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-center">
                         {stat.times_on_block}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {stat.prizes_won}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {stat.punishments}
                       </TableCell>
                       <TableCell className="text-center">
                         {stat.times_selected}

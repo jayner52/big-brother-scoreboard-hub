@@ -52,65 +52,79 @@ export const ContestantProfileModal: React.FC<ContestantProfileModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center gap-3">
-            {photo_url && (
-              <img 
-                src={photo_url} 
-                alt={name}
-                className="w-16 h-16 rounded-full object-cover"
-              />
+      <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="pb-6">
+          <DialogTitle className="text-3xl font-bold">{name}</DialogTitle>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-muted-foreground text-lg">
+              {age && `${age} years old`}
+              {age && hometown && ' • '}
+              {hometown}
+              {hometown && occupation && ' • '}
+              {occupation}
+            </span>
+            {ai_generated && (
+              <Badge variant="secondary" className="ml-2">
+                <Bot className="h-4 w-4 mr-1" />
+                AI Generated
+              </Badge>
             )}
-            <div>
-              <DialogTitle className="text-2xl">{name}</DialogTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-muted-foreground">
-                  {age && `${age} years old`}
-                  {age && hometown && ' • '}
-                  {hometown}
-                </span>
-                {ai_generated && (
-                  <Badge variant="secondary">
-                    <Bot className="h-3 w-3 mr-1" />
-                    AI Generated
-                  </Badge>
-                )}
-              </div>
-            </div>
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <strong>Occupation:</strong> {occupation}
+        {/* Hero Section with Large Photo and Bio */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row gap-6 mb-6">
+            {photo_url && (
+              <div className="lg:w-80 flex-shrink-0">
+                <img 
+                  src={photo_url} 
+                  alt={name}
+                  className="w-full h-80 lg:h-96 object-cover rounded-lg shadow-lg"
+                />
               </div>
-              {relationship_status && (
-                <div>
-                  <strong>Relationship Status:</strong> {relationship_status}
-                </div>
-              )}
-              {family_info && (
-                <div>
-                  <strong>Family:</strong> {family_info}
-                </div>
-              )}
+            )}
+            <div className="flex-1 space-y-4">
               {bio && (
-                <div>
-                  <strong>Bio:</strong> {bio}
-                </div>
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle className="text-xl">About {name.split(' ')[0]}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-base leading-relaxed">
+                    {bio}
+                  </CardContent>
+                </Card>
               )}
-            </CardContent>
-          </Card>
+              {!bio && (relationship_status || family_info) && (
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle className="text-xl">Personal Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {relationship_status && (
+                      <div>
+                        <strong>Relationship Status:</strong> {relationship_status}
+                      </div>
+                    )}
+                    {family_info && (
+                      <div>
+                        <strong>Family:</strong> {family_info}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Additional Details - only show if we have content beyond bio */}
+          {(physical_description || personality_traits || gameplay_strategy || backstory) && (
+            <div className="md:col-span-2">
+              <h3 className="text-xl font-semibold mb-4">Additional Details</h3>
+            </div>
+          )}
 
           {/* Physical Description */}
           {physical_description && (

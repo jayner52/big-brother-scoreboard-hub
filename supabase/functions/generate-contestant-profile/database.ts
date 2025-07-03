@@ -54,6 +54,17 @@ export async function processBatches(
         return await retryWithBackoff(async () => {
           console.log(`  [${globalIndex}/${contestants.length}] Processing: ${contestant.name}`);
           
+          // Auto-assign group based on order (4 groups, distribute evenly)
+          const groupNames = ['Group A', 'Group B', 'Group C', 'Group D'];
+          const groupIndex = (globalIndex - 1) % 4;
+          
+          // Get the group ID for this group name
+          const { data: groups } = await supabase
+            .from('contestant_groups')
+            .select('id, group_name')
+            .eq('group_name', groupNames[groupIndex])
+            .single();
+          
           const insertData = {
             name: contestant.name.trim(),
             age: contestant.age,
@@ -64,13 +75,15 @@ export async function processBatches(
             season_number: seasonNumber,
             data_source: 'bigbrother_fandom',
             ai_generated: false,
+            group_id: groups?.id || null,
             generation_metadata: {
               generated_date: new Date().toISOString(),
               source: 'bigbrother.fandom.com',
               data_source: 'real_contestant_data',
               batch_id: Date.now(),
               batch_number: batchNumber,
-              global_index: globalIndex
+              global_index: globalIndex,
+              auto_assigned_group: groupNames[groupIndex]
             },
             is_active: true,
             sort_order: globalIndex

@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { usePointsCalculation } from '@/hooks/usePointsCalculation';
 
 export const TeamLeaderboard: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { houseguestPoints } = useHouseguestPoints();
+  const { recalculateAllPoints, recalculating } = usePointsCalculation();
 
   useEffect(() => {
     loadPoolEntries();
@@ -24,12 +28,24 @@ export const TeamLeaderboard: React.FC = () => {
 
       if (error) throw error;
       
-      const mappedEntries = data?.map(entry => ({
-        ...entry,
-        bonus_answers: entry.bonus_answers as Record<string, any>,
-        created_at: new Date(entry.created_at),
-        updated_at: new Date(entry.updated_at)
-      })) || [];
+      const mappedEntries = data?.map(entry => {
+        // Validate that total_points equals weekly_points + bonus_points
+        const calculatedTotal = (entry.weekly_points || 0) + (entry.bonus_points || 0);
+        if (calculatedTotal !== entry.total_points) {
+          console.warn(`Points mismatch for ${entry.team_name}: 
+            Weekly: ${entry.weekly_points}, 
+            Bonus: ${entry.bonus_points}, 
+            Total: ${entry.total_points}, 
+            Expected: ${calculatedTotal}`);
+        }
+        
+        return {
+          ...entry,
+          bonus_answers: entry.bonus_answers as Record<string, any>,
+          created_at: new Date(entry.created_at),
+          updated_at: new Date(entry.updated_at)
+        };
+      }) || [];
       
       setPoolEntries(mappedEntries);
     } catch (error) {
@@ -37,6 +53,11 @@ export const TeamLeaderboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRecalculatePoints = async () => {
+    await recalculateAllPoints();
+    await loadPoolEntries(); // Reload data after recalculation
   };
 
   if (loading) {
@@ -59,11 +80,25 @@ export const TeamLeaderboard: React.FC = () => {
   return (
     <Card className="w-full">
       <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
-        <CardTitle className="text-2xl">Team Leaderboard</CardTitle>
-        <div className="flex flex-wrap gap-2 mt-2 text-sm">
-          <Badge variant="secondary" className="bg-white/20">Survival: 1 pt/week</Badge>
-          <Badge variant="secondary" className="bg-white/20">HOH/POV: 3 pts each</Badge>
-          <Badge variant="secondary" className="bg-white/20">Bonus: 5-10 pts</Badge>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-2xl">Team Leaderboard</CardTitle>
+            <div className="flex flex-wrap gap-2 mt-2 text-sm">
+              <Badge variant="secondary" className="bg-white/20">Survival: 1 pt/week</Badge>
+              <Badge variant="secondary" className="bg-white/20">HOH/POV: 3 pts each</Badge>
+              <Badge variant="secondary" className="bg-white/20">Bonus: 5-10 pts</Badge>
+            </div>
+          </div>
+          <Button 
+            onClick={handleRecalculatePoints}
+            disabled={recalculating}
+            variant="secondary"
+            size="sm"
+            className="bg-white/20 hover:bg-white/30"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
+            {recalculating ? 'Recalculating...' : 'Recalculate Points'}
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="p-0">

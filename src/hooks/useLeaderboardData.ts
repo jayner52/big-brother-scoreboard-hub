@@ -21,7 +21,7 @@ export const useLeaderboardData = () => {
       console.log('Loading current pool entries');
       loadCurrentPoolEntries();
     }
-  }, [completedWeeks, selectedWeek, loadSnapshotsForWeek]);
+  }, [completedWeeks.length, selectedWeek]); // Removed loadSnapshotsForWeek from deps to prevent infinite loop
 
   useEffect(() => {
     if (selectedWeek === null) {
@@ -54,7 +54,7 @@ export const useLeaderboardData = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedWeek, loadSnapshotsForWeek]);
+  }, [selectedWeek]); // Removed loadSnapshotsForWeek from deps
 
   const loadCurrentPoolEntries = async () => {
     try {

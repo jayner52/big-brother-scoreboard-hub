@@ -45,10 +45,22 @@ export async function scrapeGoldDerbyGallery(): Promise<Record<string, string>> 
       ];
       
       for (const name of contestantNames) {
-        const firstName = name.split(' ')[0].toLowerCase();
-        const lastName = name.split(' ')[1].toLowerCase();
+        // Handle special characters and punctuation in names
+        const cleanName = name.toLowerCase().replace(/['']/g, '').replace(/[^a-z\s]/g, '');
+        const nameParts = cleanName.split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts[nameParts.length - 1];
         
-        if (altText.includes(firstName) && altText.includes(lastName)) {
+        // Clean alt text similarly
+        const cleanAltText = altText.toLowerCase().replace(/['']/g, '').replace(/[^a-z\s]/g, '');
+        
+        // Try exact match first, then partial match
+        const exactMatch = cleanAltText.includes(firstName) && cleanAltText.includes(lastName);
+        const partialMatch = firstName.length > 3 && lastName.length > 3 && 
+                           cleanAltText.includes(firstName.substring(0, 4)) && 
+                           cleanAltText.includes(lastName.substring(0, 4));
+        
+        if (exactMatch || partialMatch) {
           // Validate the image URL
           const isValid = await validatePhotoUrl(imageUrl);
           if (isValid) {

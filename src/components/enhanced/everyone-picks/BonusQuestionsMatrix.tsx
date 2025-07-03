@@ -19,7 +19,12 @@ export const BonusQuestionsMatrix: React.FC<BonusQuestionsMatrixProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Everyone's Bonus Predictions</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Everyone's Bonus Predictions</CardTitle>
+          <div className="text-sm text-muted-foreground">
+            Total Bonus Points: {poolEntries.reduce((sum, entry) => sum + (entry.bonus_points || 0), 0)} pts
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="w-full overflow-x-auto">
@@ -33,14 +38,17 @@ export const BonusQuestionsMatrix: React.FC<BonusQuestionsMatrixProps> = ({
                   <TableHead className="sticky left-[200px] text-center font-bold min-w-[120px] bg-green-50 border-r z-10">
                     Correct Answer
                   </TableHead>
-                  {poolEntries.map((entry) => (
-                    <TableHead key={entry.id} className="text-center font-bold min-w-[120px] border-r">
-                      <div className="space-y-1">
-                        <div className="font-semibold">{entry.team_name}</div>
-                        <div className="text-xs text-muted-foreground">{entry.participant_name}</div>
-                      </div>
-                    </TableHead>
-                  ))}
+                   {poolEntries.map((entry) => (
+                     <TableHead key={entry.id} className="text-center font-bold min-w-[120px] border-r">
+                       <div className="space-y-1">
+                         <div className="font-semibold">{entry.team_name}</div>
+                         <div className="text-xs text-muted-foreground">{entry.participant_name}</div>
+                         <div className="text-xs font-semibold text-green-600">
+                           {entry.bonus_points || 0} pts earned
+                         </div>
+                       </div>
+                     </TableHead>
+                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>

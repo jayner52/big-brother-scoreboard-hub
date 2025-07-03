@@ -57,14 +57,13 @@ export const EveryonesPicks: React.FC = () => {
     }
   };
 
-  // Memoize expensive calculations
+  // Use pool_entries total_points instead of calculating from individual points
   const enhancedPoolEntries = useMemo(() => {
     return poolEntries.map(entry => ({
       ...entry,
-      totalPoints: [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
-        .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0)
+      totalPoints: entry.total_points || 0
     }));
-  }, [poolEntries, houseguestPoints]);
+  }, [poolEntries]);
 
   if (loading || pointsLoading) {
     return <div className="text-center py-8">Loading everyone's picks...</div>;
@@ -91,9 +90,9 @@ export const EveryonesPicks: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {enhancedPoolEntries.map((entry) => (
-              <div key={entry.id} className="bg-background border rounded-lg p-3 shadow-sm">
-                <div className="flex items-center gap-4">
+             {enhancedPoolEntries.map((entry) => (
+               <div key={entry.id} className="bg-background border rounded-lg p-4 shadow-sm">
+                 <div className="flex items-center gap-4">
                   {/* Team Info - more compact */}
                   <div className="flex-shrink-0 min-w-[140px]">
                     <div className="font-semibold text-base">{entry.participant_name}</div>
@@ -103,20 +102,20 @@ export const EveryonesPicks: React.FC = () => {
                     </Badge>
                   </div>
                   
-                  {/* Players - horizontal layout */}
-                  <div className="flex-1 grid grid-cols-5 gap-2">
-                    {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
-                      <div key={index} className="bg-muted/50 rounded p-2 text-center min-h-[60px] flex flex-col justify-center">
-                        <div className="text-xs text-muted-foreground mb-1">P{index + 1}</div>
-                        <div className="text-sm font-medium">{player}</div>
-                        {houseguestPoints[player] !== undefined && (
-                          <div className="text-xs text-primary font-semibold">
-                            {houseguestPoints[player]}pts
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                   {/* Players - horizontal layout with even spacing */}
+                   <div className="flex-1 grid grid-cols-5 gap-3">
+                     {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
+                       <div key={index} className="bg-muted/50 rounded p-3 text-center min-h-[65px] flex flex-col justify-center">
+                         <div className="text-xs text-muted-foreground mb-1">P{index + 1}</div>
+                         <div className="text-sm font-medium">{player}</div>
+                         {houseguestPoints[player] !== undefined && (
+                           <div className="text-xs text-primary font-semibold">
+                             {houseguestPoints[player]}pts
+                           </div>
+                         )}
+                       </div>
+                     ))}
+                   </div>
                   
                   {/* Total Points - right aligned */}
                   <div className="flex-shrink-0 text-right min-w-[80px]">

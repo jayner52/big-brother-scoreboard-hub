@@ -135,18 +135,7 @@ function getBB26Week1FallbackData(contestantNames: string[]) {
       initial_nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees
       ai_arena_winner: kimo,
       pov_used: false,
-      special_events: [
-        {
-          contestant: angela,
-          eventType: 'hoh_winner',
-          description: 'Week 1 Head of Household'
-        },
-        {
-          contestant: kimo,
-          eventType: 'bb_arena_winner', 
-          description: 'AI Arena Winner - Saved from eviction'
-        }
-      ]
+      special_events: [] // HOH and AI Arena are handled by dedicated fields, not special_events
     },
     confidence_scores: {
       hoh_winner: 1.0,
@@ -359,15 +348,15 @@ async function analyzeWithAI(bbData: any[], threshold: number, contestantNames: 
     
     Data sources: ${JSON.stringify(bbData, null, 2)}
     
-    Based on this data, extract:
-    1. Head of Household (HOH) winner
-    2. Power of Veto (POV) winner
-    3. Initial nominees (could be 3 due to AI Arena)
-    4. AI Arena winner (if applicable)
-    5. Final nominees (after AI Arena)
-    6. Evicted contestant
-    7. POV usage details
-    8. Any special events
+     Based on this data, extract IN SEQUENTIAL ORDER:
+     1. Head of Household (HOH) winner
+     2. Power of Veto (POV) winner  
+     3. Initial nominees (could be 3 due to AI Arena)
+     4. AI Arena winner (if applicable) - do NOT include in special_events
+     5. Final nominees (after AI Arena)
+     6. Evicted contestant (requires 100% certainty)
+     7. POV usage details
+     8. Special events (NON-GAME mechanics only - no HOH, POV, Arena, evictions)
     
     Return ONLY valid JSON in this exact format (no other text):
     {
@@ -386,12 +375,15 @@ async function analyzeWithAI(bbData: any[], threshold: number, contestantNames: 
       "sources": ["source1", "source2"]
     }
     
-    Important rules:
-    - Use EXACT contestant names from the valid list
-    - Set confidence to 0 if information is unclear or missing
-    - Only include results with confidence >= ${threshold}
-    - If a field has low confidence, set it to null or empty array
-    - Pay special attention to AI Arena results and 3-nominee scenarios
+     CRITICAL VALIDATION RULES:
+     - Use EXACT contestant names from the valid list
+     - HOH winner cannot be nominated
+     - Final nominees must exclude AI Arena winner  
+     - Evicted contestant must be on final nomination block
+     - Only include results with confidence >= ${threshold}
+     - For evictions, require confidence = 1.0 (100% certainty)
+     - Special events should NOT include game mechanics (HOH, POV, Arena, evictions)
+     - Cross-reference multiple sources for consistency
   `;
   
   try {

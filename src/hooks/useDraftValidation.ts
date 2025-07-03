@@ -19,7 +19,7 @@ export const useDraftValidation = () => {
       errors.push("Please enter your email address");
     }
 
-    // Team selection validation
+    // Team selection validation - allow duplicate players
     const players = ['player_1', 'player_2', 'player_3', 'player_4', 'player_5'] as const;
     players.forEach((player, index) => {
       if (!formData[player]) {

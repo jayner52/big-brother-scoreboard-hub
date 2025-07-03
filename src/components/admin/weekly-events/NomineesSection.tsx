@@ -21,6 +21,19 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
   const eligibleNominees = activeContestants.filter(c => 
     c.name !== eventForm.hohWinner || eventForm.hohWinner === 'no-winner' || !eventForm.hohWinner
   );
+
+  // Check if HOH is selected (required before nominees)
+  const hohSelected = eventForm.hohWinner && eventForm.hohWinner !== 'no-winner';
+  
+  // Auto-expand to 3 nominees if AI Arena is enabled
+  React.useEffect(() => {
+    if (eventForm.aiArenaEnabled && eventForm.nominees.length < 3) {
+      setEventForm(prev => ({ 
+        ...prev, 
+        nominees: [...prev.nominees, ''] 
+      }));
+    }
+  }, [eventForm.aiArenaEnabled, eventForm.nominees.length, setEventForm]);
   const addNominee = () => {
     if (eventForm.nominees.length < eventForm.maxNominees) {
       setEventForm(prev => ({ ...prev, nominees: [...prev.nominees, ''] }));
@@ -55,7 +68,9 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <Label className="font-semibold">Nominees</Label>
+        <Label className="font-semibold">
+          Nominees {!hohSelected && <span className="text-red-500">(Select HOH first)</span>}
+        </Label>
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -77,10 +92,11 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
       </div>
       <div className="grid grid-cols-2 gap-2">
         {eventForm.nominees.map((nominee, index) => (
-          <Select 
+            <Select 
             key={index}
             value={nominee || 'no-nominee'} 
             onValueChange={(value) => updateNominee(index, value)}
+            disabled={!hohSelected}
           >
             <SelectTrigger>
               <SelectValue placeholder={`Nominee ${index + 1}`} />
@@ -88,9 +104,6 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
             <SelectContent>
               <SelectItem value="no-nominee">No nominee</SelectItem>
               {eligibleNominees
-                .filter(c => 
-                  !eventForm.nominees.includes(c.name) || c.name === nominee
-                )
                 .map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
                     {contestant.name}

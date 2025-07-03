@@ -17,14 +17,21 @@ export const PovWinnerSection: React.FC<PovWinnerSectionProps> = ({
 }) => {
   const { activeContestants } = useActiveContestants();
   
+  // Check if nominees are selected (required before POV winner)
+  const nomineesSelected = eventForm.nominees.some(n => n && n !== '');
+  
   return (
     <div className="flex items-end gap-4">
       <div className="flex-1">
         <Label className="font-semibold flex items-center gap-2">
           <BigBrotherIcon type="pov" />
-          Power of Veto Winner
+          Power of Veto Winner {!nomineesSelected && <span className="text-red-500">(Select nominees first)</span>}
         </Label>
-        <Select value={eventForm.povWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, povWinner: value }))}>
+        <Select 
+          value={eventForm.povWinner} 
+          onValueChange={(value) => setEventForm(prev => ({ ...prev, povWinner: value }))}
+          disabled={!nomineesSelected}
+        >
           <SelectTrigger className="mt-1">
             <SelectValue placeholder="Select POV winner" />
           </SelectTrigger>

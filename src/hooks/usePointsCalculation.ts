@@ -7,15 +7,37 @@ export const usePointsCalculation = () => {
 
   const calculateTeamPoints = async (entry: PoolEntry) => {
     try {
-      // Get weekly points for all team members
+      // Get all contestants for name matching
+      const { data: contestants, error: contestantsError } = await supabase
+        .from('contestants')
+        .select('id, name');
+
+      if (contestantsError) throw contestantsError;
+
+      // Find team member IDs
+      const teamPlayers = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5];
+      const teamMemberIds = teamPlayers
+        .map(playerName => contestants?.find(c => c.name === playerName)?.id)
+        .filter(Boolean);
+
+      // Get weekly points for team members using IDs
       const { data: weeklyEvents, error: weeklyError } = await supabase
         .from('weekly_events')
-        .select('points_awarded, contestant_id, contestants!inner(name)')
-        .in('contestants.name', [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]);
+        .select('points_awarded, contestant_id')
+        .in('contestant_id', teamMemberIds);
 
       if (weeklyError) throw weeklyError;
 
+      // Get special events points for team members
+      const { data: specialEvents, error: specialError } = await supabase
+        .from('special_events')
+        .select('points_awarded, contestant_id')
+        .in('contestant_id', teamMemberIds);
+
+      if (specialError) throw specialError;
+
       const weeklyPoints = weeklyEvents?.reduce((sum, event) => sum + (event.points_awarded || 0), 0) || 0;
+      const specialPoints = specialEvents?.reduce((sum, event) => sum + (event.points_awarded || 0), 0) || 0;
 
       // Get bonus points from answered questions
       const { data: bonusQuestions, error: bonusError } = await supabase
@@ -33,10 +55,11 @@ export const usePointsCalculation = () => {
         }
       });
 
-      const totalPoints = weeklyPoints + bonusPoints;
+      const totalWeeklyPoints = weeklyPoints + specialPoints;
+      const totalPoints = totalWeeklyPoints + bonusPoints;
 
       return {
-        weekly_points: weeklyPoints,
+        weekly_points: totalWeeklyPoints,
         bonus_points: bonusPoints,
         total_points: totalPoints
       };

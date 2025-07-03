@@ -38,15 +38,23 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
     return finalNominees;
   };
 
+  // Check if AI Arena ceremony is required (3+ nominees but no Arena completion)
+  const hasThreeOrMoreNominees = eventForm.nominees.filter(n => n).length >= 3;
+  const arenaRequired = hasThreeOrMoreNominees && !eventForm.aiArenaWinner;
+
   const finalNominees = getFinalNominees();
 
   return (
     <div>
       <Label className="font-semibold flex items-center gap-2">
         <BigBrotherIcon type="evicted" />
-        {evictionLabel}
+        {evictionLabel} {arenaRequired && <span className="text-red-500">(Complete AI Arena first)</span>}
       </Label>
-      <Select value={eventForm.evicted} onValueChange={(value) => setEventForm(prev => ({ ...prev, evicted: value }))}>
+      <Select 
+        value={eventForm.evicted} 
+        onValueChange={(value) => setEventForm(prev => ({ ...prev, evicted: value }))}
+        disabled={arenaRequired}
+      >
         <SelectTrigger className="mt-1">
           <SelectValue placeholder="Select evicted contestant" />
         </SelectTrigger>

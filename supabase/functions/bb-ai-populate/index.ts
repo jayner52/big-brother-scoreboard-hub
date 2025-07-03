@@ -369,9 +369,7 @@ async function analyzeWithAI(bbData: any[], threshold: number, contestantNames: 
       "final_nominees": ["name1", "name2"],
       "evicted": {"name": "exact_contestant_name", "confidence": 0.97},
       "pov_used": false,
-      "special_events": [
-        {"contestant": "name", "eventType": "bb_arena_winner", "description": "AI Arena Winner"}
-      ],
+      "special_events": [],
       "sources": ["source1", "source2"]
     }
     
@@ -383,6 +381,7 @@ async function analyzeWithAI(bbData: any[], threshold: number, contestantNames: 
      - Only include results with confidence >= ${threshold}
      - For evictions, require confidence = 1.0 (100% certainty)
      - Special events should NOT include game mechanics (HOH, POV, Arena, evictions)
+     - AI Arena winner goes in aiArenaWinner field, NOT special_events
      - Cross-reference multiple sources for consistency
   `;
   

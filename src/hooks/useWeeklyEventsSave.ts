@@ -43,6 +43,9 @@ export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: num
         is_triple_eviction: eventForm.isTripleEviction,
         jury_phase_started: eventForm.isJuryPhase,
         is_draft: true, // Mark as draft
+        // Store AI Arena state in draft
+        ai_arena_enabled: eventForm.aiArenaEnabled || false,
+        ai_arena_winner: eventForm.aiArenaWinner || null,
         second_hoh_winner: eventForm.secondHohWinner || null,
         second_pov_winner: eventForm.secondPovWinner || null,
         second_nominees: eventForm.secondNominees.filter(n => n),

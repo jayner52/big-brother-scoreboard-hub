@@ -117,26 +117,27 @@ export const WeeklyEventsPanel: React.FC = () => {
           updates.evicted = data.populated_fields.evicted;
         }
         
-        // Handle nominees - use final nominees if available, otherwise initial nominees
-        const nomineesToUse = data.populated_fields.final_nominees || data.populated_fields.nominees;
+        // Handle nominees - support 3 nominees if AI Arena is detected
+        const nomineesToUse = data.populated_fields.initial_nominees || data.populated_fields.nominees;
         if (nomineesToUse && data.confidence_scores.nominees >= 0.95) {
-          updates.nominees = nomineesToUse.slice(0, 2); // Ensure max 2 for form
+          updates.nominees = nomineesToUse; // Keep all nominees (could be 3 for AI Arena)
         }
         
         // Handle AI Arena winner and enable toggle
         if (data.populated_fields.ai_arena_winner && data.confidence_scores.ai_arena_winner >= 0.95) {
-          // Enable AI Arena toggle
-          updates.specialEvents = updates.specialEvents || [];
-          updates.specialEvents.push({
-            contestant: data.populated_fields.ai_arena_winner,
-            eventType: 'bb_arena_winner',
-            description: 'AI Arena Winner',
-            customPoints: undefined
-          });
+          // Enable AI Arena toggle and set winner
+          updates.aiArenaEnabled = true;
+          updates.aiArenaWinner = data.populated_fields.ai_arena_winner;
         }
         
+        // Handle special events (excluding game mechanics)
         if (data.populated_fields.special_events) {
-          updates.specialEvents = [...(updates.specialEvents || []), ...data.populated_fields.special_events];
+          const filteredSpecialEvents = data.populated_fields.special_events.filter(event => 
+            !['hoh_winner', 'pov_winner', 'bb_arena_winner', 'evicted'].includes(event.eventType)
+          );
+          if (filteredSpecialEvents.length > 0) {
+            updates.specialEvents = [...(updates.specialEvents || []), ...filteredSpecialEvents];
+          }
         }
         
         // Update form with populated data

@@ -18,6 +18,12 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
   activeContestants,
 }) => {
   const { getPointsForEvent } = useScoringRules();
+  
+  // Check if POV ceremony is complete (required before AI Arena)
+  const povCompleted = eventForm.povWinner && eventForm.povWinner !== 'no-winner';
+  const nomineesSelected = eventForm.nominees.some(n => n && n !== '');
+  const canEnableArena = nomineesSelected && povCompleted;
+  
   const handleAIArenaToggle = (enabled: boolean) => {
     if (!enabled) {
       // Clear AI Arena data when disabled
@@ -62,15 +68,16 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
 
   return (
     <>
-      {/* Fix 5: Make BB Arena toggle same size as other toggles */}
+      {/* BB Arena toggle with dependency validation */}
       <div className="flex flex-col items-start space-y-2 p-3 border rounded-lg bg-purple-50 border-purple-200">
         <div className="flex items-center space-x-2">
           <Switch
             checked={eventForm.aiArenaEnabled || false}
             onCheckedChange={handleAIArenaToggle}
+            disabled={!canEnableArena}
           />
           <Label className="font-semibold text-sm text-purple-800">
-            BB Arena
+            BB Arena {!canEnableArena && <span className="text-red-500">(Complete nominees & POV first)</span>}
           </Label>
         </div>
         {eventForm.aiArenaEnabled && (

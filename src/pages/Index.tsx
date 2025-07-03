@@ -9,8 +9,7 @@ import { HouseguestValues } from '@/components/HouseguestValues';
 import { ContestantBios } from '@/components/ContestantBios';
 import { PrizePoolDisplay } from '@/components/PrizePoolDisplay';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Settings, BookOpen, LogOut, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,8 +17,6 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
 
 const Index = () => {
-  const navigate = useNavigate();
-  const [showRules, setShowRules] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userEntry, setUserEntry] = useState<any>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
@@ -85,9 +82,9 @@ const Index = () => {
     <PoolProvider>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="container mx-auto px-4 py-8">
-          {/* Header with User Status */}
-          <div className="flex justify-between items-start mb-8">
-            <div className="flex-1">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex justify-between items-start mb-4">
               {!user ? (
                 <Link to="/auth">
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -110,115 +107,57 @@ const Index = () => {
                   </Button>
                 </div>
               )}
-            </div>
-
-            {/* Center Title */}
-            <div className="text-center">
               <h1 className="text-5xl font-bold bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
                 Big Brother Fantasy Pool
               </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto mt-2">
-                Draft your team of 5 houseguests and earn points based on their performance!
-              </p>
+              <Link to="/admin">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Admin
+                </Button>
+              </Link>
             </div>
-
-            {/* Right Side - Admin and User Panel */}
-            <div className="flex-1 flex justify-end">
-              <div className="flex flex-col items-end gap-4">
-                <Link to="/admin">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Admin
-                  </Button>
-                </Link>
-                
-                {/* User Status Panel */}
-                {user && (
-                  <div className="w-72 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-gray-800">Your Status</h3>
-                      <Button
-                        onClick={() => navigate('/auth')}
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-600 hover:text-gray-800"
-                      >
-                        Account
-                      </Button>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Draft your favorite houseguests and compete with friends as the drama unfolds in the Big Brother house!
+            </p>
+            
+            {/* User Status Display */}
+            {user && userEntry && (
+              <div className="mt-4 max-w-lg mx-auto">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <h3 className="font-semibold text-gray-800 mb-2">Your Team: {userEntry.team_name}</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Current Rank:</span>
+                      <Badge variant="outline" className="ml-1">#{userRank}</Badge>
                     </div>
-                    
-                    {userEntry ? (
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Team:</span>
-                          <span className="font-medium text-gray-800">{userEntry.team_name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Points:</span>
-                          <span className="font-bold text-green-600">{userEntry.total_points}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Rank:</span>
-                          <span className="font-medium text-gray-800">#{userEntry.current_rank || 'TBD'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Status:</span>
-                          <span className="text-green-600 font-medium">Registered</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <p className="text-gray-600 mb-2">Not registered</p>
-                        <Button
-                          onClick={() => navigate('/draft')}
-                          size="sm"
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Join Pool
-                        </Button>
-                      </div>
-                    )}
+                    <div>
+                      <span className="text-gray-600">Total Points:</span>
+                      <Badge variant="default" className="ml-1">{userEntry.total_points}</Badge>
+                    </div>
                   </div>
-                )}
+                  <div className="mt-2 text-xs text-gray-500">
+                    Team: {[userEntry.player_1, userEntry.player_2, userEntry.player_3, userEntry.player_4, userEntry.player_5].join(', ')}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-          
-          {/* How to Play Section - only show if not logged in */}
-          {!user && (
-            <div className="mb-8 text-center">
-              <Button
-                onClick={() => setShowRules(!showRules)}
-                variant="outline"
-                className="mb-4"
-              >
-                {showRules ? 'Hide' : 'Show'} How to Play
-              </Button>
 
-              {showRules && (
-                <Card className="max-w-4xl mx-auto text-left">
-                  <CardHeader>
-                    <CardTitle>How to Play</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2">Draft Phase:</h4>
-                      <p>Select 5 houseguests for your team before the deadline.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Scoring:</h4>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>HOH Winner: +5 points</li>
-                        <li>POV Winner: +3 points</li>
-                        <li>Nominated: +1 point</li>
-                        <li>Survival: +2 points per week</li>
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
+          {/* How to Play Card */}
+          <div className="text-center mb-8">
+            <Link to="/about">
+              <div className="inline-block p-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <BookOpen className="w-8 h-8" />
+                  <h3 className="text-xl font-bold">How to Play & Rules</h3>
+                </div>
+                <p className="text-purple-100">
+                  Learn the scoring system, draft rules, and how to win the pool!
+                </p>
+              </div>
+            </Link>
+          </div>
 
           {/* Tabbed Interface */}
           <Tabs defaultValue="draft" className="w-full">

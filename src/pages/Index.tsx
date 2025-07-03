@@ -16,7 +16,7 @@ import { Settings, BookOpen, LogOut, User, Users, Target, Trophy, DollarSign } f
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
-import { HouseguestProfiles } from '@/components/HouseguestProfiles';
+
 import { UserPaymentButton } from '@/components/enhanced/UserPaymentButton';
 
 const Index = () => {
@@ -150,12 +150,6 @@ const Index = () => {
                   </Button>
                 </Link>
                 
-                {/* Enhanced User Status Panel with Multi-Team Support */}
-                {user && userEntry && (
-                  <div className="flex-1">
-                    <HouseguestProfiles userId={user.id} />
-                  </div>
-                )}
                 
                 {/* Join Pool Button for logged in users without entry */}
                 {user && !userEntry && (

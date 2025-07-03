@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Check, X } from 'lucide-react';
+import { UserPaymentButton } from './UserPaymentButton';
+import { Check, X, Users } from 'lucide-react';
 
 interface PoolEntry {
   id: string;
@@ -14,22 +15,30 @@ interface PoolEntry {
   email: string;
   payment_confirmed: boolean;
   created_at: string;
+  user_id: string;
 }
 
-export const PaymentStatusPanel: React.FC = () => {
+export const PoolEntriesWithPayment: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     loadPoolEntries();
+    getCurrentUser();
   }, []);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUserId(user?.id || null);
+  };
 
   const loadPoolEntries = async () => {
     try {
       const { data, error } = await supabase
         .from('pool_entries')
-        .select('id, participant_name, team_name, email, payment_confirmed, created_at')
+        .select('id, participant_name, team_name, email, payment_confirmed, created_at, user_id')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -74,7 +83,7 @@ export const PaymentStatusPanel: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading payment status...</div>;
+    return <div className="text-center py-8">Loading pool entries...</div>;
   }
 
   const paidEntries = poolEntries.filter(e => e.payment_confirmed);
@@ -84,8 +93,8 @@ export const PaymentStatusPanel: React.FC = () => {
     <Card>
       <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
         <CardTitle className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5" />
-          Payment Status Management
+          <Users className="h-5 w-5" />
+          Pool Entries & Payment Status
         </CardTitle>
         <div className="flex gap-4 mt-2">
           <Badge variant="secondary" className="bg-white/20 text-white">
@@ -93,6 +102,9 @@ export const PaymentStatusPanel: React.FC = () => {
           </Badge>
           <Badge variant="secondary" className="bg-white/20 text-white">
             {pendingEntries.length} Pending
+          </Badge>
+          <Badge variant="secondary" className="bg-white/20 text-white">
+            {poolEntries.length} Total
           </Badge>
         </div>
       </CardHeader>
@@ -122,6 +134,15 @@ export const PaymentStatusPanel: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
+                    {/* User can mark their own payment as sent */}
+                    {currentUserId === entry.user_id && !entry.payment_confirmed && (
+                      <UserPaymentButton 
+                        entryId={entry.id}
+                        paymentConfirmed={entry.payment_confirmed}
+                      />
+                    )}
+                    
+                    {/* Admin controls (shown to all for now, should be restricted to admins) */}
                     {!entry.payment_confirmed && (
                       <Button
                         size="sm"

@@ -1,6 +1,7 @@
 import React from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
-import { PaymentStatusPanel } from '@/components/admin/PaymentStatusPanel';
+import { PoolEntriesWithPayment } from '@/components/enhanced/PoolEntriesWithPayment';
+import { CustomSpecialEventsPanel } from '@/components/admin/CustomSpecialEventsPanel';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +36,8 @@ const Admin = () => {
 
         {/* Admin Panels */}
         <div className="space-y-8">
-          <PaymentStatusPanel />
+          <PoolEntriesWithPayment />
+          <CustomSpecialEventsPanel />
           <AdminScoringPanel />
         </div>
 

@@ -19,13 +19,34 @@ export const EveryonesPicksMatrix: React.FC = () => {
     loadData();
   }, []);
 
+  // Set up real-time subscription for new entries
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pool_entries'
+        },
+        () => {
+          loadData(); // Refresh when entries change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const loadData = async () => {
     try {
       const [entriesResponse, questionsResponse] = await Promise.all([
         supabase
           .from('pool_entries')
           .select('*')
-          .eq('payment_confirmed', true)
           .order('team_name'),
         supabase
           .from('bonus_questions')

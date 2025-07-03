@@ -26,6 +26,33 @@ export const useLeaderboardData = () => {
     }
   }, [selectedWeek]);
 
+  // Set up real-time subscription for pool entries
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pool_entries'
+        },
+        () => {
+          // Refresh data when entries change
+          if (selectedWeek === null) {
+            loadCurrentPoolEntries();
+          } else {
+            loadSnapshotsForWeek(selectedWeek);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedWeek, loadSnapshotsForWeek]);
+
   const loadCurrentPoolEntries = async () => {
     try {
       const { data, error } = await supabase

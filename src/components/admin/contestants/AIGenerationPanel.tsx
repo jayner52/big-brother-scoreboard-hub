@@ -283,7 +283,7 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
             className="flex items-center gap-2"
           >
             <Wand2 className="h-4 w-4" />
-            Generate Single Contestant
+            {isGenerating ? "Generating..." : "Generate Single Contestant"}
           </Button>
           
           <Button 
@@ -293,7 +293,7 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
             className="flex items-center gap-2"
           >
             <Users className="h-4 w-4" />
-            Generate Full Cast ({showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})
+            {isGenerating ? "Generating..." : `Generate Full Cast (${showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})`}
           </Button>
         </div>
 

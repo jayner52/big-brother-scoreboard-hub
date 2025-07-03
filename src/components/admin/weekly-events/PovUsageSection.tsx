@@ -75,7 +75,8 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
                   .filter(c => 
                     !eventForm.nominees.includes(c.name) && 
                     c.name !== eventForm.povWinner &&
-                    c.name !== eventForm.povUsedOn
+                    c.name !== eventForm.povUsedOn &&
+                    c.name !== eventForm.hohWinner
                   )
                   .map(contestant => (
                     <SelectItem key={contestant.id} value={contestant.name}>
@@ -84,6 +85,9 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
                   ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Cannot be HOH winner, POV winner, or person saved by POV
+            </p>
           </div>
         </div>
       )}

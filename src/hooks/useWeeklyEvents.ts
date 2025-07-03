@@ -122,6 +122,11 @@ export const useWeeklyEvents = () => {
   const getPointsPreview = () => {
     const preview: Record<string, number> = {};
     
+    // Initialize all contestants with 0 points
+    contestants.forEach(contestant => {
+      preview[contestant.name] = 0;
+    });
+    
     // HOH points
     if (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') {
       preview[eventForm.hohWinner] = (preview[eventForm.hohWinner] || 0) + calculatePoints('hoh_winner');
@@ -132,9 +137,9 @@ export const useWeeklyEvents = () => {
       preview[eventForm.povWinner] = (preview[eventForm.povWinner] || 0) + calculatePoints('pov_winner');
     }
     
-    // POV used on someone (1 point)
+    // POV used on someone points (from scoring rules)
     if (eventForm.povUsed && eventForm.povUsedOn) {
-      preview[eventForm.povUsedOn] = (preview[eventForm.povUsedOn] || 0) + 1;
+      preview[eventForm.povUsedOn] = (preview[eventForm.povUsedOn] || 0) + calculatePoints('pov_used_on');
     }
     
     // Nominee points (only add if nominee is not empty)
@@ -147,16 +152,21 @@ export const useWeeklyEvents = () => {
       preview[eventForm.replacementNominee] = (preview[eventForm.replacementNominee] || 0) + calculatePoints('replacement_nominee');
     }
     
-    // Survival points for all active except evicted
-    const activeContestants = contestants.filter(c => c.isActive && 
-      (eventForm.evicted === 'no-eviction' || c.name !== eventForm.evicted));
-    activeContestants.forEach(contestant => {
+    // Survival points for all active contestants except those evicted this week
+    const evictedThisWeek = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
+      .filter(evicted => evicted && evicted !== 'no-eviction');
+    
+    const survivingContestants = contestants.filter(c => 
+      c.isActive && !evictedThisWeek.includes(c.name)
+    );
+    
+    survivingContestants.forEach(contestant => {
       preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('survival');
     });
     
-    // Jury phase points (if enabled this week)
+    // Jury phase points (only on the first week jury starts, not every week)
     if (eventForm.isJuryPhase) {
-      activeContestants.forEach(contestant => {
+      survivingContestants.forEach(contestant => {
         preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('jury_member');
       });
     }
@@ -180,6 +190,11 @@ export const useWeeklyEvents = () => {
         preview[eventForm.secondPovWinner] = (preview[eventForm.secondPovWinner] || 0) + calculatePoints('pov_winner');
       }
       
+      // Second POV used on someone
+      if (eventForm.secondPovUsed && eventForm.secondPovUsedOn) {
+        preview[eventForm.secondPovUsedOn] = (preview[eventForm.secondPovUsedOn] || 0) + calculatePoints('pov_used_on');
+      }
+      
       // Second nominees points
       eventForm.secondNominees.filter(n => n).forEach(nominee => {
         preview[nominee] = (preview[nominee] || 0) + calculatePoints('nominee');
@@ -191,15 +206,7 @@ export const useWeeklyEvents = () => {
       }
     }
     
-    // Filter out empty entries (those with 0 or no points)
-    const filteredPreview: Record<string, number> = {};
-    Object.entries(preview).forEach(([name, points]) => {
-      if (points > 0 && name.trim()) {
-        filteredPreview[name] = points;
-      }
-    });
-    
-    return filteredPreview;
+    return preview;
   };
 
   const handleSubmitWeek = async () => {

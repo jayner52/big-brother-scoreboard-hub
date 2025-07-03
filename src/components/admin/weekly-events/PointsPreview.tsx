@@ -1,33 +1,78 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ContestantWithBio } from '@/types/admin';
 
 interface PointsPreviewProps {
   pointsPreview: Record<string, number>;
+  contestants: ContestantWithBio[];
+  evictedThisWeek?: string[];
 }
 
-export const PointsPreview: React.FC<PointsPreviewProps> = ({ pointsPreview }) => {
-  if (Object.keys(pointsPreview).length === 0) {
-    return null;
-  }
+export const PointsPreview: React.FC<PointsPreviewProps> = ({ 
+  pointsPreview, 
+  contestants,
+  evictedThisWeek = []
+}) => {
+  // Ensure all contestants appear in preview
+  const allContestantsPreview = contestants.reduce((acc, contestant) => {
+    acc[contestant.name] = pointsPreview[contestant.name] || 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Separate active and evicted contestants
+  const activeContestants = contestants.filter(c => c.isActive && !evictedThisWeek.includes(c.name));
+  const evictedContestants = contestants.filter(c => !c.isActive || evictedThisWeek.includes(c.name));
 
   return (
     <Card className="bg-muted/50">
       <CardHeader>
-        <CardTitle className="text-lg">Points Preview</CardTitle>
+        <CardTitle className="text-lg">Points Preview - All Contestants</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-3 gap-2">
-          {Object.entries(pointsPreview)
-            .sort(([,a], [,b]) => b - a)
-            .map(([contestant, points]) => (
-              <div key={contestant} className="flex justify-between">
-                <span className="font-medium">{contestant}:</span>
-                <span className={points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : ''}>
-                  {points > 0 ? '+' : ''}{points}pts
-                </span>
-              </div>
-            ))}
-        </div>
+      <CardContent className="space-y-4">
+        {/* Active Contestants */}
+        {activeContestants.length > 0 && (
+          <div>
+            <h4 className="font-semibold text-sm text-muted-foreground mb-2">Active Contestants</h4>
+            <div className="grid grid-cols-3 gap-2">
+              {activeContestants
+                .sort((a, b) => (allContestantsPreview[b.name] || 0) - (allContestantsPreview[a.name] || 0))
+                .map((contestant) => {
+                  const points = allContestantsPreview[contestant.name] || 0;
+                  return (
+                    <div key={contestant.name} className="flex justify-between">
+                      <span className="font-medium">{contestant.name}:</span>
+                      <span className={points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}>
+                        {points > 0 ? '+' : ''}{points}pts
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* Evicted Contestants */}
+        {evictedContestants.length > 0 && (
+          <div>
+            <h4 className="font-semibold text-sm text-muted-foreground mb-2">Evicted Contestants</h4>
+            <div className="grid grid-cols-3 gap-2">
+              {evictedContestants.map((contestant) => {
+                const points = allContestantsPreview[contestant.name] || 0;
+                const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
+                return (
+                  <div key={contestant.name} className="flex justify-between">
+                    <span className={`font-medium ${isEvictedThisWeek ? 'line-through text-red-500' : 'text-muted-foreground line-through'}`}>
+                      {contestant.name}:
+                    </span>
+                    <span className={points > 0 ? 'text-green-600' : 'text-muted-foreground'}>
+                      {points > 0 ? '+' : ''}{points}pts {!points && '(evicted)'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

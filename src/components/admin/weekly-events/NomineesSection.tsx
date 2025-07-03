@@ -71,8 +71,12 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
               <SelectValue placeholder={`Nominee ${index + 1}`} />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">No nominee</SelectItem>
               {activeContestants
-                .filter(c => !eventForm.nominees.includes(c.name) || c.name === nominee)
+                .filter(c => 
+                  (c.name !== eventForm.hohWinner || eventForm.hohWinner === 'no-winner' || !eventForm.hohWinner) &&
+                  (!eventForm.nominees.includes(c.name) || c.name === nominee)
+                )
                 .map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
                     {contestant.name}

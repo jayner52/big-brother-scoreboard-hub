@@ -82,11 +82,38 @@ serve(async (req) => {
     const profiles: ContestantProfile[] = [];
 
     for (let i = 0; i < count; i++) {
-      const systemPrompt = `You are an expert Big Brother casting director and reality TV producer. Generate realistic, diverse, and entertaining contestant profiles that would create compelling television. Consider the specified season theme, format, and casting requirements. Ensure each contestant has a unique personality and backstory that would create interesting dynamics in the house.
+      let systemPrompt, userPrompt;
+      
+      if (season_number === 26) {
+        // For BB26, generate profiles based on actual cast
+        systemPrompt = `You are a Big Brother database expert with access to Season 26 cast information. Generate accurate contestant profiles based on the real Season 26 cast members.
 
 Return ONLY a valid JSON object with the exact structure requested. Do not include any additional text, explanations, or markdown formatting.`;
 
-      const userPrompt = `Generate a Big Brother contestant profile for Season ${season_number}.
+        userPrompt = `Generate a Big Brother Season 26 contestant profile using REAL cast member data.
+
+Season 26 Cast Members: Angela Murray, Brooklyn Rivera, Cam Sullivan-Brown, Cedric Hodges, Chelsie Baham, Joseph Rodriguez, Kimo Apaka, Leah Peters, Makensy Manbeck, Quinn Martin, Rubina Bernabe, T'Kor Clottey, Tucker Des Lauriers
+
+For BB26, use these actual contestant names and their real details including:
+- Real ages (as of 2024)
+- Real occupations 
+- Real hometowns
+- Authentic personality traits based on their actual game play
+- Realistic bios based on their backgrounds
+
+Season Details:
+- Theme: ${season_theme}
+- Format: ${season_format}  
+- Special Twists: ${special_twists}
+
+Return a JSON object with this exact structure using a REAL BB26 contestant:`;
+      } else {
+        // For other seasons, generate realistic fictional contestants
+        systemPrompt = `You are an expert Big Brother casting director and reality TV producer. Generate realistic, diverse, and entertaining contestant profiles that would create compelling television. Consider the specified season theme, format, and casting requirements. Ensure each contestant has a unique personality and backstory that would create interesting dynamics in the house.
+
+Return ONLY a valid JSON object with the exact structure requested. Do not include any additional text, explanations, or markdown formatting.`;
+
+        userPrompt = `Generate a Big Brother contestant profile for Season ${season_number}.
 
 Season Details:
 - Season Number: ${season_number}
@@ -97,7 +124,10 @@ Season Details:
 
 Create a contestant that would fit this season's theme while being unique and memorable. The contestant should feel like a real person with authentic motivations and flaws.
 
-Return a JSON object with this exact structure:
+Return a JSON object with this exact structure:`;
+      }
+
+      userPrompt += `
 {
   "name": "Full name",
   "age": 25,

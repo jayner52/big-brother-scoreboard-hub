@@ -273,30 +273,30 @@ export const HouseguestValues: React.FC = () => {
                            {!houseguestStats.find(s => s.houseguest_name === houseguest?.name)?.elimination_week ? (
                              <>
                                <Badge variant="default">Active</Badge>
-                               {stat.current_hoh && (
-                                 <Badge variant="secondary" className="flex items-center gap-1">
-                                   <Crown className="h-3 w-3" />
-                                   HoH
-                                 </Badge>
-                               )}
-                               {stat.current_pov_winner && (
-                                 <Badge variant="secondary" className="flex items-center gap-1">
-                                   <Key className="h-3 w-3" />
-                                   Veto
-                                 </Badge>
-                               )}
-                               {stat.currently_nominated && (
-                                 <Badge variant="destructive" className="flex items-center gap-1">
-                                   <Target className="h-3 w-3" />
-                                   Nominee
-                                 </Badge>
-                               )}
-                               {stat.pov_used_on && (
-                                 <Badge variant="outline" className="flex items-center gap-1">
-                                   <Shield className="h-3 w-3" />
-                                   Saved
-                                 </Badge>
-                               )}
+                                {stat.current_hoh && (
+                                  <Badge className="flex items-center gap-1 bg-yellow-500 text-white">
+                                    <Crown className="h-3 w-3" />
+                                    HoH
+                                  </Badge>
+                                )}
+                                {stat.current_pov_winner && (
+                                  <Badge className="flex items-center gap-1 bg-green-500 text-white">
+                                    <Key className="h-3 w-3" />
+                                    Veto
+                                  </Badge>
+                                )}
+                                {stat.currently_nominated && (
+                                  <Badge variant="destructive" className="flex items-center gap-1">
+                                    <Target className="h-3 w-3" />
+                                    Nominee
+                                  </Badge>
+                                )}
+                                {stat.pov_used_on && (
+                                  <Badge className="flex items-center gap-1 bg-orange-500 text-white">
+                                    <Shield className="h-3 w-3" />
+                                    Saved
+                                  </Badge>
+                                )}
                              </>
                            ) : (
                              <>
@@ -348,11 +348,11 @@ export const HouseguestValues: React.FC = () => {
                        <TableCell>
                          {stat.special_events && stat.special_events.length > 0 ? (
                            <div className="flex flex-wrap gap-1">
-                             {stat.special_events.map((event, index) => (
-                               <span key={index} className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full" title={event.description || event.event_type}>
-                                 {stat.houseguest_name} {getSpecialEventIcon(event.event_type)}
-                               </span>
-                             ))}
+                              {stat.special_events.map((event, index) => (
+                                <span key={index} className="inline-flex items-center text-lg" title={event.description || event.event_type}>
+                                  {getSpecialEventIcon(event.event_type)}
+                                </span>
+                              ))}
                            </div>
                          ) : (
                            <span className="text-gray-400 text-sm">None</span>

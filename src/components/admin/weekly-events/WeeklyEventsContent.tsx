@@ -47,6 +47,7 @@ export const WeeklyEventsContent: React.FC<WeeklyEventsContentProps> = ({
         pointsPreview={pointsPreview} 
         contestants={contestants}
         evictedThisWeek={evictedThisWeek}
+        eventForm={eventForm}
       />
     </>
   );

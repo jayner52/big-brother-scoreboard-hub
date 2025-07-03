@@ -1,17 +1,20 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContestantWithBio } from '@/types/admin';
+import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 
 interface PointsPreviewProps {
   pointsPreview: Record<string, number>;
   contestants: ContestantWithBio[];
   evictedThisWeek?: string[];
+  eventForm?: { week: number };
 }
 
 export const PointsPreview: React.FC<PointsPreviewProps> = ({ 
   pointsPreview, 
   contestants,
-  evictedThisWeek = []
+  evictedThisWeek = [],
+  eventForm
 }) => {
   // Ensure all contestants appear in preview
   const allContestantsPreview = contestants.reduce((acc, contestant) => {
@@ -19,9 +22,12 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // Separate active and evicted contestants based on actual eviction events this week
-  const activeContestants = contestants.filter(c => !evictedThisWeek.includes(c.name));
-  const evictedContestants = contestants.filter(c => evictedThisWeek.includes(c.name));
+  // Use week-aware contestant logic to show all previously evicted contestants
+  const { evictedContestants: allEvictedContestants } = useWeekAwareContestants(eventForm?.week || 1);
+  
+  // Separate active vs evicted (including all previously evicted)
+  const activeContestants = contestants.filter(c => !allEvictedContestants.includes(c.name));
+  const evictedContestants = contestants.filter(c => allEvictedContestants.includes(c.name));
 
   return (
     <Card className="bg-muted/50">

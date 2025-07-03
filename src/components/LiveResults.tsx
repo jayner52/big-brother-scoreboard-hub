@@ -270,15 +270,23 @@ export const LiveResults: React.FC = () => {
                       <TableCell>
                         {week.nominees?.length ? (
                           <div className="text-sm space-y-1">
-                            {week.nominees.map((nominee, index) => (
-                              <div key={index} className="flex items-center gap-1">
-                                {week.pov_used && week.pov_used_on === nominee ? (
-                                  <span className="line-through text-gray-500">{nominee}</span>
-                                ) : (
-                                  <span>{nominee}</span>
-                                )}
-                              </div>
-                            ))}
+                             {week.nominees.map((nominee, index) => {
+                               const isSavedByVeto = week.pov_used && week.pov_used_on === nominee;
+                               const isSavedByArena = specialEvents.some(event => 
+                                 event.week_number === week.week_number && 
+                                 event.event_type === 'bb_arena_winner' && 
+                                 event.houseguest_name === nominee
+                               );
+                               return (
+                                 <div key={index} className="flex items-center gap-1">
+                                   {isSavedByVeto || isSavedByArena ? (
+                                     <span className="line-through text-gray-500">{nominee}</span>
+                                   ) : (
+                                     <span>{nominee}</span>
+                                   )}
+                                 </div>
+                               );
+                             })}
                             {week.replacement_nominee && (
                               <div className="text-xs text-orange-600">
                                 Replacement: {week.replacement_nominee}

@@ -17,6 +17,7 @@ interface WeekSummary {
   pov_used: boolean | null;
   pov_used_on: string | null;
   nominees: string[] | null;
+  replacement_nominee: string | null;
 }
 
 interface ContestantScore {
@@ -70,7 +71,30 @@ const loadWeekByWeekData = async () => {
         `)
         .order('week_number', { ascending: true });
 
-      if (eventsError || specialError) throw eventsError || specialError;
+      // Load BB Arena winners from weekly_events
+      const { data: bbArenaEvents, error: bbArenaError } = await supabase
+        .from('weekly_events')
+        .select(`
+          week_number,
+          contestant_id,
+          event_type,
+          contestants(name)
+        `)
+        .eq('event_type', 'bb_arena_winner')
+        .order('week_number', { ascending: true });
+
+      if (eventsError || specialError || bbArenaError) throw eventsError || specialError || bbArenaError;
+
+      // Combine special events with BB Arena events
+      const allSpecialEvents = [
+        ...(specialEvents || []),
+        ...(bbArenaEvents || []).map(event => ({
+          ...event,
+          event_type: 'bb_arena_winner',
+          description: 'BB Arena Winner',
+          points_awarded: 0
+        }))
+      ];
 
       // Calculate scores by week
       const scoresByWeek: Record<number, ContestantScore[]> = {};
@@ -96,7 +120,7 @@ const loadWeekByWeekData = async () => {
           });
 
         // Add special event points
-        specialEvents
+        allSpecialEvents
           ?.filter(event => event.week_number === weekNumber)
           .forEach(event => {
             const contestantName = (event.contestants as any)?.name;
@@ -121,7 +145,7 @@ const loadWeekByWeekData = async () => {
       setContestantScores(scoresByWeek);
 
       // Store special events for use in component
-      setSpecialEvents(specialEvents || []);
+      setSpecialEvents(allSpecialEvents || []);
 
     } catch (error) {
       console.error('Error loading week by week data:', error);
@@ -210,9 +234,33 @@ const loadWeekByWeekData = async () => {
                             </div>
                           ))}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {(week.nominees || []).length > 0 && `Nominees: ${(week.nominees || []).join(', ')}`}
-                      </div>
+                       <div className="text-xs text-gray-500 mt-1">
+                         {(week.nominees || []).length > 0 && (
+                           <div>
+                             Nominees: {(week.nominees || []).map((nominee, index) => {
+                               const isSavedByVeto = week.pov_used && week.pov_used_on === nominee;
+                               const isSavedByArena = specialEvents.some(event => 
+                                 event.week_number === week.week_number && 
+                                 event.event_type === 'bb_arena_winner' && 
+                                 (event.contestants as any)?.name === nominee
+                               );
+                               return (
+                                 <span key={index}>
+                                   {index > 0 && ', '}
+                                   {isSavedByVeto || isSavedByArena ? (
+                                     <span className="line-through">{nominee}</span>
+                                   ) : (
+                                     nominee
+                                   )}
+                                 </span>
+                               );
+                             })}
+                             {week.replacement_nominee && (
+                               <span>, Replacement: {week.replacement_nominee}</span>
+                             )}
+                           </div>
+                         )}
+                       </div>
                     </div>
                   )}
 

@@ -32,12 +32,32 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  // Show configurations with predefined seasons
+  const showConfigs = {
+    'big-brother': {
+      name: 'Big Brother',
+      seasons: {
+        26: { cast: 16, theme: 'AI Arena', format: 'Standard', twists: 'AI Arena competition, America\'s Veto' },
+        27: { cast: 16, theme: 'TBD', format: 'Standard', twists: 'TBD - Season hasn\'t aired yet' },
+        25: { cast: 17, theme: 'Regular Season', format: 'Standard', twists: 'Invisible HOH, Comic-Verse Power' }
+      }
+    }
+  } as const;
+
+  type ShowConfig = {
+    cast: number;
+    theme: string;
+    format: string;
+    twists: string;
+  };
+
+  const [selectedShow, setSelectedShow] = useState('big-brother');
   const [seasonConfig, setSeasonConfig] = useState({
-    season_number: 27,
-    season_theme: 'All Stars',
+    season_number: 26,
+    season_theme: 'AI Arena',
     season_format: 'Standard',
     cast_size: 16,
-    special_twists: 'America\'s Player twist',
+    special_twists: 'AI Arena competition, America\'s Veto',
     count: 1
   });
 
@@ -91,20 +111,51 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Season Configuration */}
+        {/* Show and Season Selection */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="season_number">Season Number</Label>
-            <Input
-              id="season_number"
-              type="number"
-              value={seasonConfig.season_number}
-              onChange={(e) => setSeasonConfig(prev => ({ 
-                ...prev, 
-                season_number: parseInt(e.target.value) || 27 
-              }))}
-            />
+            <Label htmlFor="show_select">Show</Label>
+            <select
+              id="show_select"
+              value={selectedShow}
+              onChange={(e) => setSelectedShow(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              {Object.entries(showConfigs).map(([key, config]) => (
+                <option key={key} value={key}>{config.name}</option>
+              ))}
+            </select>
           </div>
+          <div>
+            <Label htmlFor="season_select">Season</Label>
+            <select
+              id="season_select"
+              value={seasonConfig.season_number}
+              onChange={(e) => {
+                const newSeason = parseInt(e.target.value);
+                const config = showConfigs[selectedShow].seasons[newSeason];
+                setSeasonConfig(prev => ({
+                  ...prev,
+                  season_number: newSeason,
+                  season_theme: config.theme,
+                  season_format: config.format,
+                  cast_size: config.cast,
+                  special_twists: config.twists
+                }));
+              }}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              {Object.entries(showConfigs[selectedShow].seasons).map(([seasonNum, config]) => (
+                <option key={seasonNum} value={seasonNum}>
+                  Season {seasonNum} ({(config as ShowConfig).theme})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Auto-populated Configuration */}
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="cast_size">Cast Size</Label>
             <Input
@@ -115,21 +166,6 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
                 ...prev, 
                 cast_size: parseInt(e.target.value) || 16 
               }))}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="season_theme">Season Theme</Label>
-            <Input
-              id="season_theme"
-              value={seasonConfig.season_theme}
-              onChange={(e) => setSeasonConfig(prev => ({ 
-                ...prev, 
-                season_theme: e.target.value 
-              }))}
-              placeholder="e.g., All Stars, Newbies, Heroes vs Villains"
             />
           </div>
           <div>
@@ -144,6 +180,19 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
               placeholder="e.g., Standard, Fast Forward, Double Eviction"
             />
           </div>
+        </div>
+
+        <div>
+          <Label htmlFor="season_theme">Season Theme</Label>
+          <Input
+            id="season_theme"
+            value={seasonConfig.season_theme}
+            onChange={(e) => setSeasonConfig(prev => ({ 
+              ...prev, 
+              season_theme: e.target.value 
+            }))}
+            placeholder="e.g., All Stars, Newbies, Heroes vs Villains"
+          />
         </div>
 
         <div>

@@ -105,61 +105,56 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
         </div>
       )}
 
-      {/* Enhanced Team Dashboard */}
-      <div className="w-full bg-gradient-to-r from-primary/5 via-background to-accent/5 rounded-xl border border-border/30 p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+      {/* Team Dashboard */}
+      <div className="w-full bg-card border rounded-lg p-4">
         <div className="flex items-center justify-between">
-          {/* Left: Team Info with Visual Impact */}
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-primary to-accent p-3 rounded-xl shadow-sm">
-              <Users className="h-5 w-5 text-white" />
+          {/* Left: Team Info */}
+          <div className="flex items-center gap-3">
+            <div className="bg-primary p-2 rounded-lg">
+              <Users className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                {currentEntry.team_name}
-              </h3>
-              <p className="text-sm text-muted-foreground font-medium">by {currentEntry.participant_name}</p>
+              <h3 className="font-semibold text-lg">{currentEntry.team_name}</h3>
+              <p className="text-sm text-muted-foreground">by {currentEntry.participant_name}</p>
             </div>
           </div>
           
-          {/* Center: Enhanced Player Cards */}
+          {/* Center: Player Cards */}
           <div className="flex items-center gap-2">
             {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
-              <div key={index} className="group relative">
-                <div className="flex flex-col items-center bg-card border border-border/50 rounded-lg px-3 py-2 hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md">
-                  <span className="font-semibold text-xs text-foreground mb-1" title={player}>
-                    {player.split(' ')[0]}
+              <div key={index} className="flex flex-col items-center bg-muted rounded-lg px-3 py-2">
+                <span className="font-medium text-xs mb-1" title={player}>
+                  {player.split(' ')[0]}
+                </span>
+                <div className="bg-primary/10 rounded-full px-2 py-0.5">
+                  <span className="text-sm font-semibold text-primary">
+                    {houseguestPoints[player] || 0}
                   </span>
-                  <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-full px-2 py-0.5">
-                    <span className="text-sm font-bold text-primary">
-                      {houseguestPoints[player] || 0}
-                    </span>
-                  </div>
                 </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 animate-pulse"></div>
               </div>
             ))}
           </div>
           
-          {/* Right: Enhanced Status & Score */}
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col gap-2">
+          {/* Right: Status & Score */}
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-1">
               <Badge 
                 variant={currentEntry.payment_confirmed ? "default" : "destructive"} 
-                className="text-xs font-semibold shadow-sm"
+                className="text-xs"
               >
                 {currentEntry.payment_confirmed ? "✓ Paid" : "⏳ Pending"}
               </Badge>
               {currentEntry.current_rank && (
-                <Badge variant="outline" className="text-xs font-bold border-primary/30 text-primary">
+                <Badge variant="outline" className="text-xs">
                   Rank #{currentEntry.current_rank}
                 </Badge>
               )}
             </div>
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl px-4 py-3 text-center border border-primary/20 shadow-sm">
-              <div className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <div className="bg-muted rounded-lg px-4 py-3 text-center">
+              <div className="text-2xl font-bold text-primary">
                 {totalPoints}
               </div>
-              <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">
                 POINTS
               </div>
             </div>

@@ -130,6 +130,9 @@ export const useWeeklyEvents = () => {
     return rule?.points || 0;
   };
 
+  // Get evicted contestants for current week context
+  const { evictedContestants: allEvictedUpToThisWeek } = useWeekAwareContestants(eventForm.week);
+
   const getPointsPreview = () => {
     const preview: Record<string, number> = {};
     
@@ -172,8 +175,6 @@ export const useWeeklyEvents = () => {
     const evictedThisWeek = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
       .filter(evicted => evicted && evicted !== 'no-eviction');
     
-    // Get all evicted contestants up to current week, not just this week
-    const { evictedContestants: allEvictedUpToThisWeek } = useWeekAwareContestants(eventForm.week);
     const survivingContestants = contestants.filter(c => 
       !evictedThisWeek.includes(c.name) && !allEvictedUpToThisWeek.includes(c.name)
     );

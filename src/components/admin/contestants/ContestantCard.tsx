@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, ContestantGroup } from '@/types/admin';
 import { Pencil, Save, X } from 'lucide-react';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
 interface ContestantCardProps {
   contestant: ContestantWithBio;
@@ -30,6 +31,8 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
   onCancel,
   onFormChange,
 }) => {
+  const { evictedContestants } = useEvictedContestants();
+  const isEvicted = evictedContestants.includes(contestant.name);
   if (isEditing) {
     return (
       <Card>
@@ -154,7 +157,7 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
             <div>
               <h3 className="font-semibold text-lg">{contestant.name}</h3>
               <p className="text-sm text-muted-foreground mb-1">
-                {contestant.isActive ? 'Active' : 'Eliminated'} • Order: {contestant.sort_order}
+                {isEvicted ? 'Evicted' : 'Active'} • Order: {contestant.sort_order}
               </p>
               <p className="text-sm text-muted-foreground mb-2">
                 Group: {groups.find(g => g.id === contestant.group_id)?.group_name || 'Unassigned'}

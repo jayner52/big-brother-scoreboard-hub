@@ -27,7 +27,7 @@ export const MainContent: React.FC<MainContentProps> = ({ formData }) => {
 
       <TabsContent value="draft">
         {/* Team Summary Banner - Show when user has draft progress */}
-        {[formData.player_1, formData.player_2, formData.player_3, formData.player_4, formData.player_5].some(player => typeof player === 'string' && player.trim()) && (
+        {[formData.player_1, formData.player_2, formData.player_3, formData.player_4, formData.player_5].some(player => typeof player === 'string' && player.trim().length > 0) && (
           <div className="mb-6 relative z-10">
             <TeamSummaryBanner formData={formData} />
           </div>

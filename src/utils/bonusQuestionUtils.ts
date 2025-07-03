@@ -7,8 +7,19 @@ export const evaluateBonusAnswer = (
 ): boolean => {
   if (!participantAnswer || !correctAnswers) return false;
 
+  // Handle both string and JSON correct answers from database
+  let parsedCorrectAnswers = correctAnswers;
+  if (typeof correctAnswers === 'string') {
+    try {
+      parsedCorrectAnswers = JSON.parse(correctAnswers);
+    } catch {
+      // Keep as string if not valid JSON
+      parsedCorrectAnswers = correctAnswers;
+    }
+  }
+
   // Handle multiple correct answers
-  const correctAnswersArray = Array.isArray(correctAnswers) ? correctAnswers : [correctAnswers];
+  const correctAnswersArray = Array.isArray(parsedCorrectAnswers) ? parsedCorrectAnswers : [parsedCorrectAnswers];
   
   // For dual_player_select, need special handling
   if (questionType === 'dual_player_select') {

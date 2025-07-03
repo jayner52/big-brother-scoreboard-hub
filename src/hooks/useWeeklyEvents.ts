@@ -444,6 +444,11 @@ export const useWeeklyEvents = () => {
         description: `Week ${eventForm.week} events recorded successfully`,
       });
 
+      // Update current game week to advance to next week
+      await supabase.rpc('update_current_game_week', { 
+        new_week_number: eventForm.week + 1 
+      });
+
       // Find next sequential week to edit
       const { data: completedWeeks } = await supabase
         .from('weekly_results')

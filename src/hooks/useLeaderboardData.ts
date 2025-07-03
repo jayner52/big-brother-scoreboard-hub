@@ -10,12 +10,15 @@ export const useLeaderboardData = () => {
   const { snapshots, completedWeeks, loadSnapshotsForWeek } = useWeeklySnapshots();
 
   useEffect(() => {
+    console.log('Leaderboard data effect:', { completedWeeks: completedWeeks.length, selectedWeek });
     if (completedWeeks.length > 0 && selectedWeek === null) {
       const latestWeek = Math.max(...completedWeeks.map(w => w.week_number));
+      console.log('Setting selected week to latest:', latestWeek);
       setSelectedWeek(latestWeek);
       loadSnapshotsForWeek(latestWeek);
-    } else if (completedWeeks.length === 0 && selectedWeek === null) {
-      // No completed weeks, show current standings
+    } else if (selectedWeek === null) {
+      // Show current standings when no week selected
+      console.log('Loading current pool entries');
       loadCurrentPoolEntries();
     }
   }, [completedWeeks, selectedWeek, loadSnapshotsForWeek]);

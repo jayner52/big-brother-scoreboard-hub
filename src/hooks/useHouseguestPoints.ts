@@ -11,34 +11,35 @@ export const useHouseguestPoints = () => {
 
   const loadHouseguestPoints = async () => {
     try {
-      // Get all contestants
-      const { data: contestants } = await supabase
-        .from('contestants')
-        .select('*');
+      // Get all data in parallel to reduce loading time
+      const [contestantsResult, weeklyEventsResult, specialEventsResult] = await Promise.all([
+        supabase.from('contestants').select('id, name'),
+        supabase.from('weekly_events').select('contestant_id, points_awarded'),
+        supabase.from('special_events').select('contestant_id, points_awarded')
+      ]);
 
-      if (!contestants) return;
+      if (contestantsResult.error) throw contestantsResult.error;
+      if (weeklyEventsResult.error) throw weeklyEventsResult.error;
+      if (specialEventsResult.error) throw specialEventsResult.error;
 
-      // Calculate points for each contestant
+      const contestants = contestantsResult.data || [];
+      const weeklyEvents = weeklyEventsResult.data || [];
+      const specialEvents = specialEventsResult.data || [];
+
+      // Calculate points for each contestant efficiently
       const pointsMap: Record<string, number> = {};
       
-      for (const contestant of contestants) {
-        // Get weekly events points
-        const { data: weeklyEvents } = await supabase
-          .from('weekly_events')
-          .select('points_awarded')
-          .eq('contestant_id', contestant.id);
-
-        // Get special events points
-        const { data: specialEvents } = await supabase
-          .from('special_events')
-          .select('points_awarded')
-          .eq('contestant_id', contestant.id);
-
-        const weeklyPoints = weeklyEvents?.reduce((sum, event) => sum + (event.points_awarded || 0), 0) || 0;
-        const specialPoints = specialEvents?.reduce((sum, event) => sum + (event.points_awarded || 0), 0) || 0;
+      contestants.forEach(contestant => {
+        const weeklyPoints = weeklyEvents
+          .filter(event => event.contestant_id === contestant.id)
+          .reduce((sum, event) => sum + (event.points_awarded || 0), 0);
+        
+        const specialPoints = specialEvents
+          .filter(event => event.contestant_id === contestant.id)
+          .reduce((sum, event) => sum + (event.points_awarded || 0), 0);
         
         pointsMap[contestant.name] = weeklyPoints + specialPoints;
-      }
+      });
 
       setHouseguestPoints(pointsMap);
     } catch (error) {

@@ -134,6 +134,11 @@ export const HouseguestValues: React.FC = () => {
             points_awarded: event.points_awarded
           }));
 
+        // Determine if contestant is evicted based on weekly events (dynamic status)
+        const isEvicted = (weeklyEventsResult.data || []).some(event => 
+          event.contestant_id === houseguest.id && event.event_type === 'evicted'
+        );
+
         // Determine current status based on latest completed week
         let currentStatus = {
           current_hoh: false,
@@ -142,7 +147,7 @@ export const HouseguestValues: React.FC = () => {
           pov_used_on: false
         };
 
-        if (latestCompletedWeek && houseguest.isActive) {
+        if (latestCompletedWeek && !isEvicted) {
           currentStatus = {
             current_hoh: latestCompletedWeek.hoh_winner === houseguest.name,
             current_pov_winner: latestCompletedWeek.pov_winner === houseguest.name,
@@ -173,12 +178,12 @@ export const HouseguestValues: React.FC = () => {
 
       // Sort by: Active players first (by points), then evicted players (first evicted last)
       stats.sort((a, b) => {
-        const aActive = mappedHouseguests.find(c => c.name === a.houseguest_name)?.isActive;
-        const bActive = mappedHouseguests.find(c => c.name === b.houseguest_name)?.isActive;
+        const aEvicted = !!a.elimination_week;
+        const bEvicted = !!b.elimination_week;
         
-        if (aActive && !bActive) return -1; // Active first
-        if (!aActive && bActive) return 1;  // Evicted last
-        if (aActive && bActive) return b.total_points_earned - a.total_points_earned; // Active by points
+        if (!aEvicted && bEvicted) return -1; // Active first
+        if (aEvicted && !bEvicted) return 1;  // Evicted last
+        if (!aEvicted && !bEvicted) return b.total_points_earned - a.total_points_earned; // Active by points
         
         // For evicted, first evicted goes to bottom
         return (a.elimination_week || 0) - (b.elimination_week || 0);
@@ -242,55 +247,55 @@ export const HouseguestValues: React.FC = () => {
                           {stat.group_name}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {houseguest?.isActive ? (
-                            <>
-                              <Badge variant="default">Active</Badge>
-                              {stat.current_hoh && (
-                                <Badge variant="secondary" className="flex items-center gap-1">
-                                  <Crown className="h-3 w-3" />
-                                  HoH
-                                </Badge>
-                              )}
-                              {stat.current_pov_winner && (
-                                <Badge variant="secondary" className="flex items-center gap-1">
-                                  <Key className="h-3 w-3" />
-                                  Veto
-                                </Badge>
-                              )}
-                              {stat.currently_nominated && (
-                                <Badge variant="destructive" className="flex items-center gap-1">
-                                  <Target className="h-3 w-3" />
-                                  Nominee
-                                </Badge>
-                              )}
-                              {stat.pov_used_on && (
-                                <Badge variant="outline" className="flex items-center gap-1">
-                                  <Shield className="h-3 w-3" />
-                                  Saved
-                                </Badge>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <Badge variant="destructive">
-                                {stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
-                              </Badge>
-                              {stat.final_placement && (
-                                <Badge variant="outline">
-                                  {stat.final_placement === 1 ? "Winner" : 
-                                   stat.final_placement === 2 ? "Runner-up" :
-                                   `${stat.final_placement}th Place`}
-                                </Badge>
-                              )}
-                              {stat.americas_favorite && (
-                                <Badge variant="secondary">AFP</Badge>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
+                       <TableCell>
+                         <div className="flex flex-wrap gap-1">
+                           {!houseguestStats.find(s => s.houseguest_name === houseguest?.name)?.elimination_week ? (
+                             <>
+                               <Badge variant="default">Active</Badge>
+                               {stat.current_hoh && (
+                                 <Badge variant="secondary" className="flex items-center gap-1">
+                                   <Crown className="h-3 w-3" />
+                                   HoH
+                                 </Badge>
+                               )}
+                               {stat.current_pov_winner && (
+                                 <Badge variant="secondary" className="flex items-center gap-1">
+                                   <Key className="h-3 w-3" />
+                                   Veto
+                                 </Badge>
+                               )}
+                               {stat.currently_nominated && (
+                                 <Badge variant="destructive" className="flex items-center gap-1">
+                                   <Target className="h-3 w-3" />
+                                   Nominee
+                                 </Badge>
+                               )}
+                               {stat.pov_used_on && (
+                                 <Badge variant="outline" className="flex items-center gap-1">
+                                   <Shield className="h-3 w-3" />
+                                   Saved
+                                 </Badge>
+                               )}
+                             </>
+                           ) : (
+                             <>
+                               <Badge variant="destructive">
+                                 {stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
+                               </Badge>
+                               {stat.final_placement && (
+                                 <Badge variant="outline">
+                                   {stat.final_placement === 1 ? "Winner" : 
+                                    stat.final_placement === 2 ? "Runner-up" :
+                                    `${stat.final_placement}th Place`}
+                                 </Badge>
+                               )}
+                               {stat.americas_favorite && (
+                                 <Badge variant="secondary">AFP</Badge>
+                               )}
+                             </>
+                           )}
+                         </div>
+                       </TableCell>
                       <TableCell className="text-center">
                         {stat.hoh_wins}
                       </TableCell>

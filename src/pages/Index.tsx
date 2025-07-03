@@ -85,9 +85,10 @@ const Index = () => {
     <PoolProvider>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="container mx-auto px-4 py-8">
-          {/* Header with User Status */}
+          {/* Header with Navigation */}
           <div className="flex justify-between items-start mb-8">
-            <div className="flex-1">
+            {/* Left Side - Auth and How to Play */}
+            <div className="flex-1 flex items-center gap-4">
               {!user ? (
                 <Link to="/auth">
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -110,6 +111,17 @@ const Index = () => {
                   </Button>
                 </div>
               )}
+              
+              {/* How to Play Button - Always Visible */}
+              <Link to="/about">
+                <Button 
+                  className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
+                  size="sm"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  How to Play
+                </Button>
+              </Link>
             </div>
 
             {/* Center Title */}
@@ -122,7 +134,7 @@ const Index = () => {
               </p>
             </div>
 
-            {/* Right Side - Admin and User Panel */}
+            {/* Right Side - Admin and User Status */}
             <div className="flex-1 flex justify-end">
               <div className="flex flex-col items-end gap-4">
                 <Link to="/admin">
@@ -133,10 +145,10 @@ const Index = () => {
                 </Link>
                 
                 {/* User Status Panel */}
-                {user && (
+                {user && userEntry && (
                   <div className="w-72 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-gray-800">Your Status</h3>
+                      <h3 className="font-semibold text-gray-800">Your Team Status</h3>
                       <Button
                         onClick={() => navigate('/auth')}
                         variant="ghost"
@@ -147,37 +159,37 @@ const Index = () => {
                       </Button>
                     </div>
                     
-                    {userEntry ? (
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Team:</span>
-                          <span className="font-medium text-gray-800">{userEntry.team_name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Points:</span>
-                          <span className="font-bold text-green-600">{userEntry.total_points}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Rank:</span>
-                          <span className="font-medium text-gray-800">#{userEntry.current_rank || 'TBD'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Status:</span>
-                          <span className="text-green-600 font-medium">Registered</span>
-                        </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Team:</span>
+                        <span className="font-medium text-gray-800">{userEntry.team_name}</span>
                       </div>
-                    ) : (
-                      <div className="text-center">
-                        <p className="text-gray-600 mb-2">Not registered</p>
-                        <Button
-                          onClick={() => navigate('/draft')}
-                          size="sm"
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Join Pool
-                        </Button>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Points:</span>
+                        <span className="font-bold text-green-600">{userEntry.total_points}</span>
                       </div>
-                    )}
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Rank:</span>
+                        <span className="font-medium text-gray-800">#{userRank || 'TBD'}</span>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-3 border-t pt-2">
+                        <div>Players: {userEntry.player_1}, {userEntry.player_2}, {userEntry.player_3}, {userEntry.player_4}, {userEntry.player_5}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Join Pool Button for logged in users without entry */}
+                {user && !userEntry && (
+                  <div className="w-72 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 text-center">
+                    <p className="text-gray-600 mb-2">Not registered</p>
+                    <Button
+                      onClick={() => navigate('/draft')}
+                      size="sm"
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      Join Pool
+                    </Button>
                   </div>
                 )}
               </div>

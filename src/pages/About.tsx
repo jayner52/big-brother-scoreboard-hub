@@ -171,18 +171,18 @@ const About = () => {
             <div>
               <h3 className="text-lg font-semibold mb-3">Final Results</h3>
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span>Winner</span>
-                  <Badge variant="secondary">+15 points</Badge>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span>Runner-up</span>
-                  <Badge variant="secondary">+10 points</Badge>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span>America's Favorite</span>
-                  <Badge variant="secondary">+5 points</Badge>
-                </div>
+                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                          <span>Winner</span>
+                          <Badge variant="secondary">+5 points</Badge>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                          <span>Runner-up</span>
+                          <Badge variant="secondary">+3 points</Badge>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                          <span>America's Favorite</span>
+                          <Badge variant="secondary">+3 points</Badge>
+                        </div>
               </div>
             </div>
           </CardContent>

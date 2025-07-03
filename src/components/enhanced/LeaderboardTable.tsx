@@ -5,11 +5,13 @@ import { LeaderboardRow } from './LeaderboardRow';
 interface LeaderboardTableProps {
   displayData: any[];
   showHistoricalColumns: boolean;
+  selectedWeek?: number | null;
 }
 
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   displayData,
-  showHistoricalColumns
+  showHistoricalColumns,
+  selectedWeek
 }) => {
   return (
     <div className="overflow-x-auto">
@@ -39,6 +41,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
               entry={entry}
               index={index}
               showHistoricalColumns={showHistoricalColumns}
+              selectedWeek={selectedWeek}
             />
           ))}
         </TableBody>

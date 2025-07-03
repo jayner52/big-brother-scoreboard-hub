@@ -11,9 +11,8 @@ export const ScoringBadges: React.FC = () => {
   const badges = [];
   
   // Group scoring rules by category for better display
-  const competitionRules = scoringRules.filter(r => r.category === 'competitions' && r.is_active);
-  const nominationRules = scoringRules.filter(r => r.subcategory === 'nominee' && r.is_active);
-  const evictionRules = scoringRules.filter(r => r.subcategory === 'evicted' && r.is_active);
+  const competitionRules = scoringRules.filter(r => r.category === 'competition' && r.is_active);
+  const weeklyRules = scoringRules.filter(r => r.category === 'weekly' && r.is_active);
   const specialRules = scoringRules.filter(r => r.category === 'special_events' && r.is_active);
   
   // Add main competition badges with direct points display
@@ -30,14 +29,33 @@ export const ScoringBadges: React.FC = () => {
           POV: {rule.points} pts
         </Badge>
       );
-    } else if (rule.subcategory === 'survival') {
-      badges.push(
-        <Badge key={rule.id} variant="secondary" className="bg-blue-500/20 text-blue-700">
-          Survival: {rule.points} pt/week
-        </Badge>
-      );
     }
   });
+
+  // Add Weekly Gameplay Points badge with tooltip
+  if (weeklyRules.length > 0) {
+    badges.push(
+      <TooltipProvider key="weekly-gameplay">
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge variant="secondary" className="bg-blue-500/20 text-blue-700 cursor-help">
+              Weekly Gameplay Points
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <div className="space-y-1">
+              <div className="font-semibold text-sm mb-1">Weekly Points:</div>
+              {weeklyRules.map(rule => (
+                <div key={rule.id} className="text-xs">
+                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
+                </div>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   // Add simplified bonus badge with hover tooltip
   if (bonusQuestions.length > 0) {
@@ -64,53 +82,6 @@ export const ScoringBadges: React.FC = () => {
     );
   }
 
-  // Add nominations badge with tooltip
-  if (nominationRules.length > 0) {
-    badges.push(
-      <TooltipProvider key="nominations">
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant="secondary" className="bg-orange-500/20 text-orange-700 cursor-help">
-              Nominations
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-1">
-              {nominationRules.map(rule => (
-                <div key={rule.id} className="text-xs">
-                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
-                </div>
-              ))}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  // Add evictions badge with tooltip
-  if (evictionRules.length > 0) {
-    badges.push(
-      <TooltipProvider key="evictions">
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant="secondary" className="bg-red-500/20 text-red-700 cursor-help">
-              Evictions
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-1">
-              {evictionRules.map(rule => (
-                <div key={rule.id} className="text-xs">
-                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
-                </div>
-              ))}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
 
   // Add special events badge with consolidated hover tooltip
   if (specialRules.length > 0) {

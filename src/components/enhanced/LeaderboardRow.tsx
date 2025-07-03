@@ -1,7 +1,8 @@
 import React from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ChevronUp, ChevronDown, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
@@ -9,12 +10,14 @@ interface LeaderboardRowProps {
   entry: any;
   index: number;
   showHistoricalColumns: boolean;
+  selectedWeek?: number | null;
 }
 
 export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   entry,
   index,
-  showHistoricalColumns
+  showHistoricalColumns,
+  selectedWeek
 }) => {
   const { houseguestPoints } = useHouseguestPoints();
   const { evictedContestants } = useEvictedContestants();
@@ -36,10 +39,24 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
     const points = houseguestPoints[playerName];
     
     return (
-      <span className={`${isEliminated ? 'line-through text-red-500' : ''}`}>
-        {playerName}
-        {points !== undefined && ` (${points}pts)`}
-      </span>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <span className={`cursor-help ${isEliminated ? 'line-through text-red-600' : ''}`}>
+              {playerName}
+              {points !== undefined && ` (${points}pts)`}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="text-xs">
+              <div className="font-semibold">{playerName}</div>
+              <div className="text-muted-foreground">
+                {isEliminated ? 'Eliminated' : 'Active'} • {points || 0} total points
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   };
 
@@ -66,18 +83,61 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
         </TableCell>
       )}
       
-      <TableCell className="font-semibold text-blue-600">{teamData.team_name}</TableCell>
+      <TableCell>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="font-semibold text-blue-600 cursor-help">
+                {teamData.team_name}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-xs space-y-1">
+                <div className="font-semibold">Team Performance</div>
+                <div>Total Score: {entry.total_points} pts</div>
+                <div>Weekly: {entry.weekly_points} pts</div>
+                <div>Bonus: {entry.bonus_points} pts</div>
+                {showHistoricalColumns && (
+                  <>
+                    <div>This Week: +{entry.points_change} pts</div>
+                    <div>Rank Change: {entry.rank_change > 0 ? `+${entry.rank_change}` : entry.rank_change}</div>
+                  </>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </TableCell>
       <TableCell>{teamData.participant_name}</TableCell>
       <TableCell>{renderPlayerName(teamData.player_1)}</TableCell>
       <TableCell>{renderPlayerName(teamData.player_2)}</TableCell>
       <TableCell>{renderPlayerName(teamData.player_3)}</TableCell>
       <TableCell>{renderPlayerName(teamData.player_4)}</TableCell>
       <TableCell>{renderPlayerName(teamData.player_5)}</TableCell>
-      <TableCell className="text-center">{entry.weekly_points}</TableCell>
+      <TableCell className="text-center">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <span className="cursor-help">{entry.weekly_points}</span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-xs">
+                <div className="font-semibold">Weekly Points Breakdown</div>
+                <div>Cumulative competition + survival points</div>
+                {selectedWeek && <div>Through Week {selectedWeek}</div>}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </TableCell>
       
       {showHistoricalColumns && (
         <TableCell className={`text-center font-medium ${getPointsChangeColor(pointsChange)}`}>
-          {pointsChange > 0 ? '+' : ''}{pointsChange}
+          <div className="flex items-center justify-center gap-1">
+            {pointsChange > 0 && <TrendingUp className="h-3 w-3" />}
+            {pointsChange < 0 && <TrendingDown className="h-3 w-3" />}
+            <span>{pointsChange > 0 ? '+' : ''}{pointsChange}</span>
+          </div>
         </TableCell>
       )}
       

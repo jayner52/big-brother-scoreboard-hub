@@ -51,6 +51,7 @@ export const EnhancedTeamLeaderboard: React.FC = () => {
         <LeaderboardTable
           displayData={displayData}
           showHistoricalColumns={showHistoricalColumns}
+          selectedWeek={selectedWeek}
         />
       </CardContent>
     </Card>

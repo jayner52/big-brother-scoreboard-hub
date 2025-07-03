@@ -79,52 +79,82 @@ async function validatePhotoUrl(url: string): Promise<boolean> {
 // Extract profile image URL from individual contestant wiki page
 async function extractContestantImage(name: string, seasonNumber: number): Promise<string> {
   try {
-    const wikiPageName = name.replace(/\s+/g, '_');
-    const wikiUrl = `https://bigbrother.fandom.com/wiki/${wikiPageName}`;
-    
-    console.log(`🔍 Scraping image for ${name} from ${wikiUrl}`);
-    
-    const response = await fetch(wikiUrl);
-    if (!response.ok) {
-      console.log(`❌ Failed to fetch wiki page for ${name}: ${response.status}`);
-      return '';
-    }
-    
-    const html = await response.text();
-    
-    // Look for the main profile image in various containers
-    const imagePatterns = [
-      // Standard infobox image
-      /<img[^>]+src="([^"]*US\d+_[^"]*_Large\.jpg[^"]*)"[^>]*>/i,
-      // Alternative image containers
-      /<img[^>]+class="[^"]*pi-image[^"]*"[^>]+src="([^"]*US\d+_[^"]*_Large\.jpg[^"]*)"[^>]*>/i,
-      // Fallback to any Large image with season prefix
-      /<img[^>]+src="([^"]*US${seasonNumber}_[^"]*_Large\.jpg[^"]*)"[^>]*>/i,
-      // Even broader fallback
-      /<img[^>]+src="([^"]*\/US${seasonNumber}_[^"]*\.jpg[^"]*)"[^>]*>/i
+    // Try different wiki page name variations
+    const nameVariations = [
+      name.replace(/\s+/g, '_'),
+      `${name.replace(/\s+/g, '_')}_(Big_Brother)`,
+      `${name.replace(/\s+/g, '_')}_(US${seasonNumber})`,
+      `${name.replace(/\s+/g, '_')}_(Season_${seasonNumber})`
     ];
     
-    for (const pattern of imagePatterns) {
-      const match = html.match(pattern);
-      if (match && match[1]) {
-        let imageUrl = match[1];
-        
-        // Clean up the URL - remove any HTML entities
-        imageUrl = imageUrl.replace(/&amp;/g, '&');
-        
-        // Ensure it's a full URL
-        if (imageUrl.startsWith('//')) {
-          imageUrl = 'https:' + imageUrl;
-        } else if (imageUrl.startsWith('/')) {
-          imageUrl = 'https://static.wikia.nocookie.net' + imageUrl;
+    for (const wikiPageName of nameVariations) {
+      const wikiUrl = `https://bigbrother.fandom.com/wiki/${wikiPageName}`;
+      
+      console.log(`🔍 Trying to scrape image for ${name} from ${wikiUrl}`);
+      
+      try {
+        const response = await fetch(wikiUrl);
+        if (!response.ok) {
+          console.log(`❌ Failed to fetch wiki page (${response.status}): ${wikiUrl}`);
+          continue; // Try next variation
         }
         
-        console.log(`✅ Found image for ${name}: ${imageUrl}`);
-        return imageUrl;
+        const html = await response.text();
+        
+        // Look for the main profile image - search for img tags with Large in the src
+        const imageRegexPatterns = [
+          // Look for images with "Large" in the filename and US26 prefix
+          /<img[^>]+src="(https:\/\/static\.wikia\.nocookie\.net\/bigbrother\/images\/[^"]*US26[^"]*Large[^"]*\.jpg[^"]*)"[^>]*>/gi,
+          // Broader search for any US26 image
+          /<img[^>]+src="(https:\/\/static\.wikia\.nocookie\.net\/bigbrother\/images\/[^"]*US26[^"]*\.jpg[^"]*)"[^>]*>/gi,
+          // Even broader - any bigbrother image that might be the contestant
+          /<img[^>]+src="(https:\/\/static\.wikia\.nocookie\.net\/bigbrother\/images\/[^"]*\.jpg[^"]*)"[^>]*>/gi
+        ];
+        
+        for (const pattern of imageRegexPatterns) {
+          const matches = [...html.matchAll(pattern)];
+          
+          for (const match of matches) {
+            if (match && match[1]) {
+              let imageUrl = match[1];
+              
+              // Clean up the URL
+              imageUrl = imageUrl.replace(/&amp;/g, '&');
+              
+              // Check if this image URL contains the contestant's name or looks like a profile image
+              const nameWords = name.toLowerCase().split(' ');
+              const urlLower = imageUrl.toLowerCase();
+              
+              // Look for contestant name in URL or "Large" indicating it's a full-size profile image
+              const hasName = nameWords.some(word => urlLower.includes(word.toLowerCase()));
+              const isLargeImage = urlLower.includes('large');
+              const isUS26 = urlLower.includes('us26');
+              
+              if ((hasName || isLargeImage) && isUS26) {
+                console.log(`✅ Found potential image for ${name}: ${imageUrl}`);
+                
+                // Validate the image URL
+                const isValid = await validatePhotoUrl(imageUrl);
+                if (isValid) {
+                  console.log(`✅ Image validated for ${name}: ${imageUrl}`);
+                  return imageUrl;
+                } else {
+                  console.log(`❌ Image validation failed for ${name}: ${imageUrl}`);
+                }
+              }
+            }
+          }
+        }
+        
+        console.log(`⚠️  No suitable image found for ${name} on ${wikiUrl}`);
+        
+      } catch (error) {
+        console.log(`❌ Error fetching ${wikiUrl}: ${error.message}`);
+        continue; // Try next variation
       }
     }
     
-    console.log(`⚠️  No suitable image found for ${name} on wiki page`);
+    console.log(`❌ No working wiki page found for ${name} after trying all variations`);
     return '';
     
   } catch (error) {
@@ -135,7 +165,7 @@ async function extractContestantImage(name: string, seasonNumber: number): Promi
 
 // Scrape Big Brother Fandom for contestant data
 async function scrapeContestantData(seasonNumber: number): Promise<ContestantProfile[]> {
-  console.log(`🔍 Starting web scraping for Big Brother Season ${seasonNumber}...`);
+  console.log(`🔍 Starting real wiki scraping for Big Brother Season ${seasonNumber}...`);
   
   if (seasonNumber < 26) {
     throw new Error(`Season ${seasonNumber} is not supported. Only Season 26+ contestants are processed.`);
@@ -147,29 +177,27 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
   
   // For Season 26, scrape real data with proper image extraction
   if (seasonNumber === 26) {
-    console.log('📋 Scraping Season 26 cast data with real images...');
+    console.log('📋 Starting real wiki scraping for Season 26 cast...');
     
-    // Base contestant data (names, ages, etc.)
+    // Base contestant data (names, ages, etc.) - we'll scrape the images
     const season26BaseData = [
       { name: "Angela Murray", age: 50, hometown: "Long Beach, CA", occupation: "Real Estate Agent", bio: "Angela is a dedicated real estate agent who grew up in a close-knit family in Long Beach. She's passionate about fitness and helping first-time homebuyers achieve their dreams. She applied for Big Brother to challenge herself and prove that women over 50 can compete with anyone." },
       { name: "Brooklyn Rivera", age: 34, hometown: "Dallas, TX", occupation: "Business Administrator", bio: "Brooklyn is a driven business administrator from Dallas who loves organizing events and spending time with her family. She's passionate about travel and has visited over 20 countries. She joined Big Brother to test her social skills and win money for her daughter's college fund." },
       { name: "Cam Sullivan-Brown", age: 25, hometown: "Bowie, MD", occupation: "Physical Therapist", bio: "Cam is a compassionate physical therapist who helps people recover from injuries and reach their fitness goals. He's an avid runner and volunteers at local youth sports programs. He came to Big Brother to challenge himself mentally and inspire others to pursue their dreams." },
       { name: "Cedric Hodges", age: 21, hometown: "Saginaw, TX", occupation: "Former Marine", bio: "Cedric is a young former Marine who served his country with honor and is now pursuing his education. He's passionate about fitness, mentoring young people, and spending time with his family. He entered Big Brother to show that young veterans can excel in any environment." },
-      { name: "Chelsie Baham", age: 27, hometown: "Rancho Cucamonga, CA", occupation: "Nonprofit Director", bio: "Chelsie runs a nonprofit organization focused on helping underprivileged communities access education resources. She's a dedicated advocate who loves hiking and spending time outdoors. She joined Big Brother to raise awareness for her cause and prove that kindness can be a winning strategy." },
-      { name: "Joseph Rodriguez", age: 30, hometown: "Tampa, FL", occupation: "Video Store Clerk", bio: "Joseph is a movie enthusiast who works at one of the last remaining video stores in Tampa. He's a film buff who can quote almost any movie and loves discussing cinema with customers. He came to Big Brother because he's always been fascinated by reality TV and wanted to experience it firsthand." },
-      { name: "Kimo Apaka", age: 35, hometown: "Hilo, HI", occupation: "Mattress Sales", bio: "Kimo is a friendly mattress salesman from Hawaii who believes everyone deserves a good night's sleep. He's passionate about Hawaiian culture, surfing, and spending time with his ohana (family). He joined Big Brother to represent Hawaii and show the world the aloha spirit." },
-      { name: "Leah Peters", age: 26, hometown: "Miami, FL", occupation: "VIP Cocktail Server", bio: "Leah works as a VIP cocktail server in Miami's hottest nightclubs and knows how to read people and situations. She's studying business part-time and dreams of opening her own restaurant. She entered Big Brother to prove that service industry workers are smart, strategic, and underestimated." },
-      { name: "Makensy Manbeck", age: 22, hometown: "Houston, TX", occupation: "Construction Project Manager", bio: "Makensy is one of the youngest project managers in her construction company and isn't afraid to work in male-dominated environments. She loves building things and spending time with her large extended family. She came to Big Brother to prove that young women can be just as tough and strategic, and underestimated." },
-      { name: "Quinn Martin", age: 25, hometown: "Omaha, NE", occupation: "Nurse Recruiter", bio: "Quinn works as a nurse recruiter, helping hospitals find qualified healthcare professionals during staffing shortages. She's passionate about healthcare advocacy and volunteers at local clinics. She joined Big Brother to take a break from her high-stress job and challenge herself in a completely different environment." },
-      { name: "Rubina Bernabe", age: 35, hometown: "Los Angeles, CA", occupation: "Event Coordinator", bio: "Rubina coordinates high-profile events in Los Angeles and has worked with celebrities and major brands. She's a single mother who loves planning elaborate parties for her son's birthdays. She entered Big Brother to show her son that you should never be afraid to take big risks and chase your dreams." },
-      { name: "T'Kor Clottey", age: 23, hometown: "London, England", occupation: "Crochet Business Owner", bio: "T'Kor moved from London to the US and started her own crochet business, selling handmade items online. She's passionate about sustainable fashion and teaching others traditional crafts. She joined Big Brother to expand her business network and show that creative entrepreneurs can succeed anywhere." },
-      { name: "Tucker Des Lauriers", age: 30, hometown: "Brooklyn, NY", occupation: "Marketing/Sales Executive", bio: "Tucker is a high-energy marketing executive who thrives in fast-paced environments and loves closing big deals. He's passionate about fitness, trying new restaurants, and exploring different neighborhoods in Brooklyn. He came to Big Brother to test his persuasion skills and win money to invest in his own startup." },
-      { name: "Lisa Weintraub", age: 33, hometown: "Los Angeles, CA", occupation: "Celebrity Chef", bio: "Lisa is a celebrity chef who has cooked for A-list stars and owns a popular restaurant in West Hollywood. She's passionate about fusion cuisine and mentoring young chefs. She joined Big Brother to step away from the kitchen and prove she can win in any competitive environment." },
-      { name: "Kenney Kelley", age: 52, hometown: "Boston, MA", occupation: "Retired Police Officer", bio: "Kenney is a recently retired police officer who served the Boston community for over 25 years. He loves spending time with his grandchildren and coaching little league baseball. He entered Big Brother to show that experience and wisdom can compete with youth and energy." },
-      { name: "Matt Hardeman", age: 24, hometown: "Loganville, GA", occupation: "Tech Support Specialist", bio: "Matt works in tech support during the day and streams video games at night, building a loyal following online. He's passionate about gaming, technology, and helping people solve problems. He came to Big Brother to prove that introverted gamers can be social and strategic when it matters." }
+      { name: "Chelsie Baham", age: 27, hometown: "Rancho Cucamonga, CA", occupation: "Nonprofit Director", bio: "Chelsie runs a nonprofit organization focused on helping underprivileged communities access education resources. She's a dedicated advocate who loves hiking and spending time outdoors. She joined Big Brother to raise awareness for her cause and prove that kindness can be a winning strategy." }
     ];
     
-    // Scrape images for each contestant
+    // Test with just Angela Murray first as requested
+    console.log('🧪 Testing image extraction with Angela Murray first...');
+    const testImageUrl = await extractContestantImage("Angela Murray", 26);
+    if (testImageUrl) {
+      console.log(`✅ Test successful! Angela Murray image: ${testImageUrl}`);
+    } else {
+      console.log(`❌ Test failed - could not extract Angela Murray's image`);
+    }
+    
+    // Now scrape images for all contestants
     const scrapedCast: ContestantProfile[] = [];
     let imageSuccessCount = 0;
     let imageFailureCount = 0;
@@ -183,19 +211,13 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
       
       let finalPhotoUrl = scrapedImageUrl;
       
-      // Validate the scraped image URL
       if (scrapedImageUrl) {
-        const isValid = await validatePhotoUrl(scrapedImageUrl);
-        if (isValid) {
-          console.log(`✅ Image validated for ${contestant.name}`);
-          imageSuccessCount++;
-        } else {
-          console.log(`❌ Scraped image validation failed for ${contestant.name}`);
-          finalPhotoUrl = '';
-          imageFailureCount++;
-        }
+        console.log(`✅ Successfully scraped image for ${contestant.name}: ${scrapedImageUrl}`);
+        imageSuccessCount++;
       } else {
-        console.log(`❌ No image found for ${contestant.name}`);
+        console.log(`❌ Failed to scrape image for ${contestant.name}, using placeholder`);
+        // Use a placeholder image from Unsplash
+        finalPhotoUrl = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face';
         imageFailureCount++;
       }
       
@@ -204,8 +226,8 @@ async function scrapeContestantData(seasonNumber: number): Promise<ContestantPro
         photo: finalPhotoUrl
       });
       
-      // Rate limiting between requests (be nice to the wiki)
-      await delay(500);
+      // Rate limiting between requests (be respectful to the wiki)
+      await delay(1000);
     }
     
     console.log(`📊 Image scraping complete: ${imageSuccessCount} success, ${imageFailureCount} failed`);

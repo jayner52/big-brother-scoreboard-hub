@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Target, HelpCircle, Trophy } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BonusQuestion, ContestantGroup } from '@/types/pool';
 
 interface BonusQuestionsSectionProps {
@@ -149,21 +152,87 @@ export const BonusQuestionsSection: React.FC<BonusQuestionsSectionProps> = ({
     }
   };
 
+  const getPointsBadgeColor = (points: number) => {
+    if (points >= 5) return 'bg-purple-100 text-purple-700 border-purple-300';
+    if (points >= 3) return 'bg-blue-100 text-blue-700 border-blue-300';
+    return 'bg-green-100 text-green-700 border-green-300';
+  };
+
   return (
-    <div className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {bonusQuestions.map((question) => (
-          <div key={question.id} className="space-y-2">
-            <Label className="text-sm font-medium">
-              {question.question_text}
-              <Badge variant="secondary" className="ml-2">
-                {question.points_value} pts
-              </Badge>
-            </Label>
-            {renderBonusQuestion(question)}
-          </div>
-        ))}
+    <TooltipProvider>
+      <div className="space-y-6">
+        <div className="text-center">
+          <h3 className="text-2xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
+            <Target className="h-6 w-6 text-purple-600" />
+            Bonus Predictions
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            Make strategic predictions to earn extra points throughout the season
+          </p>
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+            <Trophy className="h-3 w-3 mr-1" />
+            Optional - Earn up to {bonusQuestions.reduce((sum, q) => sum + q.points_value, 0)} bonus points
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {bonusQuestions.map((question) => {
+            const hasAnswer = bonusAnswers[question.id] && 
+              (typeof bonusAnswers[question.id] === 'string' ? 
+                bonusAnswers[question.id].trim() : 
+                bonusAnswers[question.id].player1 || bonusAnswers[question.id].player2);
+
+            return (
+              <Card 
+                key={question.id} 
+                className={`transition-all duration-200 hover:shadow-md border-2 ${
+                  hasAnswer ? 'border-purple-200 bg-purple-50/50' : 'hover:border-purple-200'
+                }`}
+              >
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center justify-between text-base">
+                    <span className="flex-1 pr-2">{question.question_text}</span>
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant="outline" 
+                        className={`${getPointsBadgeColor(question.points_value)} font-bold`}
+                      >
+                        {question.points_value} pts
+                      </Badge>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="max-w-xs">
+                          <p className="text-sm">
+                            This prediction will be scored when the answer is revealed during the season.
+                            Higher point values indicate more difficult or important predictions.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </CardTitle>
+                  {hasAnswer && (
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 w-fit">
+                      Answered
+                    </Badge>
+                  )}
+                </CardHeader>
+                
+                <CardContent>
+                  {renderBonusQuestion(question)}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+        
+        <div className="text-center text-sm text-muted-foreground">
+          <p>
+            🎯 <strong>Pro Tip:</strong> These predictions can make or break your season - choose wisely!
+          </p>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, Star, AlertCircle } from 'lucide-react';
 import { ContestantGroup } from '@/types/pool';
 
 interface TeamDraftSectionProps {
@@ -21,59 +22,123 @@ export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
   formData,
   onFormDataChange,
 }) => {
-  return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {contestantGroups.map((group, groupIndex) => (
-          <div key={group.id} className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">{group.group_name}</Badge>
-              {group.group_name === 'Free Pick' && (
-                <span className="text-sm text-gray-500">(Any player)</span>
-              )}
-            </div>
-            
-            {groupIndex < 4 && (
-              <Select 
-                value={formData[`player_${groupIndex + 1}` as keyof typeof formData] as string} 
-                onValueChange={(value) => onFormDataChange({ 
-                  [`player_${groupIndex + 1}`]: value 
-                } as Partial<TeamDraftSectionProps['formData']>)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={`Select from ${group.group_name}`} />
-                </SelectTrigger>
-                <SelectContent>
-                  {group.contestants?.map(contestant => (
-                    <SelectItem key={contestant.id} value={contestant.name}>
-                      {contestant.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+  const selectedPlayers = Object.values(formData).filter(player => player.trim());
+  const duplicateCheck = new Set(selectedPlayers).size !== selectedPlayers.length;
 
-            {group.group_name === 'Free Pick' && (
-              <Select 
-                value={formData.player_5} 
-                onValueChange={(value) => onFormDataChange({ player_5: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Free pick - any player" />
-                </SelectTrigger>
-                <SelectContent>
-                  {contestantGroups.flatMap(g => 
-                    g.contestants?.map(contestant => (
-                      <SelectItem key={contestant.id} value={contestant.name}>
-                        {contestant.name}
-                      </SelectItem>
-                    )) || []
-                  )}
-                </SelectContent>
-              </Select>
-            )}
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
+          <Users className="h-6 w-6 text-purple-600" />
+          Draft Your Dream Team
+        </h3>
+        <p className="text-muted-foreground mb-4">
+          Select 5 houseguests strategically - one from each group plus a free pick
+        </p>
+        
+        {duplicateCheck && (
+          <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive px-3 py-2 rounded-lg text-sm">
+            <AlertCircle className="h-4 w-4" />
+            You've selected the same player multiple times
           </div>
-        ))}
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {contestantGroups.map((group, groupIndex) => {
+          const isFreePick = group.group_name === 'Free Pick';
+          const playerKey = isFreePick ? 'player_5' : `player_${groupIndex + 1}`;
+          const currentSelection = formData[playerKey as keyof typeof formData];
+          const hasSelection = currentSelection && currentSelection.trim();
+
+          return (
+            <Card 
+              key={group.id} 
+              className={`transition-all duration-200 hover:shadow-md border-2 ${
+                hasSelection ? 'border-green-200 bg-green-50/50' : 'hover:border-purple-200'
+              }`}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-lg">
+                  <div className="flex items-center gap-2">
+                    {isFreePick ? (
+                      <Star className="h-5 w-5 text-yellow-600" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">
+                        {groupIndex + 1}
+                      </div>
+                    )}
+                    {group.group_name}
+                  </div>
+                  {hasSelection && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      Selected
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  {isFreePick 
+                    ? 'Pick any remaining houseguest as your wildcard' 
+                    : `Choose your player from ${group.group_name}`
+                  }
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                <Select 
+                  value={currentSelection || ''} 
+                  onValueChange={(value) => onFormDataChange({ 
+                    [playerKey]: value 
+                  } as Partial<TeamDraftSectionProps['formData']>)}
+                >
+                  <SelectTrigger className={`transition-all duration-200 ${
+                    hasSelection ? 'border-green-300 bg-green-50' : ''
+                  }`}>
+                    <SelectValue placeholder={
+                      isFreePick 
+                        ? 'Free pick - any player' 
+                        : `Select from ${group.group_name}`
+                    } />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {(isFreePick 
+                      ? contestantGroups.flatMap(g => g.contestants || [])
+                      : group.contestants || []
+                    ).map(contestant => {
+                      const isAlreadySelected = Object.values(formData).includes(contestant.name) && 
+                                               formData[playerKey as keyof typeof formData] !== contestant.name;
+                      
+                      return (
+                        <SelectItem 
+                          key={contestant.id} 
+                          value={contestant.name}
+                          disabled={isAlreadySelected}
+                          className={isAlreadySelected ? 'opacity-50' : ''}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span>{contestant.name}</span>
+                            {isAlreadySelected && (
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                Already selected
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+      
+      <div className="text-center text-sm text-muted-foreground">
+        <p>
+          💡 <strong>Strategy Tip:</strong> Consider selecting players from different alliances 
+          to maximize your chances of having winners each week!
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { User, Users, Mail } from 'lucide-react';
 
 interface BasicInfoFormProps {
   formData: {
@@ -16,42 +18,72 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   onFormDataChange,
 }) => {
   return (
-    <div>
-      <h3 className="text-xl font-bold mb-4">Your Information</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="participant_name" className="text-lg font-semibold">Your Name</Label>
-          <Input
-            id="participant_name"
-            type="text"
-            value={formData.participant_name}
-            onChange={(e) => onFormDataChange({ participant_name: e.target.value })}
-            placeholder="Enter your name"
-            className="mt-2"
-          />
-        </div>
-        <div>
-          <Label htmlFor="team_name" className="text-lg font-semibold">Team Name</Label>
-          <Input
-            id="team_name"
-            type="text"
-            value={formData.team_name}
-            onChange={(e) => onFormDataChange({ team_name: e.target.value })}
-            placeholder="Enter your team name"
-            className="mt-2"
-          />
-        </div>
-        <div>
-          <Label htmlFor="email" className="text-lg font-semibold">Email Address</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => onFormDataChange({ email: e.target.value })}
-            placeholder="Enter your email"
-            className="mt-2"
-          />
-        </div>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-foreground mb-2">Let's Get Started!</h3>
+        <p className="text-muted-foreground">Tell us a bit about yourself and your team</p>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="transition-all duration-200 hover:shadow-md border-2 hover:border-purple-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <User className="h-5 w-5 text-purple-600" />
+              Your Name
+            </CardTitle>
+            <CardDescription>How should we identify you?</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input
+              id="participant_name"
+              type="text"
+              value={formData.participant_name}
+              onChange={(e) => onFormDataChange({ participant_name: e.target.value })}
+              placeholder="Enter your full name"
+              className="text-lg"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="transition-all duration-200 hover:shadow-md border-2 hover:border-purple-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5 text-purple-600" />
+              Team Name
+            </CardTitle>
+            <CardDescription>Choose a creative team name</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input
+              id="team_name"
+              type="text"
+              value={formData.team_name}
+              onChange={(e) => onFormDataChange({ team_name: e.target.value })}
+              placeholder="Enter your team name"
+              className="text-lg"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="transition-all duration-200 hover:shadow-md border-2 hover:border-purple-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Mail className="h-5 w-5 text-purple-600" />
+              Email Address
+            </CardTitle>
+            <CardDescription>For important updates</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => onFormDataChange({ email: e.target.value })}
+              placeholder="Enter your email"
+              className="text-lg"
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

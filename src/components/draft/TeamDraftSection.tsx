@@ -134,12 +134,6 @@ export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
         })}
       </div>
       
-      <div className="text-center text-sm text-muted-foreground">
-        <p>
-          💡 <strong>Strategy Tip:</strong> Consider selecting players from different alliances 
-          to maximize your chances of having winners each week!
-        </p>
-      </div>
     </div>
   );
 };

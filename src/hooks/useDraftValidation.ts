@@ -27,13 +27,13 @@ export const useDraftValidation = () => {
       }
     });
 
-    // Bonus questions validation
+    // Bonus questions validation - now required
     bonusQuestions.forEach((question) => {
       const answer = formData.bonus_answers[question.id];
       if (!answer || 
           (typeof answer === 'string' && !answer.trim()) ||
           (typeof answer === 'object' && (!answer.player1 || !answer.player2))) {
-        errors.push(`Please answer: ${question.question_text}`);
+        errors.push(`Please answer bonus question: ${question.question_text}`);
       }
     });
 

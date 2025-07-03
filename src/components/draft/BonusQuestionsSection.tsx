@@ -166,7 +166,7 @@ export const BonusQuestionsSection: React.FC<BonusQuestionsSectionProps> = ({
           Bonus Predictions
         </h3>
         <p className="text-muted-foreground mb-4">
-          Make strategic predictions to earn extra points throughout the season
+          Make strategic predictions to earn extra points throughout the season (all questions required)
         </p>
         <Badge variant="secondary" className="bg-purple-100 text-purple-700">
           <Trophy className="h-3 w-3 mr-1" />

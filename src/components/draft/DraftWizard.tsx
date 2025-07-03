@@ -19,7 +19,7 @@ import { DraftFormPersistenceAlert } from './DraftFormPersistenceAlert';
 const STEPS = [
   { id: 'info', title: 'Basic Info', description: 'Your name and team details' },
   { id: 'team', title: 'Draft Team', description: 'Select your 5 houseguests' },
-  { id: 'bonus', title: 'Bonus Questions', description: 'Strategic predictions for extra points' },
+  { id: 'bonus', title: 'Bonus Questions', description: 'Required strategic predictions' },
   { id: 'payment', title: 'Payment', description: 'Secure payment confirmation' }
 ];
 
@@ -210,7 +210,7 @@ export const DraftWizard: React.FC = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Clear Draft Form</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to clear all form data? This will reset your team name, player selections, and bonus answers. This action cannot be undone.
+                      Are you sure you want to clear your team and predictions?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

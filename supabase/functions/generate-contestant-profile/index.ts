@@ -12,37 +12,8 @@ interface ContestantProfile {
   age: number;
   hometown: string;
   occupation: string;
+  photo: string;
   bio: string;
-  relationship_status: string;
-  family_info: string;
-  physical_description: {
-    height: string;
-    build: string;
-    hair_color: string;
-    eye_color: string;
-    distinguishing_features: string;
-  };
-  personality_traits: {
-    archetype: string;
-    strengths: string[];
-    weaknesses: string[];
-    catchphrase: string;
-    motivation: string;
-  };
-  gameplay_strategy: {
-    alliance_tendency: string;
-    competition_strength: string;
-    threat_level: number;
-    predicted_placement: string;
-    strategy_description: string;
-  };
-  backstory: {
-    life_story: string;
-    fun_facts: string[];
-    hobbies: string[];
-    fears: string;
-    guilty_pleasure: string;
-  };
 }
 
 interface GenerationRequest {
@@ -53,6 +24,15 @@ interface GenerationRequest {
   special_twists: string;
   count: number;
 }
+
+// Season-specific configurations
+const seasonData = {
+  26: { name: "Big Brother 26", castCount: 16, theme: "AI Arena" },
+  25: { name: "Big Brother 25", castCount: 17, theme: "Regular Season" },
+  24: { name: "Big Brother 24", castCount: 16, theme: "Regular Season" },
+  23: { name: "Big Brother 23", castCount: 16, theme: "Regular Season" },
+  22: { name: "Big Brother 22", castCount: 16, theme: "All Stars" }
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -84,129 +64,90 @@ serve(async (req) => {
     for (let i = 0; i < count; i++) {
       let systemPrompt, userPrompt;
       
+      // Get season configuration
+      const season = seasonData[season_number] || { name: `Big Brother ${season_number}`, castCount: cast_size };
+      
       if (season_number === 26) {
-        // For BB26, use hardcoded real cast data as primary source
+        // For BB26, use hardcoded real cast data for full cast generation
         const realBB26Cast = [
-          { name: "Angela Murray", age: 50, hometown: "Long Beach, CA", occupation: "Real Estate Agent", bio: "Fierce competitor who won HOH twice and survived seven nominations before placing 6th. Known for her strategic gameplay and strong social connections." },
-          { name: "Brooklyn Rivera", age: 34, hometown: "Dallas, TX", occupation: "Business Administrator", bio: "Strategic player who formed strong alliances and navigated complex house dynamics with intelligence and social awareness." },
-          { name: "Cam Sullivan-Brown", age: 25, hometown: "Bowie, MD", occupation: "Physical Therapist", bio: "Athletic competitor who balanced physical prowess with strategic thinking, forming key relationships in the house." },
-          { name: "Cedric Hodges", age: 21, hometown: "Saginaw, TX", occupation: "Former Marine", bio: "Young but disciplined player who brought military precision to his strategic gameplay and competition performance." },
-          { name: "Chelsie Baham", age: 27, hometown: "Rancho Cucamonga, CA", occupation: "Nonprofit Director", bio: "Winner of Big Brother 26 who masterfully controlled the game with strategic moves and competition wins when needed." },
-          { name: "Joseph Rodriguez", age: 30, hometown: "Tampa, FL", occupation: "Video Store Clerk", bio: "Entertainment enthusiast who brought humor and unpredictability to the house while playing a floater strategy." },
-          { name: "Kimo Apaka", age: 35, hometown: "Hilo, HI", occupation: "Mattress Sales", bio: "Laid-back islander who used his calm demeanor to build trust and navigate through multiple weeks safely." },
-          { name: "Leah Peters", age: 26, hometown: "Miami, FL", occupation: "VIP Cocktail Server", bio: "Social butterfly who used her interpersonal skills to gather information and influence house dynamics." },
-          { name: "Makensy Manbeck", age: 22, hometown: "Houston, TX", occupation: "Construction Project Manager", bio: "Young powerhouse who dominated competitions in the late game, winning multiple HOHs and POVs to secure her final placement." },
-          { name: "Quinn Martin", age: 25, hometown: "Omaha, NE", occupation: "Nurse Recruiter", bio: "Superfan who came into the game with extensive Big Brother knowledge and strategic planning." },
-          { name: "Rubina Bernabe", age: 35, hometown: "Los Angeles, CA", occupation: "Event Coordinator", bio: "Organized and detail-oriented player who carefully managed her social game and strategic positioning." },
-          { name: "T'Kor Clottey", age: 23, hometown: "London, England", occupation: "Crochet Business Owner", bio: "Creative entrepreneur who brought a unique perspective and formed genuine connections throughout her time in the house." },
-          { name: "Tucker Des Lauriers", age: 30, hometown: "Brooklyn, NY", occupation: "Marketing/Sales Executive", bio: "Charismatic player who made big moves early in the game and wasn't afraid to take risks to advance his position." }
+          { name: "Angela Murray", age: 50, hometown: "Long Beach, CA", occupation: "Real Estate Agent" },
+          { name: "Brooklyn Rivera", age: 34, hometown: "Dallas, TX", occupation: "Business Administrator" },
+          { name: "Cam Sullivan-Brown", age: 25, hometown: "Bowie, MD", occupation: "Physical Therapist" },
+          { name: "Cedric Hodges", age: 21, hometown: "Saginaw, TX", occupation: "Former Marine" },
+          { name: "Chelsie Baham", age: 27, hometown: "Rancho Cucamonga, CA", occupation: "Nonprofit Director" },
+          { name: "Joseph Rodriguez", age: 30, hometown: "Tampa, FL", occupation: "Video Store Clerk" },
+          { name: "Kimo Apaka", age: 35, hometown: "Hilo, HI", occupation: "Mattress Sales" },
+          { name: "Leah Peters", age: 26, hometown: "Miami, FL", occupation: "VIP Cocktail Server" },
+          { name: "Makensy Manbeck", age: 22, hometown: "Houston, TX", occupation: "Construction Project Manager" },
+          { name: "Quinn Martin", age: 25, hometown: "Omaha, NE", occupation: "Nurse Recruiter" },
+          { name: "Rubina Bernabe", age: 35, hometown: "Los Angeles, CA", occupation: "Event Coordinator" },
+          { name: "T'Kor Clottey", age: 23, hometown: "London, England", occupation: "Crochet Business Owner" },
+          { name: "Tucker Des Lauriers", age: 30, hometown: "Brooklyn, NY", occupation: "Marketing/Sales Executive" }
         ];
 
-        // Return a random contestant from the real cast
-        const randomIndex = Math.floor(Math.random() * realBB26Cast.length);
-        const selectedContestant = realBB26Cast[randomIndex];
-        
-        const profile: ContestantProfile = {
-          name: selectedContestant.name,
-          age: selectedContestant.age,
-          hometown: selectedContestant.hometown,
-          occupation: selectedContestant.occupation,
-          bio: selectedContestant.bio,
-          relationship_status: "Single",
-          family_info: "Details about family background",
-          physical_description: {
-            height: "5'6\"",
-            build: "Average",
-            hair_color: "Brown",
-            eye_color: "Brown",
-            distinguishing_features: "None noted"
-          },
-          personality_traits: {
-            archetype: "Strategist",
-            strengths: ["Strategic thinking", "Social awareness", "Competition skills"],
-            weaknesses: ["Trust issues", "Overthinking", "Target visibility"],
-            catchphrase: "Let's make some moves!",
-            motivation: "Win the $750,000 prize"
-          },
-          gameplay_strategy: {
-            alliance_tendency: "Loyal with backup plans",
-            competition_strength: "Balanced",
-            threat_level: 7,
-            predicted_placement: "Late game",
-            strategy_description: "Balance social and strategic gameplay"
-          },
-          backstory: {
-            life_story: "Background story about their journey to Big Brother",
-            fun_facts: ["Fact 1", "Fact 2", "Fact 3"],
-            hobbies: ["Reading", "Fitness", "Cooking"],
-            fears: "Being betrayed by allies",
-            guilty_pleasure: "Reality TV shows"
+        if (count === 1) {
+          // Single contestant generation
+          const randomIndex = Math.floor(Math.random() * realBB26Cast.length);
+          const selectedContestant = realBB26Cast[randomIndex];
+          
+          const profile: ContestantProfile = {
+            name: selectedContestant.name,
+            age: selectedContestant.age,
+            hometown: selectedContestant.hometown,
+            occupation: selectedContestant.occupation,
+            photo: `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=150&h=150&fit=crop&crop=face`,
+            bio: `${selectedContestant.name} brought strategic gameplay and strong social connections to Big Brother 26.`
+          };
+          
+          profiles.push(profile);
+        } else {
+          // Full cast generation
+          for (const contestant of realBB26Cast) {
+            const profile: ContestantProfile = {
+              name: contestant.name,
+              age: contestant.age,
+              hometown: contestant.hometown,
+              occupation: contestant.occupation,
+              photo: `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=150&h=150&fit=crop&crop=face`,
+              bio: `${contestant.name} brought their unique perspective and strategic gameplay to Big Brother 26.`
+            };
+            profiles.push(profile);
           }
-        };
-
-        profiles.push(profile);
-        continue; // Skip the AI generation for BB26
+        }
+        continue; // Skip AI generation for BB26
       } else {
-        // For other seasons, generate realistic fictional contestants
-        systemPrompt = `You are an expert Big Brother casting director and reality TV producer. Generate realistic, diverse, and entertaining contestant profiles that would create compelling television. Consider the specified season theme, format, and casting requirements. Ensure each contestant has a unique personality and backstory that would create interesting dynamics in the house.
+        // For other seasons, use AI generation with improved prompting
+        systemPrompt = `You are a Big Brother cast generator. Generate accurate contestant information for the specified season. Always respond with valid JSON only, no additional text or markdown.`;
 
-Return ONLY a valid JSON object with the exact structure requested. Do not include any additional text, explanations, or markdown formatting.`;
+        if (count === 1) {
+          userPrompt = `Generate 1 contestant for Big Brother season ${season_number}. Return as a JSON array with exactly 1 contestant.
 
-        userPrompt = `Generate a Big Brother contestant profile for Season ${season_number}.
+Each contestant object must have these exact fields:
+- name: Full contestant name (string)
+- age: Age in years (number)  
+- hometown: "City, State" format (string)
+- occupation: Job title (string)
+- photo: Unsplash portrait URL with format: "https://images.unsplash.com/photo-[ID]?w=150&h=150&fit=crop&crop=face"
+- bio: 2-3 sentences about their personality and game strategy (string)
 
-Season Details:
-- Season Number: ${season_number}
-- Theme: ${season_theme}
-- Format: ${season_format}
-- Cast Size: ${cast_size}
-- Special Twists: ${special_twists}
+Use real contestant names and details from Big Brother season ${season_number} if available. Return valid JSON array only.`;
+        } else {
+          userPrompt = `Generate the complete cast for Big Brother season ${season_number}. Return exactly ${season.castCount} contestants as a JSON array.
 
-Create a contestant that would fit this season's theme while being unique and memorable. The contestant should feel like a real person with authentic motivations and flaws.
+Each contestant object must have these exact fields:
+- name: Full contestant name (string)
+- age: Age in years (number)  
+- hometown: "City, State" format (string)
+- occupation: Job title (string)
+- photo: Unsplash portrait URL with format: "https://images.unsplash.com/photo-[ID]?w=150&h=150&fit=crop&crop=face"
+- bio: 2-3 sentences about their personality and game strategy (string)
 
-Return a JSON object with this exact structure:`;
+Use real contestant names and details from Big Brother season ${season_number}. Return valid JSON array only.`;
+        }
       }
 
-      // Only run OpenAI generation for non-BB26 seasons
+      // Run OpenAI generation for non-BB26 seasons
       if (season_number !== 26) {
-        userPrompt += `
-{
-  "name": "Full name",
-  "age": 25,
-  "hometown": "City, State",
-  "occupation": "Job title",
-  "bio": "Brief compelling bio (2-3 sentences)",
-  "relationship_status": "Single/Married/Dating/etc",
-  "family_info": "Brief family background",
-  "physical_description": {
-    "height": "5'8\"",
-    "build": "Athletic/Slim/Average/etc",
-    "hair_color": "Brown",
-    "eye_color": "Blue",
-    "distinguishing_features": "Tattoos, scars, unique features"
-  },
-  "personality_traits": {
-    "archetype": "Villain/Hero/Strategist/etc",
-    "strengths": ["trait1", "trait2", "trait3"],
-    "weaknesses": ["flaw1", "flaw2", "flaw3"],
-    "catchphrase": "Memorable quote",
-    "motivation": "Why they want to win"
-  },
-  "gameplay_strategy": {
-    "alliance_tendency": "Loyal/Backstabber/Floater/etc",
-    "competition_strength": "Physical/Mental/Social/Balanced",
-    "threat_level": 7,
-    "predicted_placement": "Early/Mid/Late game",
-    "strategy_description": "Detailed gameplay approach"
-  },
-  "backstory": {
-    "life_story": "Brief personal history",
-    "fun_facts": ["fact1", "fact2", "fact3"],
-    "hobbies": ["hobby1", "hobby2", "hobby3"],
-    "fears": "What they're afraid of",
-    "guilty_pleasure": "Something they enjoy secretly"
-  }
-}`;
-
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -219,11 +160,8 @@ Return a JSON object with this exact structure:`;
               { role: 'system', content: systemPrompt },
               { role: 'user', content: userPrompt }
             ],
-            temperature: 0.8,
-            max_tokens: 1500,
-            top_p: 0.9,
-            frequency_penalty: 0.3,
-            presence_penalty: 0.3,
+            temperature: 0.1,
+            max_tokens: 2000,
           }),
         });
 
@@ -232,11 +170,16 @@ Return a JSON object with this exact structure:`;
         }
 
         const data = await response.json();
-        const generatedContent = data.choices[0].message.content;
+        let generatedContent = data.choices[0].message.content;
+        
+        // Clean up response (remove markdown if present)
+        generatedContent = generatedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
         
         try {
-          const profile = JSON.parse(generatedContent);
-          profiles.push(profile);
+          const contestantData = JSON.parse(generatedContent);
+          // Handle both single contestant and array responses
+          const contestantsArray = Array.isArray(contestantData) ? contestantData : [contestantData];
+          profiles.push(...contestantsArray);
         } catch (parseError) {
           console.error('Failed to parse generated profile:', generatedContent);
           throw new Error('Invalid JSON response from AI');
@@ -249,9 +192,10 @@ Return a JSON object with this exact structure:`;
       profiles,
       metadata: {
         generated_date: new Date().toISOString(),
-        season_context: `Season ${season_number}: ${season_theme}`,
-        ai_model_used: 'gpt-4o-mini',
-        count: profiles.length
+        season_context: `Season ${season_number}: ${seasonData[season_number]?.theme || season_theme}`,
+        ai_model_used: season_number === 26 ? 'real_data' : 'gpt-4o-mini',
+        count: profiles.length,
+        season_name: seasonData[season_number]?.name || `Big Brother ${season_number}`
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

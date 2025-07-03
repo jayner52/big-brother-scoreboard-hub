@@ -207,17 +207,12 @@ export const ContestantManagement: React.FC = () => {
             hometown: profile.hometown,
             occupation: profile.occupation,
             bio: profile.bio,
-            relationship_status: profile.relationship_status,
-            family_info: profile.family_info,
-            physical_description: profile.physical_description,
-            personality_traits: profile.personality_traits,
-            gameplay_strategy: profile.gameplay_strategy,
-            backstory: profile.backstory,
+            photo_url: profile.photo,
             ai_generated: true,
             generation_metadata: {
               generated_date: new Date().toISOString(),
-              model_used: 'gpt-4o-mini',
-              season_source: 'real_bb26_cast'
+              model_used: 'improved_api',
+              data_source: 'real_contestant_data'
             },
             is_active: true,
             sort_order: contestants.length + newContestants.length + 1
@@ -238,11 +233,11 @@ export const ContestantManagement: React.FC = () => {
     }
 
     if (newContestants.length > 0) {
-      await loadContestants(); // Reload to get all data including new fields
+      await loadContestants();
       console.log('Cast loaded:', newContestants.length, 'new contestants added');
       toast({
         title: "Success!",
-        description: `Added ${newContestants.length} real BB26 contestant(s)`,
+        description: `Added ${newContestants.length} contestant(s)`,
       });
     }
   };

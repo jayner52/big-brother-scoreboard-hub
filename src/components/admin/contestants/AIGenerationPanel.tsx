@@ -33,14 +33,16 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  // Show configurations with predefined seasons
+  // Season configurations with accurate cast counts
   const showConfigs = {
     'big-brother': {
       name: 'Big Brother',
       seasons: {
         26: { cast: 16, theme: 'AI Arena', format: 'Standard', twists: 'AI Arena competition, America\'s Veto' },
-        27: { cast: 16, theme: 'TBD', format: 'Standard', twists: 'TBD - Season hasn\'t aired yet' },
-        25: { cast: 17, theme: 'Regular Season', format: 'Standard', twists: 'Invisible HOH, Comic-Verse Power' }
+        25: { cast: 17, theme: 'Regular Season', format: 'Standard', twists: 'Invisible HOH, Comic-Verse Power' },
+        24: { cast: 16, theme: 'Regular Season', format: 'Standard', twists: 'Backstage Boss, Festie Besties' },
+        23: { cast: 16, theme: 'Regular Season', format: 'Standard', twists: 'High Roller\'s Room, Wildcard Competition' },
+        22: { cast: 16, theme: 'All Stars', format: 'Standard', twists: 'Safety Suite, Neighbor\'s Twist' }
       }
     }
   } as const;
@@ -133,7 +135,8 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
   };
 
   const generateFullCast = async () => {
-    setSeasonConfig(prev => ({ ...prev, count: 16 }));
+    const season = showConfigs[selectedShow].seasons[seasonConfig.season_number];
+    setSeasonConfig(prev => ({ ...prev, count: season.cast }));
     await generateProfiles();
   };
 
@@ -290,7 +293,7 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
             className="flex items-center gap-2"
           >
             <Users className="h-4 w-4" />
-            Generate Full Cast (16)
+            Generate Full Cast ({showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})
           </Button>
         </div>
 

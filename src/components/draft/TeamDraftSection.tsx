@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Star, AlertCircle } from 'lucide-react';
 import { ContestantGroup } from '@/types/pool';
-import { HouseguestProfiles } from '@/components/HouseguestProfiles';
-import { supabase } from '@/integrations/supabase/client';
-import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface TeamDraftSectionProps {
   contestantGroups: ContestantGroup[];
@@ -25,29 +22,11 @@ export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
   formData,
   onFormDataChange,
 }) => {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
   const selectedPlayers = Object.values(formData).filter(player => player.trim());
   const duplicateCheck = new Set(selectedPlayers).size !== selectedPlayers.length;
-  const hasCompletedTeam = selectedPlayers.length === 5;
-
-  useEffect(() => {
-    // Get current user
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getCurrentUser();
-  }, []);
 
   return (
     <div className="space-y-6">
-      {/* Team Preview - Show when team is complete */}
-      {hasCompletedTeam && user && (
-        <div className="mb-6">
-          <HouseguestProfiles userId={user.id} />
-        </div>
-      )}
-
       <div className="text-center">
         <h3 className="text-2xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
           <Users className="h-6 w-6 text-purple-600" />

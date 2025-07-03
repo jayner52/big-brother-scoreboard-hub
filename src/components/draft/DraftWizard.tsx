@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CardContent } from '@/components/ui/card';
 import { DraftWizardHeader } from './wizard/DraftWizardHeader';
 import { StepContentRenderer } from './wizard/StepContentRenderer';
@@ -6,17 +6,21 @@ import { WizardNavigation } from './wizard/WizardNavigation';
 import { DraftLayoutWithSidebar } from './DraftLayoutWithSidebar';
 import { ProgressIndicator } from './ProgressIndicator';
 import { DraftFormPersistenceAlert } from './DraftFormPersistenceAlert';
+import { HouseguestProfiles } from '@/components/HouseguestProfiles';
 import { usePoolData } from '@/hooks/usePoolData';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { useDraftSubmission } from '@/hooks/useDraftSubmission';
 import { useDraftValidation } from '@/hooks/useDraftValidation';
 import { DRAFT_STEPS } from './wizard/draftStepsConfig';
 import { validateStep } from './wizard/stepValidation';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export const DraftWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [hasSavedData, setHasSavedData] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   
   const { poolSettings, contestantGroups, bonusQuestions, loading } = usePoolData();
   const { formData, updateFormData, updateBonusAnswer, resetForm, clearSavedDraft } = useDraftForm();
@@ -27,6 +31,15 @@ export const DraftWizard: React.FC = () => {
   React.useEffect(() => {
     const savedData = localStorage.getItem('bb_draft_form_data');
     setHasSavedData(!!savedData && savedData !== '{}');
+  }, []);
+
+  // Get current user
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getCurrentUser();
   }, []);
 
   const getCurrentStepValidation = () => {
@@ -78,9 +91,18 @@ export const DraftWizard: React.FC = () => {
 
   const isCurrentStepValid = getCurrentStepValidation();
   const currentStepConfig = DRAFT_STEPS[currentStep];
+  const selectedPlayers = Object.values(formData).filter(player => player && player.trim());
+  const hasCompletedTeam = selectedPlayers.length === 5;
 
   return (
     <DraftLayoutWithSidebar formData={formData}>
+      {/* Team Preview - Show when team is complete */}
+      {hasCompletedTeam && user && (
+        <div className="mb-6">
+          <HouseguestProfiles userId={user.id} />
+        </div>
+      )}
+
       <DraftWizardHeader seasonName={poolSettings?.season_name} />
       
       <CardContent className="p-8">

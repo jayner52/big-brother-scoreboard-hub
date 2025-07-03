@@ -75,11 +75,14 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                      <SelectContent>
-                       {eligibleContestants.map(contestant => (
-                         <SelectItem key={contestant.id} value={contestant.name}>
-                           {contestant.name} {!activeContestants.some(c => c.id === contestant.id) && '(Evicted)'}
-                         </SelectItem>
-                       ))}
+                       {eligibleContestants.map(contestant => {
+                         const isActive = activeContestants.some(c => c.id === contestant.id);
+                         return (
+                           <SelectItem key={contestant.id} value={contestant.name}>
+                             {contestant.name} {!isActive && '(Evicted)'}
+                           </SelectItem>
+                         );
+                       })}
                      </SelectContent>
                   </Select>
                 </div>

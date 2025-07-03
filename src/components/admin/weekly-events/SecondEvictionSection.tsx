@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CompetitionWinners } from './CompetitionWinners';
 import { NomineesSection } from './NomineesSection';
+import { PovWinnerSection } from './PovWinnerSection';
 import { PovUsageSection } from './PovUsageSection';
 import { EvictionSection } from './EvictionSection';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
@@ -41,8 +42,8 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
         secondHohWinner: updated.hohWinner,
         secondPovWinner: updated.povWinner,
         secondPovUsed: updated.povUsed,
-        secondPovUsedOn: updated.povUsedOn,
-        secondReplacementNominee: updated.replacementNominee,
+        secondPovUsedOn: updated.povUsedOn || '',
+        secondReplacementNominee: updated.replacementNominee || '',
         secondEvicted: updated.evicted
       };
     });
@@ -54,7 +55,7 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
         <CardTitle className="text-lg text-orange-800">Second Eviction</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Second Competition Winners */}
+        {/* Second HOH Winner */}
         <CompetitionWinners
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
@@ -62,6 +63,12 @@ export const SecondEvictionSection: React.FC<SecondEvictionSectionProps> = ({
 
         {/* Second Nominees */}
         <NomineesSection
+          eventForm={secondEvictionForm}
+          setEventForm={setSecondEvictionForm}
+        />
+
+        {/* Second POV Winner */}
+        <PovWinnerSection
           eventForm={secondEvictionForm}
           setEventForm={setSecondEvictionForm}
         />

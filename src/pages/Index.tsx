@@ -151,7 +151,7 @@ const Index = () => {
                 
                 {/* Enhanced User Status Panel with Multi-Team Support */}
                 {user && userEntry && (
-                  <div className="w-80">
+                  <div className="flex-1">
                     <HouseguestProfiles userId={user.id} />
                   </div>
                 )}

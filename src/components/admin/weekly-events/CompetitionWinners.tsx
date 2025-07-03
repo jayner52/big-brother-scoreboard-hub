@@ -17,57 +17,21 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
   const { activeContestants } = useActiveContestants();
   
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="font-semibold">Head of Household Winner</Label>
-        <Select value={eventForm.hohWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, hohWinner: value }))}>
-          <SelectTrigger className="mt-1">
-            <SelectValue placeholder="Select HOH winner" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="no-winner">No winner</SelectItem>
-            {activeContestants.map(contestant => (
-              <SelectItem key={contestant.id} value={contestant.name}>
-                {contestant.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex items-end gap-4">
-        <div className="flex-1">
-          <Label className="font-semibold">Power of Veto Winner</Label>
-          <Select value={eventForm.povWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, povWinner: value }))}>
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select POV winner" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="no-winner">No winner</SelectItem>
-              {activeContestants.map(contestant => (
-                <SelectItem key={contestant.id} value={contestant.name}>
-                  {contestant.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        {eventForm.povWinner && eventForm.povWinner !== 'no-winner' && (
-          <div className="flex items-center space-x-2 pb-1">
-            <Switch
-              checked={eventForm.povUsed}
-              onCheckedChange={(checked) => setEventForm(prev => ({ 
-                ...prev, 
-                povUsed: checked,
-                povUsedOn: checked ? prev.povUsedOn : '',
-                replacementNominee: checked ? prev.replacementNominee : ''
-              }))}
-            />
-            <Label className="text-sm">POV Used</Label>
-          </div>
-        )}
-      </div>
+    <div>
+      <Label className="font-semibold">Head of Household Winner</Label>
+      <Select value={eventForm.hohWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, hohWinner: value }))}>
+        <SelectTrigger className="mt-1">
+          <SelectValue placeholder="Select HOH winner" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="no-winner">No winner</SelectItem>
+          {activeContestants.map(contestant => (
+            <SelectItem key={contestant.id} value={contestant.name}>
+              {contestant.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

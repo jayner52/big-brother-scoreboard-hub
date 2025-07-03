@@ -2,6 +2,7 @@ import React from 'react';
 import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { CompetitionWinners } from './CompetitionWinners';
 import { NomineesSection } from './NomineesSection';
+import { PovWinnerSection } from './PovWinnerSection';
 import { PovUsageSection } from './PovUsageSection';
 import { EvictionSection } from './EvictionSection';
 import { SpecialEventsSection } from './SpecialEventsSection';
@@ -32,8 +33,9 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
           <h3 className="text-lg font-semibold mb-4 text-blue-800">First Eviction</h3>
         )}
         
-        {/* Competition Winners */}
+        {/* Competition Results */}
         <div className="space-y-4">
+          {/* HOH Winner */}
           <CompetitionWinners
             eventForm={eventForm}
             setEventForm={setEventForm}
@@ -41,6 +43,12 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
 
           {/* Nominees */}
           <NomineesSection
+            eventForm={eventForm}
+            setEventForm={setEventForm}
+          />
+
+          {/* POV Winner */}
+          <PovWinnerSection
             eventForm={eventForm}
             setEventForm={setEventForm}
           />

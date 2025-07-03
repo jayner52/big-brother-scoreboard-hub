@@ -17,7 +17,7 @@ export const ContestantBios: React.FC = () => {
 
   useEffect(() => {
     loadContestants();
-  }, []);
+  }, [evictedContestants]); // Re-run when evicted contestants change
 
   const loadContestants = async () => {
     try {
@@ -75,23 +75,23 @@ export const ContestantBios: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {contestants.map((contestant) => (
           <Card key={contestant.id} className={`overflow-hidden transition-all duration-300 hover:shadow-lg ${
             !contestant.isActive ? 'opacity-60 border-destructive/20' : ''
           }`}>
-            <div className="relative">
-              {contestant.photo_url ? (
-                <img 
-                  src={contestant.photo_url} 
-                  alt={contestant.name}
-                  className="w-full h-48 object-cover"
-                />
-              ) : (
-                <div className="w-full h-48 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                  <Users className="h-16 w-16 text-muted-foreground" />
-                </div>
-              )}
+             <div className="relative">
+               {contestant.photo_url ? (
+                 <img 
+                   src={contestant.photo_url} 
+                   alt={contestant.name}
+                   className="w-full h-32 object-cover"
+                 />
+               ) : (
+                 <div className="w-full h-32 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                   <Users className="h-8 w-8 text-muted-foreground" />
+                 </div>
+               )}
               <div className="absolute top-2 right-2 flex flex-col gap-1">
                 <Badge variant={contestant.isActive ? "default" : "destructive"}>
                   {contestant.isActive ? 'Active' : 'Eliminated'}
@@ -121,33 +121,33 @@ export const ContestantBios: React.FC = () => {
               </div>
             </div>
             
-            <CardHeader>
-              <CardTitle className="text-xl">{contestant.name}</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">{contestant.name}</CardTitle>
               {contestant.bio && (
-                <CardDescription className="text-sm">
+                <CardDescription className="text-xs line-clamp-2">
                   {contestant.bio}
                 </CardDescription>
               )}
             </CardHeader>
             
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2 pt-0">
               {contestant.age && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2 text-xs">
+                  <Calendar className="h-3 w-3 text-muted-foreground" />
                   <span>{contestant.age} years old</span>
                 </div>
               )}
               
               {contestant.hometown && (
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2 text-xs">
+                  <MapPin className="h-3 w-3 text-muted-foreground" />
                   <span>{contestant.hometown}</span>
                 </div>
               )}
               
               {contestant.occupation && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2 text-xs">
+                  <Briefcase className="h-3 w-3 text-muted-foreground" />
                   <span>{contestant.occupation}</span>
                 </div>
               )}

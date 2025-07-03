@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
 import { TeamDraftForm } from '@/components/TeamDraftForm';
 import { EnhancedTeamLeaderboard } from '@/components/enhanced/EnhancedTeamLeaderboard';
-import { EveryonesPicks } from '@/components/EveryonesPicks';
+import { EveryonesPicksMatrix } from '@/components/enhanced/EveryonesPicksMatrix';
 import { LiveResults } from '@/components/LiveResults';
 import { HouseguestValues } from '@/components/HouseguestValues';
 import { ContestantBios } from '@/components/ContestantBios';
@@ -362,7 +362,7 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="picks">
-              <EveryonesPicks />
+              <EveryonesPicksMatrix />
             </TabsContent>
 
             <TabsContent value="results">

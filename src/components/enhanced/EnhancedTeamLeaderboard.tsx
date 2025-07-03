@@ -26,6 +26,9 @@ export const EnhancedTeamLeaderboard: React.FC = () => {
       const latestWeek = Math.max(...completedWeeks.map(w => w.week_number));
       setSelectedWeek(latestWeek);
       loadSnapshotsForWeek(latestWeek);
+    } else if (completedWeeks.length === 0 && selectedWeek === null) {
+      // No completed weeks, show current standings
+      loadCurrentPoolEntries();
     }
   }, [completedWeeks, selectedWeek, loadSnapshotsForWeek]);
 
@@ -59,14 +62,27 @@ export const EnhancedTeamLeaderboard: React.FC = () => {
     }
   };
 
-  const handleWeekChange = (weekStr: string) => {
+  const handleWeekChange = async (weekStr: string) => {
     if (weekStr === 'current') {
       setSelectedWeek(null);
       loadCurrentPoolEntries();
     } else {
       const week = parseInt(weekStr);
       setSelectedWeek(week);
-      loadSnapshotsForWeek(week);
+      await loadSnapshotsForWeek(week);
+      
+      // If no snapshots found for this week, generate them
+      if (snapshots.length === 0) {
+        try {
+          await supabase.rpc('generate_weekly_snapshots', { week_num: week });
+          await loadSnapshotsForWeek(week);
+        } catch (error) {
+          console.error('Error generating snapshots:', error);
+          // Fall back to current standings if snapshot generation fails
+          setSelectedWeek(null);
+          loadCurrentPoolEntries();
+        }
+      }
     }
   };
 
@@ -131,8 +147,8 @@ export const EnhancedTeamLeaderboard: React.FC = () => {
     return <div className="text-center py-8">Loading leaderboard...</div>;
   }
 
-  const displayData = selectedWeek ? snapshots : poolEntries;
-  const showHistoricalColumns = selectedWeek !== null;
+  const displayData = selectedWeek && snapshots.length > 0 ? snapshots : poolEntries;
+  const showHistoricalColumns = selectedWeek !== null && snapshots.length > 0;
 
   if (displayData.length === 0) {
     return (

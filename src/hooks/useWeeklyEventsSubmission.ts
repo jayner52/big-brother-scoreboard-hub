@@ -225,7 +225,7 @@ export const useWeeklyEventsSubmission = (
         description: `Week ${eventForm.week} events recorded successfully`,
       });
 
-      // Update current game week to advance to next week
+      // Fix 4: Update current game week to advance to next week dynamically
       try {
         const { error: weekUpdateError } = await supabase.rpc('update_current_game_week', { 
           new_week_number: eventForm.week + 1 

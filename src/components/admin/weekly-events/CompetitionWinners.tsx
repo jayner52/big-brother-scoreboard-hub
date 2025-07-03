@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface CompetitionWinnersProps {
   eventForm: WeeklyEventForm;
@@ -18,7 +19,10 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
   
   return (
     <div>
-      <Label className="font-semibold">Head of Household Winner</Label>
+      <Label className="font-semibold flex items-center gap-2">
+        <BigBrotherIcon type="hoh" />
+        Head of Household Winner
+      </Label>
       <Select value={eventForm.hohWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, hohWinner: value }))}>
         <SelectTrigger className="mt-1">
           <SelectValue placeholder="Select HOH winner" />

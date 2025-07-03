@@ -61,54 +61,68 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
   const bbArenaPoints = getPointsForEvent('bb_arena_winner');
 
   return (
-    <Card className="bg-purple-50 border-purple-200">
-      <CardHeader>
-        <CardTitle className="text-lg text-purple-800 flex items-center gap-2">
+    <>
+      {/* Fix 5: Make BB Arena toggle same size as other toggles */}
+      <div className="flex flex-col items-start space-y-2 p-3 border rounded-lg bg-purple-50 border-purple-200">
+        <div className="flex items-center space-x-2">
           <Switch
             checked={eventForm.aiArenaEnabled || false}
             onCheckedChange={handleAIArenaToggle}
           />
-          BB Arena
-        </CardTitle>
-      </CardHeader>
-      {eventForm.aiArenaEnabled && (
-        <CardContent className="space-y-4">
-          <div>
-            <Label className="font-semibold">BB Arena Winner</Label>
-            <Select 
-              value={eventForm.aiArenaWinner || ''} 
-              onValueChange={handleAIArenaWinner}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select BB Arena winner" />
-              </SelectTrigger>
-              <SelectContent>
-                {currentNominees.length > 0 ? (
-                  currentNominees.map(nominee => (
-                    <SelectItem key={nominee} value={nominee}>
-                      {nominee}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="" disabled>
-                    No nominees available
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-            {currentNominees.length === 0 && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Set nominees first to select BB Arena winner
-              </p>
-            )}
-            {eventForm.aiArenaWinner && (
-              <p className="text-xs text-purple-700 mt-1">
-                Winner is safe from eviction (+{bbArenaPoints} points)
-              </p>
-            )}
+          <Label className="font-semibold text-sm text-purple-800">
+            BB Arena
+          </Label>
+        </div>
+        {eventForm.aiArenaEnabled && (
+          <div className="text-xs text-purple-700">
+            Winner is safe from eviction
           </div>
-        </CardContent>
+        )}
+      </div>
+      
+      {eventForm.aiArenaEnabled && (
+        <Card className="bg-purple-50 border-purple-200">
+          <CardHeader>
+            <CardTitle className="text-lg text-purple-800">BB Arena Competition</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="font-semibold">BB Arena Winner</Label>
+              <Select 
+                value={eventForm.aiArenaWinner || ''} 
+                onValueChange={handleAIArenaWinner}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select BB Arena winner" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currentNominees.length > 0 ? (
+                    currentNominees.map(nominee => (
+                      <SelectItem key={nominee} value={nominee}>
+                        {nominee}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      No nominees available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              {currentNominees.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Set nominees first to select BB Arena winner
+                </p>
+              )}
+              {eventForm.aiArenaWinner && (
+                <p className="text-xs text-purple-700 mt-1">
+                  Winner is safe from eviction (+{bbArenaPoints} points)
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       )}
-    </Card>
+    </>
   );
 };

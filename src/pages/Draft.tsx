@@ -55,8 +55,10 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
           {poolSettings && <EnhancedDraftSummaryBanner poolSettings={poolSettings} />}
         </div>
 
-        {/* Team Summary Banner */}
-        <TeamSummaryBanner formData={formData} className="mb-8" />
+        {/* Fix 3: Team Summary Banner - ensure it renders properly */}
+        <div className="mb-8">
+          <TeamSummaryBanner formData={formData} />
+        </div>
 
         {/* Draft Wizard */}
         <DraftWizard />

@@ -56,15 +56,26 @@ export const useWeeklyEventsData = () => {
       const gameWeek = currentWeekData?.week_number || 1;
       setCurrentGameWeek(gameWeek);
       
-      // Get next editing week (highest existing week + 1)
+      // Fix 4: Get next editing week - find first incomplete week or highest + 1
       const { data: weeklyData } = await supabase
         .from('weekly_results')
-        .select('week_number')
-        .order('week_number', { ascending: false })
-        .limit(1);
+        .select('week_number, is_draft')
+        .order('week_number', { ascending: true });
       
-      const nextWeek = weeklyData?.[0]?.week_number ? weeklyData[0].week_number + 1 : 1;
-      setEditingWeek(nextWeek);
+      if (weeklyData && weeklyData.length > 0) {
+        // Find the first draft week or create the next sequential week
+        const firstDraftWeek = weeklyData.find(w => w.is_draft === true);
+        if (firstDraftWeek) {
+          setEditingWeek(firstDraftWeek.week_number);
+        } else {
+          // All weeks are complete, set next week after highest
+          const highestWeek = Math.max(...weeklyData.map(w => w.week_number));
+          setEditingWeek(highestWeek + 1);
+        }
+      } else {
+        // No weeks exist, start with week 1
+        setEditingWeek(1);
+      }
 
     } catch (error) {
       console.error('Error loading data:', error);

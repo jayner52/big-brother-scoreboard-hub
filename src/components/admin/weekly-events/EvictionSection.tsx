@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface EvictionSectionProps {
   eventForm: WeeklyEventForm;
@@ -41,7 +42,10 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
 
   return (
     <div>
-      <Label className="font-semibold">{evictionLabel}</Label>
+      <Label className="font-semibold flex items-center gap-2">
+        <BigBrotherIcon type="evicted" />
+        {evictionLabel}
+      </Label>
       <Select value={eventForm.evicted} onValueChange={(value) => setEventForm(prev => ({ ...prev, evicted: value }))}>
         <SelectTrigger className="mt-1">
           <SelectValue placeholder="Select evicted contestant" />

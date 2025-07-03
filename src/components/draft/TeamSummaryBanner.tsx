@@ -13,6 +13,8 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
   formData,
   className = "",
 }) => {
+  // Debug: Log formData to understand why banner might not be rendering
+  console.log('TeamSummaryBanner formData:', formData);
   const selectedPlayers = [
     formData.player_1,
     formData.player_2,
@@ -33,8 +35,9 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
     return sum + getPlayerPoints(player);
   }, 0);
 
+  // Always render the banner, even if no data yet
   return (
-    <div className={`bg-gradient-to-r from-purple-50 via-blue-50 to-purple-50 border-b border-purple-100 py-3 px-4 ${className}`}>
+    <div className={`bg-gradient-to-r from-purple-50 via-blue-50 to-purple-50 border border-purple-200 rounded-lg py-4 px-6 shadow-sm ${className}`}>
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           {/* Team Info */}

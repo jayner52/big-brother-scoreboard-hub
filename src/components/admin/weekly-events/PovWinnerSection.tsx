@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface PovWinnerSectionProps {
   eventForm: WeeklyEventForm;
@@ -19,7 +20,10 @@ export const PovWinnerSection: React.FC<PovWinnerSectionProps> = ({
   return (
     <div className="flex items-end gap-4">
       <div className="flex-1">
-        <Label className="font-semibold">Power of Veto Winner</Label>
+        <Label className="font-semibold flex items-center gap-2">
+          <BigBrotherIcon type="pov" />
+          Power of Veto Winner
+        </Label>
         <Select value={eventForm.povWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, povWinner: value }))}>
           <SelectTrigger className="mt-1">
             <SelectValue placeholder="Select POV winner" />

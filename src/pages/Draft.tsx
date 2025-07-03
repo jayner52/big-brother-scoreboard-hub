@@ -2,10 +2,12 @@ import React from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
 import { DraftWizard } from '@/components/draft/DraftWizard';
 import { EnhancedDraftSummaryBanner } from '@/components/draft/EnhancedDraftSummaryBanner';
+import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePoolData } from '@/hooks/usePoolData';
+import { useDraftForm } from '@/hooks/useDraftForm';
 
 const Draft = () => {
   const navigate = useNavigate();
@@ -19,6 +21,7 @@ const Draft = () => {
 
 const DraftContent = ({ navigate }: { navigate: any }) => {
   const { poolSettings, loading } = usePoolData();
+  const { formData } = useDraftForm();
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -51,6 +54,9 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
           {/* Enhanced Summary Banner */}
           {poolSettings && <EnhancedDraftSummaryBanner poolSettings={poolSettings} />}
         </div>
+
+        {/* Team Summary Banner */}
+        <TeamSummaryBanner formData={formData} className="mb-8" />
 
         {/* Draft Wizard */}
         <DraftWizard />

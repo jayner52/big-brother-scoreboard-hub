@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ChevronLeft, ChevronRight, Check, Sparkles, RotateCcw } from 'lucide-react';
 import { BasicInfoForm } from './BasicInfoForm';
 import { TeamDraftSection } from './TeamDraftSection';
 import { BonusQuestionsSection } from './BonusQuestionsSection';
@@ -18,7 +19,7 @@ import { DraftFormPersistenceAlert } from './DraftFormPersistenceAlert';
 const STEPS = [
   { id: 'info', title: 'Basic Info', description: 'Your name and team details' },
   { id: 'team', title: 'Draft Team', description: 'Select your 5 houseguests' },
-  { id: 'bonus', title: 'Bonus Questions', description: 'Optional predictions for extra points' },
+  { id: 'bonus', title: 'Bonus Questions', description: 'Strategic predictions for extra points' },
   { id: 'payment', title: 'Payment', description: 'Secure payment confirmation' }
 ];
 
@@ -198,6 +199,36 @@ export const DraftWizard: React.FC = () => {
             </Button>
 
             <div className="flex items-center gap-3">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <RotateCcw className="h-4 w-4" />
+                    Clear Form
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear Draft Form</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to clear all form data? This will reset your team name, player selections, and bonus answers. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        resetForm();
+                        setCurrentStep(0);
+                        setCompletedSteps([]);
+                      }}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Clear Form
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               {isLastStep && (
                 <Badge variant="secondary" className="bg-purple-100 text-purple-700 px-3 py-1">
                   Ready to submit!

@@ -17,13 +17,23 @@ export const useActiveContestants = () => {
         .order('name');
 
       // Load evicted contestants from weekly_events with proper join
+      // Get current week to determine who should be considered evicted
+      const { data: currentWeekData } = await supabase
+        .from('current_game_week')
+        .select('week_number')
+        .single();
+      
+      const currentWeek = currentWeekData?.week_number || 7;
+      
       const { data: evictionData } = await supabase
         .from('weekly_events')
         .select(`
           contestants(name),
-          event_type
+          event_type,
+          week_number
         `)
-        .eq('event_type', 'evicted');
+        .eq('event_type', 'evicted')
+        .lt('week_number', currentWeek); // Only get evictions before current week
 
       const evicted = evictionData?.map(event => event.contestants?.name).filter(Boolean) || [];
       

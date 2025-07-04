@@ -158,6 +158,10 @@ export const PrizePoolPanel: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
+      <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white p-6 rounded-lg shadow-lg border-2 border-green-200 mb-6" style={{ boxShadow: '0 8px 32px rgba(34, 197, 94, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
+        <h2 className="text-2xl font-bold mb-2 text-shadow-lg">💰 Prize Pool Management</h2>
+        <p className="text-green-100">Manage prize distribution and track pool finances</p>
+      </div>
       {/* Prize Pool Overview */}
       <Card>
         <CardContent className="p-6">

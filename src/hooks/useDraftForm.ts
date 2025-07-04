@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDraftEdit } from './useDraftEdit';
 
 export interface DraftFormData {
   participant_name: string;
@@ -16,6 +17,7 @@ export interface DraftFormData {
 const DRAFT_STORAGE_KEY = 'bb_draft_form_data';
 
 export const useDraftForm = () => {
+  const { isEditMode, getEditFormData } = useDraftEdit();
   const [formData, setFormData] = useState<DraftFormData>({
     participant_name: '',
     team_name: '',
@@ -31,21 +33,32 @@ export const useDraftForm = () => {
 
   // Load saved data on mount
   useEffect(() => {
-    const savedData = localStorage.getItem(DRAFT_STORAGE_KEY);
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setFormData(parsed);
-      } catch (error) {
-        console.error('Error loading saved draft data:', error);
+    if (isEditMode) {
+      // If in edit mode, load data from edit context
+      const editData = getEditFormData();
+      if (editData) {
+        setFormData(prev => ({ ...prev, ...editData }));
+      }
+    } else {
+      // Load from localStorage for new drafts
+      const savedData = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setFormData(parsed);
+        } catch (error) {
+          console.error('Error loading saved draft data:', error);
+        }
       }
     }
-  }, []);
+  }, [isEditMode, getEditFormData]);
 
-  // Save data to localStorage whenever formData changes
+  // Save data to localStorage whenever formData changes (but not in edit mode)
   useEffect(() => {
-    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(formData));
-  }, [formData]);
+    if (!isEditMode) {
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(formData));
+    }
+  }, [formData, isEditMode]);
 
   const updateFormData = (updates: Partial<DraftFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));

@@ -23,14 +23,14 @@ export const useCurrentWeekStatus = (): CurrentWeekStatus => {
 
     const loadCurrentWeekStatus = async () => {
       try {
+        // Try to get current week status, but fall back gracefully if no data exists
         const { data, error } = await supabase
           .from('weekly_results')
           .select('hoh_winner, pov_winner, nominees')
           .eq('week_number', currentWeek)
-          .single();
+          .maybeSingle();
 
-        if (error) throw error;
-
+        // If no error and data exists, use it; otherwise use defaults
         setStatus({
           hohWinner: data?.hoh_winner || null,
           povWinner: data?.pov_winner || null,
@@ -39,7 +39,12 @@ export const useCurrentWeekStatus = (): CurrentWeekStatus => {
         });
       } catch (error) {
         console.error('Error loading current week status:', error);
-        setStatus(prev => ({ ...prev, loading: false }));
+        setStatus({
+          hohWinner: null,
+          povWinner: null,
+          nominees: [],
+          loading: false,
+        });
       }
     };
 

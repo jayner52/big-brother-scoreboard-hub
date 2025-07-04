@@ -32,10 +32,10 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
               <TooltipTrigger>
                 <Badge 
                   variant="outline" 
-                  className="text-xs flex items-center gap-1"
+                  className="text-xs flex items-center justify-center gap-1 min-w-[2rem] h-6"
                 >
-                  <span className="text-sm">{emoji}</span>
-                  {count > 1 && `${count}x`}
+                  <span className="text-sm flex items-center justify-center">{emoji}</span>
+                  {count > 1 && <span className="text-xs">{count}x</span>}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent>

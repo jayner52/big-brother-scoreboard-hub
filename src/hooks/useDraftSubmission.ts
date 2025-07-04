@@ -2,10 +2,12 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { DraftFormData } from './useDraftForm';
 import { usePool } from '@/contexts/PoolContext';
+import { useDraftEdit } from './useDraftEdit';
 
 export const useDraftSubmission = () => {
   const { toast } = useToast();
   const { activePool } = usePool();
+  const { isEditMode, editEntryData, clearEditData } = useDraftEdit();
 
   const validateForm = (formData: DraftFormData): string | null => {
     if (!formData.participant_name.trim() || !formData.team_name.trim()) {
@@ -49,40 +51,70 @@ export const useDraftSubmission = () => {
         return false;
       }
 
-      if (!activePool) {
+      if (isEditMode && editEntryData) {
+        // Update existing entry
+        const { error } = await supabase
+          .from('pool_entries')
+          .update({
+            participant_name: formData.participant_name,
+            team_name: formData.team_name,
+            email: formData.email,
+            player_1: formData.player_1,
+            player_2: formData.player_2,
+            player_3: formData.player_3,
+            player_4: formData.player_4,
+            player_5: formData.player_5,
+            bonus_answers: formData.bonus_answers,
+            payment_confirmed: formData.payment_confirmed,
+          })
+          .eq('id', editEntryData.id);
+
+        if (error) throw error;
+
         toast({
-          title: "Error", 
-          description: "No active pool selected",
-          variant: "destructive",
+          title: "Success!",
+          description: "Your team has been updated successfully",
         });
-        return false;
+
+        clearEditData();
+        return true;
+      } else {
+        // Create new entry
+        if (!activePool) {
+          toast({
+            title: "Error", 
+            description: "No active pool selected",
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        const { error } = await supabase
+          .from('pool_entries')
+          .insert({
+            user_id: user.id,
+            pool_id: activePool.id,
+            participant_name: formData.participant_name,
+            team_name: formData.team_name,
+            email: formData.email,
+            player_1: formData.player_1,
+            player_2: formData.player_2,
+            player_3: formData.player_3,
+            player_4: formData.player_4,
+            player_5: formData.player_5,
+            bonus_answers: formData.bonus_answers,
+            payment_confirmed: formData.payment_confirmed,
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success!",
+          description: `Your team has been submitted to ${activePool.name}`,
+        });
+
+        return true;
       }
-
-      const { error } = await supabase
-        .from('pool_entries')
-        .insert({
-          user_id: user.id,
-          pool_id: activePool.id,
-          participant_name: formData.participant_name,
-          team_name: formData.team_name,
-          email: formData.email,
-          player_1: formData.player_1,
-          player_2: formData.player_2,
-          player_3: formData.player_3,
-          player_4: formData.player_4,
-          player_5: formData.player_5,
-          bonus_answers: formData.bonus_answers,
-          payment_confirmed: formData.payment_confirmed,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: `Your team has been submitted to ${activePool.name}`,
-      });
-
-      return true;
 
     } catch (error) {
       console.error('Error submitting team:', error);

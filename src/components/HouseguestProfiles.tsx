@@ -7,6 +7,7 @@ import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useUserPaymentUpdate } from '@/hooks/useUserPaymentUpdate';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserTeamsProps {
@@ -17,13 +18,16 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   const [userEntries, setUserEntries] = useState<PoolEntry[]>([]);
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [draftLocked, setDraftLocked] = useState(true);
   const { houseguestPoints } = useHouseguestPoints();
   const { evictedContestants } = useEvictedContestants();
   const { updatePaymentStatus, updating } = useUserPaymentUpdate();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadUserEntries();
+    loadDraftSettings();
   }, [userId]);
 
   const loadUserEntries = async () => {
@@ -55,6 +59,20 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
     }
   };
 
+  const loadDraftSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pool_settings')
+        .select('draft_locked')
+        .single();
+      
+      if (error) throw error;
+      setDraftLocked(data?.draft_locked ?? true);
+    } catch (error) {
+      console.error('Error loading draft settings:', error);
+    }
+  };
+
   const handlePaymentToggle = async (entryId: string, currentStatus: boolean) => {
     const success = await updatePaymentStatus(entryId, !currentStatus);
     if (success) {
@@ -63,6 +81,21 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
         entry.id === entryId ? { ...entry, payment_confirmed: !currentStatus } : entry
       ));
     }
+  };
+
+  const handleEditTeam = (entry: PoolEntry) => {
+    if (draftLocked) {
+      toast({
+        title: "Draft Locked",
+        description: "Draft editing is currently locked. Contact the admin to unlock editing.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Store the entry data for editing
+    localStorage.setItem('edit_entry_data', JSON.stringify(entry));
+    navigate('/draft?edit=true');
   };
 
   const renderPlayerName = (playerName: string) => {
@@ -163,6 +196,17 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
           
           {/* Right: Status & Actions */}
           <div className="flex items-center gap-3">
+            {/* Edit Team Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleEditTeam(currentEntry)}
+              className="h-8 px-3 text-xs"
+              disabled={draftLocked}
+            >
+              {draftLocked ? "Locked" : "Edit Team"}
+            </Button>
+            
             {/* Payment Toggle */}
             <Button
               variant={currentEntry.payment_confirmed ? "default" : "outline"}

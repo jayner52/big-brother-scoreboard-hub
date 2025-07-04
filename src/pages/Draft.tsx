@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePoolData } from '@/hooks/usePoolData';
 import { useDraftForm } from '@/hooks/useDraftForm';
+import { useDraftEdit } from '@/hooks/useDraftEdit';
 
 const Draft = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const Draft = () => {
 const DraftContent = ({ navigate }: { navigate: any }) => {
   const { poolSettings, loading } = usePoolData();
   const { formData, updateFormData } = useDraftForm();
+  const { isEditMode } = useDraftEdit();
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -46,10 +48,10 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-6 px-8 rounded-lg shadow-lg mb-6">
             <h1 className="text-4xl font-bold mb-2">
-              🏠 Draft Your Team
+              🏠 {isEditMode ? 'Edit Your Team' : 'Draft Your Team'}
             </h1>
             <p className="text-lg text-red-100">
-              Select your 5 houseguests and answer bonus questions to build your winning team!
+              {isEditMode ? 'Update your picks and bonus predictions' : 'Select your 5 houseguests and answer bonus questions to build your winning team!'}
             </p>
           </div>
           

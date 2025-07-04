@@ -140,6 +140,11 @@ export const CustomScoringPanel: React.FC = () => {
 
   return (
     <div className="p-6">
+        <div className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 text-white p-6 rounded-lg shadow-lg border-2 border-orange-200 mb-6" style={{ boxShadow: '0 8px 32px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
+          <h2 className="text-2xl font-bold mb-2 text-shadow-lg">🎯 Custom Scoring Rules</h2>
+          <p className="text-orange-100">Configure point values and activate/deactivate scoring rules</p>
+        </div>
+        
         <Accordion type="multiple" defaultValue={Object.keys(groupedRules)} className="space-y-4">
           {Object.entries(groupedRules).map(([category, rules]) => (
             <AccordionItem key={category} value={category} className="border rounded-lg">

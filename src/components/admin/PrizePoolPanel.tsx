@@ -157,18 +157,9 @@ export const PrizePoolPanel: React.FC = () => {
   const currency = poolSettings?.entry_fee_currency || 'CAD';
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Prize Pool Overview */}
       <Card>
-        <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Prize Pool Overview
-          </CardTitle>
-          <CardDescription className="text-green-100">
-            Manage prize distribution and view financial summary
-          </CardDescription>
-        </CardHeader>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="text-center p-4 bg-blue-50 rounded-lg">

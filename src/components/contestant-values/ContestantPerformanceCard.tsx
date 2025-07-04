@@ -54,8 +54,10 @@ export const ContestantPerformanceCard: React.FC<ContestantPerformanceCardProps>
           povWinner={povWinner}
           nominees={nominees}
         />
-        <EmojiLegend />
       </CardContent>
+      <div className="px-6 pb-6">
+        <EmojiLegend />
+      </div>
     </Card>
   );
 };

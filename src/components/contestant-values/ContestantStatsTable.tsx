@@ -28,43 +28,41 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Rank</TableHead>
-            <TableHead>Contestant</TableHead>
-            <TableHead className="w-24">Group</TableHead>
-            {showSpoilers && <TableHead>Status</TableHead>}
-            <TableHead>Points Earned</TableHead>
-            <TableHead>HOH Wins</TableHead>
-            <TableHead>Veto Wins</TableHead>
-            <TableHead>Survived the Eviction Vote</TableHead>
-            <TableHead>Times Saved by Veto</TableHead>
-            <TableHead>Special Events</TableHead>
-            <TableHead>Times Selected</TableHead>
-            <TableHead>Fantasy Value</TableHead>
+            <TableHead className="text-center">Rank</TableHead>
+            <TableHead className="text-center">Contestant</TableHead>
+            <TableHead className="text-center w-24">Group</TableHead>
+            {showSpoilers && <TableHead className="text-center">Status</TableHead>}
+            <TableHead className="text-center">HOH Wins</TableHead>
+            <TableHead className="text-center">Veto Wins</TableHead>
+            <TableHead className="text-center w-32">Survived the Eviction Vote</TableHead>
+            <TableHead className="text-center">Times Saved by Veto</TableHead>
+            <TableHead className="text-center">Special Events</TableHead>
+            <TableHead className="text-center">Times Selected</TableHead>
+            <TableHead className="text-center w-24">Total Points</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {contestantStats.map((stat, index) => {
+        {contestantStats.map((stat, index) => {
             const contestant = contestants.find(c => c.name === stat.contestant_name);
-            const fantasyValue = stat.times_selected > 0 ? 
-              Math.round(stat.total_points_earned / stat.times_selected).toString() : '0';
+            const isEvicted = stat.elimination_week !== null;
             
             return (
               <TableRow key={stat.contestant_name}>
-                <TableCell className="font-bold">
+                <TableCell className="text-center font-bold">
                   {index + 1}
                 </TableCell>
-                <TableCell className="font-semibold">
+                <TableCell className="text-center font-semibold">
                   {stat.contestant_name}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Badge variant="outline" className="text-xs">
                     {stat.group_name}
                   </Badge>
                 </TableCell>
                 {showSpoilers && (
                   <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {contestant?.isActive ? (
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {!isEvicted ? (
                         <>
                           <Badge variant="default">Active</Badge>
                           {hohWinner === stat.contestant_name && (
@@ -106,9 +104,6 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                     </div>
                   </TableCell>
                 )}
-                <TableCell className="text-center font-bold">
-                  {stat.total_points_earned}
-                </TableCell>
                 <TableCell className="text-center">
                   {stat.hoh_wins}
                 </TableCell>
@@ -130,7 +125,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                   {stat.times_selected}
                 </TableCell>
                 <TableCell className="text-center font-bold text-green-600">
-                  {fantasyValue} pts/pick
+                  {stat.total_points_earned}
                 </TableCell>
               </TableRow>
             );

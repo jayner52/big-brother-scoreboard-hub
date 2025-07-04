@@ -139,17 +139,7 @@ export const CustomScoringPanel: React.FC = () => {
   }
 
   return (
-    <Card>
-      <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5" />
-          Custom Scoring Rules
-        </CardTitle>
-        <CardDescription className="text-orange-100">
-          Customize point values for all events and activities
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-6">
+    <div className="p-6">
         <Accordion type="multiple" defaultValue={Object.keys(groupedRules)} className="space-y-4">
           {Object.entries(groupedRules).map(([category, rules]) => (
             <AccordionItem key={category} value={category} className="border rounded-lg">
@@ -246,7 +236,6 @@ export const CustomScoringPanel: React.FC = () => {
         >
           {saving ? 'Saving...' : 'Save Scoring Rules'}
         </Button>
-        </CardContent>
-    </Card>
+    </div>
   );
 };

@@ -1,8 +1,8 @@
 import React from 'react';
-import { Crown, Ban, X } from 'lucide-react';
+import { Crown, Ban, X, Users } from 'lucide-react';
 
 interface BigBrotherIconProps {
-  type: 'hoh' | 'pov' | 'evicted';
+  type: 'hoh' | 'pov' | 'evicted' | 'nominees';
   className?: string;
 }
 
@@ -12,6 +12,8 @@ export const BigBrotherIcon: React.FC<BigBrotherIconProps> = ({ type, className 
       return <Crown className={`${className} text-yellow-600`} />;
     case 'pov':
       return <Ban className={`${className} text-green-600`} />;
+    case 'nominees':
+      return <Users className={`${className} text-orange-600`} />;
     case 'evicted':
       return <X className={`${className} text-red-600`} />;
     default:
@@ -22,6 +24,7 @@ export const BigBrotherIcon: React.FC<BigBrotherIconProps> = ({ type, className 
 export const getBBThemedColors = () => ({
   hoh: 'text-yellow-600 bg-yellow-100 border-yellow-300',
   pov: 'text-green-600 bg-green-100 border-green-300',
+  nominees: 'text-orange-600 bg-orange-100 border-orange-300',
   evicted: 'text-red-600 bg-red-100 border-red-300',
   jury: 'text-purple-600 bg-purple-100 border-purple-300',
 });

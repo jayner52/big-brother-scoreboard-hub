@@ -171,6 +171,18 @@ export const LiveResults: React.FC = () => {
                     {currentWeekData.hoh_winner || "TBD"}
                   </p>
                 </div>
+                <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <BigBrotherIcon type="nominees" className="h-8 w-8 mx-auto mb-2" />
+                  <h4 className="font-semibold text-orange-800">Nominees</h4>
+                  <p className="text-sm font-bold text-orange-900">
+                    {currentWeekData.nominees?.join(', ') || "TBD"}
+                  </p>
+                  {currentWeekData.replacement_nominee && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      Replacement: {currentWeekData.replacement_nominee}
+                    </p>
+                  )}
+                </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
                   <BigBrotherIcon type="pov" className="h-8 w-8 mx-auto mb-2" />
                   <h4 className="font-semibold text-green-800">Power of Veto</h4>
@@ -180,18 +192,6 @@ export const LiveResults: React.FC = () => {
                   {currentWeekData.pov_used && (
                     <p className="text-sm text-green-600 mt-1">
                       Used on {currentWeekData.pov_used_on}
-                    </p>
-                  )}
-                </div>
-                <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <Users className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-orange-800">Nominees</h4>
-                  <p className="text-sm font-bold text-orange-900">
-                    {currentWeekData.nominees?.join(', ') || "TBD"}
-                  </p>
-                  {currentWeekData.replacement_nominee && (
-                    <p className="text-xs text-orange-600 mt-1">
-                      Replacement: {currentWeekData.replacement_nominee}
                     </p>
                   )}
                 </div>

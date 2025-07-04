@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Minus } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface NomineesSectionProps {
   eventForm: WeeklyEventForm;
@@ -68,7 +69,8 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <Label className="font-semibold">
+        <Label className="font-semibold flex items-center gap-2">
+          <BigBrotherIcon type="nominees" className="h-4 w-4" />
           Nominees {!hohSelected && <span className="text-gray-400 text-sm">(Select HOH first)</span>}
         </Label>
         <div className="flex gap-2">

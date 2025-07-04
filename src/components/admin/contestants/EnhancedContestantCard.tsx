@@ -23,6 +23,7 @@ interface EnhancedContestantCardProps {
   onView: () => void;
   onDelete?: () => void;
   onBioUpdate?: () => void;
+  hideEditButton?: boolean;
 }
 
 export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
@@ -31,6 +32,7 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
   onView,
   onDelete,
   onBioUpdate,
+  hideEditButton = false,
 }) => {
   const { evictedContestants } = useEvictedContestants();
   const { toast } = useToast();
@@ -210,10 +212,12 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
           <Button size="sm" variant="outline" onClick={onView}>
             <Eye className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="outline" onClick={onEdit}>
-            <Pencil className="h-4 w-4" />
-            Edit All
-          </Button>
+          {!hideEditButton && (
+            <Button size="sm" variant="outline" onClick={onEdit}>
+              <Pencil className="h-4 w-4" />
+              Edit All
+            </Button>
+          )}
           {onDelete && (
             <Button size="sm" variant="outline" onClick={onDelete}>
               <Trash2 className="h-4 w-4" />

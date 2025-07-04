@@ -8,7 +8,7 @@ import { WeekControls } from './weekly-events/WeekControls';
 import { WeeklyEventsHeader } from './weekly-events/WeeklyEventsHeader';
 import { WeeklyEventsToggles } from './weekly-events/WeeklyEventsToggles';
 import { WeeklyEventsContent } from './weekly-events/WeeklyEventsContent';
-import { ValidationSimplified } from './ValidationSimplified';
+
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { Button } from '@/components/ui/button';
 
@@ -37,15 +37,6 @@ export const WeeklyEventsPanel: React.FC = () => {
     handleClearWeek
   } = useWeekManagement(contestants, setEventForm, eventForm);
 
-  const { 
-    isAIPopulating, 
-    isValidating, 
-    validationData, 
-    handleAIPopulate, 
-    handleValidateData, 
-    handlePopulateValidatedData 
-  } = useAIPopulate(eventForm, setEventForm, contestants);
-
   if (loading) {
     return <div className="text-center py-8">Loading weekly events panel...</div>;
   }
@@ -66,8 +57,6 @@ export const WeeklyEventsPanel: React.FC = () => {
         />
         
         <CardContent className="p-6 space-y-6">
-          {/* Manual Entry Notice */}
-          <ValidationSimplified />
 
           {/* Week Controls */}
           <WeekControls
@@ -77,9 +66,7 @@ export const WeeklyEventsPanel: React.FC = () => {
             onClearWeek={() => handleClearWeek(eventForm.week)}
             onSaveProgress={saveCurrentWeekDraft}
             onSubmitWeek={handleSubmitWeek}
-            onAIPopulate={handleAIPopulate}
             isAutoSaving={isAutoSaving}
-            isAIPopulating={isAIPopulating}
           />
 
           {/* Special Week Toggles */}

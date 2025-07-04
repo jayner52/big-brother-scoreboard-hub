@@ -13,9 +13,7 @@ interface WeekControlsProps {
   onClearWeek: () => void;
   onSaveProgress: () => void;
   onSubmitWeek: () => void;
-  onAIPopulate?: () => void;
   isAutoSaving: boolean;
-  isAIPopulating?: boolean;
 }
 
 export const WeekControls: React.FC<WeekControlsProps> = ({
@@ -25,9 +23,7 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
   onClearWeek,
   onSaveProgress,
   onSubmitWeek,
-  onAIPopulate,
-  isAutoSaving,
-  isAIPopulating
+  isAutoSaving
 }) => {
   return (
     <div className="space-y-4">
@@ -68,31 +64,10 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons - Organized by workflow */}
+      {/* Action Buttons */}
       <div className="space-y-3">
-        {/* Primary Action Row - AI and Manual Entry */}
+        {/* Primary Action Row */}
         <div className="flex gap-3">
-          {onAIPopulate && (
-            <Button 
-              onClick={onAIPopulate}
-              disabled={isAIPopulating}
-              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md"
-              size="lg"
-            >
-              {isAIPopulating ? (
-                <>
-                  <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Analyzing Live Feeds...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  AI Populate Week {weekNumber}
-                </>
-              )}
-            </Button>
-          )}
-          
           <Button 
             onClick={onSaveProgress}
             variant="outline"

@@ -227,10 +227,10 @@ export const useWeeklyEventsSubmission = (
         description: `Week ${eventForm.week} events recorded successfully`,
       });
 
-      // Calculate next week based on all completed weeks (most reliable approach)
+      // Calculate next week and advance with retry logic
+      const completedWeek = eventForm.week;
+      
       try {
-        const completedWeek = eventForm.week;
-        
         // Get all completed weeks to calculate the proper next week
         const { data: allWeeklyResults } = await supabase
           .from('weekly_results')
@@ -239,33 +239,54 @@ export const useWeeklyEventsSubmission = (
           .order('week_number', { ascending: true });
         
         const completedWeeks = allWeeklyResults?.map(w => w.week_number) || [];
-        console.log(`All completed weeks after Week ${completedWeek}: [${completedWeeks.join(', ')}]`);
-        
-        // Next week = highest completed week + 1
         const nextWeek = Math.max(...completedWeeks, completedWeek) + 1;
         
-        console.log(`Week ${completedWeek} completed, advancing to Week ${nextWeek}`);
+        console.log(`Advancing from Week ${completedWeek} to Week ${nextWeek}`);
         
-        const { error: weekUpdateError } = await supabase.rpc('update_current_game_week', { 
-          new_week_number: nextWeek 
-        });
+        // Try to update current game week with retry
+        let retryCount = 0;
+        const maxRetries = 3;
+        let weekUpdateError = null;
         
-        if (weekUpdateError) {
-          console.error('Error updating current game week:', weekUpdateError);
-          throw weekUpdateError;
+        while (retryCount < maxRetries) {
+          const { error } = await supabase.rpc('update_current_game_week', { 
+            new_week_number: nextWeek 
+          });
+          
+          if (!error) {
+            weekUpdateError = null;
+            break;
+          }
+          
+          weekUpdateError = error;
+          retryCount++;
+          console.warn(`Week advancement attempt ${retryCount} failed:`, error);
+          
+          if (retryCount < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          }
         }
         
-        toast({
-          title: "Week Completed!",
-          description: `Week ${completedWeek} completed! Week ${nextWeek} is now current`,
-        });
+        if (weekUpdateError) {
+          console.error('Failed to update current game week after retries:', weekUpdateError);
+          toast({
+            title: "Week Advancement Failed",
+            description: `Week ${completedWeek} submitted successfully, but failed to advance to Week ${nextWeek}. Please refresh and check current week.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Week Completed!",
+            description: `Week ${completedWeek} completed! Advanced to Week ${nextWeek}`,
+          });
+          console.log(`✅ Successfully advanced: Week ${completedWeek} → Week ${nextWeek}`);
+        }
         
-        console.log(`✅ Successfully advanced: Week ${completedWeek} → Week ${nextWeek} current`);
       } catch (error) {
-        console.error('Failed to update current game week:', error);
+        console.error('Unexpected error during week advancement:', error);
         toast({
-          title: "Warning",
-          description: "Week submitted but failed to advance current game week",
+          title: "Week Advancement Error",
+          description: `Week ${completedWeek} submitted but week advancement failed. Please refresh the page.`,
           variant: "destructive",
         });
       }

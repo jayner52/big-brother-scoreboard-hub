@@ -47,6 +47,7 @@ export const ContestantGrid: React.FC<ContestantGridProps> = ({
             onView={() => onView(contestant)}
             onDelete={() => onDelete(contestant.id)}
             onBioUpdate={onBioUpdate}
+            hideEditButton={true}
           />
         ))}
       </div>

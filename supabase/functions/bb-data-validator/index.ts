@@ -2,9 +2,9 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 
-const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,17 +51,17 @@ serve(async (req) => {
     const { season, week, contestants }: ValidationRequest = await req.json();
     console.log(`Validating Big Brother ${season} Week ${week} data`);
 
-    if (!perplexityApiKey) {
-      throw new Error('Perplexity API key not configured');
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
     }
 
-    // Generate dynamic search queries for comprehensive data gathering
-    const searchQueries = generateSearchQueries(season, week);
-    console.log('Generated search queries:', searchQueries);
+    // Scrape data from multiple trusted sources
+    const scrapedData = await scrapeMultipleSources(season, week, contestants);
+    console.log(`Scraped data from ${scrapedData.length} sources`);
 
-    // Gather data from multiple sources using AI-powered web search
-    const sourceData = await gatherSourceData(searchQueries, contestants);
-    console.log(`Gathered data from ${sourceData.length} sources`);
+    // Use AI to parse and validate the scraped content
+    const sourceData = await parseScrapedDataWithAI(scrapedData, contestants);
+    console.log(`Parsed data from ${sourceData.length} sources`);
 
     // Validate each data point with confidence scoring
     const validationResults = await validateDataPoints(sourceData, contestants);
@@ -103,52 +103,197 @@ serve(async (req) => {
   }
 });
 
-function generateSearchQueries(season: string, week: number): string[] {
-  return [
-    `Big Brother ${season} Week ${week} HOH Head of Household winner`,
-    `Big Brother ${season} Week ${week} Power of Veto POV winner`,
-    `Big Brother ${season} Week ${week} nominations nominees`,
-    `Big Brother ${season} Week ${week} eviction evicted houseguest`,
-    `Big Brother ${season} Week ${week} veto used replacement nominee`,
-    `Big Brother ${season} Week ${week} results summary official`,
-    `Big Brother ${season} Week ${week} CBS episode recap`,
-    `Big Brother ${season} Week ${week} live feeds updates`
-  ];
+interface ScrapedSource {
+  url: string;
+  content: string;
+  source_type: string;
+  timestamp: string;
 }
 
-async function gatherSourceData(queries: string[], contestants: string[]): Promise<any[]> {
-  const allData = [];
+async function scrapeMultipleSources(season: string, week: number, contestants: string[]): Promise<ScrapedSource[]> {
+  const sources: ScrapedSource[] = [];
   
-  for (const query of queries) {
+  try {
+    // Scrape Wikipedia
+    const wikipediaData = await scrapeWikipedia(season, week);
+    if (wikipediaData) sources.push(wikipediaData);
+    
+    // Scrape Reddit r/BigBrother 
+    const redditData = await scrapeReddit(season, week);
+    if (redditData) sources.push(redditData);
+    
+    // Scrape CBS (if accessible)
+    const cbsData = await scrapeCBS(season, week);
+    if (cbsData) sources.push(cbsData);
+    
+    // Scrape Big Brother Network
+    const bbnData = await scrapeBigBrotherNetwork(season, week);
+    if (bbnData) sources.push(bbnData);
+    
+  } catch (error) {
+    console.error('Error scraping sources:', error);
+  }
+  
+  return sources;
+}
+
+async function scrapeWikipedia(season: string, week: number): Promise<ScrapedSource | null> {
+  try {
+    const url = `https://en.wikipedia.org/wiki/Big_Brother_${season}_(American_season)`;
+    const response = await fetch(url);
+    
+    if (!response.ok) return null;
+    
+    const html = await response.text();
+    // Extract relevant sections about weekly competitions
+    const weekPattern = new RegExp(`Week ${week}|Week ${week}:`, 'gi');
+    const matches = html.match(weekPattern);
+    
+    if (matches) {
+      return {
+        url,
+        content: html,
+        source_type: 'Wikipedia',
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error scraping Wikipedia:', error);
+    return null;
+  }
+}
+
+async function scrapeReddit(season: string, week: number): Promise<ScrapedSource | null> {
+  try {
+    // Search for Reddit posts using Reddit's JSON API
+    const searchTerms = [
+      `Big Brother ${season} Week ${week} Results`,
+      `BB${season} Week ${week} HOH POV`,
+      `Big Brother ${season} Episode Discussion Week ${week}`,
+      `BB${season} Week ${week} Eviction`
+    ];
+    
+    for (const term of searchTerms) {
+      const url = `https://www.reddit.com/r/BigBrother/search.json?q=${encodeURIComponent(term)}&restrict_sr=1&sort=relevance&t=month&limit=5`;
+      
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'BigBrotherValidator/1.0'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const posts = data.data?.children || [];
+          
+          if (posts.length > 0) {
+            // Get the most relevant post
+            const topPost = posts[0].data;
+            const postUrl = `https://www.reddit.com${topPost.permalink}`;
+            
+            // Fetch post comments
+            const commentsResponse = await fetch(`${postUrl}.json`, {
+              headers: { 'User-Agent': 'BigBrotherValidator/1.0' }
+            });
+            
+            if (commentsResponse.ok) {
+              const commentsData = await commentsResponse.json();
+              return {
+                url: postUrl,
+                content: JSON.stringify(commentsData),
+                source_type: 'Reddit Live Feeds',
+                timestamp: new Date().toISOString()
+              };
+            }
+          }
+        }
+      } catch (searchError) {
+        console.error(`Error searching Reddit for "${term}":`, searchError);
+        continue;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error scraping Reddit:', error);
+    return null;
+  }
+}
+
+async function scrapeCBS(season: string, week: number): Promise<ScrapedSource | null> {
+  try {
+    // Try CBS episode recaps
+    const url = `https://www.cbs.com/shows/big_brother/`;
+    const response = await fetch(url);
+    
+    if (response.ok) {
+      const html = await response.text();
+      return {
+        url,
+        content: html,
+        source_type: 'CBS Official',
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error scraping CBS:', error);
+    return null;
+  }
+}
+
+async function scrapeBigBrotherNetwork(season: string, week: number): Promise<ScrapedSource | null> {
+  try {
+    const url = `https://bigbrothernetwork.com/`;
+    const response = await fetch(url);
+    
+    if (response.ok) {
+      const html = await response.text();
+      return {
+        url,
+        content: html,
+        source_type: 'Big Brother Network',
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error scraping Big Brother Network:', error);
+    return null;
+  }
+}
+
+async function parseScrapedDataWithAI(scrapedData: ScrapedSource[], contestants: string[]): Promise<any[]> {
+  const parsedResults = [];
+  
+  for (const source of scrapedData) {
     try {
-      const searchResult = await performAIWebSearch(query, contestants);
-      if (searchResult) {
-        allData.push(searchResult);
+      const parsed = await analyzeSourceWithOpenAI(source, contestants);
+      if (parsed) {
+        parsedResults.push(parsed);
       }
     } catch (error) {
-      console.error(`Error searching for: ${query}`, error);
+      console.error(`Error parsing ${source.source_type}:`, error);
     }
   }
   
-  return allData;
+  return parsedResults;
 }
 
-async function performAIWebSearch(query: string, contestants: string[]): Promise<any> {
+async function analyzeSourceWithOpenAI(source: ScrapedSource, contestants: string[]): Promise<any> {
   const prompt = `
-    Search for and analyze information about: "${query}"
+    Analyze the following ${source.source_type} content for Big Brother competition results.
     
     Available contestants: ${contestants.join(', ')}
     
-    Please provide structured information about:
-    1. HOH (Head of Household) winner
-    2. POV (Power of Veto) winner  
-    3. Initial nominees
-    4. Veto usage (true/false)
-    5. Replacement nominee (if veto was used)
-    6. Final evicted contestant
-    7. Source reliability indicator
+    Content: ${source.content.substring(0, 8000)} // Limit content size
     
-    Return ONLY valid JSON in this exact format:
+    Extract and return ONLY the following information in valid JSON format:
     {
       "hoh_winner": "contestant_name or null",
       "pov_winner": "contestant_name or null", 
@@ -156,40 +301,41 @@ async function performAIWebSearch(query: string, contestants: string[]): Promise
       "veto_used": true or false,
       "replacement_nominee": "contestant_name or null",
       "evicted": "contestant_name or null",
-      "source_type": "CBS Official" or "Wikipedia" or "Big Brother Network" or "Reddit" or "Other",
+      "source_type": "${source.source_type}",
       "confidence_indicators": ["verified", "multiple_sources", "official"] or [],
       "found_data": true or false
     }
     
-    Use exact contestant names from the provided list. If no reliable information found, set found_data to false.
+    Rules:
+    - Use EXACT contestant names from the provided list
+    - If information is unclear or missing, set to null
+    - Set found_data to false if no relevant competition results found
+    - Look for keywords: HOH, Head of Household, POV, Power of Veto, nominated, evicted
+    - For Reddit: Look for highly upvoted or verified information
   `;
 
-  const response = await fetch('https://api.perplexity.ai/chat/completions', {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${perplexityApiKey}`,
+      'Authorization': `Bearer ${openAIApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.1-sonar-small-128k-online',
+      model: 'gpt-4o-mini',
       messages: [
         { 
           role: 'system', 
-          content: 'You are a Big Brother data analyst with web search access. Search for current Big Brother competition results and return structured JSON data.' 
+          content: 'You are a Big Brother data analyst. Extract competition results from source content and return structured JSON data.' 
         },
         { role: 'user', content: prompt }
       ],
       temperature: 0.1,
-      max_tokens: 800,
-      return_images: false,
-      return_related_questions: false,
-      search_domain_filter: ['wikipedia.org', 'cbs.com', 'bigbrothernetwork.com', 'bigbrother.fandom.com'],
-      search_recency_filter: 'month'
+      max_tokens: 800
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Perplexity API error: ${response.status}`);
+    throw new Error(`OpenAI API error: ${response.status}`);
   }
 
   const data = await response.json();

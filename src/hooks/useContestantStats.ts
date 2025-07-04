@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
 import { ContestantStats } from '@/types/contestant-stats';
 import { useActiveContestants } from './useActiveContestants';
+import { useScoringRules } from './useScoringRules';
 
 export const useContestantStats = () => {
   const [contestants, setContestants] = useState<Contestant[]>([]);
@@ -10,6 +11,7 @@ export const useContestantStats = () => {
   const [contestantStats, setContestantStats] = useState<ContestantStats[]>([]);
   const [loading, setLoading] = useState(true);
   const { evictedContestants } = useActiveContestants();
+  const { getPointsForEvent } = useScoringRules();
 
   useEffect(() => {
     loadData();
@@ -24,6 +26,9 @@ export const useContestantStats = () => {
         supabase.from('weekly_events').select('*'),
         supabase.from('special_events').select('*')
       ]);
+
+      // Create special events for block survival bonuses
+      await createBlockSurvivalBonuses(contestantsResult.data || [], weeklyEventsResult.data || []);
 
       if (contestantsResult.error) throw contestantsResult.error;
       if (groupsResult.error) throw groupsResult.error;
@@ -150,7 +155,10 @@ export const useContestantStats = () => {
           .filter(event => event.contestant_id === contestant.id)
           .reduce((sum, event) => sum + (event.points_awarded || 0), 0);
 
-        const totalPointsEarned = weeklyPoints + specialPoints;
+        // Calculate block survival bonus points
+        const blockSurvivalBonusPoints = calculateBlockSurvivalBonus(timesOnBlockAtEviction);
+        
+        const totalPointsEarned = weeklyPoints + specialPoints + blockSurvivalBonusPoints;
 
         return {
           contestant_name: contestant.name,
@@ -183,6 +191,91 @@ export const useContestantStats = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const createBlockSurvivalBonuses = async (contestants: any[], weeklyEvents: any[]) => {
+    try {
+      for (const contestant of contestants) {
+        // Calculate times on block at eviction for this contestant
+        const nomineeEvents = weeklyEvents.filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'nominee'
+        );
+        
+        const weeksWithEvictions = new Set(
+          weeklyEvents.filter(event => event.event_type === 'evicted').map(event => event.week_number)
+        );
+        
+        const weeksSavedByPov = new Set(
+          weeklyEvents.filter(event => event.contestant_id === contestant.id && event.event_type === 'pov_used_on').map(event => event.week_number)
+        );
+        
+        const weeksWonBBArena = new Set(
+          weeklyEvents.filter(event => event.contestant_id === contestant.id && event.event_type === 'bb_arena_winner').map(event => event.week_number)
+        );
+        
+        const weeksEvicted = new Set(
+          weeklyEvents.filter(event => event.contestant_id === contestant.id && event.event_type === 'evicted').map(event => event.week_number)
+        );
+        
+        const timesOnBlockAtEviction = nomineeEvents.filter(nomEvent => {
+          const week = nomEvent.week_number;
+          return weeksWithEvictions.has(week) && 
+                 !weeksSavedByPov.has(week) && 
+                 !weeksWonBBArena.has(week) && 
+                 !weeksEvicted.has(week);
+        }).length;
+
+        // Check and create special events for block survival bonuses
+        if (timesOnBlockAtEviction >= 2) {
+          await ensureBlockSurvivalEvent(contestant.id, 'block_survival_2_weeks', timesOnBlockAtEviction >= 2);
+        }
+        
+        if (timesOnBlockAtEviction >= 4) {
+          await ensureBlockSurvivalEvent(contestant.id, 'block_survival_4_weeks', timesOnBlockAtEviction >= 4);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating block survival bonuses:', error);
+    }
+  };
+
+  const ensureBlockSurvivalEvent = async (contestantId: string, eventType: string, shouldExist: boolean) => {
+    try {
+      const { data: existingEvent } = await supabase
+        .from('special_events')
+        .select('*')
+        .eq('contestant_id', contestantId)
+        .eq('event_type', eventType)
+        .maybeSingle();
+
+      if (shouldExist && !existingEvent) {
+        const points = eventType === 'block_survival_2_weeks' ? 
+          getPointsForEvent('block_survival_2_weeks') || 3 : 
+          getPointsForEvent('block_survival_4_weeks') || 5;
+        
+        await supabase.from('special_events').insert({
+          contestant_id: contestantId,
+          event_type: eventType,
+          description: eventType === 'block_survival_2_weeks' ? 
+            'Survived 2+ Eviction Votes' : 'Survived 4+ Eviction Votes',
+          points_awarded: points,
+          week_number: 1 // Set to week 1 as a baseline
+        });
+      }
+    } catch (error) {
+      console.error('Error ensuring block survival event:', error);
+    }
+  };
+
+  const calculateBlockSurvivalBonus = (timesOnBlockAtEviction: number): number => {
+    let bonus = 0;
+    if (timesOnBlockAtEviction >= 2) {
+      bonus += getPointsForEvent('block_survival_2_weeks') || 3;
+    }
+    if (timesOnBlockAtEviction >= 4) {
+      bonus += getPointsForEvent('block_survival_4_weeks') || 5;
+    }
+    return bonus;
   };
 
   return {

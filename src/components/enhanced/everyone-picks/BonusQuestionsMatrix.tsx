@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
 import { BonusAnswerCell } from './BonusAnswerCell';
 import { CorrectAnswerCell } from './CorrectAnswerCell';
+import { evaluateBonusAnswer } from '@/utils/bonusQuestionUtils';
 
 interface BonusQuestionsMatrixProps {
   poolEntries: PoolEntry[];
@@ -16,13 +17,25 @@ export const BonusQuestionsMatrix: React.FC<BonusQuestionsMatrixProps> = ({
   poolEntries,
   bonusQuestions,
 }) => {
+  // Calculate actual bonus points earned for each team from the questions shown
+  const calculateTeamBonusPoints = (entry: PoolEntry): number => {
+    return bonusQuestions.reduce((total, question) => {
+      if (!question.answer_revealed || !question.correct_answer) return total;
+      
+      const userAnswer = entry.bonus_answers[question.id];
+      if (!userAnswer) return total;
+      
+      const isCorrect = evaluateBonusAnswer(userAnswer, question.correct_answer, question.question_type);
+      return total + (isCorrect ? question.points_value : 0);
+    }, 0);
+  };
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Everyone's Bonus Predictions</CardTitle>
           <div className="text-sm text-muted-foreground">
-            Total Bonus Points Awarded: {poolEntries.reduce((sum, entry) => sum + (entry.bonus_points || 0), 0)} pts
+            Total Bonus Points Awarded: {poolEntries.reduce((sum, entry) => sum + calculateTeamBonusPoints(entry), 0)} pts
           </div>
         </div>
       </CardHeader>
@@ -43,9 +56,9 @@ export const BonusQuestionsMatrix: React.FC<BonusQuestionsMatrixProps> = ({
                        <div className="space-y-1">
                          <div className="font-semibold">{entry.team_name}</div>
                          <div className="text-xs text-muted-foreground">{entry.participant_name}</div>
-                         <div className="text-xs font-semibold text-green-600">
-                           {entry.bonus_points || 0} pts earned
-                         </div>
+                          <div className="text-xs font-semibold text-green-600">
+                            {calculateTeamBonusPoints(entry)} pts earned
+                          </div>
                        </div>
                      </TableHead>
                    ))}

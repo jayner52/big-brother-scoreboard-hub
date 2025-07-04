@@ -37,7 +37,8 @@ export const useWeeklyEvents = () => {
             .select('*')
             .eq('week_number', editingWeek);
 
-          const specialEvents = (specialEventsData || []).map(event => {
+          // Get special events from both sources
+          const dbSpecialEvents = (specialEventsData || []).map(event => {
             const contestant = contestants.find(c => c.id === event.contestant_id);
             return {
               contestant: contestant?.name || '',
@@ -46,6 +47,19 @@ export const useWeeklyEvents = () => {
               customPoints: event.points_awarded || 0
             };
           });
+
+          // Parse draft special events from JSON if they exist
+          let draftSpecialEvents: any[] = [];
+          if (weekData?.draft_special_events) {
+            try {
+              draftSpecialEvents = JSON.parse(weekData.draft_special_events);
+            } catch (error) {
+              console.error('Error parsing draft special events:', error);
+            }
+          }
+
+          // Combine both sources, prioritizing draft events for draft weeks
+          const specialEvents = weekData?.is_draft ? draftSpecialEvents : dbSpecialEvents;
 
           const formData: WeeklyEventForm = {
             week: editingWeek,

@@ -1,24 +1,47 @@
 export const getSpecialEventIcon = (eventType: string): string => {
   const iconMap: Record<string, string> = {
+    // Competition events
     'bb_arena_winner': '🏟️',
-    'prize_won': '🎁',
-    'punishment': '⚡',
+    'hoh_winner': '👑',
+    'pov_winner': '🔑',
+    
+    // Showmance events
     'showmance': '💕',
+    'in_showmance': '💕',
+    
+    // Prize and punishment events
+    'prize_won': '🎁',
+    'wins_prize': '🎁',
+    'given_prize': '🎁',
+    'wins_cash': '💰',
+    'punishment': '⚡',
+    'receives_punishment': '⚡',
+    'costume_punishment': '🎭',
+    
+    // Power and safety events
     'special_power': '🔮',
-    'comes_back': '🔄',
+    'power_from_hg': '🔮',
+    'given_power': '🔮',
+    'granted_safety': '🛡️',
+    'safety': '🛡️',
+    
+    // Game milestones
+    'jury_member': '⚖️',
     'americas_favorite': '⭐',
     'winner': '🏆',
     'runner_up': '🥈',
-    'custom': '✨',
+    
+    // Survival and strategy
+    'comes_back': '🔄',
+    'comeback': '🔄',
     'block_survival_2_weeks': '💪',
     'block_survival_4_weeks': '🏰',
-    'jury_member': '⚖️',
-    'leaves_not_eviction': '🚪',
     'no_comp_4_weeks': '😴',
-    'costume_punishment': '🎭',
-    'granted_safety': '🛡️',
-    'wins_prize': '🎁',
-    'receives_punishment': '⚡'
+    'leaves_not_eviction': '🚪',
+    'leaves_early': '🚪',
+    
+    // Default
+    'custom': '✨'
   };
 
   return iconMap[eventType] || '📝';
@@ -26,21 +49,24 @@ export const getSpecialEventIcon = (eventType: string): string => {
 
 export const getSpecialEventLegend = () => ({
   '🏟️': 'BB Arena Winner',
-  '🎁': 'Prize Won',
-  '⚡': 'Punishment',
+  '👑': 'Head of Household',
+  '🔑': 'Power of Veto Winner',
   '💕': 'Showmance',
+  '🎁': 'Prize Won',
+  '💰': 'Cash Prize',
+  '⚡': 'Punishment',
+  '🎭': 'Costume Punishment',
   '🔮': 'Special Power',
-  '🔄': 'Comes Back',
+  '🛡️': 'Safety',
+  '⚖️': 'Jury Member',
   '⭐': "America's Favorite",
   '🏆': 'Winner',
   '🥈': 'Runner-up',
-  '✨': 'Custom Event',
+  '🔄': 'Comeback',
   '💪': '2-Week Block Survival',
-  '🛡️': 'Safety',
   '🏰': '4-Week Block Survival',
-  '⚖️': 'Jury Member',
-  '🚪': 'Left Not by Eviction',
   '😴': '4 Weeks No Comp Wins',
-  '🎭': 'Costume Punishment',
+  '🚪': 'Left Not by Eviction',
+  '✨': 'Custom Event',
   '📝': 'Other Event'
 });

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Heart, Gift, Crown, Award, Ban, Swords, Star, Trophy } from 'lucide-react';
 
 interface SpecialEventsBadgesProps {
   events: Array<{
@@ -24,16 +23,16 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
     <TooltipProvider>
       <div className="flex flex-wrap gap-1">
         {Object.entries(eventCounts).map(([eventType, count]) => {
-          const { icon: Icon, color, tooltip } = getEventBadgeInfo(eventType);
+          const { emoji, tooltip } = getEventBadgeInfo(eventType);
           
           return (
             <Tooltip key={eventType}>
               <TooltipTrigger>
                 <Badge 
                   variant="outline" 
-                  className={`text-xs flex items-center gap-1 ${color}`}
+                  className="text-xs flex items-center gap-1"
                 >
-                  <Icon className="h-3 w-3" />
+                  <span className="text-sm">{emoji}</span>
                   {count > 1 && `${count}x`}
                 </Badge>
               </TooltipTrigger>
@@ -49,123 +48,57 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
 };
 
 const getEventBadgeInfo = (eventType: string) => {
-  const eventMap: Record<string, { icon: React.ComponentType<any>, color: string, tooltip: string }> = {
-    // Corrected database event types
-    'in_showmance': {
-      icon: Heart,
-      color: 'bg-pink-100 text-pink-700 border-pink-300',
-      tooltip: 'Showmance'
-    },
-    'showmance': {
-      icon: Heart,
-      color: 'bg-pink-100 text-pink-700 border-pink-300',
-      tooltip: 'Showmance'
-    },
-    'bb_arena_winner': {
-      icon: Swords,
-      color: 'bg-purple-100 text-purple-700 border-purple-300',
-      tooltip: 'BB Arena Winner'
-    },
-    'comeback': {
-      icon: Trophy,
-      color: 'bg-green-100 text-green-700 border-green-300',
-      tooltip: 'Comeback Player'
-    },
-    'costume_punishment': {
-      icon: Crown,
-      color: 'bg-orange-100 text-orange-700 border-orange-300',
-      tooltip: 'Costume Punishment'
-    },
-    'punishment': {
-      icon: Ban,
-      color: 'bg-red-100 text-red-700 border-red-300',
-      tooltip: 'Punishment'
-    },
-    'granted_safety': {
-      icon: Award,
-      color: 'bg-blue-100 text-blue-700 border-blue-300',
-      tooltip: 'Granted Safety'
-    },
-    'safety': {
-      icon: Award,
-      color: 'bg-blue-100 text-blue-700 border-blue-300',
-      tooltip: 'Safety Prize'
-    },
-    'power_from_hg': {
-      icon: Star,
-      color: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-      tooltip: 'Power from Houseguest'
-    },
-    'given_power': {
-      icon: Star,
-      color: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-      tooltip: 'Given Power'
-    },
-    'given_prize': {
-      icon: Gift,
-      color: 'bg-emerald-100 text-emerald-700 border-emerald-300',
-      tooltip: 'Given Prize'
-    },
-    'wins_prize': {
-      icon: Gift,
-      color: 'bg-emerald-100 text-emerald-700 border-emerald-300',
-      tooltip: 'Won Prize'
-    },
-    'wins_cash': {
-      icon: Trophy,
-      color: 'bg-amber-100 text-amber-700 border-amber-300',
-      tooltip: 'Won Cash Prize'
-    },
-    'leaves_early': {
-      icon: Ban,
-      color: 'bg-gray-100 text-gray-700 border-gray-300',
-      tooltip: 'Left Early'
-    },
-    'leaves_not_eviction': {
-      icon: Ban,
-      color: 'bg-gray-100 text-gray-700 border-gray-300',
-      tooltip: 'Left Not by Eviction'
-    },
-    'block_survival_2_weeks': {
-      icon: Trophy,
-      color: 'bg-green-100 text-green-700 border-green-300',
-      tooltip: '2-Week Block Survival'
-    },
-    'block_survival_4_weeks': {
-      icon: Trophy,
-      color: 'bg-green-100 text-green-700 border-green-300',
-      tooltip: '4-Week Block Survival'
-    },
-    'jury_member': {
-      icon: Award,
-      color: 'bg-purple-100 text-purple-700 border-purple-300',
-      tooltip: 'Jury Member'
-    },
-    'americas_favorite': {
-      icon: Star,
-      color: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-      tooltip: "America's Favorite"
-    },
-    'winner': {
-      icon: Trophy,
-      color: 'bg-gold-100 text-gold-700 border-gold-300',
-      tooltip: 'Winner'
-    },
-    'runner_up': {
-      icon: Trophy,
-      color: 'bg-silver-100 text-silver-700 border-silver-300',
-      tooltip: 'Runner-up'
-    },
-    'custom': {
-      icon: Star,
-      color: 'bg-gray-100 text-gray-700 border-gray-300',
-      tooltip: 'Custom Event'
-    }
+  const eventMap: Record<string, { emoji: string, tooltip: string }> = {
+    // Showmance events
+    'in_showmance': { emoji: '💕', tooltip: 'In Showmance' },
+    'showmance': { emoji: '💕', tooltip: 'Showmance' },
+    
+    // Competition events
+    'bb_arena_winner': { emoji: '🏟️', tooltip: 'BB Arena Winner' },
+    'hoh_winner': { emoji: '👑', tooltip: 'Head of Household' },
+    'pov_winner': { emoji: '🔑', tooltip: 'Power of Veto Winner' },
+    
+    // Prize and punishment events
+    'wins_prize': { emoji: '🎁', tooltip: 'Won Prize' },
+    'given_prize': { emoji: '🎁', tooltip: 'Given Prize' },
+    'prize_won': { emoji: '🎁', tooltip: 'Prize Won' },
+    'wins_cash': { emoji: '💰', tooltip: 'Won Cash Prize' },
+    'punishment': { emoji: '⚡', tooltip: 'Punishment' },
+    'costume_punishment': { emoji: '🎭', tooltip: 'Costume Punishment' },
+    'receives_punishment': { emoji: '⚡', tooltip: 'Received Punishment' },
+    
+    // Power and safety events
+    'power_from_hg': { emoji: '🔮', tooltip: 'Power from Houseguest' },
+    'given_power': { emoji: '🔮', tooltip: 'Given Power' },
+    'special_power': { emoji: '🔮', tooltip: 'Special Power' },
+    'granted_safety': { emoji: '🛡️', tooltip: 'Granted Safety' },
+    'safety': { emoji: '🛡️', tooltip: 'Safety Prize' },
+    
+    // Game milestones
+    'jury_member': { emoji: '⚖️', tooltip: 'Jury Member' },
+    'americas_favorite': { emoji: '⭐', tooltip: "America's Favorite" },
+    'winner': { emoji: '🏆', tooltip: 'Winner' },
+    'runner_up': { emoji: '🥈', tooltip: 'Runner-up' },
+    
+    // Survival bonuses
+    'block_survival_2_weeks': { emoji: '💪', tooltip: '2-Week Block Survival' },
+    'block_survival_4_weeks': { emoji: '🏰', tooltip: '4-Week Block Survival' },
+    'no_comp_4_weeks': { emoji: '😴', tooltip: '4 Weeks No Comp Wins' },
+    
+    // Return/comeback events
+    'comeback': { emoji: '🔄', tooltip: 'Comeback Player' },
+    'comes_back': { emoji: '🔄', tooltip: 'Comes Back' },
+    
+    // Exit events
+    'leaves_early': { emoji: '🚪', tooltip: 'Left Early' },
+    'leaves_not_eviction': { emoji: '🚪', tooltip: 'Left Not by Eviction' },
+    
+    // Default/custom
+    'custom': { emoji: '✨', tooltip: 'Custom Event' }
   };
   
   return eventMap[eventType] || {
-    icon: Star,
-    color: 'bg-gray-100 text-gray-700 border-gray-300',
+    emoji: '📝',
     tooltip: eventType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   };
 };

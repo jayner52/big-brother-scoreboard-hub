@@ -65,23 +65,11 @@ export const useContestantStats = () => {
           event.contestant_id === contestant.id && event.event_type === 'nominated'
         ).length;
 
-        // Count times on block at eviction
-        const timesOnBlockAtEviction = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'nominated'
-        ).filter(event => {
-          // Check if they were evicted in the same week they were nominated
-          const evictedSameWeek = (weeklyEventsResult.data || []).some(evictEvent => 
-            evictEvent.contestant_id === contestant.id && 
-            evictEvent.event_type === 'evicted' && 
-            evictEvent.week_number === event.week_number
-          );
-          return evictedSameWeek;
-        }).length;
+        // Count times on block at eviction - correct calculation using contestant data
+        const timesOnBlockAtEviction = contestant.times_on_block_at_eviction || 0;
 
-        // Count times saved by veto
-        const timesSavedByVeto = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'pov_used_on'
-        ).length;
+        // Count times saved by veto - correct calculation using contestant data
+        const timesSavedByVeto = contestant.times_saved_by_veto || 0;
 
         // Find elimination week
         const evictionEvent = (weeklyEventsResult.data || []).find(event => 
@@ -98,19 +86,19 @@ export const useContestantStats = () => {
             points_awarded: event.points_awarded
           }));
 
-        // Include BB Arena wins from weekly events
-        const bbArenaWins = (weeklyEventsResult.data || [])
+        // Include relevant weekly events as special events for display
+        const weeklySpecialEvents = (weeklyEventsResult.data || [])
           .filter(event => 
             event.contestant_id === contestant.id && 
-            event.event_type === 'bb_arena_winner'
+            ['bb_arena_winner', 'jury_member'].includes(event.event_type)
           )
           .map(event => ({
-            event_type: 'bb_arena_winner',
-            description: 'BB Arena Winner',
+            event_type: event.event_type,
+            description: event.event_type === 'bb_arena_winner' ? 'BB Arena Winner' : 'Jury Member',
             points_awarded: event.points_awarded
           }));
 
-        const allSpecialEvents = [...contestantSpecialEvents, ...bbArenaWins];
+        const allSpecialEvents = [...contestantSpecialEvents, ...weeklySpecialEvents];
 
         // Calculate total points earned from all weekly and special events
         const weeklyPoints = (weeklyEventsResult.data || [])

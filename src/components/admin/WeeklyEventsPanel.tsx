@@ -27,7 +27,39 @@ export const WeeklyEventsPanel: React.FC = () => {
   } = useWeeklyEvents();
   
   const { getWinnerPoints, getRunnerUpPoints } = useScoringRules();
-  const { isAutoSaving, saveCurrentWeekDraft } = useWeeklyEventsSave(eventForm, editingWeek);
+  const { isAutoSaving, saveCurrentWeekDraft } = useWeeklyEventsSave(eventForm || {
+    week: editingWeek,
+    nominees: ['', ''],
+    hohWinner: '',
+    povWinner: '',
+    povUsed: false,
+    povUsedOn: '',
+    replacementNominee: '',
+    evicted: '',
+    isDoubleEviction: false,
+    isTripleEviction: false,
+    isFinalWeek: false,
+    isJuryPhase: false,
+    secondHohWinner: '',
+    secondNominees: ['', ''],
+    secondPovWinner: '',
+    secondPovUsed: false,
+    secondPovUsedOn: '',
+    secondReplacementNominee: '',
+    secondEvicted: '',
+    thirdHohWinner: '',
+    thirdNominees: ['', ''],
+    thirdPovWinner: '',
+    thirdPovUsed: false,
+    thirdPovUsedOn: '',
+    thirdReplacementNominee: '',
+    thirdEvicted: '',
+    maxNominees: 4,
+    specialEvents: [],
+    winner: '',
+    runnerUp: '',
+    americasFavorite: ''
+  }, editingWeek);
   
   const {
     isWeekComplete,
@@ -37,7 +69,7 @@ export const WeeklyEventsPanel: React.FC = () => {
     handleClearWeek
   } = useWeekManagement(contestants, setEventForm, eventForm);
 
-  if (loading) {
+  if (loading || !eventForm) {
     return <div className="text-center py-8">Loading weekly events panel...</div>;
   }
 

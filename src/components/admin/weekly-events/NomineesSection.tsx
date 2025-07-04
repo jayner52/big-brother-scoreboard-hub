@@ -69,7 +69,7 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
     <div>
       <div className="flex items-center justify-between mb-2">
         <Label className="font-semibold">
-          Nominees {!hohSelected && <span className="text-red-500">(Select HOH first)</span>}
+          Nominees {!hohSelected && <span className="text-gray-400 text-sm">(Select HOH first)</span>}
         </Label>
         <div className="flex gap-2">
           <Button

@@ -98,63 +98,13 @@ export const WeeklyEventsPanel: React.FC = () => {
       }
 
       if (data?.success) {
-        // Populate form fields only if confidence >= 95%
-        const updates: any = {};
-        
-        if (data.populated_fields.hoh_winner && data.confidence_scores.hoh_winner >= 0.95) {
-          updates.hohWinner = data.populated_fields.hoh_winner;
-        }
-        
-        if (data.populated_fields.pov_winner && data.confidence_scores.pov_winner >= 0.95) {
-          updates.povWinner = data.populated_fields.pov_winner;
-          // Auto-set POV usage based on data
-          if (data.populated_fields.pov_used !== undefined) {
-            updates.povUsed = data.populated_fields.pov_used;
-          }
-        }
-        
-        if (data.populated_fields.evicted && data.confidence_scores.evicted >= 0.95) {
-          updates.evicted = data.populated_fields.evicted;
-        }
-        
-        // Handle nominees - support 3 nominees if AI Arena is detected
-        const nomineesToUse = data.populated_fields.initial_nominees || data.populated_fields.nominees;
-        if (nomineesToUse && data.confidence_scores.nominees >= 0.95) {
-          updates.nominees = nomineesToUse; // Keep all nominees (could be 3 for AI Arena)
-        }
-        
-        // Handle AI Arena winner and enable toggle
-        if (data.populated_fields.ai_arena_winner && data.confidence_scores.ai_arena_winner >= 0.95) {
-          // Enable AI Arena toggle and set winner
-          updates.aiArenaEnabled = true;
-          updates.aiArenaWinner = data.populated_fields.ai_arena_winner;
-        }
-        
-        // Handle special events (excluding game mechanics)
-        if (data.populated_fields.special_events) {
-          const filteredSpecialEvents = data.populated_fields.special_events.filter(event => 
-            !['hoh_winner', 'pov_winner', 'bb_arena_winner', 'evicted'].includes(event.eventType)
-          );
-          if (filteredSpecialEvents.length > 0) {
-            updates.specialEvents = [...(updates.specialEvents || []), ...filteredSpecialEvents];
-          }
-        }
-        
-        // Update form with populated data
-        if (Object.keys(updates).length > 0) {
-          setEventForm(prev => ({...prev, ...updates}));
-          
-          toast({
-            title: "AI Population Successful!",
-            description: `Populated ${Object.keys(updates).length} fields with high confidence data from ${data.sources_used?.length || 0} sources.`,
-          });
-        } else {
-          toast({
-            title: "No High-Confidence Data Found",
-            description: "AI couldn't find reliable information with 95%+ confidence for this week.",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "AI Population Starting...",
+          description: "Populating fields sequentially...",
+        });
+
+        // Sequential population with delays for visual feedback
+        await populateFieldsSequentially(data);
       } else {
         throw new Error(data?.message || 'Failed to populate data');
       }
@@ -168,6 +118,73 @@ export const WeeklyEventsPanel: React.FC = () => {
     } finally {
       setIsAIPopulating(false);
     }
+  };
+
+  const populateFieldsSequentially = async (data: any) => {
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    
+    // Step 1: HOH Winner
+    if (data.populated_fields.hoh_winner && data.confidence_scores.hoh_winner >= 0.95) {
+      setEventForm(prev => ({ ...prev, hohWinner: data.populated_fields.hoh_winner }));
+      await delay(500);
+    }
+    
+    // Step 2: Initial nominees (including 3rd for AI Arena)
+    const nomineesToUse = data.populated_fields.nominees || data.populated_fields.initial_nominees;
+    if (nomineesToUse && data.confidence_scores.nominees >= 0.95) {
+      // Ensure we have 3 slots if we have 3 nominees
+      if (nomineesToUse.length === 3) {
+        setEventForm(prev => ({ 
+          ...prev, 
+          nominees: [...nomineesToUse]
+        }));
+      } else {
+        setEventForm(prev => ({ ...prev, nominees: nomineesToUse }));
+      }
+      await delay(500);
+    }
+    
+    // Step 3: POV Winner
+    if (data.populated_fields.pov_winner && data.confidence_scores.pov_winner >= 0.95) {
+      setEventForm(prev => ({ ...prev, povWinner: data.populated_fields.pov_winner }));
+      await delay(500);
+    }
+    
+    // Step 4: POV Usage
+    if (data.populated_fields.pov_used !== undefined) {
+      setEventForm(prev => ({ ...prev, povUsed: data.populated_fields.pov_used }));
+      await delay(300);
+      
+      // Step 5: POV Used On and Replacement
+      if (data.populated_fields.pov_used && data.populated_fields.pov_used_on) {
+        setEventForm(prev => ({ ...prev, povUsedOn: data.populated_fields.pov_used_on }));
+        await delay(300);
+        
+        if (data.populated_fields.replacement_nominee) {
+          setEventForm(prev => ({ ...prev, replacementNominee: data.populated_fields.replacement_nominee }));
+          await delay(300);
+        }
+      }
+    }
+    
+    // Step 6: AI Arena Toggle and Winner
+    if (data.populated_fields.ai_arena_winner && data.confidence_scores.ai_arena_winner >= 0.95) {
+      setEventForm(prev => ({ ...prev, aiArenaEnabled: true }));
+      await delay(300);
+      setEventForm(prev => ({ ...prev, aiArenaWinner: data.populated_fields.ai_arena_winner }));
+      await delay(500);
+    }
+    
+    // Step 7: Evicted Contestant
+    if (data.populated_fields.evicted && data.confidence_scores.evicted >= 0.95) {
+      setEventForm(prev => ({ ...prev, evicted: data.populated_fields.evicted }));
+      await delay(300);
+    }
+    
+    toast({
+      title: "AI Population Complete!",
+      description: `Successfully populated all fields from ${data.sources_used?.length || 0} sources.`,
+    });
   };
 
   if (loading) {

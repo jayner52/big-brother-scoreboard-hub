@@ -48,7 +48,7 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
     <div>
       <Label className="font-semibold flex items-center gap-2">
         <BigBrotherIcon type="evicted" />
-        {evictionLabel} {arenaRequired && <span className="text-red-500">(Complete AI Arena first)</span>}
+        {evictionLabel} {arenaRequired && <span className="text-gray-400 text-sm">(Complete AI Arena first)</span>}
       </Label>
       <Select 
         value={eventForm.evicted} 

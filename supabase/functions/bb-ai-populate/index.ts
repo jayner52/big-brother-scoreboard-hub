@@ -131,10 +131,12 @@ function getBB26Week1FallbackData(contestantNames: string[]) {
       hoh_winner: angela,
       pov_winner: lisa,
       evicted: matt,
-      nominees: [kenney, matt].filter(Boolean), // Final nominees after AI Arena
+      nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees for AI Arena
       initial_nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees
       ai_arena_winner: kimo,
-      pov_used: false,
+      pov_used: true,
+      pov_used_on: lisa,
+      replacement_nominee: matt,
       special_events: [] // HOH and AI Arena are handled by dedicated fields, not special_events
     },
     confidence_scores: {

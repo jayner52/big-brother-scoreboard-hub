@@ -77,7 +77,7 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
             disabled={!canEnableArena}
           />
           <Label className="font-semibold text-sm text-purple-800">
-            BB Arena {!canEnableArena && <span className="text-red-500">(Complete nominees & POV first)</span>}
+            BB Arena {!canEnableArena && <span className="text-gray-400 text-sm">(Complete nominees & POV first)</span>}
           </Label>
         </div>
         {eventForm.aiArenaEnabled && (

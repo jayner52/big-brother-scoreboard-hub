@@ -25,7 +25,7 @@ export const PovWinnerSection: React.FC<PovWinnerSectionProps> = ({
       <div className="flex-1">
         <Label className="font-semibold flex items-center gap-2">
           <BigBrotherIcon type="pov" />
-          Power of Veto Winner {!nomineesSelected && <span className="text-red-500">(Select nominees first)</span>}
+          Power of Veto Winner {!nomineesSelected && <span className="text-gray-400 text-sm">(Select nominees first)</span>}
         </Label>
         <Select 
           value={eventForm.povWinner} 

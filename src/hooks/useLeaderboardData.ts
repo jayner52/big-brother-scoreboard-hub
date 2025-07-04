@@ -81,6 +81,7 @@ export const useLeaderboardData = () => {
 
   const handleWeekChange = async (weekStr: string) => {
     setLoading(true);
+    console.log('Week change requested:', weekStr);
     
     if (weekStr === 'current') {
       setSelectedWeek(null);
@@ -89,27 +90,25 @@ export const useLeaderboardData = () => {
       const week = parseInt(weekStr);
       setSelectedWeek(week);
       
-      // Load snapshots for the selected week
-      await loadSnapshotsForWeek(week);
-      
-      // Check if we need to generate snapshots after loading attempt
-      const snapshotsResult = await supabase
+      // First check if snapshots exist for this week
+      const { data: existingSnapshots } = await supabase
         .from('weekly_team_snapshots')
         .select('id')
         .eq('week_number', week)
         .limit(1);
       
-      if (!snapshotsResult.data || snapshotsResult.data.length === 0) {
+      if (!existingSnapshots || existingSnapshots.length === 0) {
+        console.log('No snapshots found for week', week, 'generating...');
         try {
           await supabase.rpc('generate_weekly_snapshots', { week_num: week });
-          await loadSnapshotsForWeek(week);
+          console.log('Snapshots generated for week', week);
         } catch (error) {
-          console.error('Error generating snapshots:', error);
-          // Fall back to current standings if snapshot generation fails
-          setSelectedWeek(null);
-          await loadCurrentPoolEntries();
+          console.error('Error generating snapshots for week', week, ':', error);
         }
       }
+      
+      // Load snapshots for the selected week
+      await loadSnapshotsForWeek(week);
     }
     
     setLoading(false);

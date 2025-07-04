@@ -8,11 +8,21 @@ export const calculateContestantStats = (
   poolEntries: any[],
   weeklyEvents: any[],
   specialEvents: any[],
-  evictedContestants: string[]
+  evictedContestants: string[],
+  currentGameWeek: number = 5
 ): ContestantStats[] => {
+  // Determine who is evicted based on current game week
+  const evictedThisGameWeek = weeklyEvents
+    .filter(event => event.event_type === 'evicted' && event.week_number < currentGameWeek)
+    .map(event => {
+      const contestant = contestants.find(c => c.id === event.contestant_id);
+      return contestant?.name;
+    })
+    .filter(Boolean);
+
   const mappedContestants = contestants.map(c => ({
     ...c,
-    isActive: !evictedContestants.includes(c.name)
+    isActive: !evictedThisGameWeek.includes(c.name)
   }));
 
   const stats: ContestantStats[] = mappedContestants.map(contestant => {

@@ -925,6 +925,10 @@ export type Database = {
         Args: { week_num: number }
         Returns: undefined
       }
+      get_user_pool_admin_status: {
+        Args: { target_pool_id: string }
+        Returns: boolean
+      }
       join_pool_by_invite: {
         Args: { invite_code_param: string }
         Returns: Json

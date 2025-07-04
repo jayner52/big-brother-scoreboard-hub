@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CurrentWeekProvider } from "@/contexts/CurrentWeekContext";
 import { PoolProvider } from "@/contexts/PoolContext";
 import Index from "./pages/Index";
+import Welcome from "./pages/Welcome";
 import Admin from "./pages/Admin";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
@@ -25,6 +26,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/welcome" element={<Welcome />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/about" element={<About />} />
               <Route path="/auth" element={<Auth />} />

@@ -32,14 +32,15 @@ export const useContestantStats = () => {
       // Refetch data to include any newly created special events
       await refetchData();
       
-      // Calculate contestant statistics
+      // Calculate contestant statistics with current game week
       const stats = calculateContestantStats(
         contestants,
         contestantGroups,
         poolEntries,
         weeklyEvents,
         specialEvents,
-        evictedContestants
+        evictedContestants,
+        5 // Current game week
       );
       
       setContestantStats(stats);

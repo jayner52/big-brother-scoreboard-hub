@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -11,9 +12,11 @@ import { MainContent } from '@/components/index/MainContent';
 import { Footer } from '@/components/index/Footer';
 import { PoolSwitcher } from '@/components/pools/PoolSwitcher';
 import { usePool } from '@/contexts/PoolContext';
+import { usePoolRedirect } from '@/hooks/usePoolRedirect';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { hasAccess } = usePoolRedirect();
   const [showRules, setShowRules] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userEntry, setUserEntry] = useState<any>(null);
@@ -48,35 +51,45 @@ const Index = () => {
 
   const loadUserEntry = async (userId: string) => {
     try {
-      // Get user's pool entries (support multiple teams)
+      if (!activePool) return;
+      
+      // Get user's pool entries for the active pool
       const { data: entriesData } = await supabase
         .from('pool_entries')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('pool_id', activePool.id);
 
       if (entriesData && entriesData.length > 0) {
-        // For now, show the first entry, but we can enhance this later
         const mainEntry = entriesData[0];
-        setUserEntry({
-          ...mainEntry,
-          allEntries: entriesData // Store all entries for future use
-        });
+        setUserEntry(mainEntry);
         
-        // Get user's rank based on their best team
+        // Get user's rank in the active pool
         const { data: allEntries } = await supabase
           .from('pool_entries')
           .select('*')
+          .eq('pool_id', activePool.id)
           .order('total_points', { ascending: false });
         
         if (allEntries) {
           const rank = allEntries.findIndex(entry => entry.id === mainEntry.id) + 1;
           setUserRank(rank);
         }
+      } else {
+        setUserEntry(null);
+        setUserRank(null);
       }
     } catch (error) {
       console.error('Error loading user entry:', error);
     }
   };
+
+  // Reload user entry when active pool changes
+  useEffect(() => {
+    if (user && activePool) {
+      loadUserEntry(user.id);
+    }
+  }, [user, activePool]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -85,6 +98,10 @@ const Index = () => {
   const handleJoinPool = () => {
     navigate('/draft');
   };
+
+  if (!hasAccess) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -102,13 +119,10 @@ const Index = () => {
         
         <HeroSection />
         
-        {/* How to Play Section - only show if not logged in */}
-        {!user && (
-          <HowToPlaySection
-            showRules={showRules}
-            onToggleRules={() => setShowRules(!showRules)}
-          />
-        )}
+        <HowToPlaySection
+          showRules={showRules}
+          onToggleRules={() => setShowRules(!showRules)}
+        />
 
         <MainContent formData={formData} />
 

@@ -51,7 +51,7 @@ export const useDraftForm = () => {
         }
       }
     }
-  }, [isEditMode, getEditFormData]);
+  }, [isEditMode]); // Remove getEditFormData from dependencies to prevent infinite loop
 
   // Save data to localStorage whenever formData changes (but not in edit mode)
   useEffect(() => {

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff } from 'lucide-react';
 import { ContestantStatsTable } from './ContestantStatsTable';
+import { EmojiLegend } from './EmojiLegend';
 import { ContestantStats } from '@/types/contestant-stats';
 import { Contestant } from '@/types/pool';
 
@@ -53,6 +54,7 @@ export const ContestantPerformanceCard: React.FC<ContestantPerformanceCardProps>
           povWinner={povWinner}
           nominees={nominees}
         />
+        <EmojiLegend />
       </CardContent>
     </Card>
   );

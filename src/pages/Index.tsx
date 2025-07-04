@@ -21,14 +21,6 @@ const Index = () => {
   const { formData } = useDraftForm();
   const { activePool } = usePool();
 
-const Index = () => {
-  const navigate = useNavigate();
-  const [showRules, setShowRules] = useState(false);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [userEntry, setUserEntry] = useState<any>(null);
-  const [userRank, setUserRank] = useState<number | null>(null);
-  const { formData } = useDraftForm();
-
   useEffect(() => {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -124,7 +116,6 @@ const Index = () => {
       </div>
     </div>
   );
-};
 };
 
 export default Index;

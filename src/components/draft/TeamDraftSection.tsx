@@ -36,12 +36,6 @@ export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
           Select 5 houseguests strategically - one from each group plus a free pick
         </p>
         
-        {duplicateCheck && (
-          <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive px-3 py-2 rounded-lg text-sm">
-            <AlertCircle className="h-4 w-4" />
-            You've selected the same player multiple times
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
@@ -104,28 +98,14 @@ export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
                     {(isFreePick 
                       ? contestantGroups.flatMap(g => g.contestants || [])
                       : group.contestants || []
-                    ).map(contestant => {
-                      const isAlreadySelected = Object.values(formData).includes(contestant.name) && 
-                                               formData[playerKey as keyof typeof formData] !== contestant.name;
-                      
-                      return (
-                        <SelectItem 
-                          key={contestant.id} 
-                          value={contestant.name}
-                          disabled={isAlreadySelected}
-                          className={isAlreadySelected ? 'opacity-50' : ''}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span>{contestant.name}</span>
-                            {isAlreadySelected && (
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                Already selected
-                              </Badge>
-                            )}
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
+                    ).map(contestant => (
+                      <SelectItem 
+                        key={contestant.id} 
+                        value={contestant.name}
+                      >
+                        {contestant.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </CardContent>

@@ -7,13 +7,13 @@ import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
-import { usePointsCalculation } from '@/hooks/usePointsCalculation';
+
 
 export const TeamLeaderboard: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { houseguestPoints } = useHouseguestPoints();
-  const { recalculateAllPoints, recalculating } = usePointsCalculation();
+  
 
   useEffect(() => {
     loadPoolEntries();
@@ -55,10 +55,6 @@ export const TeamLeaderboard: React.FC = () => {
     }
   };
 
-  const handleRecalculatePoints = async () => {
-    await recalculateAllPoints();
-    await loadPoolEntries(); // Reload data after recalculation
-  };
 
   if (loading) {
     return <div className="text-center py-8">Loading leaderboard...</div>;
@@ -89,16 +85,6 @@ export const TeamLeaderboard: React.FC = () => {
               <Badge variant="secondary" className="bg-white/20">Bonus: 5-10 pts</Badge>
             </div>
           </div>
-          <Button 
-            onClick={handleRecalculatePoints}
-            disabled={recalculating}
-            variant="secondary"
-            size="sm"
-            className="bg-white/20 hover:bg-white/30"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${recalculating ? 'animate-spin' : ''}`} />
-            {recalculating ? 'Recalculating...' : 'Recalculate Points'}
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="p-0">

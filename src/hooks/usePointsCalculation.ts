@@ -62,9 +62,16 @@ export const usePointsCalculation = () => {
         
         // Handle different answer types including showmance (dual player)
         if (question.question_type === 'dual_player_select') {
-          // For showmance questions, compare both players
+          // For showmance questions, handle both object and string formats
           if (userAnswer && question.correct_answer) {
-            const userAnswerStr = typeof userAnswer === 'string' ? userAnswer : `${userAnswer.player1} & ${userAnswer.player2}`;
+            let userAnswerStr;
+            if (typeof userAnswer === 'object' && userAnswer.player1 && userAnswer.player2) {
+              userAnswerStr = `${userAnswer.player1} & ${userAnswer.player2}`;
+            } else if (typeof userAnswer === 'string') {
+              userAnswerStr = userAnswer;
+            }
+            
+            console.log('Showmance comparison:', { userAnswerStr, correctAnswer: question.correct_answer });
             if (userAnswerStr === question.correct_answer) {
               bonusPoints += question.points_value;
               console.log('Bonus points awarded for showmance question:', question.points_value);

@@ -65,11 +65,23 @@ export const useContestantStats = () => {
           event.contestant_id === contestant.id && event.event_type === 'nominated'
         ).length;
 
-        // Count times on block at eviction - correct calculation using contestant data
-        const timesOnBlockAtEviction = contestant.times_on_block_at_eviction || 0;
+        // Count times on block at eviction - calculate from weekly events
+        const nomineeEvents = (weeklyEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'nominated'
+        );
+        const evictionEvents = (weeklyEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'evicted'
+        );
+        
+        // Count nominees who were evicted in the same week they were nominated
+        const timesOnBlockAtEviction = nomineeEvents.filter(nomEvent => 
+          evictionEvents.some(evictEvent => evictEvent.week_number === nomEvent.week_number)
+        ).length;
 
-        // Count times saved by veto - correct calculation using contestant data
-        const timesSavedByVeto = contestant.times_saved_by_veto || 0;
+        // Count times saved by veto - calculate from weekly events
+        const timesSavedByVeto = (weeklyEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'pov_used_on'
+        ).length;
 
         // Find elimination week
         const evictionEvent = (weeklyEventsResult.data || []).find(event => 

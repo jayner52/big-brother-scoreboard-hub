@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getSpecialEventIcon } from '@/utils/specialEventIcons';
 
 interface SpecialEventsBadgesProps {
   events: Array<{
@@ -23,7 +24,8 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
     <TooltipProvider>
       <div className="flex flex-wrap gap-1">
         {Object.entries(eventCounts).map(([eventType, count]) => {
-          const { emoji, tooltip } = getEventBadgeInfo(eventType);
+          const emoji = getSpecialEventIcon(eventType);
+          const tooltip = getEventTooltip(eventType);
           
           return (
             <Tooltip key={eventType}>
@@ -47,58 +49,55 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
   );
 };
 
-const getEventBadgeInfo = (eventType: string) => {
-  const eventMap: Record<string, { emoji: string, tooltip: string }> = {
+const getEventTooltip = (eventType: string): string => {
+  const tooltipMap: Record<string, string> = {
     // Showmance events
-    'in_showmance': { emoji: '💕', tooltip: 'In Showmance' },
-    'showmance': { emoji: '💕', tooltip: 'Showmance' },
+    'in_showmance': 'In Showmance',
+    'showmance': 'Showmance',
     
     // Competition events
-    'bb_arena_winner': { emoji: '🏟️', tooltip: 'BB Arena Winner' },
-    'hoh_winner': { emoji: '👑', tooltip: 'Head of Household' },
-    'pov_winner': { emoji: '🔑', tooltip: 'Power of Veto Winner' },
+    'bb_arena_winner': 'BB Arena Winner',
+    'hoh_winner': 'Head of Household',
+    'pov_winner': 'Power of Veto Winner',
     
     // Prize and punishment events
-    'wins_prize': { emoji: '🎁', tooltip: 'Won Prize' },
-    'given_prize': { emoji: '🎁', tooltip: 'Given Prize' },
-    'prize_won': { emoji: '🎁', tooltip: 'Prize Won' },
-    'wins_cash': { emoji: '💰', tooltip: 'Won Cash Prize' },
-    'punishment': { emoji: '⚡', tooltip: 'Punishment' },
-    'costume_punishment': { emoji: '🎭', tooltip: 'Costume Punishment' },
-    'receives_punishment': { emoji: '⚡', tooltip: 'Received Punishment' },
+    'wins_prize': 'Won Prize',
+    'given_prize': 'Given Prize',
+    'prize_won': 'Prize Won',
+    'wins_cash': 'Won Cash Prize',
+    'punishment': 'Punishment',
+    'costume_punishment': 'Costume Punishment',
+    'receives_punishment': 'Received Punishment',
     
     // Power and safety events
-    'power_from_hg': { emoji: '🔮', tooltip: 'Power from Houseguest' },
-    'given_power': { emoji: '🔮', tooltip: 'Given Power' },
-    'special_power': { emoji: '🔮', tooltip: 'Special Power' },
-    'granted_safety': { emoji: '🛡️', tooltip: 'Granted Safety' },
-    'safety': { emoji: '🛡️', tooltip: 'Safety Prize' },
+    'power_from_hg': 'Power from Houseguest',
+    'given_power': 'Given Power',
+    'special_power': 'Special Power',
+    'granted_safety': 'Granted Safety',
+    'safety': 'Safety Prize',
     
     // Game milestones
-    'jury_member': { emoji: '⚖️', tooltip: 'Jury Member' },
-    'americas_favorite': { emoji: '⭐', tooltip: "America's Favorite" },
-    'winner': { emoji: '🏆', tooltip: 'Winner' },
-    'runner_up': { emoji: '🥈', tooltip: 'Runner-up' },
+    'jury_member': 'Jury Member',
+    'americas_favorite': "America's Favorite",
+    'winner': 'Winner',
+    'runner_up': 'Runner-up',
     
     // Survival bonuses
-    'block_survival_2_weeks': { emoji: '💪', tooltip: '2-Week Block Survival' },
-    'block_survival_4_weeks': { emoji: '🏰', tooltip: '4-Week Block Survival' },
-    'no_comp_4_weeks': { emoji: '😴', tooltip: '4 Weeks No Comp Wins' },
+    'block_survival_2_weeks': '2-Week Block Survival',
+    'block_survival_4_weeks': '4-Week Block Survival',
+    'no_comp_4_weeks': '4 Weeks No Comp Wins',
     
     // Return/comeback events
-    'comeback': { emoji: '🔄', tooltip: 'Comeback Player' },
-    'comes_back': { emoji: '🔄', tooltip: 'Comes Back' },
+    'comeback': 'Comeback Player',
+    'comes_back': 'Comes Back',
     
     // Exit events
-    'leaves_early': { emoji: '🚪', tooltip: 'Left Early' },
-    'leaves_not_eviction': { emoji: '🚪', tooltip: 'Left Not by Eviction' },
+    'leaves_early': 'Left Early',
+    'leaves_not_eviction': 'Left Not by Eviction',
     
     // Default/custom
-    'custom': { emoji: '✨', tooltip: 'Custom Event' }
+    'custom': 'Custom Event'
   };
   
-  return eventMap[eventType] || {
-    emoji: '📝',
-    tooltip: eventType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-  };
+  return tooltipMap[eventType] || eventType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 };

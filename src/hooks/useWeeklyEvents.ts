@@ -52,7 +52,18 @@ export const useWeeklyEvents = () => {
           let draftSpecialEvents: any[] = [];
           if (weekData?.draft_special_events) {
             try {
-              draftSpecialEvents = JSON.parse(weekData.draft_special_events);
+              const parsedEvents = JSON.parse(weekData.draft_special_events);
+              console.log('Parsed draft special events:', parsedEvents);
+              
+              // Map the saved format to the expected form format
+              draftSpecialEvents = parsedEvents.map((event: any) => ({
+                contestant: event.contestant || '',
+                eventType: event.eventType || event.event_type || '',
+                description: event.description || '',
+                customPoints: event.customPoints || event.points_awarded || 0
+              }));
+              
+              console.log('Mapped draft special events:', draftSpecialEvents);
             } catch (error) {
               console.error('Error parsing draft special events:', error);
             }

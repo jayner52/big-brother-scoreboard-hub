@@ -42,8 +42,8 @@ export const LiveResults: React.FC = () => {
   useEffect(() => {
     loadWeeklyResults();
     
-    // Auto-refresh every 30 seconds to get live updates
-    const interval = setInterval(loadWeeklyResults, 30000);
+    // Auto-refresh every 5 seconds to get live updates
+    const interval = setInterval(loadWeeklyResults, 5000);
     
     return () => clearInterval(interval);
   }, []);

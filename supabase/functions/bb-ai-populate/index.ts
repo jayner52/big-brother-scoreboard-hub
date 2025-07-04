@@ -133,6 +133,7 @@ function getBB26Week1FallbackData(contestantNames: string[]) {
       evicted: matt,
       nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees for AI Arena
       initial_nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees
+      bb_arena_played: true,
       ai_arena_winner: kimo,
       pov_used: true,
       pov_used_on: lisa,
@@ -144,7 +145,8 @@ function getBB26Week1FallbackData(contestantNames: string[]) {
       pov_winner: 1.0,
       evicted: 1.0,
       nominees: 1.0,
-      ai_arena_winner: 1.0
+      ai_arena_winner: 1.0,
+      bb_arena_played: 1.0
     }
   };
 }

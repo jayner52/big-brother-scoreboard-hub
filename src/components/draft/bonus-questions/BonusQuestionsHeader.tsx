@@ -14,8 +14,8 @@ export const BonusQuestionsHeader: React.FC<BonusQuestionsHeaderProps> = ({
 
   return (
     <div className="text-center">
-      <h3 className="text-2xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
-        <Target className="h-6 w-6 text-purple-600" />
+      <h3 className="text-3xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent mb-3 flex items-center justify-center gap-2">
+        <Target className="h-7 w-7 text-orange-600" />
         Bonus Predictions
       </h3>
       <p className="text-muted-foreground mb-4">

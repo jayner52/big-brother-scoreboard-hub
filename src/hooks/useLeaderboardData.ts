@@ -58,12 +58,15 @@ export const useLeaderboardData = () => {
 
   const loadCurrentPoolEntries = async () => {
     try {
+      console.log('Loading current pool entries...');
       const { data, error } = await supabase
         .from('pool_entries')
         .select('*')
         .order('total_points', { ascending: false });
 
       if (error) throw error;
+      
+      console.log('Raw pool entries data:', data?.length || 0, 'entries found');
       
       const mappedEntries = data?.map(entry => ({
         ...entry,
@@ -72,6 +75,7 @@ export const useLeaderboardData = () => {
         updated_at: new Date(entry.updated_at)
       })) || [];
       
+      console.log('Mapped entries:', mappedEntries.length);
       setPoolEntries(mappedEntries);
     } catch (error) {
       console.error('Error loading pool entries:', error);

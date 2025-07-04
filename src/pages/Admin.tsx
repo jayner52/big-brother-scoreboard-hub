@@ -1,5 +1,6 @@
 import React from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
+import { LeaderboardFixPanel } from '@/components/admin/LeaderboardFixPanel';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -34,6 +35,7 @@ const Admin = () => {
 
         {/* Admin Panels */}
         <div className="space-y-8">
+          <LeaderboardFixPanel />
           <AdminScoringPanel />
         </div>
 

@@ -28,11 +28,11 @@ export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
-          <Users className="h-6 w-6 text-purple-600" />
+        <h3 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 bg-clip-text text-transparent mb-3 flex items-center justify-center gap-2">
+          <Users className="h-7 w-7 text-emerald-600" />
           Draft Your Dream Team
         </h3>
-        <p className="text-muted-foreground mb-4">
+        <p className="text-muted-foreground text-lg mb-4">
           Select 5 houseguests strategically - one from each group plus a free pick
         </p>
         
@@ -44,7 +44,7 @@ export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
         {contestantGroups.map((group, groupIndex) => {
           const isFreePick = group.group_name === 'Free Pick';
           const playerKey = isFreePick ? 'player_5' : `player_${groupIndex + 1}`;

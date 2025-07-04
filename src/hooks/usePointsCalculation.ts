@@ -7,6 +7,8 @@ export const usePointsCalculation = () => {
 
   const calculateTeamPoints = async (entry: PoolEntry) => {
     try {
+      console.log('Calculating points for team:', entry.team_name);
+      
       // Get all contestants for name matching
       const { data: contestants, error: contestantsError } = await supabase
         .from('contestants')
@@ -16,9 +18,13 @@ export const usePointsCalculation = () => {
 
       // Find team member IDs
       const teamPlayers = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5];
+      console.log('Team players:', teamPlayers);
+      
       const teamMemberIds = teamPlayers
         .map(playerName => contestants?.find(c => c.name === playerName)?.id)
         .filter(Boolean);
+      
+      console.log('Team member IDs found:', teamMemberIds.length, 'out of', teamPlayers.length);
 
       // Get weekly points for team members using IDs
       const { data: weeklyEvents, error: weeklyError } = await supabase
@@ -38,6 +44,8 @@ export const usePointsCalculation = () => {
 
       const weeklyPoints = weeklyEvents?.reduce((sum, event) => sum + (event.points_awarded || 0), 0) || 0;
       const specialPoints = specialEvents?.reduce((sum, event) => sum + (event.points_awarded || 0), 0) || 0;
+      
+      console.log('Weekly points:', weeklyPoints, 'Special points:', specialPoints);
 
       // Get bonus points from answered questions
       const { data: bonusQuestions, error: bonusError } = await supabase
@@ -50,13 +58,31 @@ export const usePointsCalculation = () => {
       let bonusPoints = 0;
       bonusQuestions?.forEach(question => {
         const userAnswer = entry.bonus_answers?.[question.id];
-        if (userAnswer === question.correct_answer) {
-          bonusPoints += question.points_value;
+        console.log('Checking bonus question:', question.question_text, 'User answer:', userAnswer, 'Correct:', question.correct_answer);
+        
+        // Handle different answer types including showmance (dual player)
+        if (question.question_type === 'dual_player_select') {
+          // For showmance questions, compare both players
+          if (userAnswer && question.correct_answer) {
+            const userAnswerStr = typeof userAnswer === 'string' ? userAnswer : `${userAnswer.player1} & ${userAnswer.player2}`;
+            if (userAnswerStr === question.correct_answer) {
+              bonusPoints += question.points_value;
+              console.log('Bonus points awarded for showmance question:', question.points_value);
+            }
+          }
+        } else {
+          // Standard answer comparison
+          if (userAnswer === question.correct_answer) {
+            bonusPoints += question.points_value;
+            console.log('Bonus points awarded:', question.points_value);
+          }
         }
       });
 
       const totalWeeklyPoints = weeklyPoints + specialPoints;
       const totalPoints = totalWeeklyPoints + bonusPoints;
+      
+      console.log('Final calculation - Weekly:', totalWeeklyPoints, 'Bonus:', bonusPoints, 'Total:', totalPoints);
 
       return {
         weekly_points: totalWeeklyPoints,

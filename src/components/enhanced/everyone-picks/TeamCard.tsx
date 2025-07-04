@@ -23,18 +23,6 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   const totalPoints = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
     .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0) + entry.bonus_points;
 
-  // Subtle background tints for each team
-  const teamBackgrounds = [
-    'bg-gradient-to-br from-slate-50/80 to-slate-100/40',
-    'bg-gradient-to-br from-blue-50/80 to-blue-100/40', 
-    'bg-gradient-to-br from-emerald-50/80 to-emerald-100/40',
-    'bg-gradient-to-br from-amber-50/80 to-amber-100/40',
-    'bg-gradient-to-br from-rose-50/80 to-rose-100/40',
-    'bg-gradient-to-br from-violet-50/80 to-violet-100/40',
-    'bg-gradient-to-br from-cyan-50/80 to-cyan-100/40',
-    'bg-gradient-to-br from-orange-50/80 to-orange-100/40',
-  ];
-
   const renderStatusIcon = (playerName: string) => {
     const status = contestantStatus[playerName];
     if (!status) return null;
@@ -52,7 +40,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   };
 
   return (
-    <div className={`${teamBackgrounds[teamIndex % teamBackgrounds.length]} border border-slate-200/60 rounded-lg p-3 transition-all duration-200 hover:shadow-md hover:border-slate-300/60`}>
+    <div className="bg-gradient-to-br from-slate-50/80 to-slate-100/40 border border-slate-200/60 rounded-lg p-3 transition-all duration-200 hover:shadow-md hover:border-slate-300/60">
       <div className="flex items-center justify-between gap-4">
         {/* Team header - name, manager, total */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -68,8 +56,8 @@ export const TeamCard: React.FC<TeamCardProps> = ({
           </div>
         </div>
         
-        {/* Players grid - uniform boxes */}
-        <div className="flex gap-2 flex-shrink-0">
+        {/* Players grid - centered and wider */}
+        <div className="flex justify-center gap-2 flex-shrink-0">
           {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => {
             const points = houseguestPoints[player] || 0;
             const isEvicted = evictedContestants.includes(player);
@@ -78,7 +66,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
             return (
               <div 
                 key={index} 
-                className={`flex flex-col items-center p-2 w-28 h-20 rounded-md border transition-all duration-150 hover:shadow-sm ${
+                className={`flex flex-col items-center justify-center p-2 w-32 h-20 rounded-md border transition-all duration-150 hover:shadow-sm ${
                   isEvicted 
                     ? 'bg-red-50/80 border-red-200/60 opacity-60' 
                     : 'bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300/80'
@@ -86,7 +74,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
               >
                 {/* Player name with status icon */}
                 <div className="flex items-center gap-1 mb-1">
-                  <span className={`text-xs font-medium text-center leading-tight ${
+                  <span className={`text-sm font-medium text-center leading-tight ${
                     isEvicted ? 'line-through text-red-600' : 'text-slate-700'
                   }`} title={player}>
                     {player}

@@ -29,8 +29,10 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
     name: '',
     description: '',
     is_public: false,
+    has_buy_in: true,
     entry_fee_amount: 25,
     entry_fee_currency: 'CAD',
+    buy_in_description: '',
     payment_method_1: 'E-transfer',
     payment_details_1: '',
     picks_per_team: 5,
@@ -49,10 +51,10 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
       return;
     }
 
-    if (!formData.payment_details_1.trim()) {
+    if (formData.has_buy_in && !formData.payment_details_1.trim()) {
       toast({
         title: "Error", 
-        description: "Payment details are required",
+        description: "Payment details are required for buy-in pools",
         variant: "destructive",
       });
       return;
@@ -73,8 +75,10 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
           name: '',
           description: '',
           is_public: false,
+          has_buy_in: true,
           entry_fee_amount: 25,
           entry_fee_currency: 'CAD',
+          buy_in_description: '',
           payment_method_1: 'E-transfer',
           payment_details_1: '',
           picks_per_team: 5,
@@ -131,26 +135,68 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="entry_fee">Entry Fee</Label>
-              <div className="flex gap-2">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="has_buy_in">Pool Type</Label>
+              <p className="text-sm text-muted-foreground">
+                {formData.has_buy_in ? 'This pool has a buy-in' : 'Just for fun - no money involved'}
+              </p>
+            </div>
+            <Switch
+              id="has_buy_in"
+              checked={formData.has_buy_in}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_buy_in: checked }))}
+            />
+          </div>
+
+          {formData.has_buy_in && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="entry_fee">Entry Fee</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="entry_fee"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.entry_fee_amount}
+                      onChange={(e) => setFormData(prev => ({ ...prev, entry_fee_amount: parseFloat(e.target.value) || 0 }))}
+                    />
+                    <Input
+                      value={formData.entry_fee_currency}
+                      onChange={(e) => setFormData(prev => ({ ...prev, entry_fee_currency: e.target.value }))}
+                      className="w-20"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="picks_per_team">Players per Team</Label>
+                  <Input
+                    id="picks_per_team"
+                    type="number"
+                    min="3"
+                    max="10"
+                    value={formData.picks_per_team}
+                    onChange={(e) => setFormData(prev => ({ ...prev, picks_per_team: parseInt(e.target.value) || 5 }))}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="buy_in_description">Buy-in Details (Optional)</Label>
                 <Input
-                  id="entry_fee"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.entry_fee_amount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, entry_fee_amount: parseFloat(e.target.value) || 0 }))}
-                />
-                <Input
-                  value={formData.entry_fee_currency}
-                  onChange={(e) => setFormData(prev => ({ ...prev, entry_fee_currency: e.target.value }))}
-                  className="w-20"
+                  id="buy_in_description"
+                  value={formData.buy_in_description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, buy_in_description: e.target.value }))}
+                  placeholder="e.g., Prize distribution details, special rules..."
                 />
               </div>
-            </div>
+            </>
+          )}
 
+          {!formData.has_buy_in && (
             <div className="space-y-2">
               <Label htmlFor="picks_per_team">Players per Team</Label>
               <Input
@@ -162,28 +208,32 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
                 onChange={(e) => setFormData(prev => ({ ...prev, picks_per_team: parseInt(e.target.value) || 5 }))}
               />
             </div>
-          </div>
+          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="payment_method">Payment Method</Label>
-            <Input
-              id="payment_method"
-              value={formData.payment_method_1}
-              onChange={(e) => setFormData(prev => ({ ...prev, payment_method_1: e.target.value }))}
-              placeholder="e.g., E-transfer, Venmo, Cash"
-            />
-          </div>
+          {formData.has_buy_in && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="payment_method">Payment Method</Label>
+                <Input
+                  id="payment_method"
+                  value={formData.payment_method_1}
+                  onChange={(e) => setFormData(prev => ({ ...prev, payment_method_1: e.target.value }))}
+                  placeholder="e.g., E-transfer, Venmo, Cash"
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="payment_details">Payment Details *</Label>
-            <Input
-              id="payment_details"
-              value={formData.payment_details_1}
-              onChange={(e) => setFormData(prev => ({ ...prev, payment_details_1: e.target.value }))}
-              placeholder="e.g., email@example.com, @username"
-              required
-            />
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="payment_details">Payment Details *</Label>
+                <Input
+                  id="payment_details"
+                  value={formData.payment_details_1}
+                  onChange={(e) => setFormData(prev => ({ ...prev, payment_details_1: e.target.value }))}
+                  placeholder="e.g., email@example.com, @username"
+                  required={formData.has_buy_in}
+                />
+              </div>
+            </>
+          )}
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

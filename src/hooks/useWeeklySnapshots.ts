@@ -41,6 +41,20 @@ export const useWeeklySnapshots = () => {
 
   const loadSnapshotsForWeek = async (weekNumber: number) => {
     try {
+      // Get current user's active pool
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) return;
+
+      const { data: membership } = await supabase
+        .from('pool_memberships')
+        .select('pool_id')
+        .eq('user_id', session.session.user.id)
+        .eq('active', true)
+        .limit(1)
+        .single();
+
+      if (!membership) return;
+
       const { data, error } = await supabase
         .from('weekly_team_snapshots')
         .select(`
@@ -48,6 +62,7 @@ export const useWeeklySnapshots = () => {
           pool_entries!inner(team_name, participant_name, player_1, player_2, player_3, player_4, player_5, payment_confirmed)
         `)
         .eq('week_number', weekNumber)
+        .eq('pool_id', membership.pool_id)
         .order('rank_position', { ascending: true });
 
       if (error) throw error;

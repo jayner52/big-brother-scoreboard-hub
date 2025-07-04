@@ -54,9 +54,25 @@ export const useLeaderboardData = () => {
   const loadCurrentPoolEntries = async () => {
     try {
       console.log('Loading current pool entries...');
+      
+      // Get current user's active pool
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) return;
+
+      const { data: membership } = await supabase
+        .from('pool_memberships')
+        .select('pool_id')
+        .eq('user_id', session.session.user.id)
+        .eq('active', true)
+        .limit(1)
+        .single();
+
+      if (!membership) return;
+
       const { data, error } = await supabase
         .from('pool_entries')
         .select('*')
+        .eq('pool_id', membership.pool_id)
         .order('total_points', { ascending: false });
 
       if (error) throw error;
@@ -90,11 +106,26 @@ export const useLeaderboardData = () => {
       const week = parseInt(weekStr);
       setSelectedWeek(week);
       
-      // First check if snapshots exist for this week
+      // Get current user's active pool first
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) return;
+
+      const { data: membership } = await supabase
+        .from('pool_memberships')
+        .select('pool_id')
+        .eq('user_id', session.session.user.id)
+        .eq('active', true)
+        .limit(1)
+        .single();
+
+      if (!membership) return;
+
+      // First check if snapshots exist for this week and pool
       const { data: existingSnapshots } = await supabase
         .from('weekly_team_snapshots')
         .select('id')
         .eq('week_number', week)
+        .eq('pool_id', membership.pool_id)
         .limit(1);
       
       if (!existingSnapshots || existingSnapshots.length === 0) {

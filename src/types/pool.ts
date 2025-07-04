@@ -118,6 +118,8 @@ export interface Pool {
   jury_phase_started: boolean;
   jury_start_week?: number;
   jury_start_timestamp?: string;
+  has_buy_in: boolean;
+  buy_in_description?: string;
 }
 
 export interface PoolMembership {

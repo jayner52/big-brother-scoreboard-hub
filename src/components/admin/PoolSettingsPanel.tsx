@@ -29,6 +29,8 @@ interface PoolSettings {
   picks_per_team: number;
   enable_free_pick: boolean;
   group_names: string[];
+  has_buy_in: boolean;
+  buy_in_description?: string;
 }
 
 export const PoolSettingsPanel: React.FC = () => {
@@ -76,7 +78,9 @@ export const PoolSettingsPanel: React.FC = () => {
         number_of_groups: data.number_of_groups || 4,
         picks_per_team: data.picks_per_team || 5,
         enable_free_pick: data.enable_free_pick ?? true,
-        group_names: data.group_names || ['Group A', 'Group B', 'Group C', 'Group D']
+        group_names: data.group_names || ['Group A', 'Group B', 'Group C', 'Group D'],
+        has_buy_in: data.has_buy_in ?? true,
+        buy_in_description: data.buy_in_description
       });
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -112,6 +116,8 @@ export const PoolSettingsPanel: React.FC = () => {
           picks_per_team: settings.picks_per_team,
           enable_free_pick: settings.enable_free_pick,
           group_names: settings.group_names,
+          has_buy_in: settings.has_buy_in,
+          buy_in_description: settings.buy_in_description,
           updated_at: new Date().toISOString()
         })
         .eq('id', settings.id);

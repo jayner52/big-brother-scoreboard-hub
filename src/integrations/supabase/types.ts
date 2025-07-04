@@ -426,6 +426,7 @@ export type Database = {
       }
       pool_settings: {
         Row: {
+          buy_in_description: string | null
           created_at: string
           draft_locked: boolean
           draft_open: boolean
@@ -434,6 +435,7 @@ export type Database = {
           entry_fee_amount: number
           entry_fee_currency: string
           group_names: string[] | null
+          has_buy_in: boolean
           id: string
           jury_phase_active: boolean | null
           jury_phase_started: boolean
@@ -451,6 +453,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          buy_in_description?: string | null
           created_at?: string
           draft_locked?: boolean
           draft_open?: boolean
@@ -459,6 +462,7 @@ export type Database = {
           entry_fee_amount?: number
           entry_fee_currency?: string
           group_names?: string[] | null
+          has_buy_in?: boolean
           id?: string
           jury_phase_active?: boolean | null
           jury_phase_started?: boolean
@@ -476,6 +480,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          buy_in_description?: string | null
           created_at?: string
           draft_locked?: boolean
           draft_open?: boolean
@@ -484,6 +489,7 @@ export type Database = {
           entry_fee_amount?: number
           entry_fee_currency?: string
           group_names?: string[] | null
+          has_buy_in?: boolean
           id?: string
           jury_phase_active?: boolean | null
           jury_phase_started?: boolean
@@ -504,6 +510,7 @@ export type Database = {
       }
       pools: {
         Row: {
+          buy_in_description: string | null
           created_at: string
           description: string | null
           draft_locked: boolean
@@ -511,6 +518,7 @@ export type Database = {
           enable_bonus_questions: boolean
           entry_fee_amount: number
           entry_fee_currency: string
+          has_buy_in: boolean
           id: string
           invite_code: string
           is_public: boolean
@@ -528,6 +536,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          buy_in_description?: string | null
           created_at?: string
           description?: string | null
           draft_locked?: boolean
@@ -535,6 +544,7 @@ export type Database = {
           enable_bonus_questions?: boolean
           entry_fee_amount?: number
           entry_fee_currency?: string
+          has_buy_in?: boolean
           id?: string
           invite_code?: string
           is_public?: boolean
@@ -552,6 +562,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          buy_in_description?: string | null
           created_at?: string
           description?: string | null
           draft_locked?: boolean
@@ -559,6 +570,7 @@ export type Database = {
           enable_bonus_questions?: boolean
           entry_fee_amount?: number
           entry_fee_currency?: string
+          has_buy_in?: boolean
           id?: string
           invite_code?: string
           is_public?: boolean

@@ -138,6 +138,8 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
           draft_open: poolData.draft_open !== false,
           enable_bonus_questions: poolData.enable_bonus_questions !== false,
           picks_per_team: poolData.picks_per_team || 5,
+          has_buy_in: poolData.has_buy_in !== false,
+          buy_in_description: poolData.buy_in_description,
         })
         .select()
         .single();

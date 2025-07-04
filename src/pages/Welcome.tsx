@@ -61,6 +61,7 @@ const Welcome = () => {
         name: "My Big Brother Pool",
         description: "A new fantasy pool for Big Brother fans",
         is_public: false,
+        has_buy_in: true,
         entry_fee_amount: 25,
         entry_fee_currency: "CAD",
         payment_method_1: "E-transfer",

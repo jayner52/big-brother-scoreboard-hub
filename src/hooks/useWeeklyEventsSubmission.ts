@@ -2,12 +2,14 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { calculatePoints } from '@/utils/weeklyEventsUtils';
+import { useAutoPointsRecalculation } from './useAutoPointsRecalculation';
 
 export const useWeeklyEventsSubmission = (
   contestants: ContestantWithBio[],
   scoringRules: DetailedScoringRule[]
 ) => {
   const { toast } = useToast();
+  const { triggerRecalculation } = useAutoPointsRecalculation();
 
   const handleSubmitWeek = async (eventForm: WeeklyEventForm, loadData: () => void) => {
     try {
@@ -268,8 +270,9 @@ export const useWeeklyEventsSubmission = (
         });
       }
 
-      // Reload data
+      // Reload data and trigger automatic recalculation
       loadData();
+      await triggerRecalculation(`Week ${eventForm.week} events submitted`);
 
     } catch (error) {
       console.error('Error submitting week:', error);

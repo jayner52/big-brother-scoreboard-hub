@@ -9,11 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useBonusQuestions } from '@/hooks/useBonusQuestions';
+import { useAutoPointsRecalculation } from '@/hooks/useAutoPointsRecalculation';
 import { BonusQuestionCard } from './bonus-questions/BonusQuestionCard';
 import { Plus, Settings } from 'lucide-react';
 
 export const EnhancedBonusQuestionsPanel: React.FC = () => {
   const { toast } = useToast();
+  const { triggerRecalculation } = useAutoPointsRecalculation();
   const {
     contestants,
     bonusQuestions,

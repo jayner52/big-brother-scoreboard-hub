@@ -9,6 +9,7 @@ import { Edit2, Check, X } from 'lucide-react';
 import { BonusQuestion, Contestant } from '@/types/pool';
 import { BonusAnswerInput } from './BonusAnswerInput';
 import { MultipleAnswersInput } from './MultipleAnswersInput';
+import { useAutoPointsRecalculation } from '@/hooks/useAutoPointsRecalculation';
 
 interface BonusQuestionCardProps {
   question: BonusQuestion;
@@ -25,6 +26,7 @@ export const BonusQuestionCard: React.FC<BonusQuestionCardProps> = ({
   onAnswerChange,
   onPointsChange
 }) => {
+  const { triggerRecalculation } = useAutoPointsRecalculation();
   const [isEditingPoints, setIsEditingPoints] = useState(false);
   const [editingPoints, setEditingPoints] = useState(question.points_value.toString());
 
@@ -32,8 +34,10 @@ export const BonusQuestionCard: React.FC<BonusQuestionCardProps> = ({
     onAnswerChange(question.id, value, question.answer_revealed);
   };
 
-  const handleRevealToggle = (checked: boolean) => {
+  const handleRevealToggle = async (checked: boolean) => {
     onAnswerChange(question.id, currentAnswer || '', checked);
+    // Trigger recalculation when revealing/hiding answers
+    await triggerRecalculation(`Bonus question ${checked ? 'revealed' : 'hidden'}`);
   };
 
   const handlePointsSave = () => {

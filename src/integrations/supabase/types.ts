@@ -553,6 +553,7 @@ export type Database = {
           ai_arena_enabled: boolean | null
           ai_arena_winner: string | null
           created_at: string
+          draft_special_events: string | null
           evicted_contestant: string | null
           hoh_winner: string | null
           id: string
@@ -581,6 +582,7 @@ export type Database = {
           ai_arena_enabled?: boolean | null
           ai_arena_winner?: string | null
           created_at?: string
+          draft_special_events?: string | null
           evicted_contestant?: string | null
           hoh_winner?: string | null
           id?: string
@@ -609,6 +611,7 @@ export type Database = {
           ai_arena_enabled?: boolean | null
           ai_arena_winner?: string | null
           created_at?: string
+          draft_special_events?: string | null
           evicted_contestant?: string | null
           hoh_winner?: string | null
           id?: string

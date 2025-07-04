@@ -23,16 +23,29 @@ export const useWeekDataLoader = (contestants: ContestantWithBio[]) => {
         .select('*')
         .eq('week_number', weekNumber);
 
-      // Map special events to form format
-      const specialEvents = (specialEventsData || []).map(event => {
-        const contestant = contestants.find(c => c.id === event.contestant_id);
-        return {
-          contestant: contestant?.name || '',
-          eventType: event.event_type,
-          description: event.description || '',
-          customPoints: event.points_awarded || 0
-        };
-      });
+      // Check for draft special events in weekly_results
+      let draftSpecialEvents = [];
+      if (weekData?.draft_special_events) {
+        try {
+          draftSpecialEvents = JSON.parse(weekData.draft_special_events);
+        } catch (e) {
+          console.error('Error parsing draft special events:', e);
+        }
+      }
+
+      // Use draft special events if available, otherwise use committed special events
+      const specialEventsToUse = draftSpecialEvents.length > 0 ? draftSpecialEvents : 
+        (specialEventsData || []).map(event => {
+          const contestant = contestants.find(c => c.id === event.contestant_id);
+          return {
+            contestant: contestant?.name || '',
+            eventType: event.event_type,
+            description: event.description || '',
+            customPoints: event.points_awarded || 0
+          };
+        });
+
+      const specialEvents = specialEventsToUse;
 
       // Create form data with loaded values or defaults
       const formData: WeeklyEventForm = {

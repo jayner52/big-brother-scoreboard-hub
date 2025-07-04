@@ -31,17 +31,17 @@ export const TeamCard: React.FC<TeamCardProps> = ({
         </div>
         
         {/* Players grid - evenly spaced horizontal layout */}
-        <div className="grid grid-cols-5 gap-2 flex-shrink-0">
+        <div className="grid grid-cols-5 gap-3 flex-shrink-0 min-w-0">
           {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => {
             const points = houseguestPoints[player] || 0;
             const isEvicted = evictedContestants.includes(player);
             return (
-              <div key={index} className="text-center min-w-0">
+              <div key={index} className="text-center min-w-0 flex-1">
                 <div className="text-xs text-muted-foreground font-medium mb-1">P{index + 1}</div>
                 <div className="flex flex-col items-center gap-1">
                   <Badge 
                     variant="secondary" 
-                    className={`text-xs font-medium px-2 py-1 min-w-0 max-w-full truncate ${
+                    className={`text-xs font-medium px-2 py-1 w-full max-w-20 truncate ${
                       isEvicted 
                         ? 'bg-red-100 text-red-700 border-red-200 line-through opacity-70' 
                         : 'bg-primary/10 text-primary border-primary/20'

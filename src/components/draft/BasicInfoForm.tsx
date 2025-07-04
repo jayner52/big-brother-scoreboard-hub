@@ -20,10 +20,12 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-          Let's Get Started!
-        </h3>
-        <p className="text-muted-foreground text-lg">Tell us a bit about yourself and your team</p>
+        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 text-white py-4 px-6 rounded-lg mb-4 shadow-lg">
+          <h3 className="text-3xl font-bold mb-2">
+            Let's Get Started!
+          </h3>
+          <p className="text-purple-100 text-lg">Tell us a bit about yourself and your team</p>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

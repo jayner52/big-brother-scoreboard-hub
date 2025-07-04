@@ -4,7 +4,7 @@ import { TeamDraftForm } from '@/components/TeamDraftForm';
 import { EnhancedTeamLeaderboard } from '@/components/enhanced/EnhancedTeamLeaderboard';
 import { EveryonesPicksMatrix } from '@/components/enhanced/EveryonesPicksMatrix';
 import { LiveResults } from '@/components/LiveResults';
-import { HouseguestValues } from '@/components/HouseguestValues';
+import { ContestantValues } from '@/components/ContestantValues';
 import { ContestantBios } from '@/components/ContestantBios';
 import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
 import { DraftFormData } from '@/hooks/useDraftForm';
@@ -48,7 +48,7 @@ export const MainContent: React.FC<MainContentProps> = ({ formData }) => {
       </TabsContent>
 
       <TabsContent value="contestants">
-        <HouseguestValues />
+        <ContestantValues />
       </TabsContent>
 
       <TabsContent value="bios">

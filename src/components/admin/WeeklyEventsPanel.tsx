@@ -98,6 +98,7 @@ export const WeeklyEventsPanel: React.FC = () => {
       }
 
       if (data?.success) {
+        console.log('AI Populate response:', data);
         toast({
           title: "AI Population Starting...",
           description: "Populating fields sequentially...",
@@ -106,6 +107,7 @@ export const WeeklyEventsPanel: React.FC = () => {
         // Sequential population with delays for visual feedback
         await populateFieldsSequentially(data);
       } else {
+        console.error('AI Populate failed:', data);
         throw new Error(data?.message || 'Failed to populate data');
       }
     } catch (error) {
@@ -122,9 +124,11 @@ export const WeeklyEventsPanel: React.FC = () => {
 
   const populateFieldsSequentially = async (data: any) => {
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    console.log('Populating fields with data:', data.populated_fields);
     
     // Step 1: HOH Winner
     if (data.populated_fields.hoh_winner && data.confidence_scores.hoh_winner >= 0.95) {
+      console.log('Setting HOH Winner:', data.populated_fields.hoh_winner);
       toast({ title: "AI Populating", description: "Setting HOH Winner..." });
       setEventForm(prev => ({ ...prev, hohWinner: data.populated_fields.hoh_winner }));
       await delay(700);
@@ -166,11 +170,13 @@ export const WeeklyEventsPanel: React.FC = () => {
       
       // Step 5: POV Used On and Replacement
       if (data.populated_fields.pov_used && data.populated_fields.pov_used_on) {
+        console.log('Setting POV Used On:', data.populated_fields.pov_used_on);
         toast({ title: "AI Populating", description: "Setting POV Details..." });
         setEventForm(prev => ({ ...prev, povUsedOn: data.populated_fields.pov_used_on }));
         await delay(500);
         
         if (data.populated_fields.replacement_nominee) {
+          console.log('Setting Replacement Nominee:', data.populated_fields.replacement_nominee);
           setEventForm(prev => ({ ...prev, replacementNominee: data.populated_fields.replacement_nominee }));
           await delay(500);
         }
@@ -192,6 +198,7 @@ export const WeeklyEventsPanel: React.FC = () => {
     
     // Step 7: Evicted Contestant
     if (data.populated_fields.evicted && data.confidence_scores.evicted >= 0.95) {
+      console.log('Setting Evicted Contestant:', data.populated_fields.evicted);
       toast({ title: "AI Populating", description: "Setting Evicted Contestant..." });
       setEventForm(prev => ({ ...prev, evicted: data.populated_fields.evicted }));
       await delay(500);

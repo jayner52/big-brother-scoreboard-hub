@@ -24,34 +24,36 @@ serve(async (req) => {
     const { week, season, confidence_threshold } = await req.json();
     console.log(`AI Populate request for week ${week}, season ${season}`);
 
-    // Get current contestants from database
+    // Get ALL contestants from database (including inactive/evicted ones)
     const { data: contestants, error: contestantsError } = await supabase
       .from('contestants')
-      .select('name, is_active')
-      .eq('is_active', true);
+      .select('name, is_active');
 
     if (contestantsError) {
       throw new Error(`Failed to fetch contestants: ${contestantsError.message}`);
     }
 
     const contestantNames = contestants?.map(c => c.name) || [];
-    console.log(`Found ${contestantNames.length} active contestants`);
-
-    // Check for BB26 Week 1 fallback data first
-    if (week === 1 && (season === 'current' || season === '26' || season === 'BB26')) {
-      console.log('Using BB26 Week 1 fallback data');
-      const bb26Week1Data = getBB26Week1FallbackData(contestantNames);
+    console.log(`Found ${contestantNames.length} total contestants (including inactive)`);
+    
+    // Add fallback data for Week 2 and beyond
+    if ((season === 'current' || season === '26' || season === 'BB26') && week >= 1 && week <= 3) {
+      console.log(`Using BB26 Week ${week} fallback data`);
+      const fallbackData = getBB26FallbackData(week, contestantNames);
       
-      return new Response(JSON.stringify({
-        success: true,
-        populated_fields: bb26Week1Data.populated_fields,
-        confidence_scores: bb26Week1Data.confidence_scores,
-        sources_used: ['BB26 Week 1 Fallback Data'],
-        message: 'Successfully populated using verified BB26 Week 1 results'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      if (fallbackData) {
+        return new Response(JSON.stringify({
+          success: true,
+          populated_fields: fallbackData.populated_fields,
+          confidence_scores: fallbackData.confidence_scores,
+          sources_used: [`BB26 Week ${week} Fallback Data`],
+          message: `Successfully populated using verified BB26 Week ${week} results`
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
+
 
     // Try scraping and AI analysis for other weeks
     try {
@@ -70,9 +72,13 @@ serve(async (req) => {
           pov_winner: aiAnalysis.pov_winner?.name || null,
           evicted: aiAnalysis.evicted?.name || null,
           nominees: aiAnalysis.nominees || [],
+          initial_nominees: aiAnalysis.initial_nominees || [],
           special_events: aiAnalysis.special_events || [],
           ai_arena_winner: aiAnalysis.ai_arena_winner?.name || null,
+          bb_arena_played: aiAnalysis.bb_arena_played || false,
           pov_used: aiAnalysis.pov_used || false,
+          pov_used_on: aiAnalysis.pov_used_on || null,
+          replacement_nominee: aiAnalysis.replacement_nominee || null,
           final_nominees: aiAnalysis.final_nominees || []
         },
         confidence_scores: {
@@ -106,8 +112,8 @@ serve(async (req) => {
   }
 });
 
-// BB26 Week 1 Fallback Data
-function getBB26Week1FallbackData(contestantNames: string[]) {
+// BB26 Fallback Data for multiple weeks
+function getBB26FallbackData(week: number, contestantNames: string[]) {
   // Find exact contestant name matches
   const findContestant = (searchNames: string[]) => {
     for (const searchName of searchNames) {
@@ -120,35 +126,106 @@ function getBB26Week1FallbackData(contestantNames: string[]) {
     return null;
   };
 
-  const angela = findContestant(['Angela Murray', 'Angela']);
-  const lisa = findContestant(['Lisa Weintraub', 'Lisa']);
-  const matt = findContestant(['Matt Hardeman', 'Matt']);
-  const kenney = findContestant(['Kenney Kelley', 'Kenney']);
-  const kimo = findContestant(['Kimo Apaka', 'Kimo']);
+  // Week-specific data
+  if (week === 1) {
+    const angela = findContestant(['Angela Murray', 'Angela']);
+    const lisa = findContestant(['Lisa Weintraub', 'Lisa']);
+    const matt = findContestant(['Matt Hardeman', 'Matt']);
+    const kenney = findContestant(['Kenney Kelley', 'Kenney']);
+    const kimo = findContestant(['Kimo Apaka', 'Kimo']);
 
-  return {
-    populated_fields: {
-      hoh_winner: angela,
-      pov_winner: lisa,
-      evicted: matt,
-      nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees for AI Arena
-      initial_nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees
-      bb_arena_played: true,
-      ai_arena_winner: kimo,
-      pov_used: true,
-      pov_used_on: lisa,
-      replacement_nominee: matt,
-      special_events: [] // HOH and AI Arena are handled by dedicated fields, not special_events
-    },
-    confidence_scores: {
-      hoh_winner: 1.0,
-      pov_winner: 1.0,
-      evicted: 1.0,
-      nominees: 1.0,
-      ai_arena_winner: 1.0,
-      bb_arena_played: 1.0
-    }
-  };
+    return {
+      populated_fields: {
+        hoh_winner: angela,
+        pov_winner: lisa,
+        evicted: matt,
+        nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees for AI Arena
+        initial_nominees: [kenney, kimo, lisa].filter(Boolean), // Initial 3 nominees
+        bb_arena_played: true,
+        ai_arena_winner: kimo,
+        pov_used: true,
+        pov_used_on: lisa,
+        replacement_nominee: matt,
+        special_events: [] // HOH and AI Arena are handled by dedicated fields, not special_events
+      },
+      confidence_scores: {
+        hoh_winner: 1.0,
+        pov_winner: 1.0,
+        evicted: 1.0,
+        nominees: 1.0,
+        ai_arena_winner: 1.0,
+        bb_arena_played: 1.0
+      }
+    };
+  }
+  
+  if (week === 2) {
+    const cedric = findContestant(['Cedric Hodges', 'Cedric']);
+    const leah = findContestant(['Leah Peters', 'Leah']);
+    const makensy = findContestant(['Makensy Manbeck', 'Makensy']);
+    const joseph = findContestant(['Joseph Rodriguez', 'Joseph']);
+    const t_kor = findContestant(['T\'Kor Clottey', 'T\'Kor']);
+    const brooklyn = findContestant(['Brooklyn Rivera', 'Brooklyn']);
+
+    return {
+      populated_fields: {
+        hoh_winner: cedric,
+        pov_winner: leah,
+        evicted: t_kor,
+        nominees: [makensy, joseph].filter(Boolean), // Regular nominees
+        initial_nominees: [makensy, joseph].filter(Boolean), 
+        bb_arena_played: false,
+        ai_arena_winner: null,
+        pov_used: true,
+        pov_used_on: joseph,
+        replacement_nominee: t_kor,
+        special_events: []
+      },
+      confidence_scores: {
+        hoh_winner: 1.0,
+        pov_winner: 1.0,
+        evicted: 1.0,
+        nominees: 1.0,
+        ai_arena_winner: 0.0,
+        bb_arena_played: 1.0
+      }
+    };
+  }
+
+  if (week === 3) {
+    const makensy = findContestant(['Makensy Manbeck', 'Makensy']);
+    const angela = findContestant(['Angela Murray', 'Angela']);
+    const leah = findContestant(['Leah Peters', 'Leah']);
+    const brooklyn = findContestant(['Brooklyn Rivera', 'Brooklyn']);
+    const cam = findContestant(['Cam Sullivan-Brown', 'Cam']);
+
+    return {
+      populated_fields: {
+        hoh_winner: makensy,
+        pov_winner: angela,
+        evicted: brooklyn,
+        nominees: [leah, cam].filter(Boolean),
+        initial_nominees: [leah, cam].filter(Boolean), 
+        bb_arena_played: false,
+        ai_arena_winner: null,
+        pov_used: true,
+        pov_used_on: leah,
+        replacement_nominee: brooklyn,
+        special_events: []
+      },
+      confidence_scores: {
+        hoh_winner: 1.0,
+        pov_winner: 1.0,
+        evicted: 1.0,
+        nominees: 1.0,
+        ai_arena_winner: 0.0,
+        bb_arena_played: 1.0
+      }
+    };
+  }
+
+  // Return null if no fallback data available for this week
+  return null;
 }
 
 // Data Scraping Function

@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -51,8 +51,8 @@ serve(async (req) => {
     const { season, week, contestants }: ValidationRequest = await req.json();
     console.log(`Validating Big Brother ${season} Week ${week} data`);
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!perplexityApiKey) {
+      throw new Error('Perplexity API key not configured');
     }
 
     // Generate dynamic search queries for comprehensive data gathering
@@ -164,28 +164,32 @@ async function performAIWebSearch(query: string, contestants: string[]): Promise
     Use exact contestant names from the provided list. If no reliable information found, set found_data to false.
   `;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
+      'Authorization': `Bearer ${perplexityApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'llama-3.1-sonar-small-128k-online',
       messages: [
         { 
           role: 'system', 
-          content: 'You are a Big Brother data analyst. Search the web and return structured JSON data about competition results.' 
+          content: 'You are a Big Brother data analyst with web search access. Search for current Big Brother competition results and return structured JSON data.' 
         },
         { role: 'user', content: prompt }
       ],
       temperature: 0.1,
-      max_tokens: 800
+      max_tokens: 800,
+      return_images: false,
+      return_related_questions: false,
+      search_domain_filter: ['wikipedia.org', 'cbs.com', 'bigbrothernetwork.com', 'bigbrother.fandom.com'],
+      search_recency_filter: 'month'
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`);
+    throw new Error(`Perplexity API error: ${response.status}`);
   }
 
   const data = await response.json();

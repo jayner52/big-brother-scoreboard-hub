@@ -1,65 +1,106 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Crown, Star, Target } from 'lucide-react';
 import { PoolEntry } from '@/types/pool';
+import { useContestantStatus } from '@/hooks/useContestantStatus';
 
 interface TeamCardProps {
   entry: PoolEntry;
   evictedContestants: string[];
   houseguestPoints: Record<string, number>;
+  teamIndex: number;
 }
 
 export const TeamCard: React.FC<TeamCardProps> = ({
   entry,
   evictedContestants,
   houseguestPoints,
+  teamIndex,
 }) => {
-  // Fix 1: Include bonus points in total calculation
+  const { contestantStatus } = useContestantStatus();
+  
+  // Include bonus points in total calculation
   const totalPoints = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
     .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0) + entry.bonus_points;
 
+  // Subtle background tints for each team
+  const teamBackgrounds = [
+    'bg-gradient-to-br from-slate-50/80 to-slate-100/40',
+    'bg-gradient-to-br from-blue-50/80 to-blue-100/40', 
+    'bg-gradient-to-br from-emerald-50/80 to-emerald-100/40',
+    'bg-gradient-to-br from-amber-50/80 to-amber-100/40',
+    'bg-gradient-to-br from-rose-50/80 to-rose-100/40',
+    'bg-gradient-to-br from-violet-50/80 to-violet-100/40',
+    'bg-gradient-to-br from-cyan-50/80 to-cyan-100/40',
+    'bg-gradient-to-br from-orange-50/80 to-orange-100/40',
+  ];
+
+  const renderStatusIcon = (playerName: string) => {
+    const status = contestantStatus[playerName];
+    if (!status) return null;
+
+    if (status.current_hoh) {
+      return <Crown className="h-3 w-3 text-amber-600" />;
+    }
+    if (status.current_pov_winner) {
+      return <Star className="h-3 w-3 text-emerald-600" />;
+    }
+    if (status.currently_nominated) {
+      return <Target className="h-3 w-3 text-red-600" />;
+    }
+    return null;
+  };
+
   return (
-    <div className="bg-gradient-to-br from-background to-muted/20 border rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.01]">
+    <div className={`${teamBackgrounds[teamIndex % teamBackgrounds.length]} border border-slate-200/60 rounded-lg p-3 transition-all duration-200 hover:shadow-md hover:border-slate-300/60`}>
       <div className="flex items-center justify-between gap-4">
-        {/* Team header - name, manager, total in one line */}
+        {/* Team header - name, manager, total */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="min-w-0">
-            <div className="text-base font-bold text-foreground truncate">{entry.team_name}</div>
-            <div className="text-xs text-muted-foreground truncate">
-              {entry.participant_name} • {totalPoints} pts
+            <div className="text-lg font-bold text-slate-800 truncate">{entry.team_name}</div>
+            <div className="text-xs text-slate-600 truncate">
+              {entry.participant_name} • 
+              <span className="inline-flex items-center ml-1 px-2 py-0.5 rounded-full bg-slate-700 text-white text-xs font-medium">
+                {totalPoints}
+                <span className="text-[10px] ml-1 opacity-75">pts</span>
+              </span>
             </div>
           </div>
         </div>
         
-        {/* Players grid - evenly spaced horizontal layout */}
-        <div className="grid grid-cols-5 gap-4 flex-shrink-0">
+        {/* Players grid - uniform boxes */}
+        <div className="flex gap-2 flex-shrink-0">
           {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => {
             const points = houseguestPoints[player] || 0;
             const isEvicted = evictedContestants.includes(player);
+            const statusIcon = renderStatusIcon(player);
+            
             return (
-              <div key={index} className="text-center w-24">
-                <div className="text-xs text-muted-foreground font-medium mb-2 tracking-wide">P{index + 1}</div>
-                <div className="flex flex-col items-center gap-2">
-                  <Badge 
-                    variant="secondary" 
-                    className={`text-xs font-medium px-3 py-1.5 w-full justify-center rounded-lg transition-colors ${
-                      isEvicted 
-                        ? 'bg-red-50 text-red-700 border-red-200 line-through opacity-75' 
-                        : 'bg-primary/5 text-primary border-primary/15 hover:bg-primary/10'
-                    }`}
-                    title={player}
-                  >
-                    <span className="truncate">{player}</span>
-                  </Badge>
-                  <Badge 
-                    variant="outline" 
-                    className={`text-xs font-semibold px-2 py-0.5 min-w-[2rem] justify-center rounded-md ${
-                      points > 0 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                        : 'bg-muted/50 text-muted-foreground border-muted'
-                    }`}
-                  >
-                    {points}
-                  </Badge>
+              <div 
+                key={index} 
+                className={`flex flex-col items-center p-2 w-28 h-20 rounded-md border transition-all duration-150 hover:shadow-sm ${
+                  isEvicted 
+                    ? 'bg-red-50/80 border-red-200/60 opacity-60' 
+                    : 'bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300/80'
+                }`}
+              >
+                {/* Player name with status icon */}
+                <div className="flex items-center gap-1 mb-1">
+                  <span className={`text-xs font-medium text-center leading-tight ${
+                    isEvicted ? 'line-through text-red-600' : 'text-slate-700'
+                  }`} title={player}>
+                    {player}
+                  </span>
+                  {statusIcon}
+                </div>
+                
+                {/* Points badge */}
+                <div className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                  points > 0 
+                    ? 'bg-slate-100 text-slate-700 border border-slate-200' 
+                    : 'bg-slate-50 text-slate-500 border border-slate-150'
+                }`}>
+                  {points}
                 </div>
               </div>
             );

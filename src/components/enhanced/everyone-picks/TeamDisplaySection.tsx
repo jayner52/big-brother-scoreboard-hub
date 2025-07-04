@@ -24,13 +24,14 @@ export const TeamDisplaySection: React.FC<TeamDisplaySectionProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {poolEntries.map((entry) => (
+        <div className="space-y-2">
+          {poolEntries.map((entry, index) => (
             <TeamCard
               key={entry.id}
               entry={entry}
               evictedContestants={evictedContestants}
               houseguestPoints={houseguestPoints}
+              teamIndex={index}
             />
           ))}
         </div>

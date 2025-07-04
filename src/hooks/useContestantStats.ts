@@ -1,281 +1,51 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Contestant, ContestantGroup } from '@/types/pool';
 import { ContestantStats } from '@/types/contestant-stats';
 import { useActiveContestants } from './useActiveContestants';
-import { useScoringRules } from './useScoringRules';
+import { useContestantData } from './useContestantData';
+import { calculateContestantStats } from '@/utils/contestantStatsCalculator';
+import { createBlockSurvivalBonuses } from '@/utils/blockSurvivalUtils';
 
 export const useContestantStats = () => {
-  const [contestants, setContestants] = useState<Contestant[]>([]);
-  const [contestantGroups, setContestantGroups] = useState<ContestantGroup[]>([]);
   const [contestantStats, setContestantStats] = useState<ContestantStats[]>([]);
-  const [loading, setLoading] = useState(true);
   const { evictedContestants } = useActiveContestants();
-  const { getPointsForEvent } = useScoringRules();
+  const { 
+    contestants, 
+    contestantGroups, 
+    poolEntries, 
+    weeklyEvents, 
+    specialEvents, 
+    loading,
+    refetchData
+  } = useContestantData();
 
   useEffect(() => {
-    loadData();
-  }, [evictedContestants]);
+    if (!loading && contestants.length > 0) {
+      processContestantStats();
+    }
+  }, [loading, contestants, weeklyEvents, specialEvents, evictedContestants]);
 
-  const loadData = async () => {
+  const processContestantStats = async () => {
     try {
-      const [contestantsResult, groupsResult, poolEntriesResult, weeklyEventsResult, specialEventsResult] = await Promise.all([
-        supabase.from('contestants').select('*').order('sort_order'),
-        supabase.from('contestant_groups').select('*').order('sort_order'),
-        supabase.from('pool_entries').select('*'),
-        supabase.from('weekly_events').select('*'),
-        supabase.from('special_events').select('*')
-      ]);
-
       // Create special events for block survival bonuses
-      await createBlockSurvivalBonuses(contestantsResult.data || [], weeklyEventsResult.data || []);
-
-      if (contestantsResult.error) throw contestantsResult.error;
-      if (groupsResult.error) throw groupsResult.error;
-      if (poolEntriesResult.error) throw poolEntriesResult.error;
-      if (weeklyEventsResult.error) throw weeklyEventsResult.error;
-      if (specialEventsResult.error) throw specialEventsResult.error;
-
-      // Map contestants to match our type interface
-      const mappedContestants = (contestantsResult.data || []).map(c => ({
-        ...c,
-        isActive: !evictedContestants.includes(c.name)
-      }));
+      await createBlockSurvivalBonuses(contestants, weeklyEvents);
       
-      setContestants(mappedContestants);
-      setContestantGroups(groupsResult.data || []);
-
+      // Refetch data to include any newly created special events
+      await refetchData();
+      
       // Calculate contestant statistics
-      const stats: ContestantStats[] = mappedContestants.map(contestant => {
-        const group = (groupsResult.data || []).find(g => g.id === contestant.group_id);
-        
-        // Count how many times this contestant was selected
-        const timesSelected = (poolEntriesResult.data || []).reduce((count, entry) => {
-          const players = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5];
-          return count + (players.includes(contestant.name) ? 1 : 0);
-        }, 0);
-
-        // Count HOH wins
-        const hohWins = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'hoh_winner'
-        ).length;
-
-        // Count Veto wins
-        const vetoWins = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'pov_winner'
-        ).length;
-
-        // Count times on block (nominations) - use correct event type
-        const timesOnBlock = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'nominee'
-        ).length;
-
-        // Count times on block at eviction and survived - nominees who faced live vote
-        const nomineeEvents = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'nominee'
-        );
-        
-        // Get all weeks that had evictions (any contestant)
-        const weeksWithEvictions = new Set(
-          (weeklyEventsResult.data || [])
-            .filter(event => event.event_type === 'evicted')
-            .map(event => event.week_number)
-        );
-        
-        // Get weeks where this contestant was saved by POV
-        const weeksSavedByPov = new Set(
-          (weeklyEventsResult.data || [])
-            .filter(event => event.contestant_id === contestant.id && event.event_type === 'pov_used_on')
-            .map(event => event.week_number)
-        );
-        
-        // Get weeks where this contestant won BB Arena
-        const weeksWonBBArena = new Set(
-          (weeklyEventsResult.data || [])
-            .filter(event => event.contestant_id === contestant.id && event.event_type === 'bb_arena_winner')
-            .map(event => event.week_number)
-        );
-        
-        // Get weeks where this contestant was evicted
-        const weeksEvicted = new Set(
-          (weeklyEventsResult.data || [])
-            .filter(event => event.contestant_id === contestant.id && event.event_type === 'evicted')
-            .map(event => event.week_number)
-        );
-        
-        // Count nominee events where they faced the live vote and survived
-        const timesOnBlockAtEviction = nomineeEvents.filter(nomEvent => {
-          const week = nomEvent.week_number;
-          return weeksWithEvictions.has(week) && 
-                 !weeksSavedByPov.has(week) && 
-                 !weeksWonBBArena.has(week) && 
-                 !weeksEvicted.has(week);
-        }).length;
-
-        // Count times saved by veto - calculate from weekly events
-        const timesSavedByVeto = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'pov_used_on'
-        ).length;
-
-        // Find elimination week
-        const evictionEvent = (weeklyEventsResult.data || []).find(event => 
-          event.contestant_id === contestant.id && event.event_type === 'evicted'
-        );
-        const eliminationWeek = evictionEvent ? evictionEvent.week_number : undefined;
-
-        // Get all special events for this contestant from both tables
-        const contestantSpecialEvents = (specialEventsResult.data || [])
-          .filter(event => event.contestant_id === contestant.id)
-          .map(event => ({
-            event_type: event.event_type,
-            description: event.description,
-            points_awarded: event.points_awarded
-          }));
-
-        // Include relevant weekly events as special events for display
-        const weeklySpecialEvents = (weeklyEventsResult.data || [])
-          .filter(event => 
-            event.contestant_id === contestant.id && 
-            ['bb_arena_winner', 'jury_member'].includes(event.event_type)
-          )
-          .map(event => ({
-            event_type: event.event_type,
-            description: event.event_type === 'bb_arena_winner' ? 'BB Arena Winner' : 'Jury Member',
-            points_awarded: event.points_awarded
-          }));
-
-        const allSpecialEvents = [...contestantSpecialEvents, ...weeklySpecialEvents];
-
-        // Calculate total points earned from all weekly and special events
-        const weeklyPoints = (weeklyEventsResult.data || [])
-          .filter(event => event.contestant_id === contestant.id)
-          .reduce((sum, event) => sum + (event.points_awarded || 0), 0);
-        
-        const specialPoints = (specialEventsResult.data || [])
-          .filter(event => event.contestant_id === contestant.id)
-          .reduce((sum, event) => sum + (event.points_awarded || 0), 0);
-
-        // Calculate block survival bonus points
-        const blockSurvivalBonusPoints = calculateBlockSurvivalBonus(timesOnBlockAtEviction);
-        
-        const totalPointsEarned = weeklyPoints + specialPoints + blockSurvivalBonusPoints;
-
-        return {
-          contestant_name: contestant.name,
-          total_points_earned: totalPointsEarned,
-          weeks_active: contestant.isActive ? (weeklyEventsResult.data?.filter(e => e.contestant_id === contestant.id).length || 0) : 0,
-          hoh_wins: hohWins,
-          veto_wins: vetoWins,
-          times_on_block: timesOnBlock,
-          times_on_block_at_eviction: timesOnBlockAtEviction,
-          times_saved_by_veto: timesSavedByVeto,
-          times_selected: timesSelected,
-          elimination_week: eliminationWeek,
-          group_name: group?.group_name,
-          current_hoh: contestant.current_hoh,
-          current_pov_winner: contestant.current_pov_winner,
-          currently_nominated: contestant.currently_nominated,
-          pov_used_on: contestant.pov_used_on,
-          final_placement: contestant.final_placement,
-          americas_favorite: contestant.americas_favorite,
-          special_events: allSpecialEvents
-        };
-      });
-
-      // Sort by total points earned (descending)
-      stats.sort((a, b) => b.total_points_earned - a.total_points_earned);
+      const stats = calculateContestantStats(
+        contestants,
+        contestantGroups,
+        poolEntries,
+        weeklyEvents,
+        specialEvents,
+        evictedContestants
+      );
+      
       setContestantStats(stats);
-
     } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error processing contestant stats:', error);
     }
-  };
-
-  const createBlockSurvivalBonuses = async (contestants: any[], weeklyEvents: any[]) => {
-    try {
-      for (const contestant of contestants) {
-        // Calculate times on block at eviction for this contestant
-        const nomineeEvents = weeklyEvents.filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'nominee'
-        );
-        
-        const weeksWithEvictions = new Set(
-          weeklyEvents.filter(event => event.event_type === 'evicted').map(event => event.week_number)
-        );
-        
-        const weeksSavedByPov = new Set(
-          weeklyEvents.filter(event => event.contestant_id === contestant.id && event.event_type === 'pov_used_on').map(event => event.week_number)
-        );
-        
-        const weeksWonBBArena = new Set(
-          weeklyEvents.filter(event => event.contestant_id === contestant.id && event.event_type === 'bb_arena_winner').map(event => event.week_number)
-        );
-        
-        const weeksEvicted = new Set(
-          weeklyEvents.filter(event => event.contestant_id === contestant.id && event.event_type === 'evicted').map(event => event.week_number)
-        );
-        
-        const timesOnBlockAtEviction = nomineeEvents.filter(nomEvent => {
-          const week = nomEvent.week_number;
-          return weeksWithEvictions.has(week) && 
-                 !weeksSavedByPov.has(week) && 
-                 !weeksWonBBArena.has(week) && 
-                 !weeksEvicted.has(week);
-        }).length;
-
-        // Check and create special events for block survival bonuses
-        if (timesOnBlockAtEviction >= 2) {
-          await ensureBlockSurvivalEvent(contestant.id, 'block_survival_2_weeks', timesOnBlockAtEviction >= 2);
-        }
-        
-        if (timesOnBlockAtEviction >= 4) {
-          await ensureBlockSurvivalEvent(contestant.id, 'block_survival_4_weeks', timesOnBlockAtEviction >= 4);
-        }
-      }
-    } catch (error) {
-      console.error('Error creating block survival bonuses:', error);
-    }
-  };
-
-  const ensureBlockSurvivalEvent = async (contestantId: string, eventType: string, shouldExist: boolean) => {
-    try {
-      const { data: existingEvent } = await supabase
-        .from('special_events')
-        .select('*')
-        .eq('contestant_id', contestantId)
-        .eq('event_type', eventType)
-        .maybeSingle();
-
-      if (shouldExist && !existingEvent) {
-        const points = eventType === 'block_survival_2_weeks' ? 
-          getPointsForEvent('block_survival_2_weeks') || 3 : 
-          getPointsForEvent('block_survival_4_weeks') || 5;
-        
-        await supabase.from('special_events').insert({
-          contestant_id: contestantId,
-          event_type: eventType,
-          description: eventType === 'block_survival_2_weeks' ? 
-            'Survived 2+ Eviction Votes' : 'Survived 4+ Eviction Votes',
-          points_awarded: points,
-          week_number: 1 // Set to week 1 as a baseline
-        });
-      }
-    } catch (error) {
-      console.error('Error ensuring block survival event:', error);
-    }
-  };
-
-  const calculateBlockSurvivalBonus = (timesOnBlockAtEviction: number): number => {
-    let bonus = 0;
-    if (timesOnBlockAtEviction >= 2) {
-      bonus += getPointsForEvent('block_survival_2_weeks') || 3;
-    }
-    if (timesOnBlockAtEviction >= 4) {
-      bonus += getPointsForEvent('block_survival_4_weeks') || 5;
-    }
-    return bonus;
   };
 
   return {

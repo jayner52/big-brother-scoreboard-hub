@@ -20,7 +20,8 @@ export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: num
     // Only save if there's meaningful data (any field has content)
     const hasData = eventForm.hohWinner || eventForm.povWinner || eventForm.nominees.some(n => n) || 
                    eventForm.evicted || eventForm.secondEvicted || eventForm.thirdEvicted ||
-                   eventForm.replacementNominee || eventForm.povUsedOn;
+                   eventForm.replacementNominee || eventForm.povUsedOn || 
+                   eventForm.specialEvents.length > 0;
     
     if (!hasData) {
       return;
@@ -71,7 +72,9 @@ export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: num
         second_evicted_contestant: eventForm.secondEvicted || null,
         third_hoh_winner: eventForm.thirdHohWinner || null,
         third_pov_winner: eventForm.thirdPovWinner || null,
-        third_evicted_contestant: eventForm.thirdEvicted || null
+        third_evicted_contestant: eventForm.thirdEvicted || null,
+        // Store special events in draft data as JSON
+        draft_special_events: eventForm.specialEvents.length > 0 ? JSON.stringify(eventForm.specialEvents) : null
       };
 
       if (existingWeek) {

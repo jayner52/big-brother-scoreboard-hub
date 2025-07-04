@@ -149,7 +149,9 @@ export const LiveResults: React.FC = () => {
                    <Badge variant="destructive">Triple Eviction</Badge>
                  )}
                  {currentWeekData.jury_phase_started && (
-                   <Badge className="bg-purple-500 text-white font-bold">⚖️ JURY PHASE STARTED</Badge>
+                   <Badge className="bg-purple-600 text-white font-bold text-sm px-3 py-1">
+                     ⚖️ JURY PHASE STARTED
+                   </Badge>
                  )}
               </div>
             </CardTitle>
@@ -247,10 +249,12 @@ export const LiveResults: React.FC = () => {
                       )}
                       {week.is_triple_eviction && (
                         <Badge variant="destructive">Triple Eviction</Badge>
-                      )}
-                       {week.jury_phase_started && (
-                         <Badge className="bg-purple-500 text-white font-bold">⚖️ JURY STARTED</Badge>
                        )}
+                        {week.jury_phase_started && (
+                          <Badge className="bg-purple-600 text-white font-bold text-sm px-3 py-1">
+                            ⚖️ JURY STARTED
+                          </Badge>
+                        )}
                     </div>
                   </div>
                   

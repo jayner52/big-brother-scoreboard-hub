@@ -60,14 +60,14 @@ export const useContestantStats = () => {
           event.contestant_id === contestant.id && event.event_type === 'pov_winner'
         ).length;
 
-        // Count times on block (nominations)
+        // Count times on block (nominations) - use correct event type
         const timesOnBlock = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'nominated'
+          event.contestant_id === contestant.id && event.event_type === 'nominee'
         ).length;
 
         // Count times on block at eviction - calculate from weekly events
         const nomineeEvents = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'nominated'
+          event.contestant_id === contestant.id && event.event_type === 'nominee'
         );
         const evictionEvents = (weeklyEventsResult.data || []).filter(event => 
           event.contestant_id === contestant.id && event.event_type === 'evicted'

@@ -54,7 +54,7 @@ export const useWeeklyEvents = () => {
 
   // Update form week when editingWeek changes
   useEffect(() => {
-    setEventForm(prev => ({ ...prev, week: editingWeek, nominees: ['', ''], secondNominees: ['', ''] }));
+    setEventForm(prev => ({ ...prev, week: editingWeek }));
   }, [editingWeek]);
 
   // Get evicted contestants for current week context

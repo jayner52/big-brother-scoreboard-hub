@@ -17,8 +17,12 @@ export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: num
   }, [eventForm]);
 
   const saveCurrentWeekDraft = async () => {
-    // Only save if there's meaningful data
-    if (!eventForm.hohWinner && !eventForm.povWinner && eventForm.nominees.every(n => !n)) {
+    // Only save if there's meaningful data (any field has content)
+    const hasData = eventForm.hohWinner || eventForm.povWinner || eventForm.nominees.some(n => n) || 
+                   eventForm.evicted || eventForm.secondEvicted || eventForm.thirdEvicted ||
+                   eventForm.replacementNominee || eventForm.povUsedOn;
+    
+    if (!hasData) {
       return;
     }
 

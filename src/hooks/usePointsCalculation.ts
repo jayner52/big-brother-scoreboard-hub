@@ -62,23 +62,40 @@ export const usePointsCalculation = () => {
         
         // Handle different answer types including showmance (dual player)
         if (question.question_type === 'dual_player_select') {
-          // For showmance questions, handle both object and string formats
+          // For showmance questions, correct_answer is a JSON array of valid combinations
           if (userAnswer && question.correct_answer) {
-            let userAnswerStr;
-            if (typeof userAnswer === 'object' && userAnswer.player1 && userAnswer.player2) {
-              userAnswerStr = `${userAnswer.player1} & ${userAnswer.player2}`;
-            } else if (typeof userAnswer === 'string') {
-              userAnswerStr = userAnswer;
+            let correctAnswers;
+            try {
+              // Parse the correct answer if it's a string, otherwise use as-is
+              correctAnswers = typeof question.correct_answer === 'string' 
+                ? JSON.parse(question.correct_answer) 
+                : question.correct_answer;
+            } catch (e) {
+              console.error('Error parsing correct answer for showmance:', e);
+              correctAnswers = [];
             }
             
-            console.log('Showmance comparison:', { userAnswerStr, correctAnswer: question.correct_answer });
-            if (userAnswerStr === question.correct_answer) {
-              bonusPoints += question.points_value;
-              console.log('Bonus points awarded for showmance question:', question.points_value);
+            // Check if user's answer matches any of the correct combinations
+            if (Array.isArray(correctAnswers) && typeof userAnswer === 'object' && userAnswer.player1 && userAnswer.player2) {
+              const isCorrect = correctAnswers.some(correctPair => 
+                (correctPair.player1 === userAnswer.player1 && correctPair.player2 === userAnswer.player2) ||
+                (correctPair.player1 === userAnswer.player2 && correctPair.player2 === userAnswer.player1)
+              );
+              
+              console.log('Showmance comparison:', { 
+                userAnswer, 
+                correctAnswers, 
+                isCorrect 
+              });
+              
+              if (isCorrect) {
+                bonusPoints += question.points_value;
+                console.log('Bonus points awarded for showmance question:', question.points_value);
+              }
             }
           }
         } else {
-          // Standard answer comparison
+          // Standard answer comparison for other question types
           if (userAnswer === question.correct_answer) {
             bonusPoints += question.points_value;
             console.log('Bonus points awarded:', question.points_value);

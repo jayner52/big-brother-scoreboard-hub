@@ -139,23 +139,36 @@ async function scrapeMultipleSources(season: string, week: number, contestants: 
 
 async function scrapeWikipedia(season: string, week: number): Promise<ScrapedSource | null> {
   try {
-    const url = `https://en.wikipedia.org/wiki/Big_Brother_${season}_(American_season)`;
-    const response = await fetch(url);
+    // Try multiple Wikipedia page patterns
+    const urls = [
+      `https://en.wikipedia.org/wiki/Big_Brother_${season}_(American_season)`,
+      `https://en.wikipedia.org/wiki/Big_Brother_(American_season_${season})`,
+      `https://en.wikipedia.org/wiki/Big_Brother_${season}_(American_TV_series)`
+    ];
     
-    if (!response.ok) return null;
-    
-    const html = await response.text();
-    // Extract relevant sections about weekly competitions
-    const weekPattern = new RegExp(`Week ${week}|Week ${week}:`, 'gi');
-    const matches = html.match(weekPattern);
-    
-    if (matches) {
-      return {
-        url,
-        content: html,
-        source_type: 'Wikipedia',
-        timestamp: new Date().toISOString()
-      };
+    for (const url of urls) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) continue;
+        
+        const html = await response.text();
+        
+        // Extract competition results tables and episode summaries
+        const relevantContent = extractWikipediaCompetitionData(html, week);
+        
+        if (relevantContent) {
+          console.log(`Found Wikipedia data for Week ${week} at ${url}`);
+          return {
+            url,
+            content: relevantContent,
+            source_type: 'Wikipedia',
+            timestamp: new Date().toISOString()
+          };
+        }
+      } catch (pageError) {
+        console.error(`Error fetching ${url}:`, pageError);
+        continue;
+      }
     }
     
     return null;
@@ -165,20 +178,58 @@ async function scrapeWikipedia(season: string, week: number): Promise<ScrapedSou
   }
 }
 
+function extractWikipediaCompetitionData(html: string, week: number): string | null {
+  // Look for multiple patterns that indicate week data
+  const weekPatterns = [
+    new RegExp(`Week ${week}[^\\n]*(?:[\\s\\S]*?)(?=Week ${week + 1}|$)`, 'gi'),
+    new RegExp(`Episode ${week}[^\\n]*(?:[\\s\\S]*?)(?=Episode ${week + 1}|$)`, 'gi'),
+    new RegExp(`${week}\\s*\\|[^\\n]*(?:[\\s\\S]*?)(?=${week + 1}\\s*\\||$)`, 'gi')
+  ];
+  
+  for (const pattern of weekPatterns) {
+    const matches = html.match(pattern);
+    if (matches && matches.length > 0) {
+      // Extract table content and structured data
+      const content = matches[0];
+      
+      // Look for competition-related keywords
+      const competitionKeywords = ['HOH', 'Head of Household', 'POV', 'Power of Veto', 'Nominated', 'Evicted', 'Winner'];
+      const hasCompetitionData = competitionKeywords.some(keyword => 
+        content.toLowerCase().includes(keyword.toLowerCase())
+      );
+      
+      if (hasCompetitionData) {
+        // Clean up HTML and return relevant sections
+        return content
+          .replace(/<script[^>]*>.*?<\/script>/gi, '')
+          .replace(/<style[^>]*>.*?<\/style>/gi, '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+    }
+  }
+  
+  return null;
+}
+
 async function scrapeReddit(season: string, week: number): Promise<ScrapedSource | null> {
   try {
-    // Search for Reddit posts using Reddit's JSON API
+    // Enhanced Reddit search with more targeted terms
     const searchTerms = [
-      `Big Brother ${season} Week ${week} Results`,
-      `BB${season} Week ${week} HOH POV`,
-      `Big Brother ${season} Episode Discussion Week ${week}`,
-      `BB${season} Week ${week} Eviction`
+      `BB${season} Episode ${week}`,
+      `Big Brother ${season} Week ${week}`,
+      `BB${season} HOH Week ${week}`,
+      `BB${season} Veto Week ${week}`,
+      `BB${season} Nominations Week ${week}`,
+      `BB${season} Eviction Week ${week}`
     ];
     
     for (const term of searchTerms) {
-      const url = `https://www.reddit.com/r/BigBrother/search.json?q=${encodeURIComponent(term)}&restrict_sr=1&sort=relevance&t=month&limit=5`;
+      const url = `https://www.reddit.com/r/BigBrother/search.json?q=${encodeURIComponent(term)}&restrict_sr=1&sort=new&t=month&limit=10`;
       
       try {
+        console.log(`Searching Reddit for: "${term}"`);
         const response = await fetch(url, {
           headers: {
             'User-Agent': 'BigBrotherValidator/1.0'
@@ -189,21 +240,32 @@ async function scrapeReddit(season: string, week: number): Promise<ScrapedSource
           const data = await response.json();
           const posts = data.data?.children || [];
           
-          if (posts.length > 0) {
-            // Get the most relevant post
-            const topPost = posts[0].data;
-            const postUrl = `https://www.reddit.com${topPost.permalink}`;
+          // Look for episode discussion or results posts
+          const relevantPost = posts.find(post => {
+            const title = post.data.title.toLowerCase();
+            const isEpisodeThread = title.includes('episode') && title.includes('discussion');
+            const isResultsThread = title.includes('result') || title.includes('winner') || title.includes('hoh') || title.includes('pov');
+            const hasWeekInfo = title.includes(`${week}`) || title.includes(`week ${week}`);
             
-            // Fetch post comments
+            return (isEpisodeThread || isResultsThread) && hasWeekInfo;
+          });
+          
+          if (relevantPost) {
+            const postUrl = `https://www.reddit.com${relevantPost.data.permalink}`;
+            console.log(`Found relevant Reddit post: ${relevantPost.data.title}`);
+            
+            // Fetch post and its comments
             const commentsResponse = await fetch(`${postUrl}.json`, {
               headers: { 'User-Agent': 'BigBrotherValidator/1.0' }
             });
             
             if (commentsResponse.ok) {
               const commentsData = await commentsResponse.json();
+              const processedContent = extractRedditCompetitionData(commentsData);
+              
               return {
                 url: postUrl,
-                content: JSON.stringify(commentsData),
+                content: processedContent,
                 source_type: 'Reddit Live Feeds',
                 timestamp: new Date().toISOString()
               };
@@ -221,6 +283,38 @@ async function scrapeReddit(season: string, week: number): Promise<ScrapedSource
     console.error('Error scraping Reddit:', error);
     return null;
   }
+}
+
+function extractRedditCompetitionData(commentsData: any): string {
+  const post = commentsData[0]?.data?.children?.[0]?.data;
+  const comments = commentsData[1]?.data?.children || [];
+  
+  let extractedText = '';
+  
+  // Include post title and body
+  if (post) {
+    extractedText += `POST TITLE: ${post.title}\n`;
+    if (post.selftext) {
+      extractedText += `POST BODY: ${post.selftext}\n\n`;
+    }
+  }
+  
+  // Extract top-level comments that likely contain competition results
+  const relevantComments = comments
+    .filter(comment => comment.data?.body && comment.data.score > 5) // Filter highly upvoted comments
+    .slice(0, 10) // Top 10 comments
+    .map(comment => comment.data.body)
+    .filter(body => {
+      const text = body.toLowerCase();
+      return text.includes('hoh') || text.includes('pov') || text.includes('nominee') || 
+             text.includes('evict') || text.includes('winner') || text.includes('head of household');
+    });
+  
+  if (relevantComments.length > 0) {
+    extractedText += 'RELEVANT COMMENTS:\n' + relevantComments.join('\n\n');
+  }
+  
+  return extractedText || JSON.stringify(commentsData).substring(0, 5000);
 }
 
 async function scrapeCBS(season: string, week: number): Promise<ScrapedSource | null> {
@@ -286,32 +380,38 @@ async function parseScrapedDataWithAI(scrapedData: ScrapedSource[], contestants:
 }
 
 async function analyzeSourceWithOpenAI(source: ScrapedSource, contestants: string[]): Promise<any> {
+  console.log(`Analyzing ${source.source_type} content (${source.content.length} chars)`);
+  
+  // Enhanced prompt with better contestant matching
   const prompt = `
-    Analyze the following ${source.source_type} content for Big Brother competition results.
+    You are a Big Brother competition results analyst. Extract ONLY factual competition results from this content.
     
-    Available contestants: ${contestants.join(', ')}
+    CONTESTANT NAMES TO MATCH: ${contestants.join(', ')}
     
-    Content: ${source.content.substring(0, 8000)} // Limit content size
+    SOURCE: ${source.source_type}
+    CONTENT TO ANALYZE:
+    ${source.content.substring(0, 6000)}
     
-    Extract and return ONLY the following information in valid JSON format:
+    Extract competition results and return VALID JSON:
     {
-      "hoh_winner": "contestant_name or null",
-      "pov_winner": "contestant_name or null", 
-      "nominees": ["contestant1", "contestant2"] or [],
-      "veto_used": true or false,
-      "replacement_nominee": "contestant_name or null",
-      "evicted": "contestant_name or null",
-      "source_type": "${source.source_type}",
-      "confidence_indicators": ["verified", "multiple_sources", "official"] or [],
-      "found_data": true or false
+      "hoh_winner": "exact_contestant_name or null",
+      "pov_winner": "exact_contestant_name or null", 
+      "nominees": ["name1", "name2"] or [],
+      "veto_used": true/false/null,
+      "replacement_nominee": "exact_contestant_name or null",
+      "evicted": "exact_contestant_name or null",
+      "confidence_indicators": ["official", "verified", "multiple_mentions"],
+      "found_data": true/false
     }
     
-    Rules:
-    - Use EXACT contestant names from the provided list
-    - If information is unclear or missing, set to null
-    - Set found_data to false if no relevant competition results found
-    - Look for keywords: HOH, Head of Household, POV, Power of Veto, nominated, evicted
-    - For Reddit: Look for highly upvoted or verified information
+    CRITICAL RULES:
+    1. Use EXACT names from contestant list - match case and spelling precisely
+    2. For nicknames/abbreviations, match to full contestant names
+    3. If you find "Angela won HOH", return "Angela" (not "Angela Rummans")
+    4. Set found_data=true ONLY if you find specific competition results
+    5. Look for: HOH/Head of Household winner, POV/Veto winner, nominees, evictions
+    6. Ignore speculation, rumors, or unclear information
+    7. Return null for any field you cannot determine with confidence
   `;
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {

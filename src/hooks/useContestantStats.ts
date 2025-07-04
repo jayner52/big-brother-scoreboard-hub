@@ -65,11 +65,52 @@ export const useContestantStats = () => {
           event.contestant_id === contestant.id && event.event_type === 'nominated'
         ).length;
 
+        // Count times on block at eviction
+        const timesOnBlockAtEviction = (weeklyEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'nominated'
+        ).filter(event => {
+          // Check if they were evicted in the same week they were nominated
+          const evictedSameWeek = (weeklyEventsResult.data || []).some(evictEvent => 
+            evictEvent.contestant_id === contestant.id && 
+            evictEvent.event_type === 'evicted' && 
+            evictEvent.week_number === event.week_number
+          );
+          return evictedSameWeek;
+        }).length;
+
+        // Count times saved by veto
+        const timesSavedByVeto = (weeklyEventsResult.data || []).filter(event => 
+          event.contestant_id === contestant.id && event.event_type === 'pov_used_on'
+        ).length;
+
         // Find elimination week
         const evictionEvent = (weeklyEventsResult.data || []).find(event => 
           event.contestant_id === contestant.id && event.event_type === 'evicted'
         );
         const eliminationWeek = evictionEvent ? evictionEvent.week_number : undefined;
+
+        // Get all special events for this contestant from both tables
+        const contestantSpecialEvents = (specialEventsResult.data || [])
+          .filter(event => event.contestant_id === contestant.id)
+          .map(event => ({
+            event_type: event.event_type,
+            description: event.description,
+            points_awarded: event.points_awarded
+          }));
+
+        // Include BB Arena wins from weekly events
+        const bbArenaWins = (weeklyEventsResult.data || [])
+          .filter(event => 
+            event.contestant_id === contestant.id && 
+            event.event_type === 'bb_arena_winner'
+          )
+          .map(event => ({
+            event_type: 'bb_arena_winner',
+            description: 'BB Arena Winner',
+            points_awarded: event.points_awarded
+          }));
+
+        const allSpecialEvents = [...contestantSpecialEvents, ...bbArenaWins];
 
         // Calculate total points earned from all weekly and special events
         const weeklyPoints = (weeklyEventsResult.data || [])
@@ -89,6 +130,8 @@ export const useContestantStats = () => {
           hoh_wins: hohWins,
           veto_wins: vetoWins,
           times_on_block: timesOnBlock,
+          times_on_block_at_eviction: timesOnBlockAtEviction,
+          times_saved_by_veto: timesSavedByVeto,
           times_selected: timesSelected,
           elimination_week: eliminationWeek,
           group_name: group?.group_name,
@@ -97,7 +140,8 @@ export const useContestantStats = () => {
           currently_nominated: contestant.currently_nominated,
           pov_used_on: contestant.pov_used_on,
           final_placement: contestant.final_placement,
-          americas_favorite: contestant.americas_favorite
+          americas_favorite: contestant.americas_favorite,
+          special_events: allSpecialEvents
         };
       });
 

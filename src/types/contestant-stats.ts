@@ -5,6 +5,8 @@ export interface ContestantStats {
   hoh_wins: number;
   veto_wins: number;
   times_on_block: number;
+  times_on_block_at_eviction: number;
+  times_saved_by_veto: number;
   times_selected: number;
   elimination_week?: number;
   group_name?: string;
@@ -14,4 +16,9 @@ export interface ContestantStats {
   pov_used_on?: boolean;
   final_placement?: number;
   americas_favorite?: boolean;
+  special_events: Array<{
+    event_type: string;
+    description?: string;
+    points_awarded?: number;
+  }>;
 }

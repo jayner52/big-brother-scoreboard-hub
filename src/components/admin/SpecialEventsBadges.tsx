@@ -50,6 +50,12 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
 
 const getEventBadgeInfo = (eventType: string) => {
   const eventMap: Record<string, { icon: React.ComponentType<any>, color: string, tooltip: string }> = {
+    // Corrected database event types
+    'in_showmance': {
+      icon: Heart,
+      color: 'bg-pink-100 text-pink-700 border-pink-300',
+      tooltip: 'Showmance'
+    },
     'showmance': {
       icon: Heart,
       color: 'bg-pink-100 text-pink-700 border-pink-300',
@@ -75,10 +81,20 @@ const getEventBadgeInfo = (eventType: string) => {
       color: 'bg-red-100 text-red-700 border-red-300',
       tooltip: 'Punishment'
     },
+    'granted_safety': {
+      icon: Award,
+      color: 'bg-blue-100 text-blue-700 border-blue-300',
+      tooltip: 'Granted Safety'
+    },
     'safety': {
       icon: Award,
       color: 'bg-blue-100 text-blue-700 border-blue-300',
       tooltip: 'Safety Prize'
+    },
+    'power_from_hg': {
+      icon: Star,
+      color: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+      tooltip: 'Power from Houseguest'
     },
     'given_power': {
       icon: Star,
@@ -104,6 +120,46 @@ const getEventBadgeInfo = (eventType: string) => {
       icon: Ban,
       color: 'bg-gray-100 text-gray-700 border-gray-300',
       tooltip: 'Left Early'
+    },
+    'leaves_not_eviction': {
+      icon: Ban,
+      color: 'bg-gray-100 text-gray-700 border-gray-300',
+      tooltip: 'Left Not by Eviction'
+    },
+    'block_survival_2_weeks': {
+      icon: Trophy,
+      color: 'bg-green-100 text-green-700 border-green-300',
+      tooltip: '2-Week Block Survival'
+    },
+    'block_survival_4_weeks': {
+      icon: Trophy,
+      color: 'bg-green-100 text-green-700 border-green-300',
+      tooltip: '4-Week Block Survival'
+    },
+    'jury_member': {
+      icon: Award,
+      color: 'bg-purple-100 text-purple-700 border-purple-300',
+      tooltip: 'Jury Member'
+    },
+    'americas_favorite': {
+      icon: Star,
+      color: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+      tooltip: "America's Favorite"
+    },
+    'winner': {
+      icon: Trophy,
+      color: 'bg-gold-100 text-gold-700 border-gold-300',
+      tooltip: 'Winner'
+    },
+    'runner_up': {
+      icon: Trophy,
+      color: 'bg-silver-100 text-silver-700 border-silver-300',
+      tooltip: 'Runner-up'
+    },
+    'custom': {
+      icon: Star,
+      color: 'bg-gray-100 text-gray-700 border-gray-300',
+      tooltip: 'Custom Event'
     }
   };
   

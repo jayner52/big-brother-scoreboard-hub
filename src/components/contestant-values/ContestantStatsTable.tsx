@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Target, Shield } from 'lucide-react';
 import { ContestantStats } from '@/types/contestant-stats';
 import { Contestant } from '@/types/pool';
+import { SpecialEventsBadges } from '@/components/admin/SpecialEventsBadges';
 
 interface ContestantStatsTableProps {
   contestantStats: ContestantStats[];
@@ -34,7 +35,9 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
             <TableHead>Points Earned</TableHead>
             <TableHead>HOH Wins</TableHead>
             <TableHead>Veto Wins</TableHead>
-            <TableHead>Times on Block</TableHead>
+            <TableHead>Times on Block at Eviction</TableHead>
+            <TableHead>Times Saved by Veto</TableHead>
+            <TableHead>Special Events</TableHead>
             <TableHead>Times Selected</TableHead>
             <TableHead>Fantasy Value</TableHead>
           </TableRow>
@@ -113,7 +116,13 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                   {stat.veto_wins}
                 </TableCell>
                 <TableCell className="text-center">
-                  {stat.times_on_block}
+                  {stat.times_on_block_at_eviction}
+                </TableCell>
+                <TableCell className="text-center">
+                  {stat.times_saved_by_veto}
+                </TableCell>
+                <TableCell className="text-center">
+                  <SpecialEventsBadges events={stat.special_events} />
                 </TableCell>
                 <TableCell className="text-center">
                   {stat.times_selected}

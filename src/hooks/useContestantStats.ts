@@ -40,7 +40,7 @@ export const useContestantStats = () => {
         weeklyEvents,
         specialEvents,
         evictedContestants,
-        5 // Current game week
+        7 // Updated to current game week
       );
       
       setContestantStats(stats);

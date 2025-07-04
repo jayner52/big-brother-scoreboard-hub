@@ -9,7 +9,7 @@ export const calculateContestantStats = (
   weeklyEvents: any[],
   specialEvents: any[],
   evictedContestants: string[],
-  currentGameWeek: number = 5
+  currentGameWeek: number = 7
 ): ContestantStats[] => {
   // Determine who is evicted based on current game week
   const evictedThisGameWeek = weeklyEvents

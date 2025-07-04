@@ -65,17 +65,21 @@ export const useContestantStats = () => {
           event.contestant_id === contestant.id && event.event_type === 'nominee'
         ).length;
 
-        // Count times on block at eviction - calculate from weekly events
+        // Count times on block at eviction - nominees who faced eviction vote
         const nomineeEvents = (weeklyEventsResult.data || []).filter(event => 
           event.contestant_id === contestant.id && event.event_type === 'nominee'
         );
-        const evictionEvents = (weeklyEventsResult.data || []).filter(event => 
-          event.contestant_id === contestant.id && event.event_type === 'evicted'
+        
+        // Get all weeks that had evictions (any contestant)
+        const weeksWithEvictions = new Set(
+          (weeklyEventsResult.data || [])
+            .filter(event => event.event_type === 'evicted')
+            .map(event => event.week_number)
         );
         
-        // Count nominees who were evicted in the same week they were nominated
+        // Count nominee events that occurred in weeks with evictions
         const timesOnBlockAtEviction = nomineeEvents.filter(nomEvent => 
-          evictionEvents.some(evictEvent => evictEvent.week_number === nomEvent.week_number)
+          weeksWithEvictions.has(nomEvent.week_number)
         ).length;
 
         // Count times saved by veto - calculate from weekly events

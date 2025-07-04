@@ -3,11 +3,37 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { WeeklyEventForm } from '@/types/admin';
 
+interface ValidationResult {
+  field: string;
+  value: string | null;
+  confidence: number;
+  sources: string[];
+  conflicts: string[];
+}
+
+interface ValidationResponse {
+  success: boolean;
+  overall_confidence: number;
+  validation_results: ValidationResult[];
+  summary: {
+    high_confidence_count: number;
+    low_confidence_count: number;
+    unreliable_count: number;
+    total_fields: number;
+  };
+  populated_fields: any;
+  warnings: string[];
+  errors: string[];
+}
+
 export const useAIPopulate = (
   eventForm: WeeklyEventForm,
-  setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>
+  setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>,
+  contestants: any[] = []
 ) => {
   const [isAIPopulating, setIsAIPopulating] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationData, setValidationData] = useState<ValidationResponse | null>(null);
   const { toast } = useToast();
 
   const populateFieldsSequentially = async (data: any) => {
@@ -98,15 +124,18 @@ export const useAIPopulate = (
     });
   };
 
-  const handleAIPopulate = async () => {
-    setIsAIPopulating(true);
+  const handleValidateData = async () => {
+    setIsValidating(true);
+    setValidationData(null);
     
     try {
-      const { data, error } = await supabase.functions.invoke('bb-ai-populate', {
+      const contestantNames = contestants.map(c => c.name);
+      
+      const { data, error } = await supabase.functions.invoke('bb-data-validator', {
         body: {
+          season: '26', // Current season - could be made configurable
           week: eventForm.week,
-          season: 'current',
-          confidence_threshold: 0.95
+          contestants: contestantNames
         }
       });
 
@@ -115,23 +144,97 @@ export const useAIPopulate = (
       }
 
       if (data?.success) {
-        console.log('AI Populate response:', data);
-        toast({
-          title: "AI Population Starting...",
-          description: "Populating fields sequentially...",
-        });
-
-        // Sequential population with delays for visual feedback
-        await populateFieldsSequentially(data);
+        setValidationData(data);
+        
+        if (data.overall_confidence >= 90) {
+          toast({
+            title: "Validation Successful",
+            description: `${data.summary.high_confidence_count} fields validated with high confidence`,
+          });
+        } else if (data.overall_confidence >= 80) {
+          toast({
+            title: "Validation Complete - Review Needed",
+            description: `${data.summary.low_confidence_count} fields need manual review`,
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Validation Warning",
+            description: `Low confidence data - manual entry recommended`,
+            variant: "destructive",
+          });
+        }
       } else {
-        console.error('AI Populate failed:', data);
-        throw new Error(data?.message || 'Failed to populate data');
+        throw new Error(data?.error || 'Validation failed');
       }
     } catch (error) {
-      console.error('AI populate error:', error);
+      console.error('Validation error:', error);
       toast({
-        title: "AI Population Failed",
-        description: "Failed to populate with AI. Please try again or enter data manually.",
+        title: "Validation Failed",
+        description: "Could not validate data. Manual entry required.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handlePopulateValidatedData = async () => {
+    if (!validationData?.populated_fields) return;
+    
+    setIsAIPopulating(true);
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    
+    try {
+      const fields = validationData.populated_fields;
+      
+      // Only populate fields with 90%+ confidence
+      const highConfidenceFields = validationData.validation_results.filter(r => r.confidence >= 90);
+      
+      for (const result of highConfidenceFields) {
+        const fieldValue = fields[result.field];
+        if (fieldValue === null || fieldValue === undefined) continue;
+        
+        toast({ 
+          title: "Populating Field", 
+          description: `Setting ${result.field.replace(/_/g, ' ')} (${result.confidence}% confidence)...` 
+        });
+        
+        switch (result.field) {
+          case 'hoh_winner':
+            setEventForm(prev => ({ ...prev, hohWinner: fieldValue }));
+            break;
+          case 'pov_winner':
+            setEventForm(prev => ({ ...prev, povWinner: fieldValue }));
+            break;
+          case 'nominees':
+            const nominees = Array.isArray(fieldValue) ? fieldValue : [];
+            setEventForm(prev => ({ ...prev, nominees: [...nominees, ...Array(Math.max(0, 2 - nominees.length)).fill('')] }));
+            break;
+          case 'veto_used':
+            setEventForm(prev => ({ ...prev, povUsed: fieldValue }));
+            break;
+          case 'replacement_nominee':
+            setEventForm(prev => ({ ...prev, replacementNominee: fieldValue }));
+            break;
+          case 'evicted':
+            setEventForm(prev => ({ ...prev, evicted: fieldValue }));
+            break;
+        }
+        
+        await delay(700);
+      }
+      
+      toast({
+        title: "Population Complete!",
+        description: `Successfully populated ${highConfidenceFields.length} validated fields.`,
+      });
+      
+    } catch (error) {
+      console.error('Population error:', error);
+      toast({
+        title: "Population Failed",
+        description: "Error occurred while populating fields.",
         variant: "destructive",
       });
     } finally {
@@ -139,8 +242,17 @@ export const useAIPopulate = (
     }
   };
 
+  const handleAIPopulate = async () => {
+    // First validate, then populate if confidence is good
+    await handleValidateData();
+  };
+
   return {
     isAIPopulating,
-    handleAIPopulate
+    isValidating,
+    validationData,
+    handleAIPopulate,
+    handleValidateData,
+    handlePopulateValidatedData
   };
 };

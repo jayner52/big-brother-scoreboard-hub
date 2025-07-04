@@ -85,16 +85,8 @@ export const calculateContestantStats = (
       .filter(event => event.contestant_id === contestant.id)
       .reduce((sum, event) => sum + (event.points_awarded || 0), 0);
 
-    // Calculate block survival bonus points (use simple calculation instead of async)
-    let blockSurvivalBonusPoints = 0;
-    if (timesOnBlockAtEviction >= 2) {
-      blockSurvivalBonusPoints += 3; // Default 3 points for 2+ survivals
-    }
-    if (timesOnBlockAtEviction >= 4) {
-      blockSurvivalBonusPoints += 5; // Default 5 points for 4+ survivals
-    }
-    
-    const totalPointsEarned = weeklyPoints + specialPoints + blockSurvivalBonusPoints;
+    // Block survival points are now handled through special events, no need for manual calculation
+    const totalPointsEarned = weeklyPoints + specialPoints;
 
     return {
       contestant_name: contestant.name,

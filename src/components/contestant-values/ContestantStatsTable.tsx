@@ -116,22 +116,17 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                   {stat.veto_wins}
                 </TableCell>
                 <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <span>{stat.times_on_block_at_eviction}</span>
-                    {stat.times_on_block_at_eviction >= 4 && <span title="4+ Block Survivals">🏰💪</span>}
-                    {stat.times_on_block_at_eviction >= 2 && stat.times_on_block_at_eviction < 4 && <span title="2+ Block Survivals">💪</span>}
-                    {stat.times_on_block_at_eviction >= 2 && (
-                      <Badge variant="outline" className="text-xs ml-1">
-                        +{stat.times_on_block_at_eviction >= 4 ? 8 : 3}pts
-                      </Badge>
-                    )}
-                  </div>
+                  {stat.times_on_block_at_eviction}
                 </TableCell>
                 <TableCell className="text-center">
                   {stat.times_saved_by_veto}
                 </TableCell>
                 <TableCell className="text-center">
-                  <SpecialEventsBadges events={stat.special_events} />
+                  <div className="flex items-center justify-center gap-1">
+                    <SpecialEventsBadges events={stat.special_events} />
+                    {stat.times_on_block_at_eviction >= 4 && <span title="4+ Block Survivals">🏰💪</span>}
+                    {stat.times_on_block_at_eviction >= 2 && stat.times_on_block_at_eviction < 4 && <span title="2+ Block Survivals">💪</span>}
+                  </div>
                 </TableCell>
                 <TableCell className="text-center">
                   {stat.times_selected}

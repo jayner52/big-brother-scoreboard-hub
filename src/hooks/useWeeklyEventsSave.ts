@@ -27,12 +27,24 @@ export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: num
     }
 
     setIsAutoSaving(true);
+    console.log('Saving week data:', { week: eventForm.week, hohWinner: eventForm.hohWinner, povWinner: eventForm.povWinner });
+    
     try {
-      const { data: existingWeek } = await supabase
+      const { data: existingWeek, error: queryError } = await supabase
         .from('weekly_results')
         .select('id')
         .eq('week_number', eventForm.week)
-        .single();
+        .maybeSingle();
+
+      if (queryError) {
+        console.error('Error querying existing week:', queryError);
+        toast({
+          title: "Error",
+          description: "Failed to check existing week data",
+          variant: "destructive"
+        });
+        return;
+      }
 
       const weekData = {
         week_number: eventForm.week,
@@ -64,16 +76,39 @@ export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: num
 
       if (existingWeek) {
         // Update existing draft
-        await supabase
+        const { error: updateError } = await supabase
           .from('weekly_results')
           .update(weekData)
           .eq('id', existingWeek.id);
+        
+        if (updateError) {
+          console.error('Error updating week:', updateError);
+          toast({
+            title: "Error",
+            description: "Failed to update week data",
+            variant: "destructive"
+          });
+          return;
+        }
+        console.log('Successfully updated week:', eventForm.week);
       } else {
         // Create new draft
-        await supabase
+        const { error: insertError } = await supabase
           .from('weekly_results')
           .insert(weekData);
+          
+        if (insertError) {
+          console.error('Error inserting week:', insertError);
+          toast({
+            title: "Error", 
+            description: "Failed to save week data",
+            variant: "destructive"
+          });
+          return;
+        }
+        console.log('Successfully created new week:', eventForm.week);
       }
+
 
     } catch (error) {
       console.error('Error auto-saving week:', error);

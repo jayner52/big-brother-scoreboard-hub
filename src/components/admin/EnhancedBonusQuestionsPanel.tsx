@@ -22,6 +22,7 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
     bonusAnswers,
     loading,
     handleBonusAnswer,
+    handleDeleteQuestion,
     refreshQuestions
   } = useBonusQuestions();
 
@@ -270,6 +271,7 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
             contestants={contestants}
             onAnswerChange={handleBonusAnswer}
             onPointsChange={handlePointsChange}
+            onDelete={handleDeleteQuestion}
           />
         </div>
       ))}

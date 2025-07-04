@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Edit2, Check, X } from 'lucide-react';
+import { Edit2, Check, X, Trash2 } from 'lucide-react';
 import { BonusQuestion, Contestant } from '@/types/pool';
 import { BonusAnswerInput } from './BonusAnswerInput';
 import { MultipleAnswersInput } from './MultipleAnswersInput';
@@ -17,6 +17,7 @@ interface BonusQuestionCardProps {
   contestants: Contestant[];
   onAnswerChange: (questionId: string, answer: any, revealed: boolean) => void;
   onPointsChange?: (questionId: string, points: number) => void;
+  onDelete?: (questionId: string) => void;
 }
 
 export const BonusQuestionCard: React.FC<BonusQuestionCardProps> = ({
@@ -24,7 +25,8 @@ export const BonusQuestionCard: React.FC<BonusQuestionCardProps> = ({
   currentAnswer,
   contestants,
   onAnswerChange,
-  onPointsChange
+  onPointsChange,
+  onDelete
 }) => {
   const { triggerRecalculation } = useAutoPointsRecalculation();
   const [isEditingPoints, setIsEditingPoints] = useState(false);
@@ -56,7 +58,19 @@ export const BonusQuestionCard: React.FC<BonusQuestionCardProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">{question.question_text}</CardTitle>
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg flex-1 pr-4">{question.question_text}</CardTitle>
+          {onDelete && (
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => onDelete(question.id)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {isEditingPoints ? (

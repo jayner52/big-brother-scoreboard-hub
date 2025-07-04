@@ -73,6 +73,7 @@ export const ContestantManagement: React.FC = () => {
             onView={handleViewProfile}
             onDelete={handleDelete}
             onClearAll={handleClearAll}
+            onBioUpdate={loadContestants}
           />
         </TabsContent>
       </Tabs>

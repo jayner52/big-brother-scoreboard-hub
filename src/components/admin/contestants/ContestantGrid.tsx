@@ -9,6 +9,7 @@ interface ContestantGridProps {
   onView: (contestant: ContestantWithBio) => void;
   onDelete: (contestantId: string) => void;
   onClearAll: () => void;
+  onBioUpdate?: () => void;
 }
 
 export const ContestantGrid: React.FC<ContestantGridProps> = ({
@@ -16,7 +17,8 @@ export const ContestantGrid: React.FC<ContestantGridProps> = ({
   onEdit,
   onView,
   onDelete,
-  onClearAll
+  onClearAll,
+  onBioUpdate
 }) => {
   if (contestants.length === 0) {
     return null;
@@ -44,6 +46,7 @@ export const ContestantGrid: React.FC<ContestantGridProps> = ({
             onEdit={() => onEdit(contestant)}
             onView={() => onView(contestant)}
             onDelete={() => onDelete(contestant.id)}
+            onBioUpdate={onBioUpdate}
           />
         ))}
       </div>

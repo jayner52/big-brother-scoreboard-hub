@@ -8,7 +8,7 @@ import { WeekControls } from './weekly-events/WeekControls';
 import { WeeklyEventsHeader } from './weekly-events/WeeklyEventsHeader';
 import { WeeklyEventsToggles } from './weekly-events/WeeklyEventsToggles';
 import { WeeklyEventsContent } from './weekly-events/WeeklyEventsContent';
-import { ValidationStatusDisplay } from './ValidationStatusDisplay';
+import { ValidationSimplified } from './ValidationSimplified';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { Button } from '@/components/ui/button';
 
@@ -66,36 +66,8 @@ export const WeeklyEventsPanel: React.FC = () => {
         />
         
         <CardContent className="p-6 space-y-6">
-          {/* Validation Controls */}
-          <div className="flex gap-4 items-center">
-            <Button 
-              onClick={handleValidateData}
-              disabled={isValidating || isAIPopulating}
-              variant="outline"
-            >
-              {isValidating ? 'Validating...' : 'Validate Data'}
-            </Button>
-            
-            {validationData && validationData.overall_confidence >= 80 && (
-              <Button 
-                onClick={handlePopulateValidatedData}
-                disabled={isValidating || isAIPopulating}
-                variant="default"
-              >
-                Populate Validated Fields
-              </Button>
-            )}
-          </div>
-
-          {/* Validation Status Display */}
-          <ValidationStatusDisplay
-            validationResults={validationData?.validation_results}
-            overallConfidence={validationData?.overall_confidence}
-            isValidating={isValidating}
-            summary={validationData?.summary}
-            warnings={validationData?.warnings}
-            errors={validationData?.errors}
-          />
+          {/* Manual Entry Notice */}
+          <ValidationSimplified />
 
           {/* Week Controls */}
           <WeekControls

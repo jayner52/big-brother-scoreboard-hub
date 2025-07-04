@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { ContestantWithBio } from '@/types/admin';
-import { Pencil, Bot, Eye, Trash2 } from 'lucide-react';
+import { Pencil, Bot, Eye, Trash2, Check, X } from 'lucide-react';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface EnhancedContestantCardProps {
   contestant: ContestantWithBio & {
@@ -19,6 +22,7 @@ interface EnhancedContestantCardProps {
   onEdit: () => void;
   onView: () => void;
   onDelete?: () => void;
+  onBioUpdate?: () => void;
 }
 
 export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
@@ -26,12 +30,52 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
   onEdit,
   onView,
   onDelete,
+  onBioUpdate,
 }) => {
   const { evictedContestants } = useEvictedContestants();
+  const { toast } = useToast();
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [editBio, setEditBio] = useState(contestant.bio || '');
+  const [isSaving, setIsSaving] = useState(false);
   const isEvicted = evictedContestants.includes(contestant.name);
   
   const archetype = contestant.personality_traits?.archetype;
   const threatLevel = contestant.gameplay_strategy?.threat_level;
+
+  const handleBioSave = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('contestants')
+        .update({ bio: editBio })
+        .eq('id', contestant.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Bio updated successfully",
+      });
+      
+      setIsEditingBio(false);
+      onBioUpdate?.();
+      
+    } catch (error) {
+      console.error('Error updating bio:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update bio",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleBioCancel = () => {
+    setEditBio(contestant.bio || '');
+    setIsEditingBio(false);
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -108,10 +152,49 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
         )}
 
         {/* Bio */}
-        {contestant.bio && (
-          <p className="text-sm text-gray-600 line-clamp-2">
-            {contestant.bio}
-          </p>
+        {isEditingBio ? (
+          <div className="space-y-2">
+            <Textarea
+              value={editBio}
+              onChange={(e) => setEditBio(e.target.value)}
+              rows={3}
+              placeholder="Enter bio..."
+              className="text-sm"
+            />
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                onClick={handleBioSave}
+                disabled={isSaving}
+              >
+                <Check className="h-3 w-3 mr-1" />
+                Save
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={handleBioCancel}
+                disabled={isSaving}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="group relative">
+            <p className="text-sm text-gray-600 line-clamp-2">
+              {contestant.bio || 'No bio available'}
+            </p>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsEditingBio(true)}
+              className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          </div>
         )}
 
         {/* Quick Stats */}
@@ -129,6 +212,7 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
           </Button>
           <Button size="sm" variant="outline" onClick={onEdit}>
             <Pencil className="h-4 w-4" />
+            Edit All
           </Button>
           {onDelete && (
             <Button size="sm" variant="outline" onClick={onDelete}>

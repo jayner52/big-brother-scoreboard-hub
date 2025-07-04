@@ -193,12 +193,43 @@ export const useBonusQuestions = () => {
     }
   };
 
+  const handleDeleteQuestion = async (questionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bonus_questions')
+        .delete()
+        .eq('id', questionId);
+
+      if (error) throw error;
+
+      setBonusQuestions(prev => prev.filter(q => q.id !== questionId));
+      setBonusAnswers(prev => {
+        const { [questionId]: deleted, ...rest } = prev;
+        return rest;
+      });
+
+      toast({
+        title: "Success!",
+        description: "Bonus question deleted",
+      });
+
+    } catch (error) {
+      console.error('Error deleting bonus question:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete bonus question",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     contestants,
     bonusQuestions,
     bonusAnswers,
     loading,
     handleBonusAnswer,
+    handleDeleteQuestion,
     refreshQuestions: loadData
   };
 };

@@ -11,6 +11,7 @@ interface AIGenerationTabProps {
   onView: (contestant: ContestantWithBio) => void;
   onDelete: (contestantId: string) => void;
   onClearAll: () => void;
+  onBioUpdate?: () => void;
 }
 
 export const AIGenerationTab: React.FC<AIGenerationTabProps> = ({
@@ -19,7 +20,8 @@ export const AIGenerationTab: React.FC<AIGenerationTabProps> = ({
   onEdit,
   onView,
   onDelete,
-  onClearAll
+  onClearAll,
+  onBioUpdate
 }) => {
   return (
     <div className="space-y-6">
@@ -31,6 +33,7 @@ export const AIGenerationTab: React.FC<AIGenerationTabProps> = ({
         onView={onView}
         onDelete={onDelete}
         onClearAll={onClearAll}
+        onBioUpdate={onBioUpdate}
       />
     </div>
   );

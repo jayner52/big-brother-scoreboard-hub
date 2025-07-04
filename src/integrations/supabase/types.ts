@@ -550,6 +550,8 @@ export type Database = {
       }
       weekly_results: {
         Row: {
+          ai_arena_enabled: boolean | null
+          ai_arena_winner: string | null
           created_at: string
           evicted_contestant: string | null
           hoh_winner: string | null
@@ -576,6 +578,8 @@ export type Database = {
           week_number: number
         }
         Insert: {
+          ai_arena_enabled?: boolean | null
+          ai_arena_winner?: string | null
           created_at?: string
           evicted_contestant?: string | null
           hoh_winner?: string | null
@@ -602,6 +606,8 @@ export type Database = {
           week_number: number
         }
         Update: {
+          ai_arena_enabled?: boolean | null
+          ai_arena_winner?: string | null
           created_at?: string
           evicted_contestant?: string | null
           hoh_winner?: string | null

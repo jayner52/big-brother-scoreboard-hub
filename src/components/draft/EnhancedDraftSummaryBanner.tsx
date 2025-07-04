@@ -52,10 +52,20 @@ export const EnhancedDraftSummaryBanner: React.FC<EnhancedDraftSummaryBannerProp
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-pink-300" />
                   <div>
-                    <p className="text-xs text-blue-200">Deadline</p>
+                    <p className="text-xs text-blue-200">Draft Due</p>
                     <p className="font-semibold text-sm">
-                      {new Date(poolSettings.registration_deadline).toLocaleDateString()}
+                      {new Date(poolSettings.registration_deadline).toLocaleString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
                     </p>
+                    {new Date(poolSettings.registration_deadline).getTime() - Date.now() < 24 * 60 * 60 * 1000 && (
+                      <p className="text-xs text-red-200 font-medium">⚠️ Due Soon!</p>
+                    )}
                   </div>
                 </div>
               )}

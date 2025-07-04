@@ -12,10 +12,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Settings, DollarSign, Mail, HelpCircle } from 'lucide-react';
 import { PrizePoolPanel } from '@/components/admin/PrizePoolPanel';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
-import { useBonusQuestions } from '@/hooks/useBonusQuestions';
-import { BonusQuestionCard } from './bonus-questions/BonusQuestionCard';
-import { MultipleCorrectAnswers } from './bonus-questions/MultipleCorrectAnswers';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface PoolSettings {
   id: string;
@@ -42,14 +38,6 @@ export const PoolSettingsPanel: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
-  // Bonus questions hook
-  const {
-    contestants,
-    bonusQuestions,
-    bonusAnswers,
-    loading: bonusLoading,
-    handleBonusAnswer
-  } = useBonusQuestions();
 
   useEffect(() => {
     loadSettings();
@@ -174,51 +162,6 @@ export const PoolSettingsPanel: React.FC = () => {
     localStorage.setItem('pool_settings_expanded', JSON.stringify(value));
   };
 
-  const handleBonusPointsChange = async (questionId: string, points: number) => {
-    try {
-      const { error } = await supabase
-        .from('bonus_questions')
-        .update({ points_value: points })
-        .eq('id', questionId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Bonus question points updated",
-      });
-    } catch (error) {
-      console.error('Error updating points:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update points",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleMultipleAnswersUpdate = async (questionId: string, correctAnswers: string[]) => {
-    try {
-      const { error } = await supabase
-        .from('bonus_questions')
-        .update({ correct_answer: correctAnswers.join('|') })
-        .eq('id', questionId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Multiple correct answers updated",
-      });
-    } catch (error) {
-      console.error('Error updating multiple answers:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update multiple answers",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (loading) {
     return <div className="text-center py-8">Loading pool settings...</div>;
@@ -480,55 +423,45 @@ export const PoolSettingsPanel: React.FC = () => {
           </Card>
         </AccordionItem>
 
-        {/* Bonus Questions */}
-        <AccordionItem value="bonus-questions" className="border-0">
+        {/* Custom Scoring Rules */}
+        <AccordionItem value="custom-scoring" className="border-0">
           <Card>
             <AccordionTrigger className="hover:no-underline p-0">
-              <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg w-full">
+              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
-                  <HelpCircle className="h-5 w-5" />
-                  Bonus Questions
+                  <Settings className="h-5 w-5" />
+                  Custom Scoring Rules
                 </CardTitle>
-                <CardDescription className="text-orange-100 text-left">
-                  Manage bonus questions and scoring
+                <CardDescription className="text-indigo-100 text-left">
+                  Configure point values and scoring logic
                 </CardDescription>
               </CardHeader>
             </AccordionTrigger>
             <AccordionContent>
-              <CardContent className="p-6">
-                {bonusLoading ? (
-                  <div className="text-center py-8">Loading bonus questions...</div>
-                ) : (
-                  <Tabs defaultValue="manage" className="w-full">
-                    <TabsList>
-                      <TabsTrigger value="manage">Manage Questions</TabsTrigger>
-                      <TabsTrigger value="multiple-answers">Multiple Correct Answers</TabsTrigger>
-                    </TabsList>
+              <CardContent className="p-0">
+                <CustomScoringPanel />
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
 
-                    <TabsContent value="manage" className="space-y-6 mt-6">
-                      {bonusQuestions.map((question) => (
-                        <BonusQuestionCard
-                          key={question.id}
-                          question={question}
-                          currentAnswer={bonusAnswers[question.id]}
-                          contestants={contestants}
-                          onAnswerChange={handleBonusAnswer}
-                          onPointsChange={handleBonusPointsChange}
-                        />
-                      ))}
-                    </TabsContent>
-
-                    <TabsContent value="multiple-answers" className="space-y-6 mt-6">
-                      {bonusQuestions.map((question) => (
-                        <MultipleCorrectAnswers
-                          key={question.id}
-                          question={question}
-                          onUpdate={handleMultipleAnswersUpdate}
-                        />
-                      ))}
-                    </TabsContent>
-                  </Tabs>
-                )}
+        {/* Prize Pool */}
+        <AccordionItem value="prize-pool" className="border-0">
+          <Card>
+            <AccordionTrigger className="hover:no-underline p-0">
+              <CardHeader className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-t-lg w-full">
+                <CardTitle className="flex items-center gap-2 text-left">
+                  <DollarSign className="h-5 w-5" />
+                  Prize Pool Management
+                </CardTitle>
+                <CardDescription className="text-yellow-100 text-left">
+                  Configure prize distribution and amounts
+                </CardDescription>
+              </CardHeader>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="p-0">
+                <PrizePoolPanel />
               </CardContent>
             </AccordionContent>
           </Card>
@@ -543,13 +476,6 @@ export const PoolSettingsPanel: React.FC = () => {
       >
         {saving ? 'Saving...' : 'Save Pool Settings'}
       </Button>
-
-      <Separator className="my-6" />
-      
-      <div className="space-y-6">
-        <CustomScoringPanel />
-        <PrizePoolPanel />
-      </div>
     </div>
   );
 };

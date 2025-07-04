@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PoolProvider } from '@/contexts/PoolContext';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useDraftForm } from '@/hooks/useDraftForm';
@@ -10,6 +9,17 @@ import { HeroSection } from '@/components/index/HeroSection';
 import { HowToPlaySection } from '@/components/index/HowToPlaySection';
 import { MainContent } from '@/components/index/MainContent';
 import { Footer } from '@/components/index/Footer';
+import { PoolSwitcher } from '@/components/pools/PoolSwitcher';
+import { usePool } from '@/contexts/PoolContext';
+
+const Index = () => {
+  const navigate = useNavigate();
+  const [showRules, setShowRules] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userEntry, setUserEntry] = useState<any>(null);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const { formData } = useDraftForm();
+  const { activePool } = usePool();
 
 const Index = () => {
   const navigate = useNavigate();
@@ -85,9 +95,9 @@ const Index = () => {
   };
 
   return (
-    <PoolProvider>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
           <HeaderNavigation
             user={user}
             userEntry={userEntry}
@@ -95,24 +105,26 @@ const Index = () => {
             onSignOut={handleSignOut}
             onJoinPool={handleJoinPool}
           />
-          
-          <HeroSection />
-          
-          {/* How to Play Section - only show if not logged in */}
-          {!user && (
-            <HowToPlaySection
-              showRules={showRules}
-              onToggleRules={() => setShowRules(!showRules)}
-            />
-          )}
-
-          <MainContent formData={formData} />
-
-          <Footer />
+          {user && <PoolSwitcher />}
         </div>
+        
+        <HeroSection />
+        
+        {/* How to Play Section - only show if not logged in */}
+        {!user && (
+          <HowToPlaySection
+            showRules={showRules}
+            onToggleRules={() => setShowRules(!showRules)}
+          />
+        )}
+
+        <MainContent formData={formData} />
+
+        <Footer />
       </div>
-    </PoolProvider>
+    </div>
   );
+};
 };
 
 export default Index;

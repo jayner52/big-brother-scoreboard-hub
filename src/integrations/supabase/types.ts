@@ -283,6 +283,7 @@ export type Database = {
           player_3: string
           player_4: string
           player_5: string
+          pool_id: string
           team_name: string
           total_points: number
           updated_at: string
@@ -303,6 +304,7 @@ export type Database = {
           player_3: string
           player_4: string
           player_5: string
+          pool_id: string
           team_name: string
           total_points?: number
           updated_at?: string
@@ -323,13 +325,104 @@ export type Database = {
           player_3?: string
           player_4?: string
           player_5?: string
+          pool_id?: string
           team_name?: string
           total_points?: number
           updated_at?: string
           user_id?: string
           weekly_points?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pool_entries_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pool_invites: {
+        Row: {
+          created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invite_code: string
+          invited_by: string
+          pool_id: string
+          used: boolean
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invite_code: string
+          invited_by: string
+          pool_id: string
+          used?: boolean
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invite_code?: string
+          invited_by?: string
+          pool_id?: string
+          used?: boolean
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pool_invites_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pool_memberships: {
+        Row: {
+          active: boolean
+          id: string
+          joined_at: string
+          pool_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          id?: string
+          joined_at?: string
+          pool_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          id?: string
+          joined_at?: string
+          pool_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pool_memberships_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pool_settings: {
         Row: {
@@ -405,6 +498,81 @@ export type Database = {
           registration_deadline?: string | null
           season_active?: boolean
           season_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pools: {
+        Row: {
+          created_at: string
+          description: string | null
+          draft_locked: boolean
+          draft_open: boolean
+          enable_bonus_questions: boolean
+          entry_fee_amount: number
+          entry_fee_currency: string
+          id: string
+          invite_code: string
+          is_public: boolean
+          jury_phase_started: boolean
+          jury_start_timestamp: string | null
+          jury_start_week: number | null
+          name: string
+          owner_id: string
+          payment_details_1: string
+          payment_details_2: string | null
+          payment_method_1: string
+          payment_method_2: string | null
+          picks_per_team: number
+          registration_deadline: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          draft_locked?: boolean
+          draft_open?: boolean
+          enable_bonus_questions?: boolean
+          entry_fee_amount?: number
+          entry_fee_currency?: string
+          id?: string
+          invite_code?: string
+          is_public?: boolean
+          jury_phase_started?: boolean
+          jury_start_timestamp?: string | null
+          jury_start_week?: number | null
+          name: string
+          owner_id: string
+          payment_details_1?: string
+          payment_details_2?: string | null
+          payment_method_1?: string
+          payment_method_2?: string | null
+          picks_per_team?: number
+          registration_deadline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          draft_locked?: boolean
+          draft_open?: boolean
+          enable_bonus_questions?: boolean
+          entry_fee_amount?: number
+          entry_fee_currency?: string
+          id?: string
+          invite_code?: string
+          is_public?: boolean
+          jury_phase_started?: boolean
+          jury_start_timestamp?: string | null
+          jury_start_week?: number | null
+          name?: string
+          owner_id?: string
+          payment_details_1?: string
+          payment_details_2?: string | null
+          payment_method_1?: string
+          payment_method_2?: string | null
+          picks_per_team?: number
+          registration_deadline?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -686,6 +854,7 @@ export type Database = {
           id: string
           points_change: number | null
           pool_entry_id: string
+          pool_id: string
           rank_change: number | null
           rank_position: number
           total_points: number
@@ -698,6 +867,7 @@ export type Database = {
           id?: string
           points_change?: number | null
           pool_entry_id: string
+          pool_id: string
           rank_change?: number | null
           rank_position: number
           total_points?: number
@@ -710,6 +880,7 @@ export type Database = {
           id?: string
           points_change?: number | null
           pool_entry_id?: string
+          pool_id?: string
           rank_change?: number | null
           rank_position?: number
           total_points?: number
@@ -722,6 +893,13 @@ export type Database = {
             columns: ["pool_entry_id"]
             isOneToOne: false
             referencedRelation: "pool_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_team_snapshots_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
             referencedColumns: ["id"]
           },
         ]
@@ -739,9 +917,17 @@ export type Database = {
         Args: { event_type_input: string }
         Returns: string
       }
+      generate_invite_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_weekly_snapshots: {
         Args: { week_num: number }
         Returns: undefined
+      }
+      join_pool_by_invite: {
+        Args: { invite_code_param: string }
+        Returns: Json
       }
       update_current_game_week: {
         Args: { new_week_number: number }

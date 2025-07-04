@@ -11,13 +11,8 @@ export const useLeaderboardData = () => {
 
   useEffect(() => {
     console.log('Leaderboard data effect:', { completedWeeks: completedWeeks.length, selectedWeek });
-    if (completedWeeks.length > 0 && selectedWeek === null) {
-      const latestWeek = Math.max(...completedWeeks.map(w => w.week_number));
-      console.log('Setting selected week to latest:', latestWeek);
-      setSelectedWeek(latestWeek);
-      loadSnapshotsForWeek(latestWeek);
-    } else if (selectedWeek === null) {
-      // Show current standings when no week selected
+    // Always default to current standings to show all teams
+    if (selectedWeek === null) {
       console.log('Loading current pool entries');
       loadCurrentPoolEntries();
     }

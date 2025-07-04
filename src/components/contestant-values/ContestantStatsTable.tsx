@@ -30,7 +30,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
           <TableRow>
             <TableHead>Rank</TableHead>
             <TableHead>Contestant</TableHead>
-            <TableHead>Group</TableHead>
+            <TableHead className="w-24">Group</TableHead>
             {showSpoilers && <TableHead>Status</TableHead>}
             <TableHead>Points Earned</TableHead>
             <TableHead>HOH Wins</TableHead>
@@ -124,8 +124,6 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <SpecialEventsBadges events={stat.special_events} />
-                    {stat.times_on_block_at_eviction >= 4 && <span title="4+ Block Survivals">🏰💪</span>}
-                    {stat.times_on_block_at_eviction >= 2 && stat.times_on_block_at_eviction < 4 && <span title="2+ Block Survivals">💪</span>}
                   </div>
                 </TableCell>
                 <TableCell className="text-center">

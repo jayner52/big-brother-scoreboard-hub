@@ -31,6 +31,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             {showHistoricalColumns && <TableHead className="font-bold text-center">Pts Δ</TableHead>}
             <TableHead className="font-bold text-center">Bonus Pts</TableHead>
             <TableHead className="font-bold text-center bg-yellow-100">Total</TableHead>
+            <TableHead className="font-bold text-center">Pts Δ</TableHead>
             <TableHead className="font-bold text-center">Payment</TableHead>
           </TableRow>
         </TableHeader>

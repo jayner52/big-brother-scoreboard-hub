@@ -5,6 +5,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ChevronUp, ChevronDown, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+import { useBonusQuestions } from '@/hooks/useBonusQuestions';
+import { evaluateBonusAnswer } from '@/utils/bonusQuestionUtils';
 
 interface LeaderboardRowProps {
   entry: any;
@@ -21,6 +23,30 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
 }) => {
   const { houseguestPoints } = useHouseguestPoints();
   const { evictedContestants } = useEvictedContestants();
+  const { bonusQuestions } = useBonusQuestions();
+
+  // Calculate actual weekly points (sum of all players' points)
+  const calculateActualWeeklyPoints = (teamData: any): number => {
+    const players = [teamData.player_1, teamData.player_2, teamData.player_3, teamData.player_4, teamData.player_5];
+    return players.reduce((total, playerName) => {
+      return total + (houseguestPoints[playerName] || 0);
+    }, 0);
+  };
+
+  // Calculate actual bonus points earned from revealed questions
+  const calculateActualBonusPoints = (teamData: any): number => {
+    if (!bonusQuestions || !teamData.bonus_answers) return 0;
+    
+    return bonusQuestions.reduce((total, question) => {
+      if (!question.answer_revealed || !question.correct_answer) return total;
+      
+      const userAnswer = teamData.bonus_answers[question.id];
+      if (!userAnswer) return total;
+      
+      const isCorrect = evaluateBonusAnswer(userAnswer, question.correct_answer, question.question_type);
+      return total + (isCorrect ? question.points_value : 0);
+    }, 0);
+  };
 
   const getRankChangeIcon = (rankChange: number) => {
     if (rankChange > 0) return <ChevronUp className="h-4 w-4 text-green-500" />;
@@ -66,6 +92,11 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   const rankChange = isSnapshot ? entry.rank_change : 0;
   const pointsChange = isSnapshot ? entry.points_change : 0;
 
+  // Calculate the real-time values
+  const actualWeeklyPoints = calculateActualWeeklyPoints(teamData);
+  const actualBonusPoints = calculateActualBonusPoints(teamData);
+  const actualTotalPoints = actualWeeklyPoints + actualBonusPoints;
+
   return (
     <TableRow className={rankPosition === 1 ? "bg-yellow-50" : index % 2 === 0 ? "bg-gray-50" : ""}>
       <TableCell className="font-bold">
@@ -94,9 +125,9 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
             <TooltipContent>
               <div className="text-xs space-y-1">
                 <div className="font-semibold">Team Performance</div>
-                <div>Total Score: {entry.total_points} pts</div>
-                <div>Weekly: {entry.weekly_points} pts</div>
-                <div>Bonus: {entry.bonus_points} pts</div>
+                <div>Total Score: {actualTotalPoints} pts</div>
+                <div>Weekly: {actualWeeklyPoints} pts</div>
+                <div>Bonus: {actualBonusPoints} pts</div>
                 {showHistoricalColumns && (
                   <>
                     <div>This Week: +{entry.points_change} pts</div>
@@ -118,12 +149,12 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <span className="cursor-help">{entry.weekly_points}</span>
+              <span className="cursor-help">{actualWeeklyPoints}</span>
             </TooltipTrigger>
             <TooltipContent>
               <div className="text-xs">
                 <div className="font-semibold">Weekly Points Breakdown</div>
-                <div>Cumulative competition + survival points</div>
+                <div>Sum of all player points: {actualWeeklyPoints}</div>
                 {selectedWeek && <div>Through Week {selectedWeek}</div>}
               </div>
             </TooltipContent>
@@ -141,9 +172,16 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
         </TableCell>
       )}
       
-      <TableCell className="text-center">{entry.bonus_points}</TableCell>
+      <TableCell className="text-center">{actualBonusPoints}</TableCell>
       <TableCell className="text-center font-bold text-lg bg-yellow-100">
-        {entry.total_points}
+        {actualTotalPoints}
+      </TableCell>
+      <TableCell className={`text-center font-medium ${getPointsChangeColor(actualTotalPoints - (entry.total_points || 0))}`}>
+        <div className="flex items-center justify-center gap-1">
+          {(actualTotalPoints - (entry.total_points || 0)) > 0 && <TrendingUp className="h-3 w-3" />}
+          {(actualTotalPoints - (entry.total_points || 0)) < 0 && <TrendingDown className="h-3 w-3" />}
+          <span>{(actualTotalPoints - (entry.total_points || 0)) > 0 ? '+' : ''}{actualTotalPoints - (entry.total_points || 0)}</span>
+        </div>
       </TableCell>
       <TableCell className="text-center">
         <Badge variant={teamData.payment_confirmed ? "default" : "destructive"}>

@@ -6,11 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Settings, DollarSign, Mail } from 'lucide-react';
+import { Settings, DollarSign, Mail, HelpCircle } from 'lucide-react';
 import { PrizePoolPanel } from '@/components/admin/PrizePoolPanel';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
+import { useBonusQuestions } from '@/hooks/useBonusQuestions';
+import { BonusQuestionCard } from './bonus-questions/BonusQuestionCard';
+import { MultipleCorrectAnswers } from './bonus-questions/MultipleCorrectAnswers';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface PoolSettings {
   id: string;
@@ -35,9 +40,28 @@ export const PoolSettingsPanel: React.FC = () => {
   const [settings, setSettings] = useState<PoolSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
+
+  // Bonus questions hook
+  const {
+    contestants,
+    bonusQuestions,
+    bonusAnswers,
+    loading: bonusLoading,
+    handleBonusAnswer
+  } = useBonusQuestions();
 
   useEffect(() => {
     loadSettings();
+    // Load expanded sections from localStorage
+    const saved = localStorage.getItem('pool_settings_expanded');
+    if (saved) {
+      try {
+        setExpandedSections(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error loading expanded sections:', error);
+      }
+    }
   }, []);
 
   const loadSettings = async () => {
@@ -145,6 +169,57 @@ export const PoolSettingsPanel: React.FC = () => {
     });
   };
 
+  const handleExpandedSectionsChange = (value: string[]) => {
+    setExpandedSections(value);
+    localStorage.setItem('pool_settings_expanded', JSON.stringify(value));
+  };
+
+  const handleBonusPointsChange = async (questionId: string, points: number) => {
+    try {
+      const { error } = await supabase
+        .from('bonus_questions')
+        .update({ points_value: points })
+        .eq('id', questionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Bonus question points updated",
+      });
+    } catch (error) {
+      console.error('Error updating points:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update points",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMultipleAnswersUpdate = async (questionId: string, correctAnswers: string[]) => {
+    try {
+      const { error } = await supabase
+        .from('bonus_questions')
+        .update({ correct_answer: correctAnswers.join('|') })
+        .eq('id', questionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Multiple correct answers updated",
+      });
+    } catch (error) {
+      console.error('Error updating multiple answers:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update multiple answers",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading pool settings...</div>;
   }
@@ -155,223 +230,310 @@ export const PoolSettingsPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
+      <Accordion 
+        type="multiple" 
+        value={expandedSections} 
+        onValueChange={handleExpandedSectionsChange}
+        className="space-y-6"
+      >
         {/* Basic Pool Settings */}
-        <Card>
-          <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-t-lg">
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Basic Settings
-            </CardTitle>
-            <CardDescription className="text-blue-100">
-              Core pool configuration
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <div>
-              <Label htmlFor="season_name">Season Name</Label>
-              <Input
-                id="season_name"
-                value={settings.season_name}
-                onChange={(e) => setSettings({ ...settings, season_name: e.target.value })}
-                placeholder="e.g., Big Brother 27"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="entry_fee">Entry Fee Amount</Label>
-                <Input
-                  id="entry_fee"
-                  type="number"
-                  value={settings.entry_fee_amount}
-                  onChange={(e) => setSettings({ ...settings, entry_fee_amount: parseFloat(e.target.value) || 0 })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="currency">Currency</Label>
-                <Select 
-                  value={settings.entry_fee_currency} 
-                  onValueChange={(value) => setSettings({ ...settings, entry_fee_currency: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CAD">CAD</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={settings.draft_open}
-                  onCheckedChange={(checked) => setSettings({ ...settings, draft_open: checked })}
-                />
-                <Label>Draft Open</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={settings.season_active}
-                  onCheckedChange={(checked) => setSettings({ ...settings, season_active: checked })}
-                />
-                <Label>Season Active</Label>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment Settings */}
-        <Card>
-          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Payment Methods
-            </CardTitle>
-            <CardDescription className="text-green-100">
-              Configure payment options
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <div>
-              <Label htmlFor="payment_method_1">Primary Payment Method</Label>
-              <Select 
-                value={settings.payment_method_1} 
-                onValueChange={(value) => setSettings({ ...settings, payment_method_1: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="E-transfer">E-transfer</SelectItem>
-                  <SelectItem value="Venmo">Venmo</SelectItem>
-                  <SelectItem value="PayPal">PayPal</SelectItem>
-                  <SelectItem value="Cash App">Cash App</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="payment_details_1">Primary Payment Details</Label>
-              <Input
-                id="payment_details_1"
-                value={settings.payment_details_1}
-                onChange={(e) => setSettings({ ...settings, payment_details_1: e.target.value })}
-                placeholder="email@example.com or @username"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="payment_method_2">Secondary Payment Method (Optional)</Label>
-              <Select 
-                value={settings.payment_method_2 || 'none'} 
-                onValueChange={(value) => setSettings({ ...settings, payment_method_2: value === 'none' ? null : value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select payment method" />
-                </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="E-transfer">E-transfer</SelectItem>
-                  <SelectItem value="Venmo">Venmo</SelectItem>
-                  <SelectItem value="PayPal">PayPal</SelectItem>
-                  <SelectItem value="Cash App">Cash App</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {settings.payment_method_2 && (
-              <div>
-                <Label htmlFor="payment_details_2">Secondary Payment Details</Label>
-                <Input
-                  id="payment_details_2"
-                  value={settings.payment_details_2 || ''}
-                  onChange={(e) => setSettings({ ...settings, payment_details_2: e.target.value })}
-                  placeholder="email@example.com or @username"
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Group Configuration */}
-      <Card>
-        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Draft Configuration
-          </CardTitle>
-          <CardDescription className="text-purple-100">
-            Configure team draft settings and groups
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="number_of_groups">Number of Groups</Label>
-              <Select 
-                value={settings.number_of_groups.toString()} 
-                onValueChange={(value) => updateNumberOfGroups(parseInt(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                    <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="picks_per_team">Picks Per Team</Label>
-              <Select 
-                value={settings.picks_per_team.toString()} 
-                onValueChange={(value) => setSettings({ ...settings, picks_per_team: parseInt(value) })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                    <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center space-x-2 mt-6">
-              <Switch
-                checked={settings.enable_free_pick}
-                onCheckedChange={(checked) => setSettings({ ...settings, enable_free_pick: checked })}
-              />
-              <Label>Enable Free Pick</Label>
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-base font-semibold">Group Names</Label>
-            <div className="grid grid-cols-2 gap-4 mt-2">
-              {settings.group_names.map((name, index) => (
-                <div key={index}>
-                  <Label htmlFor={`group_${index}`}>Group {index + 1}</Label>
+        <AccordionItem value="basic-settings" className="border-0">
+          <Card>
+            <AccordionTrigger className="hover:no-underline p-0">
+              <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-t-lg w-full">
+                <CardTitle className="flex items-center gap-2 text-left">
+                  <Settings className="h-5 w-5" />
+                  Basic Settings
+                </CardTitle>
+                <CardDescription className="text-blue-100 text-left">
+                  Core pool configuration
+                </CardDescription>
+              </CardHeader>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="p-6 space-y-4">
+                <div>
+                  <Label htmlFor="season_name">Season Name</Label>
                   <Input
-                    id={`group_${index}`}
-                    value={name}
-                    onChange={(e) => updateGroupNames(index, e.target.value)}
-                    placeholder={`Group ${String.fromCharCode(65 + index)}`}
+                    id="season_name"
+                    value={settings.season_name}
+                    onChange={(e) => setSettings({ ...settings, season_name: e.target.value })}
+                    placeholder="e.g., Big Brother 27"
                   />
                 </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="entry_fee">Entry Fee Amount</Label>
+                    <Input
+                      id="entry_fee"
+                      type="number"
+                      value={settings.entry_fee_amount}
+                      onChange={(e) => setSettings({ ...settings, entry_fee_amount: parseFloat(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="currency">Currency</Label>
+                    <Select 
+                      value={settings.entry_fee_currency} 
+                      onValueChange={(value) => setSettings({ ...settings, entry_fee_currency: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CAD">CAD</SelectItem>
+                        <SelectItem value="USD">USD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="draft_deadline">Draft Due Date & Time</Label>
+                  <Input
+                    id="draft_deadline"
+                    type="datetime-local"
+                    value={settings.registration_deadline ? new Date(settings.registration_deadline).toISOString().slice(0, 16) : ''}
+                    onChange={(e) => setSettings({ ...settings, registration_deadline: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={settings.draft_open}
+                      onCheckedChange={(checked) => setSettings({ ...settings, draft_open: checked })}
+                    />
+                    <Label>Draft Open</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={settings.season_active}
+                      onCheckedChange={(checked) => setSettings({ ...settings, season_active: checked })}
+                    />
+                    <Label>Season Active</Label>
+                  </div>
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+
+        {/* Payment Settings */}
+        <AccordionItem value="payment-methods" className="border-0">
+          <Card>
+            <AccordionTrigger className="hover:no-underline p-0">
+              <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg w-full">
+                <CardTitle className="flex items-center gap-2 text-left">
+                  <DollarSign className="h-5 w-5" />
+                  Payment Methods
+                </CardTitle>
+                <CardDescription className="text-green-100 text-left">
+                  Configure payment options
+                </CardDescription>
+              </CardHeader>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="p-6 space-y-4">
+                <div>
+                  <Label htmlFor="payment_method_1">Primary Payment Method</Label>
+                  <Select 
+                    value={settings.payment_method_1} 
+                    onValueChange={(value) => setSettings({ ...settings, payment_method_1: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="E-transfer">E-transfer</SelectItem>
+                      <SelectItem value="Venmo">Venmo</SelectItem>
+                      <SelectItem value="PayPal">PayPal</SelectItem>
+                      <SelectItem value="Cash App">Cash App</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="payment_details_1">Primary Payment Details</Label>
+                  <Input
+                    id="payment_details_1"
+                    value={settings.payment_details_1}
+                    onChange={(e) => setSettings({ ...settings, payment_details_1: e.target.value })}
+                    placeholder="email@example.com or @username"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="payment_method_2">Secondary Payment Method (Optional)</Label>
+                  <Select 
+                    value={settings.payment_method_2 || 'none'} 
+                    onValueChange={(value) => setSettings({ ...settings, payment_method_2: value === 'none' ? null : value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="E-transfer">E-transfer</SelectItem>
+                      <SelectItem value="Venmo">Venmo</SelectItem>
+                      <SelectItem value="PayPal">PayPal</SelectItem>
+                      <SelectItem value="Cash App">Cash App</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {settings.payment_method_2 && (
+                  <div>
+                    <Label htmlFor="payment_details_2">Secondary Payment Details</Label>
+                    <Input
+                      id="payment_details_2"
+                      value={settings.payment_details_2 || ''}
+                      onChange={(e) => setSettings({ ...settings, payment_details_2: e.target.value })}
+                      placeholder="email@example.com or @username"
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+
+        {/* Draft Configuration */}
+        <AccordionItem value="draft-config" className="border-0">
+          <Card>
+            <AccordionTrigger className="hover:no-underline p-0">
+              <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg w-full">
+                <CardTitle className="flex items-center gap-2 text-left">
+                  <Mail className="h-5 w-5" />
+                  Draft Configuration
+                </CardTitle>
+                <CardDescription className="text-purple-100 text-left">
+                  Configure team draft settings and groups
+                </CardDescription>
+              </CardHeader>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="p-6 space-y-6">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="number_of_groups">Number of Groups</Label>
+                    <Select 
+                      value={settings.number_of_groups.toString()} 
+                      onValueChange={(value) => updateNumberOfGroups(parseInt(value))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                          <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="picks_per_team">Picks Per Team</Label>
+                    <Select 
+                      value={settings.picks_per_team.toString()} 
+                      onValueChange={(value) => setSettings({ ...settings, picks_per_team: parseInt(value) })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                          <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center space-x-2 mt-6">
+                    <Switch
+                      checked={settings.enable_free_pick}
+                      onCheckedChange={(checked) => setSettings({ ...settings, enable_free_pick: checked })}
+                    />
+                    <Label>Enable Free Pick</Label>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-base font-semibold">Group Names</Label>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    {settings.group_names.map((name, index) => (
+                      <div key={index}>
+                        <Label htmlFor={`group_${index}`}>Group {index + 1}</Label>
+                        <Input
+                          id={`group_${index}`}
+                          value={name}
+                          onChange={(e) => updateGroupNames(index, e.target.value)}
+                          placeholder={`Group ${String.fromCharCode(65 + index)}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+
+        {/* Bonus Questions */}
+        <AccordionItem value="bonus-questions" className="border-0">
+          <Card>
+            <AccordionTrigger className="hover:no-underline p-0">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg w-full">
+                <CardTitle className="flex items-center gap-2 text-left">
+                  <HelpCircle className="h-5 w-5" />
+                  Bonus Questions
+                </CardTitle>
+                <CardDescription className="text-orange-100 text-left">
+                  Manage bonus questions and scoring
+                </CardDescription>
+              </CardHeader>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="p-6">
+                {bonusLoading ? (
+                  <div className="text-center py-8">Loading bonus questions...</div>
+                ) : (
+                  <Tabs defaultValue="manage" className="w-full">
+                    <TabsList>
+                      <TabsTrigger value="manage">Manage Questions</TabsTrigger>
+                      <TabsTrigger value="multiple-answers">Multiple Correct Answers</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="manage" className="space-y-6 mt-6">
+                      {bonusQuestions.map((question) => (
+                        <BonusQuestionCard
+                          key={question.id}
+                          question={question}
+                          currentAnswer={bonusAnswers[question.id]}
+                          contestants={contestants}
+                          onAnswerChange={handleBonusAnswer}
+                          onPointsChange={handleBonusPointsChange}
+                        />
+                      ))}
+                    </TabsContent>
+
+                    <TabsContent value="multiple-answers" className="space-y-6 mt-6">
+                      {bonusQuestions.map((question) => (
+                        <MultipleCorrectAnswers
+                          key={question.id}
+                          question={question}
+                          onUpdate={handleMultipleAnswersUpdate}
+                        />
+                      ))}
+                    </TabsContent>
+                  </Tabs>
+                )}
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+      </Accordion>
 
       <Button 
         onClick={handleSave} 

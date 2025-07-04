@@ -65,7 +65,7 @@ export const useContestantStats = () => {
           event.contestant_id === contestant.id && event.event_type === 'nominee'
         ).length;
 
-        // Count times on block at eviction - nominees who faced eviction vote
+        // Count times on block at eviction and survived - nominees who faced live vote
         const nomineeEvents = (weeklyEventsResult.data || []).filter(event => 
           event.contestant_id === contestant.id && event.event_type === 'nominee'
         );
@@ -77,10 +77,35 @@ export const useContestantStats = () => {
             .map(event => event.week_number)
         );
         
-        // Count nominee events that occurred in weeks with evictions
-        const timesOnBlockAtEviction = nomineeEvents.filter(nomEvent => 
-          weeksWithEvictions.has(nomEvent.week_number)
-        ).length;
+        // Get weeks where this contestant was saved by POV
+        const weeksSavedByPov = new Set(
+          (weeklyEventsResult.data || [])
+            .filter(event => event.contestant_id === contestant.id && event.event_type === 'pov_used_on')
+            .map(event => event.week_number)
+        );
+        
+        // Get weeks where this contestant won BB Arena
+        const weeksWonBBArena = new Set(
+          (weeklyEventsResult.data || [])
+            .filter(event => event.contestant_id === contestant.id && event.event_type === 'bb_arena_winner')
+            .map(event => event.week_number)
+        );
+        
+        // Get weeks where this contestant was evicted
+        const weeksEvicted = new Set(
+          (weeklyEventsResult.data || [])
+            .filter(event => event.contestant_id === contestant.id && event.event_type === 'evicted')
+            .map(event => event.week_number)
+        );
+        
+        // Count nominee events where they faced the live vote and survived
+        const timesOnBlockAtEviction = nomineeEvents.filter(nomEvent => {
+          const week = nomEvent.week_number;
+          return weeksWithEvictions.has(week) && 
+                 !weeksSavedByPov.has(week) && 
+                 !weeksWonBBArena.has(week) && 
+                 !weeksEvicted.has(week);
+        }).length;
 
         // Count times saved by veto - calculate from weekly events
         const timesSavedByVeto = (weeklyEventsResult.data || []).filter(event => 

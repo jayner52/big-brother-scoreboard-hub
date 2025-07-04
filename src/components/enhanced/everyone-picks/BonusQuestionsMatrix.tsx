@@ -22,7 +22,7 @@ export const BonusQuestionsMatrix: React.FC<BonusQuestionsMatrixProps> = ({
         <div className="flex justify-between items-center">
           <CardTitle>Everyone's Bonus Predictions</CardTitle>
           <div className="text-sm text-muted-foreground">
-            Total Bonus Points: {poolEntries.reduce((sum, entry) => sum + (entry.bonus_points || 0), 0)} pts
+            Total Bonus Points Awarded: {poolEntries.reduce((sum, entry) => sum + (entry.bonus_points || 0), 0)} pts
           </div>
         </div>
       </CardHeader>

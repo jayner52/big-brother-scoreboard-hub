@@ -4,6 +4,7 @@ import { WeeklyEventForm } from '@/types/admin';
 import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 import { useWeeklyEventsData } from '@/hooks/useWeeklyEventsData';
 import { useWeeklyEventsSubmission } from '@/hooks/useWeeklyEventsSubmission';
+import { useWeekDataLoader } from '@/hooks/useWeekDataLoader';
 import { getPointsPreview, calculatePoints } from '@/utils/weeklyEventsUtils';
 
 export const useWeeklyEvents = () => {
@@ -17,6 +18,7 @@ export const useWeeklyEvents = () => {
   } = useWeeklyEventsData();
 
   const { handleSubmitWeek } = useWeeklyEventsSubmission(contestants, scoringRules);
+  const { loadWeekData } = useWeekDataLoader(contestants);
   
   const [eventForm, setEventForm] = useState<WeeklyEventForm>({
     week: 1,
@@ -52,10 +54,17 @@ export const useWeeklyEvents = () => {
     americasFavorite: ''
   });
 
-  // Update form week when editingWeek changes
+  // Load existing data when editingWeek changes
   useEffect(() => {
-    setEventForm(prev => ({ ...prev, week: editingWeek, nominees: ['', ''], secondNominees: ['', ''] }));
-  }, [editingWeek]);
+    const loadExistingData = async () => {
+      if (editingWeek && contestants.length > 0) {
+        const weekData = await loadWeekData(editingWeek);
+        setEventForm(weekData);
+      }
+    };
+    
+    loadExistingData();
+  }, [editingWeek, contestants.length, loadWeekData]);
 
   // Get evicted contestants for current week context
   const { evictedContestants: allEvictedUpToThisWeek } = useWeekAwareContestants(eventForm.week);

@@ -41,7 +41,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
                 <div className="flex flex-col items-center gap-1">
                   <Badge 
                     variant="secondary" 
-                    className={`text-xs font-medium px-2 py-1 w-full max-w-20 truncate ${
+                    className={`text-xs font-medium px-2 py-1 w-28 ${
                       isEvicted 
                         ? 'bg-red-100 text-red-700 border-red-200 line-through opacity-70' 
                         : 'bg-primary/10 text-primary border-primary/20'

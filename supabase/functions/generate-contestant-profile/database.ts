@@ -23,22 +23,8 @@ export async function processBatches(
   let totalSuccessful = 0;
   const allFailures: Array<{ name: string; error: string }> = [];
   
-  // Clear existing contestants for this season first
-  console.log(`🗑️  Clearing existing contestants for season ${seasonNumber}...`);
-  try {
-    const { error: deleteError } = await supabase
-      .from('contestants')
-      .delete()
-      .eq('season_number', seasonNumber);
-    
-    if (deleteError) {
-      console.error('Failed to clear existing contestants:', deleteError);
-    } else {
-      console.log('✅ Existing contestants cleared successfully');
-    }
-  } catch (error) {
-    console.error('Error clearing existing contestants:', error);
-  }
+  // Skip clearing - work with existing contestants or add new ones
+  console.log(`📋 Processing contestants for season ${seasonNumber} (will update existing or add new)...`);
   
   // Process each batch
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
@@ -93,10 +79,13 @@ export async function processBatches(
             sort_order: globalIndex
           };
           
-          // Use insert instead of upsert to avoid conflict issues
+          // Try upsert first, then insert if contestant doesn't exist
           const { data, error } = await supabase
             .from('contestants')
-            .insert(insertData)
+            .upsert(insertData, { 
+              onConflict: 'pool_id,name',
+              ignoreDuplicates: false 
+            })
             .select()
             .single();
           

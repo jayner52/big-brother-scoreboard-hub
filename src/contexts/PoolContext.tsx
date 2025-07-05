@@ -122,27 +122,54 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createPool = useCallback(async (poolData: Partial<Pool>): Promise<Pool | null> => {
     try {
+      console.log('=== POOL CREATION START ===');
+      console.log('Input data:', poolData);
+
+      // Test basic connection first
+      console.log('Testing Supabase connection...');
+      const { data: testData, error: testError } = await supabase
+        .from('pools')
+        .select('count')
+        .limit(0)
+        .single();
+      
+      if (testError && testError.code !== 'PGRST116') { // PGRST116 is expected for empty result
+        console.error('Connection test failed:', testError);
+        throw new Error(`Database connection failed: ${testError.message}`);
+      }
+      console.log('✓ Database connection successful');
+
       // Enhanced authentication validation
+      console.log('Checking user authentication...');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      if (userError || !user) {
-        console.error('Authentication validation failed:', userError);
-        return null;
+      if (userError) {
+        console.error('User fetch error:', userError);
+        throw new Error(`Authentication error: ${userError.message}`);
       }
+      
+      if (!user) {
+        console.error('No user found');
+        throw new Error('User not authenticated');
+      }
+      
+      console.log('✓ User authenticated:', user.id);
 
       // Force a fresh session token to ensure auth is current
+      console.log('Refreshing session token...');
       const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
       
       if (refreshError) {
         console.error('Session refresh error:', refreshError);
-        return null;
+        throw new Error(`Session refresh failed: ${refreshError.message}`);
       }
 
       if (!session?.user || session.user.id !== user.id) {
-        console.error('Session validation failed');
-        return null;
+        console.error('Session validation failed - user mismatch');
+        throw new Error('Session validation failed - authentication state inconsistent');
       }
 
+      console.log('✓ Session refreshed and validated');
       console.log('Creating pool for authenticated user:', user.id);
 
       // Create pool data with proper defaults matching database schema
@@ -175,13 +202,16 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let error = null;
       
       for (let attempt = 1; attempt <= 3; attempt++) {
-        console.log(`Pool creation attempt ${attempt}`);
+        console.log(`Pool creation attempt ${attempt} of 3`);
+        console.log('Sending request to Supabase...');
         
         const result = await supabase
           .from('pools')
           .insert(freshPoolData)
           .select()
           .single();
+          
+        console.log(`Attempt ${attempt} result:`, result);
           
         if (result.error) {
           error = result.error;

@@ -7,6 +7,7 @@ import { ContestantWithBio } from '@/types/admin';
 import { PoolSettings } from '@/types/pool';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
+import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
 import { ContestantProfileModal } from '@/components/admin/contestants/ContestantProfileModal';
 
 export const ContestantBios: React.FC = () => {
@@ -17,6 +18,7 @@ export const ContestantBios: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { evictedContestants } = useEvictedContestants();
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
+  const { evictionWeeks } = useEvictionWeeks();
 
   const handleContestantClick = (contestant: ContestantWithBio) => {
     setSelectedContestant(contestant);
@@ -121,7 +123,12 @@ export const ContestantBios: React.FC = () => {
                 </div>
               <div className="absolute top-2 right-2 flex flex-col gap-1">
                 <Badge variant={contestant.isActive ? "default" : "destructive"}>
-                  {contestant.isActive ? 'Active' : 'Evicted'}
+                  {contestant.isActive 
+                    ? 'Active' 
+                    : evictionWeeks[contestant.name] 
+                      ? `Evicted - Week ${evictionWeeks[contestant.name]}`
+                      : 'Evicted'
+                  }
                 </Badge>
                 {contestant.isActive && (
                   <>

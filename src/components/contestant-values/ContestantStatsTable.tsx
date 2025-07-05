@@ -6,6 +6,7 @@ import { ContestantStats } from '@/types/contestant-stats';
 import { Contestant } from '@/types/pool';
 import { SpecialEventsBadges } from '@/components/admin/SpecialEventsBadges';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
 
 interface ContestantStatsTableProps {
   contestantStats: ContestantStats[];
@@ -25,6 +26,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
   nominees,
 }) => {
   const { evictedContestants } = useEvictedContestants();
+  const { evictionWeeks } = useEvictionWeeks();
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -89,7 +91,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                       ) : (
                         <>
                           <Badge variant="destructive">
-                            {stat.elimination_week ? `Evicted - Week ${stat.elimination_week}` : "Evicted"}
+                            {evictionWeeks[stat.contestant_name] ? `Evicted - Week ${evictionWeeks[stat.contestant_name]}` : "Evicted"}
                           </Badge>
                           {stat.final_placement && (
                             <Badge variant="outline">

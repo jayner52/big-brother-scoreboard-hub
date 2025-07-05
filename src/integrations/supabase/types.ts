@@ -57,6 +57,13 @@ export type Database = {
             referencedRelation: "pools"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_bonus_questions_pool"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contestant_groups: {
@@ -84,6 +91,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contestant_groups_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_contestant_groups_pool"
             columns: ["pool_id"]
             isOneToOne: false
             referencedRelation: "pools"
@@ -244,6 +258,13 @@ export type Database = {
             referencedRelation: "pools"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_contestants_pool"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
         ]
       }
       current_game_week: {
@@ -365,6 +386,13 @@ export type Database = {
           weekly_points?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_entries_pool"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pool_entries_pool_id_fkey"
             columns: ["pool_id"]
@@ -717,6 +745,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_special_events_pool"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "special_events_contestant_id_fkey"
             columns: ["contestant_id"]
             isOneToOne: false
@@ -770,6 +805,13 @@ export type Database = {
           week_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_weekly_events_pool"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "weekly_events_contestant_id_fkey"
             columns: ["contestant_id"]
@@ -878,6 +920,13 @@ export type Database = {
           week_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_weekly_results_pool"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "weekly_results_pool_id_fkey"
             columns: ["pool_id"]

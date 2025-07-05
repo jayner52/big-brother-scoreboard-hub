@@ -2,7 +2,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { HeaderNavigation } from '@/components/index/HeaderNavigation';
@@ -18,6 +17,7 @@ import { usePool } from '@/contexts/PoolContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Plus, Trophy } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -27,7 +27,12 @@ const Index = () => {
   const [userRank, setUserRank] = useState<number | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const { formData } = useDraftForm();
-  const { activePool, userPools, loading: poolsLoading } = usePool();
+  const { 
+    activePool, 
+    userPools, 
+    loading: poolsLoading, 
+    poolEntries // Use pool-scoped entries from context
+  } = usePool();
 
   useEffect(() => {
     // Check for existing session
@@ -65,30 +70,18 @@ const Index = () => {
 
   const loadUserEntry = async (userId: string) => {
     try {
-      if (!activePool) return;
+      if (!activePool || !poolEntries.length) return;
       
-      // Get user's pool entries for the active pool
-      const { data: entriesData } = await supabase
-        .from('pool_entries')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('pool_id', activePool.id);
-
-      if (entriesData && entriesData.length > 0) {
-        const mainEntry = entriesData[0];
-        setUserEntry(mainEntry);
+      // Find user's entry in the pool-scoped entries from context
+      const userEntry = poolEntries.find(entry => entry.user_id === userId);
+      
+      if (userEntry) {
+        setUserEntry(userEntry);
         
-        // Get user's rank in the active pool
-        const { data: allEntries } = await supabase
-          .from('pool_entries')
-          .select('*')
-          .eq('pool_id', activePool.id)
-          .order('total_points', { ascending: false });
-        
-        if (allEntries) {
-          const rank = allEntries.findIndex(entry => entry.id === mainEntry.id) + 1;
-          setUserRank(rank);
-        }
+        // Calculate rank from sorted entries
+        const sortedEntries = [...poolEntries].sort((a, b) => b.total_points - a.total_points);
+        const rank = sortedEntries.findIndex(entry => entry.id === userEntry.id) + 1;
+        setUserRank(rank);
       } else {
         setUserEntry(null);
         setUserRank(null);
@@ -98,12 +91,12 @@ const Index = () => {
     }
   };
 
-  // Reload user entry when active pool changes
+  // Reload user entry when active pool changes or poolEntries are updated
   useEffect(() => {
     if (user && activePool) {
       loadUserEntry(user.id);
     }
-  }, [user, activePool]);
+  }, [user, activePool, poolEntries]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();

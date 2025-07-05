@@ -4,82 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { usePool } from '@/contexts/PoolContext';
 
 
 export const TeamLeaderboard: React.FC = () => {
-  const { activePool } = usePool();
-  const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { activePool, poolEntries } = usePool(); // Use pool-scoped entries from context
+  const [loading, setLoading] = useState(false);
   const { houseguestPoints } = useHouseguestPoints();
-  
 
-  useEffect(() => {
-    loadPoolEntries();
-  }, []);
-
-  const loadPoolEntries = async () => {
-    try {
-      // Get current user's active pool
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.user) return;
-
-      const { data: membership } = await supabase
-        .from('pool_memberships')
-        .select('pool_id')
-        .eq('user_id', session.session.user.id)
-        .eq('active', true)
-        .limit(1)
-        .single();
-
-      if (!membership) {
-        setPoolEntries([]);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('pool_entries')
-        .select('*')
-        .eq('pool_id', activePool?.id)
-        .order('total_points', { ascending: false });
-
-      if (error) throw error;
-      
-      const mappedEntries = data?.map(entry => {
-        // Validate that total_points equals weekly_points + bonus_points
-        const calculatedTotal = (entry.weekly_points || 0) + (entry.bonus_points || 0);
-        if (calculatedTotal !== entry.total_points) {
-          console.warn(`Points mismatch for ${entry.team_name}: 
-            Weekly: ${entry.weekly_points}, 
-            Bonus: ${entry.bonus_points}, 
-            Total: ${entry.total_points}, 
-            Expected: ${calculatedTotal}`);
-        }
-        
-        return {
-          ...entry,
-          bonus_answers: entry.bonus_answers as Record<string, any>,
-          created_at: new Date(entry.created_at),
-          updated_at: new Date(entry.updated_at)
-        };
-      }) || [];
-      
-      setPoolEntries(mappedEntries);
-    } catch (error) {
-      console.error('Error loading pool entries:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  if (loading) {
-    return <div className="text-center py-8">Loading leaderboard...</div>;
-  }
-
+  // No need to load data - use poolEntries from context
   if (poolEntries.length === 0) {
     return (
       <Card className="w-full">

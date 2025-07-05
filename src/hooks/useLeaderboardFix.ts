@@ -1,20 +1,25 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePointsCalculation } from './usePointsCalculation';
+import { usePool } from '@/contexts/PoolContext';
 
 export const useLeaderboardFix = () => {
+  const { activePool } = usePool();
   const [isFixing, setIsFixing] = useState(false);
   const { calculateTeamPoints } = usePointsCalculation();
 
   const fixAllTeamPoints = async () => {
+    if (!activePool?.id) return false;
+    
     setIsFixing(true);
     try {
-      console.log('Starting comprehensive leaderboard fix...');
+      console.log(`Starting comprehensive leaderboard fix for pool: ${activePool.id}...`);
       
-      // Get all pool entries
+      // Get all pool entries for this pool only
       const { data: poolEntries, error } = await supabase
         .from('pool_entries')
-        .select('*');
+        .select('*')
+        .eq('pool_id', activePool.id);
 
       if (error) throw error;
       

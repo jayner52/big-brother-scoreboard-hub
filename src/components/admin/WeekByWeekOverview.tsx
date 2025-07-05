@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trophy, Users } from 'lucide-react';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 import { supabase } from '@/integrations/supabase/client';
+import { usePool } from '@/contexts/PoolContext';
 
 interface WeekSummary {
   week_number: number;
@@ -28,6 +29,7 @@ interface ContestantScore {
 }
 
 export const WeekByWeekOverview: React.FC = () => {
+  const { activePool } = usePool();
   const [weeklyResults, setWeeklyResults] = useState<WeekSummary[]>([]);
   const [contestantScores, setContestantScores] = useState<Record<number, ContestantScore[]>>({});
   const [specialEvents, setSpecialEvents] = useState<any[]>([]);
@@ -38,17 +40,20 @@ export const WeekByWeekOverview: React.FC = () => {
   }, []);
 
 const loadWeekByWeekData = async () => {
+    if (!activePool?.id) return;
+    
     try {
-      // Load weekly results
+      // Load weekly results for this pool only
       const { data: weeklyData, error: weeklyError } = await supabase
         .from('weekly_results')
         .select('*')
+        .eq('pool_id', activePool.id)
         .order('week_number', { ascending: true });
 
       if (weeklyError) throw weeklyError;
       setWeeklyResults(weeklyData || []);
 
-      // Load all weekly events and special events to calculate scores
+      // Load all weekly events and special events to calculate scores (pool-specific)
       const { data: weeklyEvents, error: eventsError } = await supabase
         .from('weekly_events')
         .select(`
@@ -58,6 +63,7 @@ const loadWeekByWeekData = async () => {
           points_awarded,
           contestants(name)
         `)
+        .eq('pool_id', activePool.id)
         .order('week_number', { ascending: true });
 
       const { data: specialEvents, error: specialError } = await supabase
@@ -70,9 +76,10 @@ const loadWeekByWeekData = async () => {
           points_awarded,
           contestants(name)
         `)
+        .eq('pool_id', activePool.id)
         .order('week_number', { ascending: true });
 
-      // Load BB Arena winners from weekly_events
+      // Load BB Arena winners from weekly_events (pool-specific)
       const { data: bbArenaEvents, error: bbArenaError } = await supabase
         .from('weekly_events')
         .select(`
@@ -81,6 +88,7 @@ const loadWeekByWeekData = async () => {
           event_type,
           contestants(name)
         `)
+        .eq('pool_id', activePool.id)
         .eq('event_type', 'bb_arena_winner')
         .order('week_number', { ascending: true });
 

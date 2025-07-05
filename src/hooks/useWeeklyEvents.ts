@@ -5,8 +5,10 @@ import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 import { useWeeklyEventsData } from '@/hooks/useWeeklyEventsData';
 import { useWeeklyEventsSubmission } from '@/hooks/useWeeklyEventsSubmission';
 import { getPointsPreview, calculatePoints } from '@/utils/weeklyEventsUtils';
+import { usePool } from '@/contexts/PoolContext';
 
 export const useWeeklyEvents = () => {
+  const { activePool } = usePool();
   const {
     contestants,
     scoringRules,
@@ -14,7 +16,7 @@ export const useWeeklyEvents = () => {
     currentGameWeek,
     editingWeek,
     loadData
-  } = useWeeklyEventsData();
+  } = useWeeklyEventsData(activePool?.id);
 
   const { handleSubmitWeek } = useWeeklyEventsSubmission(contestants, scoringRules);
   
@@ -30,12 +32,14 @@ export const useWeeklyEvents = () => {
             .from('weekly_results')
             .select('*')
             .eq('week_number', editingWeek)
+            .eq('pool_id', activePool?.id)
             .maybeSingle();
 
           const { data: specialEventsData } = await supabase
             .from('special_events')
             .select('*')
-            .eq('week_number', editingWeek);
+            .eq('week_number', editingWeek)
+            .eq('pool_id', activePool?.id);
 
           // Get special events from both sources
           const dbSpecialEvents = (specialEventsData || []).map(event => {
@@ -137,6 +141,7 @@ export const useWeeklyEvents = () => {
       const { data: completedWeeks } = await supabase
         .from('weekly_results')
         .select('week_number')
+        .eq('pool_id', activePool?.id)
         .eq('is_draft', false)
         .order('week_number', { ascending: false });
       

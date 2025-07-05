@@ -43,7 +43,7 @@ export const TeamLeaderboard: React.FC = () => {
       const { data, error } = await supabase
         .from('pool_entries')
         .select('*')
-        .eq('pool_id', membership.pool_id)
+        .eq('pool_id', activePool?.id)
         .order('total_points', { ascending: false });
 
       if (error) throw error;

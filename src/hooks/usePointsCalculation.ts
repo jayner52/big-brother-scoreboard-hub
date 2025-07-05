@@ -11,10 +11,11 @@ export const usePointsCalculation = () => {
     try {
       console.log('Calculating points for team:', entry.team_name);
       
-      // Get all contestants for name matching
+      // Get all contestants for name matching (pool-specific)
       const { data: contestants, error: contestantsError } = await supabase
         .from('contestants')
-        .select('id, name');
+        .select('id, name')
+        .eq('pool_id', activePool?.id);
 
       if (contestantsError) throw contestantsError;
 
@@ -31,19 +32,21 @@ export const usePointsCalculation = () => {
       
       console.log('Team member IDs found:', teamMemberIds.length, 'out of', teamPlayers.length);
 
-      // Get weekly points for team members using IDs
+      // Get weekly points for team members using IDs (pool-specific)
       const { data: weeklyEvents, error: weeklyError } = await supabase
         .from('weekly_events')
         .select('points_awarded, contestant_id')
-        .in('contestant_id', teamMemberIds);
+        .in('contestant_id', teamMemberIds)
+        .eq('pool_id', activePool?.id);
 
       if (weeklyError) throw weeklyError;
 
-      // Get special events points for team members
+      // Get special events points for team members (pool-specific)
       const { data: specialEvents, error: specialError } = await supabase
         .from('special_events')
         .select('points_awarded, contestant_id')
-        .in('contestant_id', teamMemberIds);
+        .in('contestant_id', teamMemberIds)
+        .eq('pool_id', activePool?.id);
 
       if (specialError) throw specialError;
 
@@ -52,10 +55,11 @@ export const usePointsCalculation = () => {
       
       console.log('Weekly points:', weeklyPoints, 'Special points:', specialPoints);
 
-      // Get bonus points from answered questions
+      // Get bonus points from answered questions (pool-specific)
       const { data: bonusQuestions, error: bonusError } = await supabase
         .from('bonus_questions')
         .select('*')
+        .eq('pool_id', activePool?.id)
         .eq('answer_revealed', true);
 
       if (bonusError) throw bonusError;
@@ -129,11 +133,14 @@ export const usePointsCalculation = () => {
   };
 
   const recalculateAllPoints = async () => {
+    if (!activePool?.id) return;
+    
     setRecalculating(true);
     try {
       const { data: poolEntries, error } = await supabase
         .from('pool_entries')
-        .select('*');
+        .select('*')
+        .eq('pool_id', activePool.id);
 
       if (error) throw error;
 

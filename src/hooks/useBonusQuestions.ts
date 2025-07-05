@@ -18,10 +18,11 @@ export const useBonusQuestions = () => {
 
   const loadData = async () => {
     try {
-      // Load contestants
+      // Load contestants for this pool only
       const { data: contestantsData } = await supabase
         .from('contestants')
         .select('*')
+        .eq('pool_id', activePool?.id)
         .order('name');
       
       const mappedContestants = contestantsData?.map(c => ({
@@ -33,10 +34,11 @@ export const useBonusQuestions = () => {
       })) || [];
       setContestants(mappedContestants);
 
-      // Load bonus questions
+      // Load bonus questions for this pool only
       const { data: questionsData } = await supabase
         .from('bonus_questions')
         .select('*')
+        .eq('pool_id', activePool?.id)
         .order('sort_order');
       
       const mappedQuestions = questionsData?.map(q => ({
@@ -81,6 +83,7 @@ export const useBonusQuestions = () => {
       .from('contestants')
       .select('name')
       .in('name', players)
+      .eq('pool_id', activePool?.id)
       .eq('is_active', true);
     
     return data?.length || 0;
@@ -88,22 +91,25 @@ export const useBonusQuestions = () => {
 
   const recalculateScores = async () => {
     try {
-      // Get all pool entries
+      // Get all pool entries for this pool only
       const { data: entries } = await supabase
         .from('pool_entries')
-        .select('*');
+        .select('*')
+        .eq('pool_id', activePool?.id);
 
       if (!entries) return;
 
-      // Get all weekly results
+      // Get all weekly results for this pool only
       const { data: weeklyResults } = await supabase
         .from('weekly_results')
-        .select('*');
+        .select('*')
+        .eq('pool_id', activePool?.id);
 
-      // Get revealed bonus questions
+      // Get revealed bonus questions for this pool only
       const { data: revealedQuestions } = await supabase
         .from('bonus_questions')
         .select('*')
+        .eq('pool_id', activePool?.id)
         .eq('answer_revealed', true);
 
       // Calculate scores for each entry

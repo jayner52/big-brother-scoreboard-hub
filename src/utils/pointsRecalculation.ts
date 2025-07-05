@@ -1,33 +1,41 @@
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 
-export const recalculateAllTeamPoints = async () => {
+export const recalculateAllTeamPointsForPool = async (poolId: string) => {
+  if (!poolId) {
+    console.log('No poolId provided');
+    return false;
+  }
+  
   try {
-    console.log('Starting manual points recalculation...');
+    console.log(`Starting manual points recalculation for pool: ${poolId}...`);
     
-    // Get all pool entries
+    // Get all pool entries for this pool only
     const { data: poolEntries, error } = await supabase
       .from('pool_entries')
-      .select('*');
+      .select('*')
+      .eq('pool_id', poolId);
 
     if (error) throw error;
 
     if (!poolEntries || poolEntries.length === 0) {
-      console.log('No pool entries found');
-      return;
+      console.log(`No pool entries found for pool: ${poolId}`);
+      return true;
     }
 
-    // Get all contestants for name matching
+    // Get all contestants for name matching (pool-specific)
     const { data: contestants, error: contestantsError } = await supabase
       .from('contestants')
-      .select('id, name');
+      .select('id, name')
+      .eq('pool_id', poolId);
 
     if (contestantsError) throw contestantsError;
 
-    // Get bonus questions
+    // Get bonus questions for this pool
     const { data: bonusQuestions, error: bonusError } = await supabase
       .from('bonus_questions')
       .select('*')
+      .eq('pool_id', poolId)
       .eq('answer_revealed', true);
 
     if (bonusError) throw bonusError;
@@ -45,18 +53,20 @@ export const recalculateAllTeamPoints = async () => {
       console.log('Team players:', teamPlayers);
       console.log('Found IDs for players:', teamMemberIds.length, 'out of', teamPlayers.length);
 
-      // Calculate weekly points
+      // Calculate weekly points (pool-specific)
       const { data: weeklyEvents, error: weeklyError } = await supabase
         .from('weekly_events')
         .select('points_awarded, contestant_id')
-        .in('contestant_id', teamMemberIds);
+        .in('contestant_id', teamMemberIds)
+        .eq('pool_id', poolId);
 
       if (weeklyError) throw weeklyError;
 
       const { data: specialEvents, error: specialError } = await supabase
         .from('special_events')
         .select('points_awarded, contestant_id')
-        .in('contestant_id', teamMemberIds);
+        .in('contestant_id', teamMemberIds)
+        .eq('pool_id', poolId);
 
       if (specialError) throw specialError;
 
@@ -132,10 +142,32 @@ export const recalculateAllTeamPoints = async () => {
       }
     }
 
-    console.log('\n=== RECALCULATION COMPLETED ===');
+    console.log(`\n=== RECALCULATION COMPLETED FOR POOL: ${poolId} ===`);
     return true;
   } catch (error) {
-    console.error('Error in recalculation:', error);
+    console.error(`Error in recalculation for pool ${poolId}:`, error);
+    return false;
+  }
+};
+
+// Legacy function - now calls pool-specific version with first available pool
+export const recalculateAllTeamPoints = async () => {
+  try {
+    // Get first available pool for backwards compatibility
+    const { data: pools } = await supabase
+      .from('pools')
+      .select('id')
+      .limit(1)
+      .single();
+    
+    if (!pools?.id) {
+      console.log('No pools found');
+      return false;
+    }
+    
+    return await recalculateAllTeamPointsForPool(pools.id);
+  } catch (error) {
+    console.error('Error in legacy recalculation:', error);
     return false;
   }
 };

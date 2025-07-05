@@ -58,7 +58,11 @@ export const TeamCard: React.FC<TeamCardProps> = ({
         
         {/* Players grid - centered and wider */}
         <div className="flex justify-center gap-2 flex-shrink-0">
-          {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => {
+          {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+            const playerKey = `player_${i + 1}` as keyof typeof entry;
+            const player = entry[playerKey] as string;
+            return player;
+          }).filter(Boolean).map((player, index) => {
             const points = houseguestPoints[player] || 0;
             const isEvicted = evictedContestants.includes(player);
             const statusIcon = renderStatusIcon(player);

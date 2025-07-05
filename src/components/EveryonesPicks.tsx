@@ -152,15 +152,18 @@ export const EveryonesPicks: React.FC = () => {
                   
                    {/* Players - horizontal layout with even spacing */}
                    <div className="flex-1 grid grid-cols-5 gap-3">
-                     {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].map((player, index) => (
+                      {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+                        const playerKey = `player_${i + 1}` as keyof typeof entry;
+                        return entry[playerKey];
+                      }).filter(Boolean).map((player, index) => (
                        <div key={index} className="bg-muted/50 rounded p-3 text-center min-h-[65px] flex flex-col justify-center">
                          <div className="text-xs text-muted-foreground mb-1">P{index + 1}</div>
-                         <div className="text-sm font-medium">{player}</div>
-                         {houseguestPoints[player] !== undefined && (
-                           <div className="text-xs text-primary font-semibold">
-                             {houseguestPoints[player]}pts
-                           </div>
-                         )}
+                         <div className="text-sm font-medium">{player as string}</div>
+                        {houseguestPoints[player as string] !== undefined && (
+                          <div className="text-xs text-primary font-semibold">
+                            {houseguestPoints[player as string]}pts
+                          </div>
+                        )}
                        </div>
                      ))}
                    </div>

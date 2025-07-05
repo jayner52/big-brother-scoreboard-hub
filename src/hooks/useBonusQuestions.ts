@@ -110,7 +110,10 @@ export const useBonusQuestions = () => {
         let bonusPoints = 0;
 
         // Calculate weekly survival points (5 points per active player per week)
-        const activePlayers = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5];
+        const activePlayers = Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+          const playerKey = `player_${i + 1}` as keyof typeof entry;
+          return entry[playerKey] as string;
+        }).filter(Boolean);
         const activeCount = await getActivePlayerCount(activePlayers);
         const weekCount = weeklyResults?.length || 0;
         weeklyPoints = activeCount * 5 * weekCount;

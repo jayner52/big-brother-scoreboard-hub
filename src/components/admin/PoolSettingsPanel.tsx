@@ -45,7 +45,9 @@ export const PoolSettingsPanel: React.FC = () => {
 
 
   useEffect(() => {
-    loadSettings();
+    if (activePool) {
+      loadSettings();
+    }
     // Load expanded sections from localStorage
     const saved = localStorage.getItem('pool_settings_expanded');
     if (saved) {
@@ -55,35 +57,31 @@ export const PoolSettingsPanel: React.FC = () => {
         console.error('Error loading expanded sections:', error);
       }
     }
-  }, []);
+  }, [activePool]);
 
   const loadSettings = async () => {
+    if (!activePool) return;
+    
     try {
-      const { data, error } = await supabase
-        .from('pool_settings')
-        .select('*')
-        .single();
-
-      if (error) throw error;
-
+      // Load from pools table, not pool_settings
       setSettings({
-        id: data.id,
-        season_name: data.season_name,
-        entry_fee_amount: data.entry_fee_amount,
-        entry_fee_currency: data.entry_fee_currency,
-        payment_method_1: data.payment_method_1,
-        payment_details_1: data.payment_details_1,
-        payment_method_2: data.payment_method_2,
-        payment_details_2: data.payment_details_2,
-        registration_deadline: data.registration_deadline,
-        draft_open: data.draft_open,
-        season_active: data.season_active,
-        number_of_groups: data.number_of_groups || 4,
-        picks_per_team: data.picks_per_team || 5,
-        enable_free_pick: data.enable_free_pick ?? true,
-        group_names: data.group_names || ['Group A', 'Group B', 'Group C', 'Group D'],
-        has_buy_in: data.has_buy_in ?? true,
-        buy_in_description: data.buy_in_description
+        id: activePool.id,
+        season_name: activePool.name,
+        entry_fee_amount: activePool.entry_fee_amount,
+        entry_fee_currency: activePool.entry_fee_currency,
+        payment_method_1: activePool.payment_method_1,
+        payment_details_1: activePool.payment_details_1,
+        payment_method_2: activePool.payment_method_2,
+        payment_details_2: activePool.payment_details_2,
+        registration_deadline: activePool.registration_deadline,
+        draft_open: activePool.draft_open,
+        season_active: !activePool.season_locked,
+        number_of_groups: 4, // Will be calculated from contestant_groups
+        picks_per_team: activePool.picks_per_team,
+        enable_free_pick: true,
+        group_names: ['Group A', 'Group B', 'Group C', 'Group D'], // Will be loaded from contestant_groups
+        has_buy_in: activePool.has_buy_in,
+        buy_in_description: activePool.buy_in_description
       });
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -98,34 +96,27 @@ export const PoolSettingsPanel: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!settings) return;
+    if (!settings || !activePool) return;
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('pool_settings')
-        .update({
-          season_name: settings.season_name,
-          entry_fee_amount: settings.entry_fee_amount,
-          entry_fee_currency: settings.entry_fee_currency,
-          payment_method_1: settings.payment_method_1,
-          payment_details_1: settings.payment_details_1,
-          payment_method_2: settings.payment_method_2,
-          payment_details_2: settings.payment_details_2,
-          registration_deadline: settings.registration_deadline,
-          draft_open: settings.draft_open,
-          season_active: settings.season_active,
-          number_of_groups: settings.number_of_groups,
-          picks_per_team: settings.picks_per_team,
-          enable_free_pick: settings.enable_free_pick,
-          group_names: settings.group_names,
-          has_buy_in: settings.has_buy_in,
-          buy_in_description: settings.buy_in_description,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', settings.id);
+      const success = await updatePool(activePool.id, {
+        name: settings.season_name,
+        entry_fee_amount: settings.entry_fee_amount,
+        entry_fee_currency: settings.entry_fee_currency,
+        payment_method_1: settings.payment_method_1,
+        payment_details_1: settings.payment_details_1,
+        payment_method_2: settings.payment_method_2,
+        payment_details_2: settings.payment_details_2,
+        registration_deadline: settings.registration_deadline,
+        draft_open: settings.draft_open,
+        season_locked: !settings.season_active,
+        picks_per_team: settings.picks_per_team,
+        has_buy_in: settings.has_buy_in,
+        buy_in_description: settings.buy_in_description,
+      });
 
-      if (error) throw error;
+      if (!success) throw new Error('Failed to update pool');
 
       toast({
         title: "Success!",

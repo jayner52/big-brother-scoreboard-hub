@@ -14,15 +14,22 @@ export const useDraftSubmission = () => {
       return "Please enter your name and team name";
     }
 
-    const requiredPlayers = ['player_1', 'player_2', 'player_3', 'player_4', 'player_5'];
-    const missingPlayers = requiredPlayers.filter(player => !formData[player as keyof DraftFormData]);
-    
-    if (missingPlayers.length > 0) {
-      return "Please select all 5 team members";
-    }
-
     if (!activePool) {
       return "Please select a pool to join first";
+    }
+
+    const picksPerTeam = activePool.picks_per_team || 5;
+    const missingPlayers = [];
+    
+    for (let i = 1; i <= picksPerTeam; i++) {
+      const playerKey = `player_${i}` as keyof DraftFormData;
+      if (!formData[playerKey]) {
+        missingPlayers.push(`player_${i}`);
+      }
+    }
+    
+    if (missingPlayers.length > 0) {
+      return `Please select all ${picksPerTeam} team members`;
     }
 
     return null;
@@ -52,18 +59,23 @@ export const useDraftSubmission = () => {
       }
 
       if (isEditMode && editEntryData) {
-        // Update existing entry
+        // Update existing entry with dynamic player data
+        const picksPerTeam = activePool.picks_per_team || 5;
+        const playerData: any = {};
+        
+        // Fill all required player slots
+        for (let i = 1; i <= picksPerTeam; i++) {
+          const playerKey = `player_${i}` as keyof DraftFormData;
+          playerData[playerKey] = formData[playerKey] || '';
+        }
+
         const { error } = await supabase
           .from('pool_entries')
           .update({
             participant_name: formData.participant_name,
             team_name: formData.team_name,
             email: formData.email,
-            player_1: formData.player_1,
-            player_2: formData.player_2,
-            player_3: formData.player_3,
-            player_4: formData.player_4,
-            player_5: formData.player_5,
+            ...playerData,
             bonus_answers: formData.bonus_answers,
             payment_confirmed: formData.payment_confirmed,
           })
@@ -89,6 +101,16 @@ export const useDraftSubmission = () => {
           return false;
         }
 
+        // Create dynamic player data based on pool settings
+        const picksPerTeam = activePool.picks_per_team || 5;
+        const playerData: any = {};
+        
+        // Fill all required player slots
+        for (let i = 1; i <= picksPerTeam; i++) {
+          const playerKey = `player_${i}` as keyof DraftFormData;
+          playerData[playerKey] = formData[playerKey] || '';
+        }
+
         const { error } = await supabase
           .from('pool_entries')
           .insert({
@@ -97,11 +119,7 @@ export const useDraftSubmission = () => {
             participant_name: formData.participant_name,
             team_name: formData.team_name,
             email: formData.email,
-            player_1: formData.player_1,
-            player_2: formData.player_2,
-            player_3: formData.player_3,
-            player_4: formData.player_4,
-            player_5: formData.player_5,
+            ...playerData,
             bonus_answers: formData.bonus_answers,
             payment_confirmed: formData.payment_confirmed,
           });

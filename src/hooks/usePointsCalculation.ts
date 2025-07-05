@@ -17,7 +17,10 @@ export const usePointsCalculation = () => {
       if (contestantsError) throw contestantsError;
 
       // Find team member IDs
-      const teamPlayers = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5];
+      const teamPlayers = Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+        const playerKey = `player_${i + 1}` as keyof typeof entry;
+        return entry[playerKey] as string;
+      }).filter(Boolean);
       console.log('Team players:', teamPlayers);
       
       const teamMemberIds = teamPlayers

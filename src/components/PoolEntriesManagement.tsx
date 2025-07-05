@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Trash2, Users, Lock, Unlock, Check, X, CreditCard } from 'lucide-react';
+import { usePool } from '@/contexts/PoolContext';
 import { UserPaymentButton } from '@/components/enhanced/UserPaymentButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -34,15 +35,18 @@ interface PoolSettings {
 
 export const PoolEntriesManagement: React.FC = () => {
   const { toast } = useToast();
+  const { activePool, updatePool } = usePool();
   const [entries, setEntries] = useState<PoolEntry[]>([]);
   const [settings, setSettings] = useState<PoolSettings>({ draft_open: true, draft_locked: false });
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
-    getCurrentUser();
-  }, []);
+    if (activePool) {
+      loadData();
+      getCurrentUser();
+    }
+  }, [activePool]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -50,17 +54,20 @@ export const PoolEntriesManagement: React.FC = () => {
   };
 
   const loadData = async () => {
+    if (!activePool) return;
+    
     try {
-      const [entriesResult, settingsResult] = await Promise.all([
-        supabase.from('pool_entries').select('id, participant_name, team_name, player_1, player_2, player_3, player_4, player_5, payment_confirmed, total_points, created_at, email, user_id').order('created_at', { ascending: false }),
-        supabase.from('pool_settings').select('draft_open, draft_locked').single()
+      const [entriesResult] = await Promise.all([
+        supabase.from('pool_entries').select('id, participant_name, team_name, player_1, player_2, player_3, player_4, player_5, payment_confirmed, total_points, created_at, email, user_id').eq('pool_id', activePool.id).order('created_at', { ascending: false })
       ]);
 
       if (entriesResult.error) throw entriesResult.error;
-      if (settingsResult.error) throw settingsResult.error;
 
       setEntries(entriesResult.data || []);
-      setSettings(settingsResult.data);
+      setSettings({ 
+        draft_open: activePool.draft_open, 
+        draft_locked: activePool.draft_locked 
+      });
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -98,14 +105,15 @@ export const PoolEntriesManagement: React.FC = () => {
   };
 
   const handleToggleDraftLock = async () => {
+    if (!activePool) return;
+    
     try {
       const newLockStatus = !settings.draft_locked;
-      const { error } = await supabase
-        .from('pool_settings')
-        .update({ draft_locked: newLockStatus })
-        .eq('id', '1'); // Assuming single settings row
+      const success = await updatePool(activePool.id, {
+        draft_locked: newLockStatus
+      });
 
-      if (error) throw error;
+      if (!success) throw new Error('Failed to update pool');
 
       setSettings(prev => ({ ...prev, draft_locked: newLockStatus }));
       toast({
@@ -207,7 +215,7 @@ export const PoolEntriesManagement: React.FC = () => {
                     <TableCell>{entry.team_name}</TableCell>
                     <TableCell className="text-sm">{entry.email}</TableCell>
                     <TableCell className="text-sm">
-                      {[entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5].join(', ')}
+                      {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => entry[`player_${i + 1}` as keyof typeof entry]).filter(Boolean).join(', ')}
                     </TableCell>
                     <TableCell>
                       <Badge variant={entry.payment_confirmed ? "default" : "destructive"}>

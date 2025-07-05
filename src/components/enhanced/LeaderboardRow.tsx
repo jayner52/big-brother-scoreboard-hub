@@ -6,6 +6,7 @@ import { ChevronUp, ChevronDown, Minus, TrendingUp, TrendingDown } from 'lucide-
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useBonusQuestions } from '@/hooks/useBonusQuestions';
+import { usePool } from '@/contexts/PoolContext';
 import { evaluateBonusAnswer } from '@/utils/bonusQuestionUtils';
 
 interface LeaderboardRowProps {
@@ -24,10 +25,14 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   const { houseguestPoints } = useHouseguestPoints();
   const { evictedContestants } = useEvictedContestants();
   const { bonusQuestions } = useBonusQuestions();
+  const { activePool } = usePool();
 
   // Calculate actual weekly points (sum of all players' points)
   const calculateActualWeeklyPoints = (teamData: any): number => {
-    const players = [teamData.player_1, teamData.player_2, teamData.player_3, teamData.player_4, teamData.player_5];
+    const players = Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+      const playerKey = `player_${i + 1}` as keyof typeof teamData;
+      return teamData[playerKey] as string;
+    }).filter(Boolean);
     return players.reduce((total, playerName) => {
       return total + (houseguestPoints[playerName] || 0);
     }, 0);

@@ -7,7 +7,8 @@ export async function processBatches(
   contestants: ContestantProfile[],
   seasonNumber: number,
   supabaseUrl: string,
-  supabaseKey: string
+  supabaseKey: string,
+  poolId: string | null = null
 ): Promise<ProcessingResult> {
   const BATCH_SIZE = 10;
   const batches = [];
@@ -38,21 +39,28 @@ export async function processBatches(
         const globalIndex = batchIndex * BATCH_SIZE + index + 1;
         
         return await retryWithBackoff(async () => {
-          console.log(`  [${globalIndex}/${contestants.length}] Processing: ${contestant.name}`);
-          
           // Auto-assign group based on order (4 groups, distribute evenly)
           const groupNames = ['Group A', 'Group B', 'Group C', 'Group D'];
           const groupIndex = (globalIndex - 1) % 4;
           
-          // Get the group ID for this group name
+          console.log(`  [${globalIndex}/${contestants.length}] Processing: ${contestant.name}`);
+          console.log(`🔥 INSERTING CONTESTANT:`, {
+            name: contestant.name,
+            target_group: groupNames[groupIndex],
+            season_number: seasonNumber,
+            pool_id: poolId
+          });
+          
+          // Get the group ID for this group name - need to filter by pool too if provided
           const { data: groups, error: groupError } = await supabase
             .from('contestant_groups')
             .select('id, group_name')
             .eq('group_name', groupNames[groupIndex])
+            .eq('pool_id', poolId)
             .single();
           
           if (groupError) {
-            console.log(`⚠️  Warning: Could not find group ${groupNames[groupIndex]}: ${groupError.message}`);
+            console.log(`⚠️  Warning: Could not find group ${groupNames[groupIndex]} for pool ${poolId}: ${groupError.message}`);
           }
           
           const insertData = {
@@ -65,6 +73,7 @@ export async function processBatches(
             season_number: seasonNumber,
             data_source: 'bigbrother_fandom',
             ai_generated: false,
+            pool_id: poolId, // ADD THE POOL ID HERE
             group_id: groups?.id || null,
             generation_metadata: {
               generated_date: new Date().toISOString(),
@@ -73,11 +82,14 @@ export async function processBatches(
               batch_id: Date.now(),
               batch_number: batchNumber,
               global_index: globalIndex,
-              auto_assigned_group: groupNames[groupIndex]
+              auto_assigned_group: groupNames[groupIndex],
+              target_pool_id: poolId
             },
             is_active: true,
             sort_order: globalIndex
           };
+          
+          console.log(`🔥 INSERT DATA:`, insertData);
           
           // Try upsert first, then insert if contestant doesn't exist
           const { data, error } = await supabase
@@ -88,6 +100,8 @@ export async function processBatches(
             })
             .select()
             .single();
+          
+          console.log(`🔥 DATABASE RESPONSE:`, { data: data?.id, error: error?.message });
           
           if (error) {
             throw new Error(`Database error: ${error.message} (${error.code})`);

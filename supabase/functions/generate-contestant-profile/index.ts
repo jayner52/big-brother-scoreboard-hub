@@ -20,10 +20,10 @@ serve(async (req) => {
       throw new Error('Invalid request body');
     });
     
-    const { season_number, season_theme, season_format, cast_size, special_twists, count = 1 }: GenerationRequest = requestBody;
+    const { season_number, season_theme, season_format, cast_size, special_twists, count = 1, pool_id }: GenerationRequest = requestBody;
     
     console.log(`🚀 Starting contestant generation for Season ${season_number}`);
-    console.log(`📊 Request: ${count} contestants, theme: ${season_theme}`);
+    console.log(`📊 Request: ${count} contestants, theme: ${season_theme}, pool_id: ${pool_id}`);
 
     // Validate season number
     if (season_number < 26) {
@@ -53,7 +53,7 @@ serve(async (req) => {
     console.log(`📋 Found ${contestants.length} contestants to process`);
 
     // Process contestants in batches with retry logic
-    const results = await processBatches(contestants, season_number, supabaseUrl, supabaseKey);
+    const results = await processBatches(contestants, season_number, supabaseUrl, supabaseKey, pool_id);
 
     // Prepare response
     const responseData = {

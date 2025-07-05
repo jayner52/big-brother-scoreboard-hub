@@ -64,7 +64,8 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
     season_format: 'TBD',
     cast_size: 16,
     special_twists: 'Cast not yet announced',
-    count: 16
+    count: 16,
+    pool_id: null as string | null
   });
 
   const validateContestantData = (contestants: AIContestantProfile[]) => {
@@ -160,8 +161,12 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
       return;
     }
     
-    // Always generate full cast
-    const fullCastConfig = { ...seasonConfig, count: season.cast };
+    // Always generate full cast and include pool_id
+    const fullCastConfig = { 
+      ...seasonConfig, 
+      count: season.cast,
+      pool_id: activePool?.id || null
+    };
     
     setIsGenerating(true);
     setProgress(10);

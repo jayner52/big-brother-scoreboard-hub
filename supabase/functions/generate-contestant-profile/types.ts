@@ -14,6 +14,7 @@ export interface GenerationRequest {
   cast_size: number;
   special_twists: string;
   count: number;
+  pool_id?: string | null;
 }
 
 export interface BatchProgress {

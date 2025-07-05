@@ -20,6 +20,10 @@ import { Shuffle, AlertCircle, Trash2 } from 'lucide-react';
 export const TeamDraftForm: React.FC = () => {
   const { activePool } = usePool();
   const { activePool: poolData, contestantGroups, bonusQuestions, loading } = usePoolData({ poolId: activePool?.id });
+  
+  // DEBUG: Log actual data flow
+  console.log('🔍 TeamDraftForm - activePool:', activePool);
+  console.log('🔍 TeamDraftForm - poolData:', poolData);
   const { formData, updateFormData, updateBonusAnswer, resetForm } = useDraftForm();
   const { submitDraft } = useDraftSubmission();
   const { validateDraftForm } = useDraftValidation();
@@ -69,12 +73,16 @@ export const TeamDraftForm: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        {poolData && <PaymentInfoDisplay poolSettings={{
-          ...poolData,
-          season_name: poolData.name,
-          season_active: !poolData.draft_locked,
-          registration_deadline: poolData.registration_deadline
-        }} />}
+        {poolData && (() => {
+          const poolSettings = {
+            ...poolData,
+            season_name: poolData.name,
+            season_active: !poolData.draft_locked,
+            registration_deadline: poolData.registration_deadline
+          };
+          console.log('🔍 PaymentInfoDisplay poolSettings:', poolSettings);
+          return <PaymentInfoDisplay poolSettings={poolSettings} />;
+        })()}
 
         {/* Clear Form Button */}
         <div className="flex justify-end mb-4">

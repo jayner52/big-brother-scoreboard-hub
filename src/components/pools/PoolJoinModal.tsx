@@ -83,7 +83,7 @@ export const PoolJoinModal = ({ open, onOpenChange, onSuccess }: PoolJoinModalPr
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <h4 className="font-semibold text-blue-800 mb-2">How to join:</h4>
             <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Get an invite code from a pool admin</li>
+              <li>• Get an invite code or link from a pool member</li>
               <li>• Enter the 8-character code below</li>
               <li>• Start drafting your team!</li>
             </ul>

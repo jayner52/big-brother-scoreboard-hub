@@ -47,7 +47,6 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
           </div>
         )}
         
-        {/* How to Play Button - Always Visible */}
         <Link to="/about">
           <Button 
             className="bg-purple hover:bg-purple/90 text-purple-foreground flex items-center gap-2"

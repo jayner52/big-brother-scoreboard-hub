@@ -13,6 +13,7 @@ import About from "./pages/About";
 import Auth from "./pages/Auth";
 import Draft from "./pages/Draft";
 import MyTeams from "./pages/MyTeams";
+import Invite from "./pages/Invite";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/draft" element={<Draft />} />
               <Route path="/my-teams" element={<MyTeams />} />
+              <Route path="/invite/:code" element={<Invite />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -101,7 +101,6 @@ export interface Pool {
   name: string;
   description?: string;
   invite_code: string;
-  is_public: boolean;
   created_at: string;
   updated_at: string;
   entry_fee_amount: number;

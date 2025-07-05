@@ -28,7 +28,6 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    is_public: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +44,7 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
 
     setLoading(true);
     try {
-      // Create pool with sensible defaults for removed fields
+      // Create pool with sensible defaults
       const poolData = {
         ...formData,
         has_buy_in: true,
@@ -70,7 +69,6 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
         setFormData({
           name: '',
           description: '',
-          is_public: false,
         });
       } else {
         toast({
@@ -123,31 +121,13 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
             />
           </div>
 
-          <div className="space-y-3">
-            <Label>Pool Privacy</Label>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant={!formData.is_public ? "default" : "outline"}
-                className="h-auto p-3 flex flex-col items-center gap-1"
-                onClick={() => setFormData(prev => ({ ...prev, is_public: false }))}
-              >
-                <span className="font-semibold">Private</span>
-                <span className="text-xs opacity-80">Invite only</span>
-              </Button>
-              <Button
-                type="button"
-                variant={formData.is_public ? "default" : "outline"}
-                className="h-auto p-3 flex flex-col items-center gap-1"
-                onClick={() => setFormData(prev => ({ ...prev, is_public: true }))}
-              >
-                <span className="font-semibold">Public</span>
-                <span className="text-xs opacity-80">Anyone can join</span>
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground text-center">
-              You can configure buy-in, payment details, and other settings later in the admin panel
-            </p>
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <h4 className="font-semibold text-green-800 mb-2">Next steps:</h4>
+            <ul className="text-sm text-green-700 space-y-1">
+              <li>• Your pool will be invite-only for security</li>
+              <li>• You can configure buy-in and payment details in admin settings</li>
+              <li>• Share your invite code with friends to get started</li>
+            </ul>
           </div>
         </form>
 

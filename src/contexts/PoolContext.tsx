@@ -133,7 +133,6 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
           owner_id: session.session.user.id,
           name: poolData.name!,
           description: poolData.description,
-          is_public: poolData.is_public || false,
           entry_fee_amount: poolData.entry_fee_amount || 25,
           entry_fee_currency: poolData.entry_fee_currency || 'CAD',
           payment_method_1: poolData.payment_method_1 || 'E-transfer',

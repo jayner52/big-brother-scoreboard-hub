@@ -521,7 +521,6 @@ export type Database = {
           has_buy_in: boolean
           id: string
           invite_code: string
-          is_public: boolean
           jury_phase_started: boolean
           jury_start_timestamp: string | null
           jury_start_week: number | null
@@ -547,7 +546,6 @@ export type Database = {
           has_buy_in?: boolean
           id?: string
           invite_code?: string
-          is_public?: boolean
           jury_phase_started?: boolean
           jury_start_timestamp?: string | null
           jury_start_week?: number | null
@@ -573,7 +571,6 @@ export type Database = {
           has_buy_in?: boolean
           id?: string
           invite_code?: string
-          is_public?: boolean
           jury_phase_started?: boolean
           jury_start_timestamp?: string | null
           jury_start_week?: number | null

@@ -204,11 +204,17 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Pool creation failed after retries:', error);
+        console.error('Full error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         console.error('Failed pool data:', freshPoolData);
-        if (error.message?.includes('row-level security policy')) {
-          console.error('RLS Policy violation - user may not be properly authenticated');
-        }
-        return null;
+        
+        // Throw a detailed error message
+        const errorMsg = error.details || error.hint || error.message || 'Unknown database error';
+        throw new Error(`Database error: ${errorMsg}`);
       }
 
       if (!pool) {
@@ -250,7 +256,8 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return pool;
     } catch (error) {
       console.error('Error creating pool:', error);
-      return null;
+      console.error('Full error object:', JSON.stringify(error, null, 2));
+      throw error; // Re-throw to let the UI handle the specific error message
     }
   }, [loadUserPools]);
 

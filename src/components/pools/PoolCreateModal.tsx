@@ -87,9 +87,17 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
         });
       }
     } catch (error) {
+      console.error('Pool creation error caught in modal:', error);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'string' 
+        ? error 
+        : 'Failed to create pool - check console for details';
+      
       toast({
         title: "Error",
-        description: "Failed to create pool",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

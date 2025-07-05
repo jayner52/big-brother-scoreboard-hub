@@ -5,6 +5,7 @@ import { Crown, Target, Shield } from 'lucide-react';
 import { ContestantStats } from '@/types/contestant-stats';
 import { Contestant } from '@/types/pool';
 import { SpecialEventsBadges } from '@/components/admin/SpecialEventsBadges';
+import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
 interface ContestantStatsTableProps {
   contestantStats: ContestantStats[];
@@ -23,6 +24,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
   povWinner,
   nominees,
 }) => {
+  const { evictedContestants } = useEvictedContestants();
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -44,7 +46,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
         <TableBody>
         {contestantStats.map((stat, index) => {
             const contestant = contestants.find(c => c.name === stat.contestant_name);
-            const isEvicted = stat.elimination_week !== null;
+            const isEvicted = evictedContestants.includes(stat.contestant_name);
             
             return (
               <TableRow key={stat.contestant_name}>

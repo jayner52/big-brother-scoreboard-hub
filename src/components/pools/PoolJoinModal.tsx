@@ -79,23 +79,31 @@ export const PoolJoinModal = ({ open, onOpenChange, onSuccess }: PoolJoinModalPr
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="invite_code">Invite Code</Label>
-            <Input
-              id="invite_code"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              placeholder="e.g., ABC12345"
-              className="font-mono tracking-wider"
-              maxLength={8}
-              required
-            />
-            <p className="text-sm text-muted-foreground">
-              The invite code is usually 8 characters long
-            </p>
+        <div className="space-y-4">
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h4 className="font-semibold text-blue-800 mb-2">How to join:</h4>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Get an invite code from a pool admin</li>
+              <li>• Enter the 8-character code below</li>
+              <li>• Start drafting your team!</li>
+            </ul>
           </div>
-        </form>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite_code">Invite Code</Label>
+              <Input
+                id="invite_code"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                placeholder="e.g., ABC12345"
+                className="font-mono tracking-wider"
+                maxLength={8}
+                required
+              />
+            </div>
+          </form>
+        </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -12,10 +12,13 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-12 px-16 rounded-xl shadow-2xl mb-8 transform -rotate-1 hover:rotate-0 transition-transform duration-300">
-            <h1 className="text-6xl font-bold mb-6">
-              🏠 Big Brother Fantasy Pool
-            </h1>
+          <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-12 px-16 rounded-xl shadow-2xl mb-8">
+            <div className="flex items-center justify-center mb-6">
+              <Trophy className="h-16 w-16 text-white mr-4" />
+              <h1 className="text-6xl font-bold">
+                Big Brother Fantasy Pool
+              </h1>
+            </div>
             <p className="text-2xl text-red-100 mb-4">
               Draft your dream team and compete with friends!
             </p>
@@ -102,7 +105,7 @@ const Landing = () => {
                   <li>• Unique invite code to share</li>
                   <li>• Full pool management control</li>
                   <li>• Customizable settings</li>
-                  <li>• Weekly scoring updates</li>
+                  <li>• Scoring responsibility for weekly events</li>
                 </ul>
               </div>
               <Button 

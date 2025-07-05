@@ -11,6 +11,7 @@ import { HowToPlaySection } from '@/components/index/HowToPlaySection';
 import { MainContent } from '@/components/index/MainContent';
 import { Footer } from '@/components/index/Footer';
 import { PoolSwitcher } from '@/components/pools/PoolSwitcher';
+import { PoolInviteShare } from '@/components/pools/PoolInviteShare';
 import { usePool } from '@/contexts/PoolContext';
 import { usePoolRedirect } from '@/hooks/usePoolRedirect';
 
@@ -115,6 +116,10 @@ const Index = () => {
             onJoinPool={handleJoinPool}
           />
           {user && <PoolSwitcher />}
+        </div>
+        
+        <div className="mb-8">
+          <PoolInviteShare />
         </div>
         
         <HeroSection />

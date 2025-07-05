@@ -15,13 +15,6 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
 }) => {
   return (
     <div className="mb-8 text-center">
-      <Button
-        onClick={onToggleRules}
-        variant="outline"
-        className="mb-4"
-      >
-        {showRules ? 'Hide' : 'Show'} How to Play
-      </Button>
 
       {showRules && (
         <div className="max-w-6xl mx-auto">

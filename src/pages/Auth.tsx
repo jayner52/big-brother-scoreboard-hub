@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -22,6 +22,8 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const action = searchParams.get('action');
 
   useEffect(() => {
     // Set up auth state listener
@@ -29,7 +31,8 @@ const Auth = () => {
       (event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          navigate('/dashboard');
+          const redirectPath = action ? `/dashboard?action=${action}` : '/dashboard';
+          navigate(redirectPath);
         }
       }
     );
@@ -38,7 +41,8 @@ const Auth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        navigate('/dashboard');
+        const redirectPath = action ? `/dashboard?action=${action}` : '/dashboard';
+        navigate(redirectPath);
       }
       setLoading(false);
     });
@@ -51,7 +55,9 @@ const Auth = () => {
     setIsSubmitting(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      const redirectUrl = action 
+        ? `${window.location.origin}/dashboard?action=${action}` 
+        : `${window.location.origin}/dashboard`;
       
       const { error } = await supabase.auth.signUp({
         email: signUpEmail,
@@ -125,11 +131,13 @@ const Auth = () => {
 
   const signInWithGoogle = async () => {
     try {
+      const redirectUrl = action 
+        ? `${window.location.origin}/dashboard?action=${action}` 
+        : `${window.location.origin}/dashboard`;
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
+        options: { redirectTo: redirectUrl }
       });
 
       if (error) throw error;

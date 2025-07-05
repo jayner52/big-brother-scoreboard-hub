@@ -16,6 +16,7 @@ interface PoolContextType {
   createPool: (poolData: Partial<Pool>) => Promise<Pool | null>;
   joinPoolByCode: (inviteCode: string) => Promise<{ success: boolean; error?: string; pool?: Pool }>;
   updatePool: (poolId: string, updates: Partial<Pool>) => Promise<boolean>;
+  deletePool: (poolId: string) => Promise<boolean>;
   leavePool: (poolId: string) => Promise<boolean>;
   
   // Pool membership
@@ -217,6 +218,30 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [loadUserPools]);
 
+  // Delete pool (only for pool owners)
+  const deletePool = useCallback(async (poolId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('pools')
+        .delete()
+        .eq('id', poolId);
+
+      if (error) throw error;
+
+      // Clear active pool if it was deleted
+      if (activePool?.id === poolId) {
+        setActivePool(null);
+      }
+
+      // Refresh pools
+      await loadUserPools();
+      return true;
+    } catch (error) {
+      console.error('Error deleting pool:', error);
+      return false;
+    }
+  }, [activePool, loadUserPools]);
+
   const leavePool = useCallback(async (poolId: string) => {
     try {
       const { error } = await supabase
@@ -298,6 +323,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createPool,
       joinPoolByCode,
       updatePool,
+      deletePool,
       leavePool,
       getUserRole,
       canManagePool,

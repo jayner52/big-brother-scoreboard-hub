@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useDraftForm } from '@/hooks/useDraftForm';
@@ -30,6 +30,8 @@ const Index = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { formData } = useDraftForm();
   const { activePool, userPools, loading: poolsLoading } = usePool();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const action = searchParams.get('action');
 
   useEffect(() => {
     // Check for existing session
@@ -106,6 +108,23 @@ const Index = () => {
       loadUserEntry(user.id);
     }
   }, [user, activePool]);
+
+  // Handle action parameters from authentication
+  useEffect(() => {
+    if (action && user) {
+      if (action === 'create-pool') {
+        setShowCreateModal(true);
+      } else if (action === 'join-pool') {
+        setShowJoinModal(true);
+      }
+      // Clear the action parameter
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('action');
+        return newParams;
+      });
+    }
+  }, [action, user, setSearchParams]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();

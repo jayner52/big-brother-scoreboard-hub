@@ -72,30 +72,28 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
         )}
       </div>
 
-      {/* Right Side - Admin and User Status */}
-      <div className="flex-1 flex justify-end">
-        <div className="flex flex-col items-end gap-4">
-          <Link to="/admin">
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Admin
+      {/* Right Side - Admin */}
+      <div className="flex items-center gap-4">
+        <Link to="/admin">
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Admin
+          </Button>
+        </Link>
+        
+        {/* Join Pool Button for logged in users without entry */}
+        {user && !userEntry && (
+          <div className="w-72 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 text-center">
+            <p className="text-gray-600 mb-2">Not registered</p>
+            <Button
+              onClick={onJoinPool}
+              size="sm"
+              className="bg-primary hover:bg-primary/90"
+            >
+              Join Pool
             </Button>
-          </Link>
-          
-          {/* Join Pool Button for logged in users without entry */}
-          {user && !userEntry && (
-            <div className="w-72 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 text-center">
-              <p className="text-gray-600 mb-2">Not registered</p>
-              <Button
-                onClick={onJoinPool}
-                size="sm"
-                className="bg-primary hover:bg-primary/90"
-              >
-                Join Pool
-              </Button>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

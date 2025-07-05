@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
+import { PoolOnboarding } from './PoolOnboarding';
 
 interface PoolCreateModalProps {
   open: boolean;
@@ -25,6 +26,8 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
   const { createPool, setActivePool } = usePool();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [createdPoolName, setCreatedPoolName] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -64,7 +67,13 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
           title: "Success!",
           description: `Pool "${pool.name}" created successfully`,
         });
+        
+        // Show onboarding flow
+        setCreatedPoolName(pool.name);
+        onOpenChange(false); // Close create modal
+        setShowOnboarding(true); // Show onboarding
         onSuccess?.();
+        
         // Reset form
         setFormData({
           name: '',
@@ -89,57 +98,65 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create New Pool</DialogTitle>
-          <DialogDescription>
-            Set up a new fantasy pool for your friends and family.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Pool</DialogTitle>
+            <DialogDescription>
+              Set up a new fantasy pool for your friends and family.
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Pool Name *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g., Smith Family Pool"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Pool Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="e.g., Smith Family Pool"
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Optional description for your pool"
-              rows={2}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Optional description for your pool"
+                rows={2}
+              />
+            </div>
 
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-800 mb-2">Next steps:</h4>
-            <ul className="text-sm text-green-700 space-y-1">
-              <li>• Your pool will be invite-only for security</li>
-              <li>• You can configure buy-in and payment details in admin settings</li>
-              <li>• Share your invite code with friends to get started</li>
-            </ul>
-          </div>
-        </form>
+            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+              <h4 className="font-semibold text-green-800 mb-2">Next steps:</h4>
+              <ul className="text-sm text-green-700 space-y-1">
+                <li>• Your pool will be invite-only for security</li>
+                <li>• You can configure buy-in and payment details in admin settings</li>
+                <li>• Share your invite code with friends to get started</li>
+              </ul>
+            </div>
+          </form>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Creating...' : 'Create Pool'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} disabled={loading}>
+              {loading ? 'Creating...' : 'Create Pool'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <PoolOnboarding 
+        open={showOnboarding}
+        onOpenChange={setShowOnboarding}
+        poolName={createdPoolName}
+      />
+    </>
   );
 };

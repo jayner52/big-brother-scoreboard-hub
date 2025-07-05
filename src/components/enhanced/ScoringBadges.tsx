@@ -19,13 +19,13 @@ export const ScoringBadges: React.FC = () => {
   competitionRules.forEach(rule => {
     if (rule.subcategory === 'hoh_winner') {
       badges.push(
-        <Badge key={rule.id} variant="secondary" className="bg-yellow-500/20 text-yellow-700">
+        <Badge key={rule.id} variant="secondary" className="bg-white/80 backdrop-blur-sm text-yellow-800 border border-yellow-200">
           HOH: {rule.points} pts
         </Badge>
       );
     } else if (rule.subcategory === 'pov_winner') {
       badges.push(
-        <Badge key={rule.id} variant="secondary" className="bg-green-500/20 text-green-700">
+        <Badge key={rule.id} variant="secondary" className="bg-white/80 backdrop-blur-sm text-green-800 border border-green-200">
           POV: {rule.points} pts
         </Badge>
       );
@@ -38,7 +38,7 @@ export const ScoringBadges: React.FC = () => {
       <TooltipProvider key="weekly-gameplay">
         <Tooltip>
           <TooltipTrigger>
-            <Badge variant="secondary" className="bg-blue-500/20 text-blue-700 cursor-help">
+            <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-blue-800 border border-blue-200 cursor-help">
               Weekly Gameplay Points
             </Badge>
           </TooltipTrigger>
@@ -63,7 +63,7 @@ export const ScoringBadges: React.FC = () => {
       <TooltipProvider key="bonus">
         <Tooltip>
           <TooltipTrigger>
-            <Badge variant="secondary" className="bg-purple-500/20 text-purple-700 cursor-help">
+            <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-purple-800 border border-purple-200 cursor-help">
               Bonus Questions
             </Badge>
           </TooltipTrigger>
@@ -89,7 +89,7 @@ export const ScoringBadges: React.FC = () => {
       <TooltipProvider key="special-events">
         <Tooltip>
           <TooltipTrigger>
-            <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-700 cursor-help">
+            <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-indigo-800 border border-indigo-200 cursor-help">
               Special Events
             </Badge>
           </TooltipTrigger>

@@ -134,7 +134,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
           entry_fee_amount: poolData.entry_fee_amount || 25,
           entry_fee_currency: poolData.entry_fee_currency || 'CAD',
           payment_method_1: poolData.payment_method_1 || 'E-transfer',
-          payment_details_1: poolData.payment_details_1 || 'email@example.com',
+          payment_details_1: poolData.payment_details_1 || '',
           draft_open: poolData.draft_open !== false,
           enable_bonus_questions: poolData.enable_bonus_questions !== false,
           picks_per_team: poolData.picks_per_team || 5,

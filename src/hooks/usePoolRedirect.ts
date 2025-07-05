@@ -25,6 +25,9 @@ export const usePoolRedirect = () => {
         navigate('/welcome');
         return;
       }
+      
+      // If user has pools, redirect to dashboard
+      navigate('/dashboard');
     };
 
     checkAuthAndPools();

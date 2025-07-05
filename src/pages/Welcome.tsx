@@ -35,7 +35,7 @@ const Welcome = () => {
           title: "Success!",
           description: `Joined pool successfully`,
         });
-        navigate('/');
+        navigate('/dashboard');
       } else {
         toast({
           title: "Error",
@@ -76,7 +76,7 @@ const Welcome = () => {
           title: "Success!",
           description: "Pool created successfully",
         });
-        navigate('/');
+        navigate('/dashboard');
       } else {
         toast({
           title: "Error",

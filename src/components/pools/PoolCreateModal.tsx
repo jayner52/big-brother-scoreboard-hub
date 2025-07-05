@@ -39,6 +39,16 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
     enable_bonus_questions: true,
   });
 
+  const paymentMethods = [
+    'E-transfer',
+    'Venmo', 
+    'PayPal',
+    'Cash',
+    'Zelle',
+    'Apple Pay',
+    'Other'
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -51,14 +61,7 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
       return;
     }
 
-    if (formData.has_buy_in && !formData.payment_details_1.trim()) {
-      toast({
-        title: "Error", 
-        description: "Payment details are required for buy-in pools",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Remove payment validation - it's now optional
 
     setLoading(true);
     try {
@@ -135,18 +138,31 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="has_buy_in">Pool Type</Label>
-              <p className="text-sm text-muted-foreground">
-                {formData.has_buy_in ? 'This pool has a buy-in' : 'Just for fun - no money involved'}
-              </p>
+          <div className="space-y-3">
+            <Label>Pool Type</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                type="button"
+                variant={formData.has_buy_in ? "default" : "outline"}
+                className="h-auto p-4 flex flex-col items-center gap-2"
+                onClick={() => setFormData(prev => ({ ...prev, has_buy_in: true }))}
+              >
+                <span className="font-semibold">Buy-In Pool</span>
+                <span className="text-xs text-center opacity-80">Entry fee required</span>
+              </Button>
+              <Button
+                type="button"
+                variant={!formData.has_buy_in ? "default" : "outline"}
+                className="h-auto p-4 flex flex-col items-center gap-2"
+                onClick={() => setFormData(prev => ({ ...prev, has_buy_in: false }))}
+              >
+                <span className="font-semibold">Just For Fun</span>
+                <span className="text-xs text-center opacity-80">No money involved</span>
+              </Button>
             </div>
-            <Switch
-              id="has_buy_in"
-              checked={formData.has_buy_in}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_buy_in: checked }))}
-            />
+            <p className="text-sm text-muted-foreground text-center">
+              As pool admin, you'll manage settings, enter weekly results, and collect payments (if applicable)
+            </p>
           </div>
 
           {formData.has_buy_in && (
@@ -192,6 +208,7 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
                   onChange={(e) => setFormData(prev => ({ ...prev, buy_in_description: e.target.value }))}
                   placeholder="e.g., Prize distribution details, special rules..."
                 />
+                <p className="text-xs text-muted-foreground">You can add this information later in pool settings</p>
               </div>
             </>
           )}
@@ -213,40 +230,55 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
           {formData.has_buy_in && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="payment_method">Payment Method</Label>
-                <Input
+                <Label htmlFor="payment_method">Payment Method (Optional)</Label>
+                <select
                   id="payment_method"
                   value={formData.payment_method_1}
                   onChange={(e) => setFormData(prev => ({ ...prev, payment_method_1: e.target.value }))}
-                  placeholder="e.g., E-transfer, Venmo, Cash"
-                />
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {paymentMethods.map(method => (
+                    <option key={method} value={method}>{method}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">You can configure this later in pool settings</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="payment_details">Payment Details *</Label>
+                <Label htmlFor="payment_details">Payment Details (Optional)</Label>
                 <Input
                   id="payment_details"
                   value={formData.payment_details_1}
                   onChange={(e) => setFormData(prev => ({ ...prev, payment_details_1: e.target.value }))}
                   placeholder="e.g., email@example.com, @username"
-                  required={formData.has_buy_in}
                 />
+                <p className="text-xs text-muted-foreground">You can add this later in pool settings</p>
               </div>
             </>
           )}
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="is_public">Public Pool</Label>
-              <p className="text-sm text-muted-foreground">
-                Allow anyone to discover and join this pool
-              </p>
+          <div className="space-y-3">
+            <Label>Pool Privacy</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                type="button"
+                variant={!formData.is_public ? "default" : "outline"}
+                className="h-auto p-3 flex flex-col items-center gap-1"
+                onClick={() => setFormData(prev => ({ ...prev, is_public: false }))}
+              >
+                <span className="font-semibold">Private</span>
+                <span className="text-xs opacity-80">Invite only</span>
+              </Button>
+              <Button
+                type="button"
+                variant={formData.is_public ? "default" : "outline"}
+                className="h-auto p-3 flex flex-col items-center gap-1"
+                onClick={() => setFormData(prev => ({ ...prev, is_public: true }))}
+              >
+                <span className="font-semibold">Public</span>
+                <span className="text-xs opacity-80">Anyone can join</span>
+              </Button>
             </div>
-            <Switch
-              id="is_public"
-              checked={formData.is_public}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_public: checked }))}
-            />
           </div>
 
           <div className="flex items-center justify-between">

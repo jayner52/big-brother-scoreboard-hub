@@ -12,6 +12,17 @@ export interface WeeklySnapshot {
   points_change: number;
   rank_change: number;
   created_at: string;
+  // Joined pool entry data
+  pool_entries?: {
+    team_name: string;
+    participant_name: string;
+    player_1: string;
+    player_2: string;
+    player_3: string;
+    player_4: string;
+    player_5: string;
+    payment_confirmed: boolean;
+  };
 }
 
 export interface CompletedWeek {

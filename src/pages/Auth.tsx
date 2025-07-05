@@ -31,8 +31,7 @@ const Auth = () => {
       (event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          const redirectPath = action ? `/dashboard?action=${action}` : '/dashboard';
-          navigate(redirectPath);
+          navigate('/dashboard');
         }
       }
     );
@@ -41,8 +40,7 @@ const Auth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        const redirectPath = action ? `/dashboard?action=${action}` : '/dashboard';
-        navigate(redirectPath);
+        navigate('/dashboard');
       }
       setLoading(false);
     });
@@ -55,15 +53,11 @@ const Auth = () => {
     setIsSubmitting(true);
 
     try {
-      const redirectUrl = action 
-        ? `${window.location.origin}/dashboard?action=${action}` 
-        : `${window.location.origin}/dashboard`;
-      
       const { error } = await supabase.auth.signUp({
         email: signUpEmail,
         password: signUpPassword,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             display_name: signUpName
           }
@@ -131,13 +125,9 @@ const Auth = () => {
 
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = action 
-        ? `${window.location.origin}/dashboard?action=${action}` 
-        : `${window.location.origin}/dashboard`;
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: redirectUrl }
+        options: { redirectTo: `${window.location.origin}/dashboard` }
       });
 
       if (error) throw error;

@@ -128,22 +128,34 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
+      // Create a fresh pool with only user-provided data and defaults
+      const freshPoolData = {
+        owner_id: session.session.user.id,
+        name: poolData.name!,
+        description: poolData.description || null,
+        entry_fee_amount: poolData.entry_fee_amount || 25,
+        entry_fee_currency: poolData.entry_fee_currency || 'CAD',
+        payment_method_1: poolData.payment_method_1 || 'E-transfer',
+        payment_details_1: poolData.payment_details_1 || '',
+        payment_method_2: poolData.payment_method_2 || null,
+        payment_details_2: poolData.payment_details_2 || null,
+        draft_open: poolData.draft_open !== false,
+        draft_locked: false, // Always start unlocked
+        enable_bonus_questions: poolData.enable_bonus_questions !== false,
+        picks_per_team: poolData.picks_per_team || 5,
+        has_buy_in: poolData.has_buy_in !== false,
+        buy_in_description: poolData.buy_in_description || null,
+        jury_phase_started: false, // Always start false
+        jury_start_week: null,
+        jury_start_timestamp: null,
+        registration_deadline: null,
+      };
+
+      console.log('Creating fresh pool with data:', freshPoolData);
+
       const { data: pool, error } = await supabase
         .from('pools')
-        .insert({
-          owner_id: session.session.user.id,
-          name: poolData.name!,
-          description: poolData.description,
-          entry_fee_amount: poolData.entry_fee_amount || 25,
-          entry_fee_currency: poolData.entry_fee_currency || 'CAD',
-          payment_method_1: poolData.payment_method_1 || 'E-transfer',
-          payment_details_1: poolData.payment_details_1 || '',
-          draft_open: poolData.draft_open !== false,
-          enable_bonus_questions: poolData.enable_bonus_questions !== false,
-          picks_per_team: poolData.picks_per_team || 5,
-          has_buy_in: poolData.has_buy_in !== false,
-          buy_in_description: poolData.buy_in_description,
-        })
+        .insert(freshPoolData)
         .select()
         .single();
 
@@ -151,6 +163,8 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error creating pool:', error);
         return null;
       }
+
+      console.log('Fresh pool created successfully:', pool);
 
       // Create owner membership
       const { error: membershipError } = await supabase

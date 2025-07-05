@@ -26,12 +26,8 @@ const Index = () => {
   const [userEntry, setUserEntry] = useState<any>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const { formData } = useDraftForm();
   const { activePool, userPools, loading: poolsLoading } = usePool();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const action = searchParams.get('action');
 
   useEffect(() => {
     // Check for existing session
@@ -60,10 +56,10 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Redirect to auth if not authenticated
+  // Redirect to landing if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate('/');
     }
   }, [user, authLoading, navigate]);
 
@@ -109,23 +105,6 @@ const Index = () => {
     }
   }, [user, activePool]);
 
-  // Handle action parameters from authentication
-  useEffect(() => {
-    if (action && user) {
-      if (action === 'create-pool') {
-        setShowCreateModal(true);
-      } else if (action === 'join-pool') {
-        setShowJoinModal(true);
-      }
-      // Clear the action parameter
-      setSearchParams(prev => {
-        const newParams = new URLSearchParams(prev);
-        newParams.delete('action');
-        return newParams;
-      });
-    }
-  }, [action, user, setSearchParams]);
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
@@ -134,18 +113,12 @@ const Index = () => {
     navigate('/draft');
   };
 
-  const handlePoolSuccess = () => {
-    setShowJoinModal(false);
-    setShowCreateModal(false);
-    // Refresh will happen automatically via context
-  };
-
   if (authLoading || poolsLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (!user) {
-    return <div className="min-h-screen flex items-center justify-center">Redirecting...</div>;
+    return <div className="min-h-screen flex items-center justify-center">Redirecting to landing...</div>;
   }
 
   // Show pool selection if user has no pools
@@ -188,7 +161,7 @@ const Index = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button 
-                  onClick={() => setShowJoinModal(true)}
+                  onClick={() => navigate('/')}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-semibold"
                 >
                   Join Pool
@@ -218,7 +191,7 @@ const Index = () => {
                   </ul>
                 </div>
                 <Button 
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={() => navigate('/')}
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold"
                 >
                   Create Pool
@@ -231,18 +204,6 @@ const Index = () => {
           <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t border-orange-200">
             <p>© 2025 Big Brother Fantasy Pool | May the best picks win! 🏆</p>
           </footer>
-
-          {/* Modals */}
-          <PoolJoinModal 
-            open={showJoinModal} 
-            onOpenChange={setShowJoinModal}
-            onSuccess={handlePoolSuccess}
-          />
-          <PoolCreateModal 
-            open={showCreateModal} 
-            onOpenChange={setShowCreateModal}
-            onSuccess={handlePoolSuccess}
-          />
         </div>
       </div>
     );

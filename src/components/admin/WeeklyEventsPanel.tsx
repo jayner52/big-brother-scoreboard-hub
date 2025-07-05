@@ -65,7 +65,7 @@ export const WeeklyEventsPanel: React.FC = () => {
     winner: '',
     runnerUp: '',
     americasFavorite: ''
-  }, editingWeek);
+  }, editingWeek, activePool?.id);
   
   const {
     isWeekComplete,

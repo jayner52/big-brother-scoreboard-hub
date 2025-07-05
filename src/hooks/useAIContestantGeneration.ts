@@ -7,11 +7,13 @@ export const useAIContestantGeneration = (
   const { toast } = useToast();
 
   const handleAIProfilesGenerated = async (profiles: any[]) => {
-    console.log('🎯 Generated profiles received:', profiles.length, 'contestants');
-    console.log('📊 Sample profile data:', profiles[0]);
+    console.log('🔥 AI PROFILES GENERATED CALLBACK TRIGGERED');
+    console.log('🔥 Profiles received:', profiles.length, 'contestants');
+    console.log('🔥 Sample profile data:', profiles[0]);
     
     // Validate input
     if (!profiles || profiles.length === 0) {
+      console.log('🔥 ERROR: No profiles received');
       toast({
         title: "Error",
         description: "No profiles received from AI generation",
@@ -22,17 +24,42 @@ export const useAIContestantGeneration = (
 
     // The new edge function handles all database operations internally
     // So we just need to reload the contestants and show success
-    console.log('♻️  Reloading contestants list...');
+    console.log('🔥 RELOADING CONTESTANTS LIST...');
     try {
+      console.log('🔥 BEFORE RELOAD - Checking database...');
+      
+      // Check database state before reload
+      const { data: beforeData, error: beforeError } = await supabase
+        .from('contestants')
+        .select('*', { count: 'exact' })
+        .eq('pool_id', null);
+      
+      console.log('🔥 Default contestants (pool_id = null):', { count: beforeData?.length, error: beforeError });
+      
+      const { data: poolData, error: poolError } = await supabase
+        .from('contestants')
+        .select('*', { count: 'exact' })
+        .not('pool_id', 'is', null);
+      
+      console.log('🔥 Pool contestants (pool_id != null):', { count: poolData?.length, error: poolError });
+      
       await loadContestants();
-      console.log('✅ Contestants list reloaded successfully');
+      console.log('🔥 CONTESTANTS LIST RELOADED SUCCESSFULLY');
+      
+      // Check database state after reload
+      const { data: afterData, error: afterError } = await supabase
+        .from('contestants')
+        .select('*', { count: 'exact' })
+        .not('pool_id', 'is', null);
+      
+      console.log('🔥 AFTER RELOAD - Pool contestants:', { count: afterData?.length, error: afterError });
       
       toast({
         title: "Success!",
         description: `Successfully processed ${profiles.length} contestants`,
       });
     } catch (error) {
-      console.error('❌ Failed to reload contestants:', error);
+      console.error('🔥 FAILED TO RELOAD CONTESTANTS:', error);
       toast({
         title: "Warning",
         description: "Contestants may have been added but failed to reload the list. Please refresh the page.",

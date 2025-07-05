@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Wand2, Users, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePool } from '@/contexts/PoolContext';
 
 interface AIContestantProfile {
   name: string;
@@ -30,6 +31,7 @@ interface AIGenerationPanelProps {
 
 export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfilesGenerated }) => {
   const { toast } = useToast();
+  const { activePool } = usePool();
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -166,17 +168,21 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
     setError(null);
 
     try {
-      console.log('🚀 Starting robust contestant generation with retry logic...');
+      console.log('🔥 STARTING AI GENERATION DEBUG');
+      console.log('🔥 Pool ID:', activePool?.id);
+      console.log('🔥 Full Cast Config:', fullCastConfig);
       
       // Simulate progress during the long operation
       const progressInterval = setInterval(() => {
         setProgress(prev => Math.min(prev + 5, 90));
       }, 2000);
 
+      console.log('🔥 CALLING EDGE FUNCTION...');
       const { data, error } = await supabase.functions.invoke('generate-contestant-profile', {
         body: fullCastConfig
       });
 
+      console.log('🔥 EDGE FUNCTION RESPONSE:', { data, error });
       clearInterval(progressInterval);
 
       if (error) {

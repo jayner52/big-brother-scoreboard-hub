@@ -10,12 +10,17 @@ export const useContestants = () => {
   const [loading, setLoading] = useState(true);
 
   const loadContestants = async () => {
+    console.log('🔥 LOADING CONTESTANTS - START');
     try {
+      console.log('🔥 Querying database for contestants...');
+      
       const { data } = await supabase
         .from('contestants')
         .select('*')
         .eq('season_number', 26)
         .order('name', { ascending: true });
+      
+      console.log('🔥 Raw database response:', { count: data?.length, data: data?.slice(0, 2) });
       
       if (data) {
         const mappedContestants = data.map(c => ({
@@ -30,16 +35,28 @@ export const useContestants = () => {
           age: c.age,
           occupation: c.occupation
         }));
+        
+        console.log('🔥 Mapped contestants:', { count: mappedContestants.length, sample: mappedContestants[0] });
+        
+        // Filter by pool_id for logging
+        const defaultContestants = data.filter(c => c.pool_id === null);
+        const poolContestants = data.filter(c => c.pool_id !== null);
+        
+        console.log('🔥 Default contestants (pool_id = null):', defaultContestants.length);
+        console.log('🔥 Pool contestants (pool_id != null):', poolContestants.length);
+        
         setContestants(mappedContestants);
+        console.log('🔥 State updated with contestants');
       }
     } catch (error) {
-      console.error('Error loading contestants:', error);
+      console.error('🔥 ERROR LOADING CONTESTANTS:', error);
       toast({
         title: "Error",
         description: "Failed to load contestants",
         variant: "destructive",
       });
     } finally {
+      console.log('🔥 LOADING CONTESTANTS - END');
       setLoading(false);
     }
   };

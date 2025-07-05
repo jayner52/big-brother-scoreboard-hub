@@ -1,98 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useState } from 'react';
 import { Users, Plus, Trophy } from 'lucide-react';
-import { usePool } from '@/contexts/PoolContext';
-import { useToast } from '@/hooks/use-toast';
+import { PoolCreateModal } from '@/components/pools/PoolCreateModal';
+import { PoolJoinModal } from '@/components/pools/PoolJoinModal';
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const { joinPoolByCode, createPool } = usePool();
-  const { toast } = useToast();
-  const [inviteCode, setInviteCode] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const handleJoinPool = async () => {
-    if (!inviteCode.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter an invite code",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await joinPoolByCode(inviteCode.trim().toUpperCase());
-      
-      if (result.success) {
-        toast({
-          title: "Success!",
-          description: `Joined pool successfully`,
-        });
-        navigate('/dashboard');
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to join pool",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to join pool",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreatePool = async () => {
-    setLoading(true);
-    try {
-      const pool = await createPool({
-        name: "My Big Brother Pool",
-        description: "A new fantasy pool for Big Brother fans",
-        is_public: false,
-        has_buy_in: true,
-        entry_fee_amount: 25,
-        entry_fee_currency: "CAD",
-        payment_method_1: "E-transfer",
-        payment_details_1: "email@example.com",
-        draft_open: true,
-        enable_bonus_questions: true,
-        picks_per_team: 5,
-      });
-
-      if (pool) {
-        toast({
-          title: "Success!",
-          description: "Pool created successfully",
-        });
-        navigate('/dashboard');
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to create pool",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create pool",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handlePoolSuccess = () => {
+    setShowJoinModal(false);
+    setShowCreateModal(false);
+    navigate('/dashboard');
   };
 
   return (
@@ -125,22 +47,15 @@ const Welcome = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="invite-code">Invite Code</Label>
-                <Input
-                  id="invite-code"
-                  placeholder="Enter 8-character code"
-                  value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                  maxLength={8}
-                  className="text-center text-lg font-mono tracking-wider"
-                />
+                <p className="text-sm text-gray-600">
+                  Enter the invite code you received to join an existing pool.
+                </p>
               </div>
               <Button 
-                onClick={handleJoinPool}
-                disabled={loading || !inviteCode.trim()}
+                onClick={() => setShowJoinModal(true)}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-semibold"
               >
-                {loading ? 'Joining...' : 'Join Pool'}
+                Join Pool
               </Button>
             </CardContent>
           </Card>
@@ -167,11 +82,10 @@ const Welcome = () => {
                 </ul>
               </div>
               <Button 
-                onClick={handleCreatePool}
-                disabled={loading}
+                onClick={() => setShowCreateModal(true)}
                 className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold"
               >
-                {loading ? 'Creating...' : 'Create Pool'}
+                Create Pool
               </Button>
             </CardContent>
           </Card>
@@ -203,6 +117,18 @@ const Welcome = () => {
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t border-orange-200">
           <p>© 2025 Big Brother Fantasy Pool | May the best picks win! 🏆</p>
         </footer>
+
+        {/* Modals */}
+        <PoolJoinModal 
+          open={showJoinModal} 
+          onOpenChange={setShowJoinModal}
+          onSuccess={handlePoolSuccess}
+        />
+        <PoolCreateModal 
+          open={showCreateModal} 
+          onOpenChange={setShowCreateModal}
+          onSuccess={handlePoolSuccess}
+        />
       </div>
     </div>
   );

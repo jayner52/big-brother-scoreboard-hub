@@ -122,7 +122,10 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const createPool = useCallback(async (poolData: Partial<Pool>): Promise<Pool | null> => {
     try {
       const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.user) return null;
+      if (!session.session?.user) {
+        console.error('No authenticated user found');
+        return null;
+      }
 
       const { data: pool, error } = await supabase
         .from('pools')
@@ -150,13 +153,18 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Create owner membership
-      await supabase
+      const { error: membershipError } = await supabase
         .from('pool_memberships')
         .insert({
           user_id: session.session.user.id,
           pool_id: pool.id,
           role: 'owner'
         });
+
+      if (membershipError) {
+        console.error('Error creating membership:', membershipError);
+        // Still return the pool even if membership creation fails
+      }
 
       await loadUserPools();
       return pool;

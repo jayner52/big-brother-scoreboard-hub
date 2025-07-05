@@ -7,7 +7,7 @@ import { PoolEntry, BonusQuestion } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, EyeOff } from 'lucide-react';
 import { evaluateBonusAnswer, formatBonusAnswer, formatCorrectAnswers } from '@/utils/bonusQuestionUtils';
 
 export const EveryonesPicks: React.FC = () => {
@@ -15,6 +15,7 @@ export const EveryonesPicks: React.FC = () => {
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activePool, setActivePool] = useState<any>(null);
   const { houseguestPoints, loading: pointsLoading, error: pointsError } = useHouseguestPoints();
 
   useEffect(() => {
@@ -47,6 +48,15 @@ export const EveryonesPicks: React.FC = () => {
         setBonusQuestions([]);
         return;
       }
+
+      // Get pool settings to check if picks should be hidden
+      const { data: poolData } = await supabase
+        .from('pools')
+        .select('*')
+        .eq('id', membership.pool_id)
+        .single();
+
+      setActivePool(poolData);
       
       const [entriesResult, questionsResult] = await Promise.all([
         supabase.from('pool_entries').select('*').eq('pool_id', membership.pool_id).order('participant_name'),
@@ -99,6 +109,22 @@ export const EveryonesPicks: React.FC = () => {
           {error || pointsError || 'Failed to load data'}
         </AlertDescription>
       </Alert>
+    );
+  }
+
+  // Check if picks should be hidden
+  if (activePool?.hide_picks_until_draft_closed && activePool?.draft_open) {
+    return (
+      <div className="text-center py-16">
+        <div className="bg-muted/50 rounded-lg p-8 max-w-md mx-auto">
+          <EyeOff className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Picks Currently Hidden</h3>
+          <p className="text-muted-foreground">
+            Team selections will be revealed when the draft period closes. 
+            Check back later to see everyone's picks!
+          </p>
+        </div>
+      </div>
     );
   }
 

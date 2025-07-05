@@ -119,6 +119,9 @@ export interface Pool {
   jury_start_timestamp?: string;
   has_buy_in: boolean;
   buy_in_description?: string;
+  finale_week_enabled?: boolean;
+  hide_picks_until_draft_closed?: boolean;
+  season_locked?: boolean;
 }
 
 export interface PoolMembership {

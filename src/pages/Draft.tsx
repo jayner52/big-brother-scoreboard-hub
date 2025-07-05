@@ -53,7 +53,7 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
               🏠 {isEditMode ? 'Edit Your Team' : 'Draft Your Team'}
             </h1>
             <p className="text-lg text-red-100">
-              {isEditMode ? 'Update your picks and bonus predictions' : 'Select your 5 houseguests and answer bonus questions to build your winning team!'}
+              {isEditMode ? 'Update your picks and bonus predictions' : `Select your ${poolData?.picks_per_team || 5} houseguests and answer bonus questions to build your winning team!`}
             </p>
           </div>
           

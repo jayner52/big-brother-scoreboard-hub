@@ -11,21 +11,58 @@ export async function processBatches(
   poolId: string | null = null
 ): Promise<ProcessingResult> {
   const BATCH_SIZE = 10;
-  const batches = [];
+  const supabase = createClient(supabaseUrl, supabaseKey);
   
-  // Split contestants into batches
-  for (let i = 0; i < contestants.length; i += BATCH_SIZE) {
-    batches.push(contestants.slice(i, i + BATCH_SIZE));
+  if (!poolId) {
+    throw new Error('Pool ID is required for contestant generation');
+  }
+
+  // **CRITICAL FIX 1: Check for existing contestants to prevent duplicates**
+  console.log(`🔍 Checking for existing contestants in pool ${poolId}...`);
+  const { data: existingContestants } = await supabase
+    .from('contestants')
+    .select('name')
+    .eq('pool_id', poolId);
+  
+  const existingNames = new Set(existingContestants?.map(c => c.name.toLowerCase()) || []);
+  console.log(`📋 Found ${existingNames.size} existing contestants:`, Array.from(existingNames));
+
+  // Filter out duplicates
+  const newContestants = contestants.filter(contestant => {
+    const isDuplicate = existingNames.has(contestant.name.toLowerCase());
+    if (isDuplicate) {
+      console.log(`⚠️ Skipping duplicate: ${contestant.name}`);
+    }
+    return !isDuplicate;
+  });
+
+  if (newContestants.length === 0) {
+    console.log('✅ No new contestants to add (all would be duplicates)');
+    return { successful: 0, failed: [] };
+  }
+
+  console.log(`📦 Adding ${newContestants.length} new contestants (${contestants.length - newContestants.length} duplicates skipped)`);
+
+  // **CRITICAL FIX 2: Read actual groups from pool instead of hardcoding**
+  const { data: poolGroups } = await supabase
+    .from('contestant_groups')
+    .select('id, group_name, sort_order')
+    .eq('pool_id', poolId)
+    .order('sort_order');
+
+  if (!poolGroups || poolGroups.length === 0) {
+    throw new Error(`No contestant groups found for pool ${poolId}`);
+  }
+
+  console.log(`🏷️ Found ${poolGroups.length} groups for pool:`, poolGroups.map(g => g.group_name));
+
+  const batches = [];
+  for (let i = 0; i < newContestants.length; i += BATCH_SIZE) {
+    batches.push(newContestants.slice(i, i + BATCH_SIZE));
   }
   
-  console.log(`📦 Processing ${contestants.length} contestants in ${batches.length} batches of ${BATCH_SIZE}`);
-  
-  const supabase = createClient(supabaseUrl, supabaseKey);
   let totalSuccessful = 0;
   const allFailures: Array<{ name: string; error: string }> = [];
-  
-  // Skip clearing - work with existing contestants or add new ones
-  console.log(`📋 Processing contestants for season ${seasonNumber} (will update existing or add new)...`);
   
   // Process each batch
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
@@ -39,29 +76,17 @@ export async function processBatches(
         const globalIndex = batchIndex * BATCH_SIZE + index + 1;
         
         return await retryWithBackoff(async () => {
-          // Auto-assign group based on order (4 groups, distribute evenly)
-          const groupNames = ['Group A', 'Group B', 'Group C', 'Group D'];
-          const groupIndex = (globalIndex - 1) % 4;
+          // **CRITICAL FIX 3: Equal distribution across actual groups**
+          const groupIndex = (globalIndex - 1) % poolGroups.length;
+          const assignedGroup = poolGroups[groupIndex];
           
-          console.log(`  [${globalIndex}/${contestants.length}] Processing: ${contestant.name}`);
+          console.log(`  [${globalIndex}/${newContestants.length}] Processing: ${contestant.name}`);
           console.log(`🔥 INSERTING CONTESTANT:`, {
             name: contestant.name,
-            target_group: groupNames[groupIndex],
+            target_group: assignedGroup.group_name,
             season_number: seasonNumber,
             pool_id: poolId
           });
-          
-          // Get the group ID for this group name - need to filter by pool too if provided
-          const { data: groups, error: groupError } = await supabase
-            .from('contestant_groups')
-            .select('id, group_name')
-            .eq('group_name', groupNames[groupIndex])
-            .eq('pool_id', poolId)
-            .single();
-          
-          if (groupError) {
-            console.log(`⚠️  Warning: Could not find group ${groupNames[groupIndex]} for pool ${poolId}: ${groupError.message}`);
-          }
           
           const insertData = {
             name: contestant.name.trim(),
@@ -73,8 +98,8 @@ export async function processBatches(
             season_number: seasonNumber,
             data_source: 'bigbrother_fandom',
             ai_generated: false,
-            pool_id: poolId, // ADD THE POOL ID HERE
-            group_id: groups?.id || null,
+            pool_id: poolId,
+            group_id: assignedGroup.id,
             generation_metadata: {
               generated_date: new Date().toISOString(),
               source: 'bigbrother.fandom.com',
@@ -82,8 +107,9 @@ export async function processBatches(
               batch_id: Date.now(),
               batch_number: batchNumber,
               global_index: globalIndex,
-              auto_assigned_group: groupNames[groupIndex],
-              target_pool_id: poolId
+              auto_assigned_group: assignedGroup.group_name,
+              target_pool_id: poolId,
+              equal_distribution: `${globalIndex} assigned to group ${groupIndex + 1}/${poolGroups.length}`
             },
             is_active: true,
             sort_order: globalIndex
@@ -139,7 +165,7 @@ export async function processBatches(
     }
   }
   
-  console.log(`\n🎯 Final Results: ${totalSuccessful}/${contestants.length} contestants processed successfully`);
+  console.log(`\n🎯 Final Results: ${totalSuccessful}/${newContestants.length} new contestants processed successfully (${contestants.length - newContestants.length} duplicates prevented)`);
   
   if (allFailures.length > 0) {
     console.log('❌ Failed contestants:', allFailures);

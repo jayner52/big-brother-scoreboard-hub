@@ -7,7 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { BasicInfoForm } from '@/components/draft/BasicInfoForm';
 import { PaymentInfoDisplay } from '@/components/draft/PaymentInfoDisplay';
 import { PaymentValidationSection } from '@/components/draft/PaymentValidationSection';
-import { TeamDraftSection } from '@/components/draft/TeamDraftSection';
+import { DynamicTeamDraftSection } from '@/components/draft/DynamicTeamDraftSection';
 import { BonusQuestionsSection } from '@/components/draft/BonusQuestionsSection';
 import { usePool } from '@/contexts/PoolContext';
 import { usePoolData } from '@/hooks/usePoolData';
@@ -139,7 +139,9 @@ export const TeamDraftForm: React.FC = () => {
 
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Draft Your Team (5 Players)</h3>
+              <h3 className="text-xl font-bold">
+                Draft Your Team ({poolData?.picks_per_team || 5} Players)
+              </h3>
               <Button
                 type="button"
                 variant="outline"
@@ -150,15 +152,10 @@ export const TeamDraftForm: React.FC = () => {
                 Randomize Team
               </Button>
             </div>
-            <TeamDraftSection
+            <DynamicTeamDraftSection
               contestantGroups={contestantGroups}
-              formData={{
-                player_1: formData.player_1,
-                player_2: formData.player_2,
-                player_3: formData.player_3,
-                player_4: formData.player_4,
-                player_5: formData.player_5,
-              }}
+              poolData={poolData}
+              formData={formData}
               onFormDataChange={updateFormData}
             />
           </div>

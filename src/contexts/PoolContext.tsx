@@ -122,15 +122,32 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createPool = useCallback(async (poolData: Partial<Pool>): Promise<Pool | null> => {
     try {
-      const { data: session } = await supabase.auth.getSession();
+      // Get current session with retry logic for auth timing issues
+      const { data: session, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        return null;
+      }
+
       if (!session.session?.user) {
-        console.error('No authenticated user found');
+        console.error('No authenticated user found in session');
+        return null;
+      }
+
+      const user = session.session.user;
+      console.log('Creating pool for user:', user.id);
+
+      // Verify user is authenticated by checking current user
+      const { data: currentUser, error: userError } = await supabase.auth.getUser();
+      if (userError || !currentUser.user) {
+        console.error('User authentication failed:', userError);
         return null;
       }
 
       // Create a fresh pool with only user-provided data and defaults
       const freshPoolData = {
-        owner_id: session.session.user.id,
+        owner_id: user.id,
         name: poolData.name!,
         description: poolData.description || null,
         entry_fee_amount: poolData.entry_fee_amount || 25,
@@ -153,27 +170,72 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Creating fresh pool with data:', freshPoolData);
 
-      const { data: pool, error } = await supabase
-        .from('pools')
-        .insert(freshPoolData)
-        .select()
-        .single();
+      // Add retry logic for RLS timing issues
+      let pool = null;
+      let error = null;
+      
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        console.log(`Pool creation attempt ${attempt}`);
+        
+        const result = await supabase
+          .from('pools')
+          .insert(freshPoolData)
+          .select()
+          .single();
+          
+        if (result.error) {
+          error = result.error;
+          console.error(`Attempt ${attempt} failed:`, result.error);
+          
+          if (result.error.message?.includes('row-level security policy')) {
+            // Wait a bit for auth state to sync, then retry
+            await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+            continue;
+          } else {
+            // Non-RLS error, don't retry
+            break;
+          }
+        } else {
+          pool = result.data;
+          error = null;
+          break;
+        }
+      }
 
       if (error) {
-        console.error('Error creating pool:', error);
+        console.error('Pool creation failed after retries:', error);
+        return null;
+      }
+
+      if (!pool) {
+        console.error('No pool data returned');
         return null;
       }
 
       console.log('Fresh pool created successfully:', pool);
 
-      // Create owner membership
-      const { error: membershipError } = await supabase
-        .from('pool_memberships')
-        .insert({
-          user_id: session.session.user.id,
-          pool_id: pool.id,
-          role: 'owner'
-        });
+      // Create owner membership with same retry logic
+      let membershipError = null;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        const result = await supabase
+          .from('pool_memberships')
+          .insert({
+            user_id: user.id,
+            pool_id: pool.id,
+            role: 'owner'
+          });
+
+        if (result.error) {
+          membershipError = result.error;
+          if (result.error.message?.includes('row-level security policy') && attempt === 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            continue;
+          }
+        } else {
+          membershipError = null;
+          break;
+        }
+      }
 
       if (membershipError) {
         console.error('Error creating membership:', membershipError);

@@ -56,8 +56,8 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
         picks_per_team: 5,
         enable_bonus_questions: true,
         payment_method_1: 'E-transfer',
-        payment_details_1: '',
-        buy_in_description: '',
+        payment_details_1: 'email@example.com',
+        buy_in_description: null,
       };
       
       const pool = await createPool(poolData);

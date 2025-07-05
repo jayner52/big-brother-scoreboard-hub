@@ -122,6 +122,14 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createPool = useCallback(async (poolData: Partial<Pool>): Promise<Pool | null> => {
     try {
+      // Enhanced authentication validation
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        console.error('Authentication validation failed:', userError);
+        return null;
+      }
+
       // Force a fresh session token to ensure auth is current
       const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
       
@@ -130,15 +138,14 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      if (!session?.user) {
-        console.error('No authenticated user found after refresh');
+      if (!session?.user || session.user.id !== user.id) {
+        console.error('Session validation failed');
         return null;
       }
 
-      const user = session.user;
-      console.log('Creating pool for user:', user.id);
+      console.log('Creating pool for authenticated user:', user.id);
 
-      // Create a fresh pool with only user-provided data and defaults
+      // Create pool data with proper defaults matching database schema
       const freshPoolData = {
         owner_id: user.id,
         name: poolData.name!,
@@ -146,16 +153,16 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         entry_fee_amount: poolData.entry_fee_amount || 25,
         entry_fee_currency: poolData.entry_fee_currency || 'CAD',
         payment_method_1: poolData.payment_method_1 || 'E-transfer',
-        payment_details_1: poolData.payment_details_1 || '',
+        payment_details_1: poolData.payment_details_1 || 'email@example.com',
         payment_method_2: poolData.payment_method_2 || null,
         payment_details_2: poolData.payment_details_2 || null,
         draft_open: poolData.draft_open !== false,
-        draft_locked: false, // Always start unlocked
+        draft_locked: false,
         enable_bonus_questions: poolData.enable_bonus_questions !== false,
         picks_per_team: poolData.picks_per_team || 5,
         has_buy_in: poolData.has_buy_in !== false,
         buy_in_description: poolData.buy_in_description || null,
-        jury_phase_started: false, // Always start false
+        jury_phase_started: false,
         jury_start_week: null,
         jury_start_timestamp: null,
         registration_deadline: null,
@@ -197,6 +204,10 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Pool creation failed after retries:', error);
+        console.error('Failed pool data:', freshPoolData);
+        if (error.message?.includes('row-level security policy')) {
+          console.error('RLS Policy violation - user may not be properly authenticated');
+        }
         return null;
       }
 

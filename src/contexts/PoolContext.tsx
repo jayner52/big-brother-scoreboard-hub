@@ -97,7 +97,13 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (entriesError) {
         console.error('Error loading entries:', entriesError);
       } else {
-        setPoolEntries(entries || []);
+        const mappedEntries = entries?.map(entry => ({
+          ...entry,
+          bonus_answers: entry.bonus_answers as Record<string, any>,
+          created_at: new Date(entry.created_at),
+          updated_at: new Date(entry.updated_at)
+        })) || [];
+        setPoolEntries(mappedEntries as PoolEntry[]);
       }
       
       // Load weekly results for this specific pool
@@ -105,12 +111,19 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('weekly_results')
         .select('*')
         .eq('pool_id', poolId)
-        .order('week');
+        .order('week_number');
       
       if (weeklyError) {
         console.error('Error loading weekly results:', weeklyError);
       } else {
-        setPoolWeeklyResults(weeklyResults || []);
+        const mappedResults = weeklyResults?.map(result => ({
+          week: result.week_number,
+          hohWinner: result.hoh_winner || undefined,
+          povWinner: result.pov_winner || undefined,
+          evicted: result.evicted_contestant || undefined,
+          bonusWinners: [] // Placeholder - we'll add this later if needed
+        })) || [];
+        setPoolWeeklyResults(mappedResults);
       }
       
       // Load bonus questions for this specific pool (with deduplication)
@@ -118,30 +131,20 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('bonus_questions')
         .select('*')
         .eq('pool_id', poolId)
-        .order('week', { ascending: true });
+        .order('sort_order', { ascending: true });
       
       if (bonusError) {
         console.error('Error loading bonus questions:', bonusError);
       } else {
-        // Remove duplicates based on question text and week
+        // Remove duplicates based on question text and sort order
         const uniqueBonusQuestions = bonusQuestions?.filter((question, index, self) => 
-          index === self.findIndex(q => q.question === question.question && q.week === question.week)
+          index === self.findIndex(q => q.question_text === question.question_text && q.sort_order === question.sort_order)
         ) || [];
         setPoolBonusQuestions(uniqueBonusQuestions);
       }
       
-      // Load scoring rules for this specific pool
-      const { data: scoringRules, error: scoringError } = await supabase
-        .from('scoring_rules')
-        .select('*')
-        .eq('pool_id', poolId)
-        .single();
-      
-      if (scoringError && scoringError.code !== 'PGRST116') {
-        console.error('Error loading scoring rules:', scoringError);
-      } else {
-        setPoolScoringRules(scoringRules || defaultScoringRules);
-      }
+      // Load scoring rules for this specific pool (use default for now)
+      setPoolScoringRules(defaultScoringRules);
       
     } catch (error) {
       console.error('Error loading pool data:', error);
@@ -348,7 +351,13 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Update local state
-      setPoolEntries(prev => [...prev, data]);
+      const mappedEntry = {
+        ...data,
+        bonus_answers: data.bonus_answers as Record<string, any>,
+        created_at: new Date(data.created_at),
+        updated_at: new Date(data.updated_at)
+      };
+      setPoolEntries(prev => [...prev, mappedEntry as PoolEntry]);
     } catch (error) {
       console.error('Error adding pool entry:', error);
       throw error;
@@ -376,7 +385,10 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase
         .from('weekly_results')
         .insert({
-          ...results,
+          week_number: results.week,
+          hoh_winner: results.hohWinner || null,
+          pov_winner: results.povWinner || null,
+          evicted_contestant: results.evicted || null,
           pool_id: activePool.id
         })
         .select()
@@ -387,7 +399,14 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
-      setPoolWeeklyResults(prev => [...prev, data]);
+      const mappedResult = {
+        week: data.week_number,
+        hohWinner: data.hoh_winner || undefined,
+        povWinner: data.pov_winner || undefined,
+        evicted: data.evicted_contestant || undefined,
+        bonusWinners: []
+      };
+      setPoolWeeklyResults(prev => [...prev, mappedResult]);
     } catch (error) {
       console.error('Error adding weekly results:', error);
       throw error;

@@ -570,6 +570,7 @@ export type Database = {
       }
       pools: {
         Row: {
+          allow_duplicate_picks: boolean | null
           buy_in_description: string | null
           created_at: string
           description: string | null
@@ -598,6 +599,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_duplicate_picks?: boolean | null
           buy_in_description?: string | null
           created_at?: string
           description?: string | null
@@ -626,6 +628,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_duplicate_picks?: boolean | null
           buy_in_description?: string | null
           created_at?: string
           description?: string | null

@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Star, Target } from 'lucide-react';
 import { PoolEntry } from '@/types/pool';
 import { useContestantStatus } from '@/hooks/useContestantStatus';
+import { usePool } from '@/contexts/PoolContext';
 
 interface TeamCardProps {
   entry: PoolEntry;
@@ -18,6 +19,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   teamIndex,
 }) => {
   const { contestantStatus } = useContestantStatus();
+  const { activePool } = usePool();
   
   // Include bonus points in total calculation
   const totalPoints = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]

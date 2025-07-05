@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, BonusQuestion } from '@/types/pool';
+import { usePool } from '@/contexts/PoolContext';
 
 export const useBonusQuestions = () => {
   const { toast } = useToast();
+  const { activePool } = usePool();
   const [contestants, setContestants] = useState<Contestant[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [bonusAnswers, setBonusAnswers] = useState<Record<string, any>>({});

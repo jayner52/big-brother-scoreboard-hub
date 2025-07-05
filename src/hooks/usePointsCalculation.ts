@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
+import { usePool } from '@/contexts/PoolContext';
 
 export const usePointsCalculation = () => {
+  const { activePool } = usePool();
   const [recalculating, setRecalculating] = useState(false);
 
   const calculateTeamPoints = async (entry: PoolEntry) => {

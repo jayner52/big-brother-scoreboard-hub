@@ -72,7 +72,8 @@ export const TeamDraftForm: React.FC = () => {
         {poolData && <PaymentInfoDisplay poolSettings={{
           ...poolData,
           season_name: poolData.name,
-          season_active: !poolData.draft_locked
+          season_active: !poolData.draft_locked,
+          registration_deadline: poolData.registration_deadline
         }} />}
 
         {/* Clear Form Button */}

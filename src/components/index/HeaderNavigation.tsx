@@ -80,20 +80,6 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
             Admin
           </Button>
         </Link>
-        
-        {/* Join Pool Button for logged in users without entry */}
-        {user && !userEntry && (
-          <div className="w-72 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 text-center">
-            <p className="text-gray-600 mb-2">Not registered</p>
-            <Button
-              onClick={onJoinPool}
-              size="sm"
-              className="bg-primary hover:bg-primary/90"
-            >
-              Join Pool
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );

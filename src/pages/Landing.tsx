@@ -70,11 +70,31 @@ const Landing = () => {
             <Button 
               onClick={() => navigate('/auth')}
               size="lg"
-              className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 hover:from-red-700 hover:via-orange-600 hover:to-yellow-600 text-white px-12 py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 hover:from-red-700 hover:via-orange-600 hover:to-yellow-600 text-white px-12 py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 mb-6"
             >
               Get Started - Join the Fun!
             </Button>
-            <p className="text-gray-600 mt-4 text-lg">
+            
+            {/* Pool Action Buttons */}
+            <div className="grid md:grid-cols-2 gap-4 max-w-md mx-auto mb-6">
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="bg-green-600 hover:bg-green-700 text-white py-3 px-6 font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Create Pool
+              </Button>
+              <Button 
+                onClick={() => navigate('/auth')}
+                variant="outline"
+                className="py-3 px-6 font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-2"
+              >
+                <Users className="h-5 w-5 mr-2" />
+                Join Pool
+              </Button>
+            </div>
+            
+            <p className="text-gray-600 text-lg">
               Create your account and start competing in minutes
             </p>
           </div>

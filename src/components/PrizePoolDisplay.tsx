@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Trophy, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePool } from '@/contexts/PoolContext';
 
 interface PrizePool {
   id: string;
@@ -19,29 +20,28 @@ interface PoolSettings {
 }
 
 export const PrizePoolDisplay: React.FC = () => {
+  const { activePool } = usePool();
   const [prizePools, setPrizePools] = useState<PrizePool[]>([]);
-  const [poolSettings, setPoolSettings] = useState<PoolSettings | null>(null);
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (activePool?.id) {
+      loadData();
+    }
+  }, [activePool?.id]);
 
   const loadData = async () => {
+    if (!activePool?.id) return;
+    
     try {
-      const [prizeResult, settingsResult, entriesResult] = await Promise.all([
+      const [prizeResult, entriesResult] = await Promise.all([
         supabase.from('prize_pools').select('*').eq('is_active', true).order('place_number'),
-        supabase.from('pool_settings').select('entry_fee_amount, entry_fee_currency').limit(1).single(),
-        supabase.from('pool_entries').select('id')
+        supabase.from('pool_entries').select('id').eq('pool_id', activePool.id)
       ]);
 
       if (prizeResult.data) {
         setPrizePools(prizeResult.data);
-      }
-
-      if (settingsResult.data) {
-        setPoolSettings(settingsResult.data);
       }
 
       setTotalEntries(entriesResult.data?.length || 0);
@@ -56,9 +56,9 @@ export const PrizePoolDisplay: React.FC = () => {
     return <div className="text-center py-8">Loading prize information...</div>;
   }
 
-  const totalExpected = poolSettings ? (totalEntries * poolSettings.entry_fee_amount) : 0;
+  const totalExpected = activePool ? (totalEntries * activePool.entry_fee_amount) : 0;
   const totalPrizes = prizePools.reduce((sum, prize) => sum + prize.prize_amount, 0);
-  const currency = poolSettings?.entry_fee_currency || 'CAD';
+  const currency = activePool?.entry_fee_currency || 'CAD';
 
   const getOrdinalSuffix = (num: number) => {
     const suffixes = ['th', 'st', 'nd', 'rd'];
@@ -174,13 +174,13 @@ export const PrizePoolDisplay: React.FC = () => {
         </CardContent>
       </Card>
 
-      {poolSettings && (
+      {activePool && (
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Entry Fee</h3>
               <p className="text-3xl font-bold text-primary">
-                {currency} ${Math.round(poolSettings.entry_fee_amount)}
+                {currency} ${Math.round(activePool.entry_fee_amount)}
               </p>
               <p className="text-sm text-gray-600 mt-2">
                 per participant

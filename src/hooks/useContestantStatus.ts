@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePool } from '@/contexts/PoolContext';
 
 export interface ContestantStatus {
   name: string;
@@ -10,28 +11,35 @@ export interface ContestantStatus {
 }
 
 export const useContestantStatus = () => {
+  const { activePool } = usePool();
   const [contestantStatus, setContestantStatus] = useState<Record<string, ContestantStatus>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadContestantStatus();
-  }, []);
+    if (activePool?.id) {
+      loadContestantStatus();
+    }
+  }, [activePool?.id]);
 
   const loadContestantStatus = async () => {
+    if (!activePool?.id) return;
+    
     try {
-      // Get all contestants with their current status
+      // Get all contestants with their current status (pool-specific)
       const { data: contestants } = await supabase
         .from('contestants')
         .select('name, current_hoh, current_pov_winner, currently_nominated')
+        .eq('pool_id', activePool.id)
         .eq('is_active', true);
 
-      // Get evicted contestants
+      // Get evicted contestants (pool-specific)
       const { data: evictionData } = await supabase
         .from('weekly_events')
         .select(`
           contestants!inner(name),
           event_type
         `)
+        .eq('pool_id', activePool.id)
         .eq('event_type', 'evicted');
 
       const evictedNames = evictionData?.map(event => (event.contestants as any).name) || [];

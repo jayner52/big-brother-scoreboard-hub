@@ -1,25 +1,31 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePool } from '@/contexts/PoolContext';
 
 export const useHouseguestPoints = () => {
+  const { activePool } = usePool();
   const [houseguestPoints, setHouseguestPoints] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadHouseguestPoints();
-  }, []);
+    if (activePool?.id) {
+      loadHouseguestPoints();
+    }
+  }, [activePool?.id]);
 
   const loadHouseguestPoints = async () => {
+    if (!activePool?.id) return;
+    
     try {
       setError(null);
       setLoading(true);
       
-      // Optimized query to get all contestant points at once
+      // Optimized query to get all contestant points at once (pool-specific)
       const [contestantsResult, weeklyEventsResult, specialEventsResult] = await Promise.all([
-        supabase.from('contestants').select('id, name'),
-        supabase.from('weekly_events').select('contestant_id, points_awarded'),
-        supabase.from('special_events').select('contestant_id, points_awarded')
+        supabase.from('contestants').select('id, name').eq('pool_id', activePool.id),
+        supabase.from('weekly_events').select('contestant_id, points_awarded').eq('pool_id', activePool.id),
+        supabase.from('special_events').select('contestant_id, points_awarded').eq('pool_id', activePool.id)
       ]);
 
       if (contestantsResult.error) throw contestantsResult.error;

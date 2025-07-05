@@ -21,9 +21,12 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   const { contestantStatus } = useContestantStatus();
   const { activePool } = usePool();
   
-  // Include bonus points in total calculation
-  const totalPoints = [entry.player_1, entry.player_2, entry.player_3, entry.player_4, entry.player_5]
-    .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0) + entry.bonus_points;
+  // Include bonus points in total calculation  
+  const teamPlayers = Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+    const playerKey = `player_${i + 1}` as keyof typeof entry;
+    return entry[playerKey] as string;
+  }).filter(Boolean);
+  const totalPoints = teamPlayers.reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0) + entry.bonus_points;
 
   const renderStatusIcon = (playerName: string) => {
     const status = contestantStatus[playerName];

@@ -7,9 +7,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { PoolCreateModal } from '@/components/pools/PoolCreateModal';
 import { PoolJoinModal } from '@/components/pools/PoolJoinModal';
+import { usePool } from '@/contexts/PoolContext';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { activePool } = usePool();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -114,7 +116,7 @@ const Landing = () => {
                 <CardTitle className="text-xl">1. Draft Your Team</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Select 5 houseguests and answer bonus questions to build your winning strategy.</p>
+                <p className="text-gray-600">Select {activePool?.picks_per_team || 5} houseguests and answer bonus questions to build your winning strategy.</p>
               </CardContent>
             </Card>
             

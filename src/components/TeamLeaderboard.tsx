@@ -7,9 +7,11 @@ import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { usePool } from '@/contexts/PoolContext';
 
 
 export const TeamLeaderboard: React.FC = () => {
+  const { activePool } = usePool();
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { houseguestPoints } = useHouseguestPoints();
@@ -113,11 +115,9 @@ export const TeamLeaderboard: React.FC = () => {
                 <TableHead className="font-bold">Rank</TableHead>
                 <TableHead className="font-bold">Team Name</TableHead>
                 <TableHead className="font-bold">Participant</TableHead>
-                <TableHead className="font-bold">Player 1</TableHead>
-                <TableHead className="font-bold">Player 2</TableHead>
-                <TableHead className="font-bold">Player 3</TableHead>
-                <TableHead className="font-bold">Player 4</TableHead>
-                <TableHead className="font-bold">Player 5</TableHead>
+                {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => (
+                  <TableHead key={i} className="font-bold">Player {i + 1}</TableHead>
+                ))}
                 <TableHead className="font-bold text-center">Weekly Pts</TableHead>
                 <TableHead className="font-bold text-center">Bonus Pts</TableHead>
                 <TableHead className="font-bold text-center bg-yellow-100">Total</TableHead>
@@ -132,11 +132,15 @@ export const TeamLeaderboard: React.FC = () => {
                   </TableCell>
                   <TableCell className="font-semibold text-blue-600">{entry.team_name}</TableCell>
                   <TableCell>{entry.participant_name}</TableCell>
-                  <TableCell>{entry.player_1} {houseguestPoints[entry.player_1] !== undefined && `(${houseguestPoints[entry.player_1]} pts)`}</TableCell>
-                  <TableCell>{entry.player_2} {houseguestPoints[entry.player_2] !== undefined && `(${houseguestPoints[entry.player_2]} pts)`}</TableCell>
-                  <TableCell>{entry.player_3} {houseguestPoints[entry.player_3] !== undefined && `(${houseguestPoints[entry.player_3]} pts)`}</TableCell>
-                  <TableCell>{entry.player_4} {houseguestPoints[entry.player_4] !== undefined && `(${houseguestPoints[entry.player_4]} pts)`}</TableCell>
-                  <TableCell>{entry.player_5} {houseguestPoints[entry.player_5] !== undefined && `(${houseguestPoints[entry.player_5]} pts)`}</TableCell>
+                  {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+                    const playerKey = `player_${i + 1}` as keyof typeof entry;
+                    const playerName = entry[playerKey] as string;
+                    return (
+                      <TableCell key={i}>
+                        {playerName} {houseguestPoints[playerName] !== undefined && `(${houseguestPoints[playerName]} pts)`}
+                      </TableCell>
+                    );
+                  })}
                   <TableCell className="text-center">{entry.weekly_points}</TableCell>
                   <TableCell className="text-center">{entry.bonus_points}</TableCell>
                   <TableCell className="text-center font-bold text-lg bg-yellow-100">

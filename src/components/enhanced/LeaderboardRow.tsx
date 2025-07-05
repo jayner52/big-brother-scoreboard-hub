@@ -145,11 +145,11 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
         </TooltipProvider>
       </TableCell>
       <TableCell>{teamData.participant_name}</TableCell>
-      <TableCell>{renderPlayerName(teamData.player_1)}</TableCell>
-      <TableCell>{renderPlayerName(teamData.player_2)}</TableCell>
-      <TableCell>{renderPlayerName(teamData.player_3)}</TableCell>
-      <TableCell>{renderPlayerName(teamData.player_4)}</TableCell>
-      <TableCell>{renderPlayerName(teamData.player_5)}</TableCell>
+      {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+        const playerKey = `player_${i + 1}` as keyof typeof teamData;
+        const playerName = teamData[playerKey] as string;
+        return <TableCell key={i}>{renderPlayerName(playerName)}</TableCell>;
+      })}
       <TableCell className="text-center">
         <TooltipProvider>
           <Tooltip>

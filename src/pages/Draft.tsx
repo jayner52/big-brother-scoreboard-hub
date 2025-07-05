@@ -69,6 +69,7 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
       <LiveDraftSummary 
         formData={formData} 
         onPaymentUpdate={(confirmed) => updateFormData({ payment_confirmed: confirmed })}
+        picksPerTeam={poolData?.picks_per_team || 5}
       />
 
         {/* Draft Wizard */}

@@ -7,24 +7,25 @@ import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 interface TeamSummaryBannerProps {
   formData: DraftFormData;
   className?: string;
+  picksPerTeam?: number;
 }
 
 export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
   formData,
   className = "",
+  picksPerTeam = 5,
 }) => {
-  // Debug: Log formData to understand why banner might not be rendering
-  console.log('TeamSummaryBanner formData:', formData);
-  const selectedPlayers = [
-    formData.player_1,
-    formData.player_2,
-    formData.player_3,
-    formData.player_4,
-    formData.player_5,
-  ].filter(player => typeof player === 'string' && player.trim());
+  // Dynamic player selection based on picksPerTeam
+  const selectedPlayers = [];
+  for (let i = 1; i <= picksPerTeam; i++) {
+    const player = formData[`player_${i}` as keyof DraftFormData];
+    if (typeof player === 'string' && player.trim()) {
+      selectedPlayers.push(player.trim());
+    }
+  }
 
   const teamName = formData.team_name || 'Your Team';
-  const completionPercentage = (selectedPlayers.length / 5) * 100;
+  const completionPercentage = (selectedPlayers.length / picksPerTeam) * 100;
   const { houseguestPoints } = useHouseguestPoints();
   
   const getPlayerPoints = (playerName: string) => {
@@ -64,7 +65,7 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
             <div className="flex items-center gap-2">
               <Users className="h-3 w-3 text-purple-600" />
               <span className="text-xs font-medium">
-                {selectedPlayers.length}/5
+                {selectedPlayers.length}/{picksPerTeam}
               </span>
             </div>
             
@@ -77,7 +78,7 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
               </div>
             </div>
 
-            {selectedPlayers.length === 5 && (
+            {selectedPlayers.length === picksPerTeam && (
               <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs py-0 px-2">
                 <Target className="h-2 w-2 mr-1" />
                 Ready
@@ -111,7 +112,7 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
                   </div>
                 );
               })}
-              {Array.from({ length: 5 - selectedPlayers.length }, (_, index) => (
+              {Array.from({ length: picksPerTeam - selectedPlayers.length }, (_, index) => (
                 <Badge 
                   key={`empty-${index}`} 
                   variant="outline" 

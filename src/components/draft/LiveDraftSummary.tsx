@@ -9,21 +9,24 @@ import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 interface LiveDraftSummaryProps {
   formData: DraftFormData;
   onPaymentUpdate: (confirmed: boolean) => void;
+  picksPerTeam?: number;
 }
 
 export const LiveDraftSummary: React.FC<LiveDraftSummaryProps> = ({
   formData,
   onPaymentUpdate,
+  picksPerTeam = 5,
 }) => {
   const { houseguestPoints } = useHouseguestPoints();
   
-  const selectedPlayers = [
-    formData.player_1,
-    formData.player_2,
-    formData.player_3,
-    formData.player_4,
-    formData.player_5,
-  ].filter(player => typeof player === 'string' && player.trim());
+  // Dynamic player selection based on picksPerTeam
+  const selectedPlayers = [];
+  for (let i = 1; i <= picksPerTeam; i++) {
+    const player = formData[`player_${i}` as keyof DraftFormData];
+    if (typeof player === 'string' && player.trim()) {
+      selectedPlayers.push(player.trim());
+    }
+  }
 
   const teamName = formData.team_name || 'Your Team';
   const managerName = formData.participant_name || 'Team Manager';
@@ -32,7 +35,7 @@ export const LiveDraftSummary: React.FC<LiveDraftSummaryProps> = ({
     return sum + (houseguestPoints[player] || 0);
   }, 0);
 
-  const isTeamComplete = selectedPlayers.length === 5;
+  const isTeamComplete = selectedPlayers.length === picksPerTeam;
 
   return (
     <Card className="mb-6 shadow-md border-2 border-primary/20">
@@ -56,11 +59,11 @@ export const LiveDraftSummary: React.FC<LiveDraftSummaryProps> = ({
           <Users className="h-4 w-4 text-muted-foreground" />
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{selectedPlayers.length}/5 Players</span>
+              <span className="text-sm font-medium">{selectedPlayers.length}/{picksPerTeam} Players</span>
               <div className="flex-1 bg-muted rounded-full h-2">
                 <div 
                   className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(selectedPlayers.length / 5) * 100}%` }}
+                  style={{ width: `${(selectedPlayers.length / picksPerTeam) * 100}%` }}
                 />
               </div>
               {isTeamComplete && (
@@ -73,8 +76,8 @@ export const LiveDraftSummary: React.FC<LiveDraftSummaryProps> = ({
         </div>
 
         {/* Selected Players Grid */}
-        <div className="grid grid-cols-5 gap-2 mb-4">
-          {Array.from({ length: 5 }, (_, index) => {
+        <div className={`grid gap-2 mb-4`} style={{ gridTemplateColumns: `repeat(${picksPerTeam}, minmax(0, 1fr))` }}>
+          {Array.from({ length: picksPerTeam }, (_, index) => {
             const player = selectedPlayers[index];
             const points = player ? (houseguestPoints[player] || 0) : 0;
             

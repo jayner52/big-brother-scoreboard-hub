@@ -233,7 +233,7 @@ const Index = () => {
           onToggleRules={() => setShowRules(!showRules)}
         />
 
-        <MainContent formData={formData} />
+        <MainContent formData={formData} picksPerTeam={activePool?.picks_per_team || 5} />
 
         <Footer />
       </div>

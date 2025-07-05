@@ -11,9 +11,15 @@ import { DraftFormData } from '@/hooks/useDraftForm';
 
 interface MainContentProps {
   formData: DraftFormData;
+  picksPerTeam?: number;
 }
 
-export const MainContent: React.FC<MainContentProps> = ({ formData }) => {
+export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam = 5 }) => {
+  // Check if user has any draft progress based on dynamic team size
+  const hasAnyPlayers = Array.from({ length: picksPerTeam }, (_, i) => 
+    formData[`player_${i + 1}` as keyof DraftFormData]
+  ).some(player => typeof player === 'string' && player.trim().length > 0);
+
   return (
     <Tabs defaultValue="draft" className="w-full">
       <TabsList className="grid w-full grid-cols-6 mb-8">
@@ -27,9 +33,9 @@ export const MainContent: React.FC<MainContentProps> = ({ formData }) => {
 
       <TabsContent value="draft">
         {/* Team Summary Banner - Show when user has draft progress */}
-        {[formData.player_1, formData.player_2, formData.player_3, formData.player_4, formData.player_5].some(player => typeof player === 'string' && player.trim().length > 0) && (
+        {hasAnyPlayers && (
           <div className="mb-6 relative z-10">
-            <TeamSummaryBanner formData={formData} />
+            <TeamSummaryBanner formData={formData} picksPerTeam={picksPerTeam} />
           </div>
         )}
         <TeamDraftForm />

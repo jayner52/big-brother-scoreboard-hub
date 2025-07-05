@@ -64,58 +64,20 @@ const Landing = () => {
           </div>
         </div>
 
-        {/* Action Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-          {/* Join Pool Card */}
-          <Card className="border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <CardHeader className="text-center pb-4">
-              <div className="mx-auto bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                <Users className="h-8 w-8 text-blue-600" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-gray-800">Join a Pool</CardTitle>
-              <CardDescription className="text-gray-600">
-                Enter an invite code to join an existing fantasy pool
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <Button 
-                onClick={() => navigate('/welcome')}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-semibold"
-              >
-                Join Pool
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Create Pool Card */}
-          <Card className="border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <CardHeader className="text-center pb-4">
-              <div className="mx-auto bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                <Plus className="h-8 w-8 text-green-600" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-gray-800">Create New Pool</CardTitle>
-              <CardDescription className="text-gray-600">
-                Start your own fantasy pool and invite friends
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
-                <h4 className="font-semibold text-green-800 mb-2">What you get:</h4>
-                <ul className="text-sm text-green-700 space-y-1">
-                  <li>• Unique invite code to share</li>
-                  <li>• Full pool management control</li>
-                  <li>• Customizable settings</li>
-                  <li>• Scoring responsibility for weekly events</li>
-                </ul>
-              </div>
-              <Button 
-                onClick={() => navigate('/welcome')}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold"
-              >
-                Create Pool
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Get Started Section */}
+        <div className="text-center mb-16">
+          <div className="max-w-2xl mx-auto">
+            <Button 
+              onClick={() => navigate('/auth')}
+              size="lg"
+              className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 hover:from-red-700 hover:via-orange-600 hover:to-yellow-600 text-white px-12 py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              Get Started - Join the Fun!
+            </Button>
+            <p className="text-gray-600 mt-4 text-lg">
+              Create your account and start competing in minutes
+            </p>
+          </div>
         </div>
 
         {/* Features Section */}
@@ -150,7 +112,7 @@ const Landing = () => {
           <Button 
             variant="outline" 
             onClick={() => navigate('/auth')}
-            className="px-8 py-2"
+            className="px-8 py-3 text-lg font-semibold border-2 hover:bg-gray-50"
           >
             Sign In
           </Button>

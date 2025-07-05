@@ -7,7 +7,6 @@ import { CurrentWeekProvider } from "@/contexts/CurrentWeekContext";
 import { PoolProvider } from "@/contexts/PoolContext";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
-import Welcome from "./pages/Welcome";
 import Admin from "./pages/Admin";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
@@ -29,7 +28,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/dashboard" element={<Index />} />
-              <Route path="/welcome" element={<Welcome />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/about" element={<About />} />
               <Route path="/auth" element={<Auth />} />

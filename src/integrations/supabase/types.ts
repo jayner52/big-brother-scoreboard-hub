@@ -1014,6 +1014,22 @@ export type Database = {
         Args: { invite_code_param: string }
         Returns: Json
       }
+      seed_new_pool_defaults: {
+        Args: { target_pool_id: string }
+        Returns: undefined
+      }
+      seed_pool_bonus_questions: {
+        Args: { target_pool_id: string }
+        Returns: undefined
+      }
+      seed_pool_contestant_groups: {
+        Args: { target_pool_id: string }
+        Returns: undefined
+      }
+      seed_pool_contestants: {
+        Args: { target_pool_id: string }
+        Returns: undefined
+      }
       update_current_game_week: {
         Args: { new_week_number: number }
         Returns: undefined

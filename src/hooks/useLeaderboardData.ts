@@ -67,8 +67,14 @@ export const useLeaderboardData = () => {
         .limit(1)
         .single();
 
-      if (!membership) return;
+      if (!membership) {
+        console.log('No active pool membership found');
+        setPoolEntries([]);
+        return;
+      }
 
+      console.log('Loading entries for pool:', membership.pool_id);
+      
       const { data, error } = await supabase
         .from('pool_entries')
         .select('*')

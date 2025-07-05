@@ -282,6 +282,23 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Still return the pool even if membership creation fails
       }
 
+      // Seed the pool with default data (bonus questions, contestant groups, contestants)
+      console.log('Seeding pool with default data...');
+      try {
+        const { error: seedError } = await supabase.rpc('seed_new_pool_defaults', {
+          target_pool_id: pool.id
+        });
+        
+        if (seedError) {
+          console.error('Error seeding pool defaults:', seedError);
+          // Don't fail pool creation if seeding fails
+        } else {
+          console.log('✓ Pool seeded with default data successfully');
+        }
+      } catch (error) {
+        console.error('Error calling seed function:', error);
+      }
+
       await loadUserPools();
       return pool;
     } catch (error) {

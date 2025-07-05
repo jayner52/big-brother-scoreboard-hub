@@ -21,9 +21,27 @@ export const TeamLeaderboard: React.FC = () => {
 
   const loadPoolEntries = async () => {
     try {
+      // Get current user's active pool
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) return;
+
+      const { data: membership } = await supabase
+        .from('pool_memberships')
+        .select('pool_id')
+        .eq('user_id', session.session.user.id)
+        .eq('active', true)
+        .limit(1)
+        .single();
+
+      if (!membership) {
+        setPoolEntries([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('pool_entries')
         .select('*')
+        .eq('pool_id', membership.pool_id)
         .order('total_points', { ascending: false });
 
       if (error) throw error;

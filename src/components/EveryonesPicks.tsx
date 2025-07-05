@@ -25,10 +25,32 @@ export const EveryonesPicks: React.FC = () => {
     try {
       setError(null);
       setLoading(true);
+
+      // Get current user's active pool
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) {
+        setPoolEntries([]);
+        setBonusQuestions([]);
+        return;
+      }
+
+      const { data: membership } = await supabase
+        .from('pool_memberships')
+        .select('pool_id')
+        .eq('user_id', session.session.user.id)
+        .eq('active', true)
+        .limit(1)
+        .single();
+
+      if (!membership) {
+        setPoolEntries([]);
+        setBonusQuestions([]);
+        return;
+      }
       
       const [entriesResult, questionsResult] = await Promise.all([
-        supabase.from('pool_entries').select('*').order('participant_name'),
-        supabase.from('bonus_questions').select('*').eq('is_active', true).order('sort_order')
+        supabase.from('pool_entries').select('*').eq('pool_id', membership.pool_id).order('participant_name'),
+        supabase.from('bonus_questions').select('*').eq('pool_id', membership.pool_id).eq('is_active', true).order('sort_order')
       ]);
 
       if (entriesResult.error) throw entriesResult.error;

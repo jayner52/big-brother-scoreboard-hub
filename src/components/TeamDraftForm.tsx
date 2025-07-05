@@ -11,9 +11,9 @@ import { DynamicTeamDraftSection } from '@/components/draft/DynamicTeamDraftSect
 import { BonusQuestionsSection } from '@/components/draft/BonusQuestionsSection';
 import { usePool } from '@/contexts/PoolContext';
 import { usePoolData } from '@/hooks/usePoolData';
-import { useDraftForm } from '@/hooks/useDraftForm';
-import { useDraftSubmission } from '@/hooks/useDraftSubmission';
-import { useDraftValidation } from '@/hooks/useDraftValidation';
+import { useDynamicDraftForm } from '@/hooks/useDynamicDraftForm';
+import { useDynamicDraftValidation } from '@/hooks/useDynamicDraftValidation';
+import { useDynamicDraftSubmission } from '@/hooks/useDynamicDraftSubmission';
 import { useRandomPicks } from '@/hooks/useRandomPicks';
 import { Shuffle, AlertCircle, Trash2 } from 'lucide-react';
 
@@ -24,14 +24,14 @@ export const TeamDraftForm: React.FC = () => {
   // DEBUG: Log actual data flow
   console.log('🔍 TeamDraftForm - activePool:', activePool);
   console.log('🔍 TeamDraftForm - poolData:', poolData);
-  const { formData, updateFormData, updateBonusAnswer, resetForm } = useDraftForm();
-  const { submitDraft } = useDraftSubmission();
-  const { validateDraftForm } = useDraftValidation();
+  const { formData, updateFormData, updateBonusAnswer, resetForm, picksPerTeam } = useDynamicDraftForm(poolData);
+  const { submitDraft } = useDynamicDraftSubmission();
+  const { validateDraftForm } = useDynamicDraftValidation();
   const { randomizeTeam, randomizeBonusAnswers } = useRandomPicks();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleRandomizeTeam = () => {
-    const randomPicks = randomizeTeam(contestantGroups);
+    const randomPicks = randomizeTeam(contestantGroups, picksPerTeam);
     updateFormData(randomPicks);
   };
 
@@ -46,14 +46,14 @@ export const TeamDraftForm: React.FC = () => {
     e.preventDefault();
     
     // Validate form
-    const validation = validateDraftForm(formData, bonusQuestions);
+    const validation = validateDraftForm(formData, bonusQuestions, picksPerTeam);
     setValidationErrors(validation.errors);
     
     if (!validation.isValid) {
       return;
     }
 
-    const success = await submitDraft(formData);
+    const success = await submitDraft(formData, picksPerTeam);
     if (success) {
       resetForm();
       setValidationErrors([]);

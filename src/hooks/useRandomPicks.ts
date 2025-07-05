@@ -1,22 +1,40 @@
 import { ContestantGroup, BonusQuestion } from '@/types/pool';
 
 export const useRandomPicks = () => {
-  const randomizeTeam = (contestantGroups: ContestantGroup[]) => {
+  const randomizeTeam = (contestantGroups: ContestantGroup[], picksPerTeam: number = 5) => {
     const picks: Record<string, string> = {};
     
-    // Pick one from each of the first 4 groups
-    contestantGroups.slice(0, 4).forEach((group, index) => {
+    // **CRITICAL FIX: Dynamic randomization based on actual groups and picks per team**
+    const availableGroups = contestantGroups.filter(group => 
+      group.group_name !== 'Free Pick' && 
+      group.contestants && 
+      group.contestants.length > 0
+    );
+    
+    const freePickGroup = contestantGroups.find(group => group.group_name === 'Free Pick');
+    const hasFreePick = !!freePickGroup;
+    
+    // Calculate how many regular group picks vs free picks
+    const regularGroupPicks = hasFreePick ? picksPerTeam - 1 : picksPerTeam;
+    
+    // Pick from regular groups (round-robin if we need more picks than groups)
+    for (let i = 0; i < regularGroupPicks; i++) {
+      const groupIndex = i % availableGroups.length;
+      const group = availableGroups[groupIndex];
+      
       if (group.contestants && group.contestants.length > 0) {
         const randomIndex = Math.floor(Math.random() * group.contestants.length);
-        picks[`player_${index + 1}`] = group.contestants[randomIndex].name;
+        picks[`player_${i + 1}`] = group.contestants[randomIndex].name;
       }
-    });
-
-    // Pick free pick from any contestant
-    const allContestants = contestantGroups.flatMap(group => group.contestants || []);
-    if (allContestants.length > 0) {
-      const randomIndex = Math.floor(Math.random() * allContestants.length);
-      picks.player_5 = allContestants[randomIndex].name;
+    }
+    
+    // Pick free pick from any contestant (if free pick exists)
+    if (hasFreePick) {
+      const allContestants = contestantGroups.flatMap(group => group.contestants || []);
+      if (allContestants.length > 0) {
+        const randomIndex = Math.floor(Math.random() * allContestants.length);
+        picks[`player_${picksPerTeam}`] = allContestants[randomIndex].name;
+      }
     }
 
     return picks;

@@ -1,52 +1,53 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ContestantGroup, BonusQuestion, PoolSettings } from '@/types/pool';
+import { ContestantGroup, BonusQuestion, Pool } from '@/types/pool';
 
-export const usePoolData = () => {
+interface UsePoolDataProps {
+  poolId?: string;
+}
+
+export const usePoolData = ({ poolId }: UsePoolDataProps = {}) => {
   const { toast } = useToast();
-  const [poolSettings, setPoolSettings] = useState<PoolSettings | null>(null);
+  const [activePool, setActivePool] = useState<Pool | null>(null);
   const [contestantGroups, setContestantGroups] = useState<ContestantGroup[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadPoolData();
-  }, []);
+    if (poolId) {
+      loadPoolData();
+    } else {
+      setLoading(false);
+    }
+  }, [poolId]);
 
   const loadPoolData = async () => {
+    if (!poolId) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Load pool settings
-      const { data: settings } = await supabase
-        .from('pool_settings')
+      // Load pool data (replaces the old pool_settings)
+      const { data: pool } = await supabase
+        .from('pools')
         .select('*')
+        .eq('id', poolId)
         .single();
       
-      if (settings) {
-        const mappedSettings: PoolSettings = {
-          id: settings.id,
-          season_name: settings.season_name,
-          entry_fee_amount: settings.entry_fee_amount,
-          entry_fee_currency: settings.entry_fee_currency,
-          payment_method_1: settings.payment_method_1,
-          payment_details_1: settings.payment_details_1,
-          payment_method_2: settings.payment_method_2,
-          payment_details_2: settings.payment_details_2,
-          registration_deadline: settings.registration_deadline,
-          draft_open: settings.draft_open,
-          season_active: settings.season_active,
-          enable_bonus_questions: settings.enable_bonus_questions
-        };
-        setPoolSettings(mappedSettings);
+      if (pool) {
+        setActivePool(pool);
       }
 
-      // Load contestant groups with contestants
+      // Load contestant groups with contestants for this pool
       const { data: groups } = await supabase
         .from('contestant_groups')
         .select(`
           *,
           contestants (*)
         `)
+        .eq('pool_id', poolId)
         .order('sort_order');
       
       const mappedGroups = groups?.map(g => ({
@@ -63,10 +64,11 @@ export const usePoolData = () => {
       })) || [];
       setContestantGroups(mappedGroups);
 
-      // Load bonus questions
+      // Load bonus questions for this pool
       const { data: questions } = await supabase
         .from('bonus_questions')
         .select('*')
+        .eq('pool_id', poolId)
         .eq('is_active', true)
         .order('sort_order');
       
@@ -99,7 +101,7 @@ export const usePoolData = () => {
   };
 
   return {
-    poolSettings,
+    activePool,
     contestantGroups,
     bonusQuestions,
     loading,

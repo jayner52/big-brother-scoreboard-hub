@@ -7,6 +7,7 @@ import { DraftLayoutWithSidebar } from './DraftLayoutWithSidebar';
 import { ProgressIndicator } from './ProgressIndicator';
 import { DraftFormPersistenceAlert } from './DraftFormPersistenceAlert';
 import { HouseguestProfiles } from '@/components/HouseguestProfiles';
+import { usePool } from '@/contexts/PoolContext';
 import { usePoolData } from '@/hooks/usePoolData';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { useDraftSubmission } from '@/hooks/useDraftSubmission';
@@ -22,7 +23,8 @@ export const DraftWizard: React.FC = () => {
   const [hasSavedData, setHasSavedData] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   
-  const { poolSettings, contestantGroups, bonusQuestions, loading } = usePoolData();
+  const { activePool } = usePool();
+  const { activePool: poolData, contestantGroups, bonusQuestions, loading } = usePoolData({ poolId: activePool?.id });
   const { formData, updateFormData, updateBonusAnswer, resetForm, clearSavedDraft } = useDraftForm();
   const { submitDraft } = useDraftSubmission();
   const { validateDraftForm } = useDraftValidation();
@@ -44,10 +46,17 @@ export const DraftWizard: React.FC = () => {
 
   const getCurrentStepValidation = () => {
     const step = DRAFT_STEPS[currentStep];
+    // Map Pool to PoolSettings format for compatibility
+    const poolSettingsCompat = poolData ? {
+      ...poolData,
+      season_name: poolData.name,
+      season_active: !poolData.draft_locked // Assume active if draft not locked
+    } : null;
+    
     return validateStep({
       stepId: step.id as any,
       formData,
-      poolSettings,
+      poolSettings: poolSettingsCompat,
       bonusQuestions
     });
   };
@@ -106,7 +115,7 @@ export const DraftWizard: React.FC = () => {
         </div>
       )}
 
-      <DraftWizardHeader seasonName={poolSettings?.season_name} />
+      <DraftWizardHeader seasonName={poolData?.name} />
       
       <CardContent className="p-8 bg-gradient-to-b from-white to-orange-50">
         {/* Draft Persistence Alert */}
@@ -135,7 +144,11 @@ export const DraftWizard: React.FC = () => {
             updateBonusAnswer={updateBonusAnswer}
             contestantGroups={contestantGroups}
             bonusQuestions={bonusQuestions}
-            poolSettings={poolSettings}
+            poolSettings={{
+              ...poolData,
+              season_name: poolData?.name || '',
+              season_active: !poolData?.draft_locked
+            }}
           />
         </div>
 

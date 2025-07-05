@@ -5,13 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Trophy, Users, Target, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PrizePoolInAbout } from '@/components/PrizePoolInAbout';
+import { usePool } from '@/contexts/PoolContext';
 import { usePoolData } from '@/hooks/usePoolData';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const About = () => {
   const navigate = useNavigate();
-  const { poolSettings, loading: poolLoading } = usePoolData();
+  const { activePool } = usePool();
+  const { activePool: poolData, loading: poolLoading } = usePoolData({ poolId: activePool?.id });
   const [user, setUser] = useState<SupabaseUser | null>(null);
 
   useEffect(() => {
@@ -54,7 +56,7 @@ const About = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                {poolLoading ? 'Loading...' : `Select ${poolSettings?.picks_per_team || 5} houseguests from different groups to build your ultimate Big Brother team.`}
+                {poolLoading ? 'Loading...' : `Select ${poolData?.picks_per_team || 5} houseguests from different groups to build your ultimate Big Brother team.`}
               </p>
             </CardContent>
           </Card>
@@ -206,7 +208,7 @@ const About = () => {
             <div>
               <h3 className="font-semibold mb-2">Team Building</h3>
               <ul className="list-disc list-inside text-gray-600 space-y-1">
-                <li>{poolLoading ? 'Loading...' : `Draft exactly ${poolSettings?.picks_per_team || 5} houseguests for your team`}</li>
+                <li>{poolLoading ? 'Loading...' : `Draft exactly ${poolData?.picks_per_team || 5} houseguests for your team`}</li>
                 <li>You must select one houseguest from each of the groups, plus additional picks as configured</li>
                 <li>No duplicate picks - each houseguest can only be on one team</li>
               </ul>

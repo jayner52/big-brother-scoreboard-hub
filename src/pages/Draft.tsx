@@ -6,6 +6,7 @@ import { LiveDraftSummary } from '@/components/draft/LiveDraftSummary';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { usePool } from '@/contexts/PoolContext';
 import { usePoolData } from '@/hooks/usePoolData';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { useDraftEdit } from '@/hooks/useDraftEdit';
@@ -21,7 +22,8 @@ const Draft = () => {
 };
 
 const DraftContent = ({ navigate }: { navigate: any }) => {
-  const { poolSettings, loading } = usePoolData();
+  const { activePool } = usePool();
+  const { activePool: poolData, loading } = usePoolData({ poolId: activePool?.id });
   const { formData, updateFormData } = useDraftForm();
   const { isEditMode } = useDraftEdit();
 
@@ -56,7 +58,11 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
           </div>
           
         {/* Enhanced Summary Banner */}
-        {poolSettings && <EnhancedDraftSummaryBanner poolSettings={poolSettings} />}
+        {poolData && <EnhancedDraftSummaryBanner poolSettings={{
+          ...poolData,
+          season_name: poolData.name,
+          season_active: !poolData.draft_locked
+        }} />}
       </div>
 
       {/* Live Draft Summary - built from scratch */}

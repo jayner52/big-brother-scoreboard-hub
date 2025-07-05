@@ -17,6 +17,7 @@ export type Database = {
           id: string
           is_active: boolean
           points_value: number
+          pool_id: string | null
           question_text: string
           question_type: string
           sort_order: number
@@ -29,6 +30,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           points_value?: number
+          pool_id?: string | null
           question_text: string
           question_type: string
           sort_order: number
@@ -41,33 +43,53 @@ export type Database = {
           id?: string
           is_active?: boolean
           points_value?: number
+          pool_id?: string | null
           question_text?: string
           question_type?: string
           sort_order?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bonus_questions_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contestant_groups: {
         Row: {
           created_at: string
           group_name: string
           id: string
+          pool_id: string | null
           sort_order: number
         }
         Insert: {
           created_at?: string
           group_name: string
           id?: string
+          pool_id?: string | null
           sort_order: number
         }
         Update: {
           created_at?: string
           group_name?: string
           id?: string
+          pool_id?: string | null
           sort_order?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contestant_groups_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contestant_nominations: {
         Row: {
@@ -131,6 +153,7 @@ export type Database = {
           personality_traits: Json | null
           photo_url: string | null
           physical_description: Json | null
+          pool_id: string | null
           pov_used_on: boolean
           relationship_status: string | null
           season_number: number | null
@@ -164,6 +187,7 @@ export type Database = {
           personality_traits?: Json | null
           photo_url?: string | null
           physical_description?: Json | null
+          pool_id?: string | null
           pov_used_on?: boolean
           relationship_status?: string | null
           season_number?: number | null
@@ -197,6 +221,7 @@ export type Database = {
           personality_traits?: Json | null
           photo_url?: string | null
           physical_description?: Json | null
+          pool_id?: string | null
           pov_used_on?: boolean
           relationship_status?: string | null
           season_number?: number | null
@@ -210,6 +235,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "contestant_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contestants_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
             referencedColumns: ["id"]
           },
         ]
@@ -518,7 +550,9 @@ export type Database = {
           enable_bonus_questions: boolean
           entry_fee_amount: number
           entry_fee_currency: string
+          finale_week_enabled: boolean | null
           has_buy_in: boolean
+          hide_picks_until_draft_closed: boolean | null
           id: string
           invite_code: string
           jury_phase_started: boolean
@@ -532,6 +566,7 @@ export type Database = {
           payment_method_2: string | null
           picks_per_team: number
           registration_deadline: string | null
+          season_locked: boolean | null
           updated_at: string
         }
         Insert: {
@@ -543,7 +578,9 @@ export type Database = {
           enable_bonus_questions?: boolean
           entry_fee_amount?: number
           entry_fee_currency?: string
+          finale_week_enabled?: boolean | null
           has_buy_in?: boolean
+          hide_picks_until_draft_closed?: boolean | null
           id?: string
           invite_code?: string
           jury_phase_started?: boolean
@@ -557,6 +594,7 @@ export type Database = {
           payment_method_2?: string | null
           picks_per_team?: number
           registration_deadline?: string | null
+          season_locked?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -568,7 +606,9 @@ export type Database = {
           enable_bonus_questions?: boolean
           entry_fee_amount?: number
           entry_fee_currency?: string
+          finale_week_enabled?: boolean | null
           has_buy_in?: boolean
+          hide_picks_until_draft_closed?: boolean | null
           id?: string
           invite_code?: string
           jury_phase_started?: boolean
@@ -582,6 +622,7 @@ export type Database = {
           payment_method_2?: string | null
           picks_per_team?: number
           registration_deadline?: string | null
+          season_locked?: boolean | null
           updated_at?: string
         }
         Relationships: []
@@ -651,6 +692,7 @@ export type Database = {
           event_type: string
           id: string
           points_awarded: number | null
+          pool_id: string | null
           week_number: number
         }
         Insert: {
@@ -660,6 +702,7 @@ export type Database = {
           event_type: string
           id?: string
           points_awarded?: number | null
+          pool_id?: string | null
           week_number: number
         }
         Update: {
@@ -669,6 +712,7 @@ export type Database = {
           event_type?: string
           id?: string
           points_awarded?: number | null
+          pool_id?: string | null
           week_number?: number
         }
         Relationships: [
@@ -677,6 +721,13 @@ export type Database = {
             columns: ["contestant_id"]
             isOneToOne: false
             referencedRelation: "contestants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "special_events_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
             referencedColumns: ["id"]
           },
         ]
@@ -690,6 +741,7 @@ export type Database = {
           eviction_round: number | null
           id: string
           points_awarded: number | null
+          pool_id: string | null
           updated_at: string
           week_number: number
         }
@@ -701,6 +753,7 @@ export type Database = {
           eviction_round?: number | null
           id?: string
           points_awarded?: number | null
+          pool_id?: string | null
           updated_at?: string
           week_number: number
         }
@@ -712,6 +765,7 @@ export type Database = {
           eviction_round?: number | null
           id?: string
           points_awarded?: number | null
+          pool_id?: string | null
           updated_at?: string
           week_number?: number
         }
@@ -721,6 +775,13 @@ export type Database = {
             columns: ["contestant_id"]
             isOneToOne: false
             referencedRelation: "contestants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_events_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
             referencedColumns: ["id"]
           },
         ]
@@ -739,6 +800,7 @@ export type Database = {
           is_triple_eviction: boolean | null
           jury_phase_started: boolean | null
           nominees: string[] | null
+          pool_id: string | null
           pov_used: boolean | null
           pov_used_on: string | null
           pov_winner: string | null
@@ -768,6 +830,7 @@ export type Database = {
           is_triple_eviction?: boolean | null
           jury_phase_started?: boolean | null
           nominees?: string[] | null
+          pool_id?: string | null
           pov_used?: boolean | null
           pov_used_on?: string | null
           pov_winner?: string | null
@@ -797,6 +860,7 @@ export type Database = {
           is_triple_eviction?: boolean | null
           jury_phase_started?: boolean | null
           nominees?: string[] | null
+          pool_id?: string | null
           pov_used?: boolean | null
           pov_used_on?: string | null
           pov_winner?: string | null
@@ -813,7 +877,15 @@ export type Database = {
           third_pov_winner?: string | null
           week_number?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "weekly_results_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       weekly_team_scores: {
         Row: {

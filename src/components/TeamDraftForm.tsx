@@ -9,6 +9,7 @@ import { PaymentInfoDisplay } from '@/components/draft/PaymentInfoDisplay';
 import { PaymentValidationSection } from '@/components/draft/PaymentValidationSection';
 import { TeamDraftSection } from '@/components/draft/TeamDraftSection';
 import { BonusQuestionsSection } from '@/components/draft/BonusQuestionsSection';
+import { usePool } from '@/contexts/PoolContext';
 import { usePoolData } from '@/hooks/usePoolData';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { useDraftSubmission } from '@/hooks/useDraftSubmission';
@@ -17,7 +18,8 @@ import { useRandomPicks } from '@/hooks/useRandomPicks';
 import { Shuffle, AlertCircle, Trash2 } from 'lucide-react';
 
 export const TeamDraftForm: React.FC = () => {
-  const { poolSettings, contestantGroups, bonusQuestions, loading } = usePoolData();
+  const { activePool } = usePool();
+  const { activePool: poolData, contestantGroups, bonusQuestions, loading } = usePoolData({ poolId: activePool?.id });
   const { formData, updateFormData, updateBonusAnswer, resetForm } = useDraftForm();
   const { submitDraft } = useDraftSubmission();
   const { validateDraftForm } = useDraftValidation();
@@ -61,13 +63,17 @@ export const TeamDraftForm: React.FC = () => {
   return (
     <Card className="w-full max-w-4xl mx-auto mb-8">
       <CardHeader className="bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-t-lg">
-        <CardTitle className="text-2xl">Join the {poolSettings?.season_name} Fantasy Pool</CardTitle>
+        <CardTitle className="text-2xl">Join the {poolData?.name} Fantasy Pool</CardTitle>
         <CardDescription className="text-red-100">
           Draft your team and make your predictions!
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        {poolSettings && <PaymentInfoDisplay poolSettings={poolSettings} />}
+        {poolData && <PaymentInfoDisplay poolSettings={{
+          ...poolData,
+          season_name: poolData.name,
+          season_active: !poolData.draft_locked
+        }} />}
 
         {/* Clear Form Button */}
         <div className="flex justify-end mb-4">
@@ -150,7 +156,7 @@ export const TeamDraftForm: React.FC = () => {
 
           <Separator />
 
-          {poolSettings?.enable_bonus_questions && bonusQuestions.length > 0 && (
+          {poolData?.enable_bonus_questions && bonusQuestions.length > 0 && (
             <>
               <div>
                 <div className="flex justify-between items-center mb-4">

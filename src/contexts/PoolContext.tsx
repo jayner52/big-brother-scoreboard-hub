@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Pool, PoolMembership, PoolEntry, Contestant, BonusQuestion, WeeklyResults } from '@/types/pool';
+import { Pool, PoolMembership, PoolEntry, ScoringRules, WeeklyResults } from '@/types/pool';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PoolContextType {
@@ -22,37 +22,156 @@ interface PoolContextType {
   getUserRole: (poolId?: string) => 'owner' | 'admin' | 'member' | null;
   canManagePool: (poolId?: string) => boolean;
   
-  // POOL-SPECIFIC DATA (isolated by pool ID)
-  poolContestants: Contestant[];
+  // POOL-SPECIFIC DATA - properly isolated by pool ID
+  poolContestants: any[];
   poolEntries: PoolEntry[];
-  poolBonusQuestions: BonusQuestion[];
   poolWeeklyResults: WeeklyResults[];
+  poolScoringRules: ScoringRules;
+  poolBonusQuestions: any[];
   
-  // Pool-specific data loading
+  // Pool-specific data management
   loadPoolData: (poolId: string) => Promise<void>;
   clearPoolData: () => void;
-  
-  // Pool-specific operations
   addPoolEntry: (entry: Omit<PoolEntry, 'id' | 'created_at' | 'updated_at' | 'pool_id'>) => Promise<void>;
-  refreshPoolData: () => Promise<void>;
+  updatePoolContestants: (contestants: any[]) => Promise<void>;
+  addPoolWeeklyResults: (results: WeeklyResults) => Promise<void>;
+  
+  // AI Generation
+  generateContestants: (poolId: string) => Promise<void>;
   
   loading: boolean;
+  loadingPoolData: boolean;
 }
 
 const PoolContext = createContext<PoolContextType | undefined>(undefined);
 
+const defaultScoringRules: ScoringRules = {
+  hoh: 10,
+  pov: 5,
+  evicted: 20,
+  bonus: 5,
+  survival: 5,
+};
+
 export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activePool, setActivePool] = useState<Pool | null>(null);
+  const [activePool, setActivePoolState] = useState<Pool | null>(null);
   const [userPools, setUserPools] = useState<PoolMembership[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingPoolData, setLoadingPoolData] = useState(false);
   
-  // Pool-specific data states
-  const [poolContestants, setPoolContestants] = useState<Contestant[]>([]);
+  // POOL-SPECIFIC DATA - properly isolated
+  const [poolContestants, setPoolContestants] = useState<any[]>([]);
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
-  const [poolBonusQuestions, setPoolBonusQuestions] = useState<BonusQuestion[]>([]);
   const [poolWeeklyResults, setPoolWeeklyResults] = useState<WeeklyResults[]>([]);
+  const [poolScoringRules, setPoolScoringRules] = useState<ScoringRules>(defaultScoringRules);
+  const [poolBonusQuestions, setPoolBonusQuestions] = useState<any[]>([]);
 
-  // Load user's pools (simplified without race conditions)
+  // Load pool-specific data
+  const loadPoolData = useCallback(async (poolId: string) => {
+    if (!poolId) return;
+    
+    setLoadingPoolData(true);
+    try {
+      console.log('Loading data for pool:', poolId);
+      
+      // Load contestants for this specific pool
+      const { data: contestants, error: contestantsError } = await supabase
+        .from('contestants')
+        .select('*')
+        .eq('pool_id', poolId)
+        .order('name');
+      
+      if (contestantsError) {
+        console.error('Error loading contestants:', contestantsError);
+      } else {
+        setPoolContestants(contestants || []);
+      }
+      
+      // Load entries for this specific pool
+      const { data: entries, error: entriesError } = await supabase
+        .from('pool_entries')
+        .select('*')
+        .eq('pool_id', poolId)
+        .order('created_at');
+      
+      if (entriesError) {
+        console.error('Error loading entries:', entriesError);
+      } else {
+        setPoolEntries(entries || []);
+      }
+      
+      // Load weekly results for this specific pool
+      const { data: weeklyResults, error: weeklyError } = await supabase
+        .from('weekly_results')
+        .select('*')
+        .eq('pool_id', poolId)
+        .order('week');
+      
+      if (weeklyError) {
+        console.error('Error loading weekly results:', weeklyError);
+      } else {
+        setPoolWeeklyResults(weeklyResults || []);
+      }
+      
+      // Load bonus questions for this specific pool (with deduplication)
+      const { data: bonusQuestions, error: bonusError } = await supabase
+        .from('bonus_questions')
+        .select('*')
+        .eq('pool_id', poolId)
+        .order('week', { ascending: true });
+      
+      if (bonusError) {
+        console.error('Error loading bonus questions:', bonusError);
+      } else {
+        // Remove duplicates based on question text and week
+        const uniqueBonusQuestions = bonusQuestions?.filter((question, index, self) => 
+          index === self.findIndex(q => q.question === question.question && q.week === question.week)
+        ) || [];
+        setPoolBonusQuestions(uniqueBonusQuestions);
+      }
+      
+      // Load scoring rules for this specific pool
+      const { data: scoringRules, error: scoringError } = await supabase
+        .from('scoring_rules')
+        .select('*')
+        .eq('pool_id', poolId)
+        .single();
+      
+      if (scoringError && scoringError.code !== 'PGRST116') {
+        console.error('Error loading scoring rules:', scoringError);
+      } else {
+        setPoolScoringRules(scoringRules || defaultScoringRules);
+      }
+      
+    } catch (error) {
+      console.error('Error loading pool data:', error);
+    } finally {
+      setLoadingPoolData(false);
+    }
+  }, []);
+
+  // Clear pool-specific data
+  const clearPoolData = useCallback(() => {
+    setPoolContestants([]);
+    setPoolEntries([]);
+    setPoolWeeklyResults([]);
+    setPoolScoringRules(defaultScoringRules);
+    setPoolBonusQuestions([]);
+  }, []);
+
+  // Enhanced setActivePool that loads pool-specific data
+  const setActivePool = useCallback((pool: Pool | null) => {
+    console.log('Setting active pool:', pool?.name || 'null');
+    setActivePoolState(pool);
+    
+    if (pool) {
+      loadPoolData(pool.id);
+    } else {
+      clearPoolData();
+    }
+  }, [loadPoolData, clearPoolData]);
+
+  // Load user's pools (simplified - no circular dependencies)
   const loadUserPools = useCallback(async () => {
     try {
       setLoading(true);
@@ -61,7 +180,6 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!user) {
         setUserPools([]);
         setActivePool(null);
-        clearPoolData();
         return;
       }
 
@@ -90,127 +208,14 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Set active pool to first pool if none is set and user has pools
       if (!activePool && poolMemberships.length > 0) {
-        const firstPool = poolMemberships[0].pool!;
-        setActivePool(firstPool);
-        await loadPoolData(firstPool.id);
+        setActivePool(poolMemberships[0].pool!);
       }
     } catch (error) {
       console.error('Error loading user pools:', error);
     } finally {
       setLoading(false);
     }
-  }, []); // Remove activePool dependency to prevent infinite loops
-
-  // Load pool-specific data
-  const loadPoolData = useCallback(async (poolId: string) => {
-    try {
-      console.log(`Loading data for pool: ${poolId}`);
-      
-      // Load contestants for this specific pool
-      const { data: contestants, error: contestantsError } = await supabase
-        .from('contestants')
-        .select('*')
-        .eq('pool_id', poolId)
-        .order('sort_order');
-
-      if (contestantsError) {
-        console.error('Error loading contestants:', contestantsError);
-      } else {
-        const mappedContestants = contestants?.map(c => ({
-          id: c.id,
-          name: c.name,
-          isActive: c.is_active,
-          group_id: c.group_id,
-          sort_order: c.sort_order
-        })) || [];
-        setPoolContestants(mappedContestants);
-      }
-      
-      // Load entries for this specific pool
-      const { data: entries, error: entriesError } = await supabase
-        .from('pool_entries')
-        .select('*')
-        .eq('pool_id', poolId)
-        .order('total_points', { ascending: false });
-
-      if (entriesError) {
-        console.error('Error loading pool entries:', entriesError);
-      } else {
-        const mappedEntries = entries?.map(entry => ({
-          ...entry,
-          bonus_answers: entry.bonus_answers as Record<string, any>,
-          created_at: new Date(entry.created_at),
-          updated_at: new Date(entry.updated_at)
-        })) || [];
-        setPoolEntries(mappedEntries);
-      }
-      
-      // Load bonus questions for this specific pool
-      const { data: bonusQuestions, error: bonusError } = await supabase
-        .from('bonus_questions')
-        .select('*')
-        .eq('pool_id', poolId)
-        .order('sort_order');
-
-      if (bonusError) {
-        console.error('Error loading bonus questions:', bonusError);
-      } else {
-        const mappedQuestions = bonusQuestions?.map(q => ({
-          id: q.id,
-          question_text: q.question_text,
-          question_type: q.question_type as 'player_select' | 'dual_player_select' | 'yes_no' | 'number' | 'creature_select',
-          sort_order: q.sort_order,
-          is_active: q.is_active,
-          correct_answer: q.correct_answer,
-          points_value: q.points_value,
-          answer_revealed: q.answer_revealed
-        })) || [];
-        setPoolBonusQuestions(mappedQuestions);
-      }
-      
-      // Load weekly results for this specific pool
-      const { data: weeklyResults, error: weeklyError } = await supabase
-        .from('weekly_results')
-        .select('*')
-        .eq('pool_id', poolId)
-        .order('week_number');
-
-      if (weeklyError) {
-        console.error('Error loading weekly results:', weeklyError);
-      } else {
-        const mappedResults = weeklyResults?.map(result => ({
-          week: result.week_number,
-          hohWinner: result.hoh_winner || undefined,
-          povWinner: result.pov_winner || undefined,
-          evicted: result.evicted_contestant || undefined,
-          bonusWinners: [] // Placeholder - we'll add this later if needed
-        })) || [];
-        setPoolWeeklyResults(mappedResults);
-      }
-      
-      console.log(`✓ Pool data loaded successfully for pool: ${poolId}`);
-    } catch (error) {
-      console.error('Error loading pool data:', error);
-    }
-  }, []);
-
-  // Clear pool-specific data
-  const clearPoolData = useCallback(() => {
-    setPoolContestants([]);
-    setPoolEntries([]);
-    setPoolBonusQuestions([]);
-    setPoolWeeklyResults([]);
-  }, []);
-
-  // Enhanced setActivePool that loads pool-specific data
-  const handleSetActivePool = useCallback(async (pool: Pool | null) => {
-    setActivePool(pool);
-    if (pool) {
-      await loadPoolData(pool.id);
-    } else {
-      clearPoolData();
-    }
-  }, [loadPoolData, clearPoolData]);
+  }, []); // No dependencies to prevent loops
 
   // Initialize on mount and auth changes
   useEffect(() => {
@@ -222,31 +227,22 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (event === 'SIGNED_OUT') {
         setUserPools([]);
         setActivePool(null);
-        clearPoolData();
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []); // Empty dependency array to prevent infinite loops
+  }, [loadUserPools]);
 
   // Simplified createPool function
   const createPool = useCallback(async (poolData: Partial<Pool>): Promise<Pool> => {
     try {
-      console.log('Creating pool with data:', poolData);
-
-      // Simple auth check
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        throw new Error(`Authentication error: ${userError.message}`);
-      }
+      const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         throw new Error('You must be logged in to create a pool');
       }
 
-      // Create pool data with proper defaults
-      const poolCreateData = {
+      const freshPoolData = {
         owner_id: user.id,
         name: poolData.name!,
         description: poolData.description || null,
@@ -265,26 +261,19 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         jury_phase_started: false,
         jury_start_week: null,
         jury_start_timestamp: null,
-        registration_deadline: null,
+        registration_deadline: poolData.registration_deadline || null,
       };
 
-      // Create the pool
-      const { data: pool, error: poolError } = await supabase
+      const { data: pool, error } = await supabase
         .from('pools')
-        .insert(poolCreateData)
+        .insert(freshPoolData)
         .select()
         .single();
 
-      if (poolError) {
-        console.error('Pool creation error:', poolError);
-        throw new Error(`Failed to create pool: ${poolError.message}`);
+      if (error) {
+        console.error('Pool creation error:', error);
+        throw new Error(error.message || 'Failed to create pool');
       }
-
-      if (!pool) {
-        throw new Error('Pool creation returned no data');
-      }
-
-      console.log('Pool created successfully:', pool);
 
       // Create owner membership
       const { error: membershipError } = await supabase
@@ -297,35 +286,115 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (membershipError) {
         console.error('Error creating membership:', membershipError);
-        // Continue even if membership creation fails
       }
 
-      // Seed the pool with default data
-      try {
-        const { error: seedError } = await supabase.rpc('seed_new_pool_defaults', {
-          target_pool_id: pool.id
-        });
-        
-        if (seedError) {
-          console.error('Error seeding pool defaults:', seedError);
-        } else {
-          console.log('Pool seeded with default data successfully');
-        }
-      } catch (error) {
-        console.error('Error calling seed function:', error);
-      }
-
-      // Refresh user pools and set as active
       await loadUserPools();
-      await handleSetActivePool(pool);
-      
       return pool;
     } catch (error) {
       console.error('Error creating pool:', error);
-      throw error; // Re-throw to let UI handle the specific error message
+      throw error; // Re-throw for UI to handle
     }
-  }, [loadUserPools, handleSetActivePool]);
+  }, [loadUserPools]);
 
+  // Generate contestants with AI
+  const generateContestants = useCallback(async (poolId: string) => {
+    try {
+      console.log('Generating contestants for pool:', poolId);
+      
+      const { data, error } = await supabase.functions.invoke('generate-contestants', {
+        body: { 
+          poolId,
+          season: 26, // Minimum season 26
+          count: 16 // Standard BB cast size
+        }
+      });
+
+      if (error) {
+        console.error('Error generating contestants:', error);
+        throw new Error(error.message || 'Failed to generate contestants');
+      }
+
+      // Reload pool data to get the new contestants
+      await loadPoolData(poolId);
+      
+      return data;
+    } catch (error) {
+      console.error('Error generating contestants:', error);
+      throw error;
+    }
+  }, [loadPoolData]);
+
+  // Add pool entry (pool-specific)
+  const addPoolEntry = useCallback(async (entry: Omit<PoolEntry, 'id' | 'created_at' | 'updated_at' | 'pool_id'>) => {
+    if (!activePool) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('pool_entries')
+        .insert({
+          ...entry,
+          pool_id: activePool.id,
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding pool entry:', error);
+        throw error;
+      }
+
+      // Update local state
+      setPoolEntries(prev => [...prev, data]);
+    } catch (error) {
+      console.error('Error adding pool entry:', error);
+      throw error;
+    }
+  }, [activePool]);
+
+  // Update contestants (pool-specific)
+  const updatePoolContestants = useCallback(async (contestants: any[]) => {
+    if (!activePool) return;
+    
+    try {
+      // This would typically involve database operations
+      // For now, just update local state
+      setPoolContestants(contestants);
+    } catch (error) {
+      console.error('Error updating contestants:', error);
+    }
+  }, [activePool]);
+
+  // Add weekly results (pool-specific)
+  const addPoolWeeklyResults = useCallback(async (results: WeeklyResults) => {
+    if (!activePool) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('weekly_results')
+        .insert({
+          ...results,
+          pool_id: activePool.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding weekly results:', error);
+        throw error;
+      }
+
+      setPoolWeeklyResults(prev => [...prev, data]);
+    } catch (error) {
+      console.error('Error adding weekly results:', error);
+      throw error;
+    }
+  }, [activePool]);
+
+  // Other functions remain the same but simplified...
   const joinPoolByCode = useCallback(async (inviteCode: string) => {
     try {
       const { data, error } = await supabase.rpc('join_pool_by_invite', {
@@ -341,9 +410,6 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (result.success) {
         await loadUserPools();
         const joinedPool = userPools.find(p => p.pool_id === result.pool_id)?.pool;
-        if (joinedPool) {
-          await handleSetActivePool(joinedPool);
-        }
         return { success: true, pool: joinedPool };
       }
 
@@ -351,7 +417,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       return { success: false, error: 'Failed to join pool' };
     }
-  }, [loadUserPools, userPools, handleSetActivePool]);
+  }, [loadUserPools, userPools]);
 
   const updatePool = useCallback(async (poolId: string, updates: Partial<Pool>) => {
     try {
@@ -382,20 +448,17 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
 
-      // Clear active pool if it was deleted
       if (activePool?.id === poolId) {
         setActivePool(null);
-        clearPoolData();
       }
 
-      // Refresh pools
       await loadUserPools();
       return true;
     } catch (error) {
       console.error('Error deleting pool:', error);
       return false;
     }
-  }, [activePool, loadUserPools, clearPoolData]);
+  }, [activePool, loadUserPools, setActivePool]);
 
   const leavePool = useCallback(async (poolId: string) => {
     try {
@@ -415,15 +478,9 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       await loadUserPools();
       
-      // If user left the active pool, switch to another pool
       if (activePool?.id === poolId) {
         const remainingPools = userPools.filter(p => p.pool_id !== poolId);
-        if (remainingPools.length > 0) {
-          await handleSetActivePool(remainingPools[0].pool!);
-        } else {
-          setActivePool(null);
-          clearPoolData();
-        }
+        setActivePool(remainingPools.length > 0 ? remainingPools[0].pool! : null);
       }
 
       return true;
@@ -431,7 +488,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Error leaving pool:', error);
       return false;
     }
-  }, [loadUserPools, activePool, userPools, handleSetActivePool, clearPoolData]);
+  }, [loadUserPools, activePool, userPools, setActivePool]);
 
   const getUserRole = useCallback((poolId?: string): 'owner' | 'admin' | 'member' | null => {
     const targetPoolId = poolId || activePool?.id;
@@ -446,90 +503,38 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return role === 'owner' || role === 'admin';
   }, [getUserRole]);
 
-  // Add pool entry (pool-scoped)
-  const addPoolEntry = useCallback(async (entry: Omit<PoolEntry, 'id' | 'created_at' | 'updated_at' | 'pool_id'>) => {
-    if (!activePool) {
-      throw new Error('No active pool selected');
-    }
-    
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      const { data, error } = await supabase
-        .from('pool_entries')
-        .insert({
-          ...entry,
-          pool_id: activePool.id,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      if (data) {
-        const mappedEntry = {
-          ...data,
-          bonus_answers: data.bonus_answers as Record<string, any>,
-          created_at: new Date(data.created_at),
-          updated_at: new Date(data.updated_at)
-        };
-        setPoolEntries(prev => [...prev, mappedEntry]);
-      }
-    } catch (error) {
-      console.error('Error adding pool entry:', error);
-      throw error;
-    }
-  }, [activePool]);
-
-  // Refresh current pool data
-  const refreshPoolData = useCallback(async () => {
-    if (activePool) {
-      await loadPoolData(activePool.id);
-    }
-  }, [activePool, loadPoolData]);
 
   return (
     <PoolContext.Provider value={{
-      // Current pool state
       activePool,
-      setActivePool: handleSetActivePool,
-      
-      // User's pools
+      setActivePool,
       userPools,
       loadUserPools,
-      
-      // Pool management
       createPool,
       joinPoolByCode,
       updatePool,
       deletePool,
       leavePool,
-      
-      // Pool membership
       getUserRole,
       canManagePool,
       
       // Pool-specific data
       poolContestants,
       poolEntries,
-      poolBonusQuestions,
       poolWeeklyResults,
-      
-      // Pool-specific data loading
-      loadPoolData,
-      clearPoolData,
+      poolScoringRules,
+      poolBonusQuestions,
       
       // Pool-specific operations
+      loadPoolData,
+      clearPoolData,
       addPoolEntry,
-      refreshPoolData,
+      updatePoolContestants,
+      addPoolWeeklyResults,
+      generateContestants,
       
       loading,
+      loadingPoolData,
     }}>
       {children}
     </PoolContext.Provider>

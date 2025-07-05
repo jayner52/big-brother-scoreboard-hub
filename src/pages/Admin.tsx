@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const Admin = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -14,11 +23,11 @@ const Admin = () => {
         <div className="flex justify-between items-center mb-8">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(user ? '/dashboard' : '/')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Main Site
+            {user ? 'Back to Dashboard' : 'Back to Home'}
           </Button>
         </div>
 

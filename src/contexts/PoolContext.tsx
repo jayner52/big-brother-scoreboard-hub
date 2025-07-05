@@ -122,28 +122,21 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createPool = useCallback(async (poolData: Partial<Pool>): Promise<Pool | null> => {
     try {
-      // Get current session with retry logic for auth timing issues
-      const { data: session, error: sessionError } = await supabase.auth.getSession();
+      // Force a fresh session token to ensure auth is current
+      const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
       
-      if (sessionError) {
-        console.error('Session error:', sessionError);
+      if (refreshError) {
+        console.error('Session refresh error:', refreshError);
         return null;
       }
 
-      if (!session.session?.user) {
-        console.error('No authenticated user found in session');
+      if (!session?.user) {
+        console.error('No authenticated user found after refresh');
         return null;
       }
 
-      const user = session.session.user;
+      const user = session.user;
       console.log('Creating pool for user:', user.id);
-
-      // Verify user is authenticated by checking current user
-      const { data: currentUser, error: userError } = await supabase.auth.getUser();
-      if (userError || !currentUser.user) {
-        console.error('User authentication failed:', userError);
-        return null;
-      }
 
       // Create a fresh pool with only user-provided data and defaults
       const freshPoolData = {

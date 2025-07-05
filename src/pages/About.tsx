@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,10 +6,19 @@ import { ArrowLeft, Trophy, Users, Target, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PrizePoolInAbout } from '@/components/PrizePoolInAbout';
 import { usePoolData } from '@/hooks/usePoolData';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const About = () => {
   const navigate = useNavigate();
   const { poolSettings, loading: poolLoading } = usePoolData();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -18,11 +27,11 @@ const About = () => {
         <div className="flex justify-between items-center mb-8">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(user ? '/dashboard' : '/')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Main Site
+            {user ? 'Back to Dashboard' : 'Back to Home'}
           </Button>
         </div>
 
@@ -235,11 +244,11 @@ const About = () => {
                 Join the pool and start building your championship team!
               </p>
               <Button 
-                onClick={() => navigate('/')}
+                onClick={() => navigate(user ? '/dashboard' : '/')}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                 size="lg"
               >
-                Start Drafting Your Team
+                {user ? 'Go to Dashboard' : 'Start Drafting Your Team'}
               </Button>
             </CardContent>
           </Card>

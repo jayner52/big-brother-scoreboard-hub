@@ -8,13 +8,11 @@ import { usePool } from '@/contexts/PoolContext';
 
 // Lazy load components for better performance
 const ContestantManagement = React.lazy(() => import('@/components/admin/ContestantManagement').then(m => ({ default: m.ContestantManagement })));
-const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEventsPanel').then(m => ({ default: m.WeeklyEventsPanel })));
 const WeekByWeekOverview = React.lazy(() => import('@/components/admin/WeekByWeekOverview').then(m => ({ default: m.WeekByWeekOverview })));
 const EnhancedBonusQuestionsPanel = React.lazy(() => import('@/components/admin/EnhancedBonusQuestionsPanel').then(m => ({ default: m.EnhancedBonusQuestionsPanel })));
 const PoolSettingsPanel = React.lazy(() => import('@/components/admin/PoolSettingsPanel').then(m => ({ default: m.PoolSettingsPanel })));
 const PoolEntriesManagement = React.lazy(() => import('@/components/PoolEntriesManagement').then(m => ({ default: m.PoolEntriesManagement })));
-const FinaleWeekPanel = React.lazy(() => import('@/components/admin/FinaleWeekPanel').then(m => ({ default: m.FinaleWeekPanel })));
-const DraftTimingPanel = React.lazy(() => import('@/components/admin/DraftTimingPanel').then(m => ({ default: m.DraftTimingPanel })));
+const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEventsPanel').then(m => ({ default: m.WeeklyEventsPanel })));
 
 
 export const AdminScoringPanel: React.FC = () => {
@@ -47,15 +45,13 @@ export const AdminScoringPanel: React.FC = () => {
       </CardHeader>
       <CardContent className="p-6">
         <Tabs defaultValue="events" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 text-xs lg:text-sm">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 text-xs lg:text-sm">
             <TabsTrigger value="events">Weekly Events</TabsTrigger>
             <TabsTrigger value="legacy">Week Overview</TabsTrigger>
             <TabsTrigger value="settings">Pool Settings</TabsTrigger>
             <TabsTrigger value="bonus">Bonus Questions</TabsTrigger>
             <TabsTrigger value="entries">Pool Entries</TabsTrigger>
             <TabsTrigger value="contestants">Contestants</TabsTrigger>
-            <TabsTrigger value="finale">Finale Week</TabsTrigger>
-            <TabsTrigger value="draft">Draft Control</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events" className="space-y-4">
@@ -102,22 +98,6 @@ export const AdminScoringPanel: React.FC = () => {
             <ErrorBoundary>
               <Suspense fallback={<div className="text-center py-8">Loading contestant management...</div>}>
                 <ContestantManagement />
-              </Suspense>
-            </ErrorBoundary>
-          </TabsContent>
-
-          <TabsContent value="finale" className="space-y-4">
-            <ErrorBoundary>
-              <Suspense fallback={<div className="text-center py-8">Loading finale settings...</div>}>
-                <FinaleWeekPanel />
-              </Suspense>
-            </ErrorBoundary>
-          </TabsContent>
-
-          <TabsContent value="draft" className="space-y-4">
-            <ErrorBoundary>
-              <Suspense fallback={<div className="text-center py-8">Loading draft controls...</div>}>
-                <DraftTimingPanel />
               </Suspense>
             </ErrorBoundary>
           </TabsContent>

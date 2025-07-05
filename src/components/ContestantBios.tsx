@@ -4,18 +4,18 @@ import { Badge } from '@/components/ui/badge';
 import { Users, MapPin, Briefcase, Calendar, Crown, Shield, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
-import { PoolSettings } from '@/types/pool';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
 import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
 import { ContestantProfileModal } from '@/components/admin/contestants/ContestantProfileModal';
+import { usePool } from '@/contexts/PoolContext';
 
 export const ContestantBios: React.FC = () => {
   const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
-  const [poolSettings, setPoolSettings] = useState<PoolSettings | null>(null);
   const [selectedContestant, setSelectedContestant] = useState<ContestantWithBio | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { activePool } = usePool();
   const { evictedContestants } = useEvictedContestants();
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
   const { evictionWeeks } = useEvictionWeeks();
@@ -26,18 +26,27 @@ export const ContestantBios: React.FC = () => {
   };
 
   useEffect(() => {
-    loadContestants();
-  }, [evictedContestants]); // Re-run when evicted contestants change
+    if (activePool) {
+      loadContestants();
+    }
+  }, [activePool, evictedContestants]); // Re-run when pool or evicted contestants change
 
   const loadContestants = async () => {
+    if (!activePool) {
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const [contestantsResult, settingsResult] = await Promise.all([
-        supabase.from('contestants').select('*').order('sort_order', { ascending: true }),
-        supabase.from('pool_settings').select('*').limit(1).single()
-      ]);
+      // Load contestants for the current pool only
+      const { data: contestantsData } = await supabase
+        .from('contestants')
+        .select('*')
+        .eq('pool_id', activePool.id)
+        .order('sort_order', { ascending: true });
       
-      if (contestantsResult.data) {
-        const mappedContestants = contestantsResult.data.map(c => ({
+      if (contestantsData) {
+        const mappedContestants = contestantsData.map(c => ({
           id: c.id,
           name: c.name,
           isActive: !evictedContestants.includes(c.name),
@@ -59,10 +68,6 @@ export const ContestantBios: React.FC = () => {
         
         setContestants(mappedContestants);
       }
-
-      if (settingsResult.data) {
-        setPoolSettings(settingsResult.data);
-      }
     } catch (error) {
       console.error('Error loading contestants:', error);
     } finally {
@@ -81,7 +86,7 @@ export const ContestantBios: React.FC = () => {
           Meet the Contestants
         </h2>
         <p className="text-muted-foreground">
-          Get to know the houseguests competing in {poolSettings?.season_name || 'Big Brother'}
+          Get to know the houseguests competing in {activePool?.name || 'Big Brother'}
         </p>
       </div>
 

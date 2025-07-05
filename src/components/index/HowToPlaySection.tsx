@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Target, Trophy, DollarSign } from 'lucide-react';
+import { usePool } from '@/contexts/PoolContext';
 
 interface HowToPlaySectionProps {
   showRules: boolean;
@@ -13,6 +14,8 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
   showRules,
   onToggleRules,
 }) => {
+  const { activePool } = usePool();
+  const picksPerTeam = activePool?.picks_per_team || 5;
   return (
     <div className="mb-8 text-center">
 
@@ -27,7 +30,7 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">
-                  Select 5 houseguests from different groups to build your ultimate Big Brother team.
+                  Select {picksPerTeam} houseguests from different groups to build your ultimate Big Brother team.
                 </p>
               </CardContent>
             </Card>

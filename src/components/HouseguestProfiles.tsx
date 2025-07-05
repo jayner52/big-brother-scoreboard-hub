@@ -9,6 +9,7 @@ import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useUserPaymentUpdate } from '@/hooks/useUserPaymentUpdate';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { usePool } from '@/contexts/PoolContext';
 
 interface UserTeamsProps {
   userId?: string;
@@ -19,6 +20,7 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [draftLocked, setDraftLocked] = useState(true);
+  const { activePool } = usePool();
   const { houseguestPoints } = useHouseguestPoints();
   const { evictedContestants } = useEvictedContestants();
   const { updatePaymentStatus, updating } = useUserPaymentUpdate();
@@ -26,15 +28,25 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadUserEntries();
-    loadDraftSettings();
-  }, [userId]);
+    if (activePool) {
+      loadUserEntries();
+      loadDraftSettings();
+    }
+  }, [userId, activePool]);
 
   const loadUserEntries = async () => {
+    if (!activePool) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
       
-      let query = supabase.from('pool_entries').select('*');
+      let query = supabase
+        .from('pool_entries')
+        .select('*')
+        .eq('pool_id', activePool.id); // Filter by active pool
       
       if (userId) {
         query = query.eq('user_id', userId);
@@ -60,14 +72,11 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   };
 
   const loadDraftSettings = async () => {
+    if (!activePool) return;
+    
     try {
-      const { data, error } = await supabase
-        .from('pool_settings')
-        .select('draft_locked')
-        .single();
-      
-      if (error) throw error;
-      setDraftLocked(data?.draft_locked ?? true);
+      // Use the activePool's draft_locked status directly
+      setDraftLocked(activePool.draft_locked ?? true);
     } catch (error) {
       console.error('Error loading draft settings:', error);
     }
@@ -131,8 +140,14 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   }
 
   const currentEntry = userEntries[currentEntryIndex];
-  const totalPoints = [currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5]
-    .reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0);
+  const picksPerTeam = activePool?.picks_per_team || 5;
+  
+  // Build player array dynamically based on pool settings
+  const players = Array.from({ length: picksPerTeam }, (_, i) => 
+    currentEntry[`player_${i + 1}` as keyof PoolEntry] as string
+  ).filter(Boolean);
+  
+  const totalPoints = players.reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0);
 
   const nextEntry = () => {
     setCurrentEntryIndex((prev) => (prev + 1) % userEntries.length);
@@ -187,7 +202,7 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
           
           {/* Center: Compact Player Cards */}
           <div className="flex items-center gap-1">
-            {[currentEntry.player_1, currentEntry.player_2, currentEntry.player_3, currentEntry.player_4, currentEntry.player_5].map((player, index) => (
+            {players.map((player, index) => (
               <div key={index} className="bg-background/50 rounded-lg px-2 py-1 border">
                 {renderPlayerName(player)}
               </div>

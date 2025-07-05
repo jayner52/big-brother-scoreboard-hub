@@ -2,22 +2,24 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Contestant, ContestantGroup } from '@/types/pool';
 
-export const useContestantData = () => {
+export const useContestantData = (poolId?: string) => {
   const [contestants, setContestants] = useState<Contestant[]>([]);
-  const [contestantGroups, setContestantGroups] = useState<ContestantGroup[]>([]);
+  const [contestantGroups, setContestantGroups] = useState<ContestantGroup[]>([]);  
   const [poolEntries, setPoolEntries] = useState<any[]>([]);
   const [weeklyEvents, setWeeklyEvents] = useState<any[]>([]);
   const [specialEvents, setSpecialEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
+    if (!poolId) return;
+    
     try {
       const [contestantsResult, groupsResult, poolEntriesResult, weeklyEventsResult, specialEventsResult] = await Promise.all([
-        supabase.from('contestants').select('*').order('sort_order'),
-        supabase.from('contestant_groups').select('*').order('sort_order'),
-        supabase.from('pool_entries').select('*'),
-        supabase.from('weekly_events').select('*'),
-        supabase.from('special_events').select('*')
+        supabase.from('contestants').select('*').eq('pool_id', poolId).order('sort_order'),
+        supabase.from('contestant_groups').select('*').eq('pool_id', poolId).order('sort_order'),
+        supabase.from('pool_entries').select('*').eq('pool_id', poolId),
+        supabase.from('weekly_events').select('*').eq('pool_id', poolId),
+        supabase.from('special_events').select('*').eq('pool_id', poolId)
       ]);
 
       if (contestantsResult.error) throw contestantsResult.error;
@@ -45,8 +47,10 @@ export const useContestantData = () => {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (poolId) {
+      loadData();
+    }
+  }, [poolId]);
 
   return {
     contestants,

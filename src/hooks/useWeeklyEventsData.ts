@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio, DetailedScoringRule } from '@/types/admin';
 
-export const useWeeklyEventsData = () => {
+export const useWeeklyEventsData = (poolId?: string) => {
   const { toast } = useToast();
   const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
   const [scoringRules, setScoringRules] = useState<DetailedScoringRule[]>([]);
@@ -12,11 +12,14 @@ export const useWeeklyEventsData = () => {
   const [editingWeek, setEditingWeek] = useState(1);
 
   const loadData = async () => {
+    if (!poolId) return;
+    
     try {
-      // Load contestants
+      // Load contestants for this pool only
       const { data: contestantsData } = await supabase
         .from('contestants')
         .select('*')
+        .eq('pool_id', poolId)
         .order('name');
       
       if (contestantsData) {
@@ -60,6 +63,7 @@ export const useWeeklyEventsData = () => {
       const { data: weeklyData } = await supabase
         .from('weekly_results')
         .select('week_number, is_draft')
+        .eq('pool_id', poolId)
         .order('week_number', { ascending: true });
       
       if (weeklyData && weeklyData.length > 0) {
@@ -90,8 +94,10 @@ export const useWeeklyEventsData = () => {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (poolId) {
+      loadData();
+    }
+  }, [poolId]);
 
   return {
     contestants,

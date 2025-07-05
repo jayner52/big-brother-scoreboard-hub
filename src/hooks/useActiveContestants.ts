@@ -2,18 +2,21 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
 
-export const useActiveContestants = () => {
+export const useActiveContestants = (poolId?: string) => {
   const [allContestants, setAllContestants] = useState<ContestantWithBio[]>([]);
   const [evictedContestants, setEvictedContestants] = useState<string[]>([]);
   const [activeContestants, setActiveContestants] = useState<ContestantWithBio[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadContestantData = async () => {
+    if (!poolId) return;
+    
     try {
-      // Load all contestants
+      // Load contestants for this pool only
       const { data: contestantsData } = await supabase
         .from('contestants')
         .select('*')
+        .eq('pool_id', poolId)
         .order('name');
 
       // Load evicted contestants from weekly_events with proper join
@@ -33,6 +36,7 @@ export const useActiveContestants = () => {
           week_number
         `)
         .eq('event_type', 'evicted')
+        .eq('pool_id', poolId)
         .lt('week_number', currentWeek); // Only get evictions before current week
 
       const evicted = evictionData?.map(event => event.contestants?.name).filter(Boolean) || [];
@@ -61,8 +65,10 @@ export const useActiveContestants = () => {
   };
 
   useEffect(() => {
-    loadContestantData();
-  }, []);
+    if (poolId) {
+      loadContestantData();
+    }
+  }, [poolId]);
 
   return {
     allContestants,

@@ -43,6 +43,7 @@ export const StepContentRenderer: React.FC<StepContentRendererProps> = ({
       return (
         <TeamDraftSection
           contestantGroups={contestantGroups}
+          picksPerTeam={poolSettings?.picks_per_team || 5}
           formData={{
             player_1: formData.player_1,
             player_2: formData.player_2,

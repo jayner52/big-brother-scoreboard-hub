@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { WeeklyEventForm } from '@/types/admin';
 
-export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: number) => {
+export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: number, poolId?: string) => {
   const { toast } = useToast();
   const [isAutoSaving, setIsAutoSaving] = useState(false);
 
@@ -35,6 +35,7 @@ export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: num
         .from('weekly_results')
         .select('id')
         .eq('week_number', eventForm.week)
+        .eq('pool_id', poolId)
         .maybeSingle();
 
       if (queryError) {
@@ -49,6 +50,7 @@ export const useWeeklyEventsSave = (eventForm: WeeklyEventForm, currentWeek: num
 
       const weekData = {
         week_number: eventForm.week,
+        pool_id: poolId,
         hoh_winner: eventForm.hohWinner || null,
         pov_winner: eventForm.povWinner || null,
         nominees: eventForm.nominees.filter(n => n),

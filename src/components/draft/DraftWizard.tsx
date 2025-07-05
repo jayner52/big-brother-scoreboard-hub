@@ -12,7 +12,7 @@ import { usePoolData } from '@/hooks/usePoolData';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { useDraftSubmission } from '@/hooks/useDraftSubmission';
 import { useDraftValidation } from '@/hooks/useDraftValidation';
-import { DRAFT_STEPS } from './wizard/draftStepsConfig';
+import { getDraftStepsConfig } from './wizard/draftStepsConfig';
 import { validateStep } from './wizard/stepValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -28,6 +28,8 @@ export const DraftWizard: React.FC = () => {
   const { formData, updateFormData, updateBonusAnswer, resetForm, clearSavedDraft } = useDraftForm();
   const { submitDraft } = useDraftSubmission();
   const { validateDraftForm } = useDraftValidation();
+
+  const DRAFT_STEPS = getDraftStepsConfig(poolData?.picks_per_team || 5);
 
   // Check for saved data on mount
   React.useEffect(() => {
@@ -101,7 +103,7 @@ export const DraftWizard: React.FC = () => {
   const isCurrentStepValid = getCurrentStepValidation();
   const currentStepConfig = DRAFT_STEPS[currentStep];
   const selectedPlayers = Object.values(formData).filter(player => player && player.trim());
-  const hasCompletedTeam = selectedPlayers.length === 5;
+  const hasCompletedTeam = selectedPlayers.length === (poolData?.picks_per_team || 5);
 
   return (
     <DraftLayoutWithSidebar formData={formData}>

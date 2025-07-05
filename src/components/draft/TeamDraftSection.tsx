@@ -7,6 +7,7 @@ import { ContestantGroup } from '@/types/pool';
 
 interface TeamDraftSectionProps {
   contestantGroups: ContestantGroup[];
+  picksPerTeam: number;
   formData: {
     player_1: string;
     player_2: string;
@@ -19,6 +20,7 @@ interface TeamDraftSectionProps {
 
 export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
   contestantGroups,
+  picksPerTeam,
   formData,
   onFormDataChange,
 }) => {
@@ -34,7 +36,7 @@ export const TeamDraftSection: React.FC<TeamDraftSectionProps> = ({
             Draft Your Dream Team
           </h3>
           <p className="text-emerald-100 text-lg">
-            Select 5 houseguests strategically - one from each group plus a free pick
+            Select {picksPerTeam} houseguests strategically - one from each group plus a free pick
           </p>
         </div>
       </div>

@@ -7,9 +7,11 @@ import { ContestantManagementHeader } from './contestants/ContestantManagementHe
 import { ManageContestantsTab } from './contestants/ManageContestantsTab';
 import { AIGenerationTab } from './contestants/AIGenerationTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePool } from '@/contexts/PoolContext';
 
 export const ContestantManagement: React.FC = () => {
-  const { contestants, setContestants, groups, loading, loadContestants } = useContestants();
+  const { activePool } = usePool();
+  const { contestants, setContestants, groups, loading, loadContestants } = useContestants(activePool?.id);
   const [selectedContestant, setSelectedContestant] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   

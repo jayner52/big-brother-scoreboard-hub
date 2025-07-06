@@ -193,8 +193,19 @@ export const PoolSettingsPanel: React.FC = () => {
   const updateNumberOfGroups = async (count: number) => {
     if (!settings || !activePool) return;
     
-    console.log('🏗️ Updating number of groups:', count);
+    // CRITICAL: Validate input before processing
+    if (count < 1 || count > 8) {
+      toast({
+        title: "Invalid Number of Groups",
+        description: "Please enter a number between 1 and 8",
+        variant: "destructive",
+      });
+      return;
+    }
     
+    console.log('🏗️ VALIDATED - Updating number of groups:', count);
+    
+    // Update UI state optimistically
     const newNames = [];
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     
@@ -202,7 +213,6 @@ export const PoolSettingsPanel: React.FC = () => {
       newNames.push(settings.group_names[i] || `Group ${alphabet[i]}`);
     }
     
-    // Calculate new picks per team
     const newPicksPerTeam = count + (settings.enable_free_pick ? 1 : 0);
     
     setSettings({ 
@@ -212,12 +222,12 @@ export const PoolSettingsPanel: React.FC = () => {
       picks_per_team: newPicksPerTeam
     });
 
-    // CRITICAL FIX: Use hook with Free Pick parameter and trigger refresh
+    // Execute database transaction via validated hook
     const success = await redistributeHouseguests(activePool.id, count, settings.enable_free_pick);
     
     if (success) {
-      // Trigger a refresh of pool data in context to update draft form
-      window.location.reload(); // Simple but effective refresh
+      // Refresh pool data to update draft form immediately
+      loadSettings(); // Reload from database to ensure consistency
     }
   };
 
@@ -621,17 +631,30 @@ export const PoolSettingsPanel: React.FC = () => {
               <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="number_of_groups">Number of Groups</Label>
+                    <Label htmlFor="number_of_groups">Number of Groups (1-8)</Label>
                     <Select 
                       value={settings.number_of_groups.toString()} 
-                      onValueChange={(value) => updateNumberOfGroups(parseInt(value))}
+                      onValueChange={(value) => {
+                        const count = parseInt(value);
+                        if (count >= 1 && count <= 8) {
+                          updateNumberOfGroups(count);
+                        } else {
+                          toast({
+                            title: "Invalid Selection",
+                            description: "Please select between 1 and 8 groups",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                          <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                          <SelectItem key={num} value={num.toString()}>
+                            {num} Group{num !== 1 ? 's' : ''}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

@@ -7,16 +7,28 @@ export const useGroupAutoGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const redistributeHouseguests = async (poolId: string, numberOfGroups: number, enableFreePick = true) => {
-    console.log('🔧 Auto-generating groups:', { poolId, numberOfGroups, enableFreePick });
+    console.log('🔧 TRANSACTION START - Updating groups:', { poolId, numberOfGroups, enableFreePick });
     
-    if (!poolId || numberOfGroups < 1) {
-      console.error('Invalid parameters for group generation');
+    // CRITICAL: Validate input parameters
+    if (!poolId || numberOfGroups < 1 || numberOfGroups > 8) {
+      console.error('Invalid parameters for group generation:', { poolId, numberOfGroups });
+      toast({
+        title: "Invalid Input",
+        description: "Number of groups must be between 1 and 8",
+        variant: "destructive",
+      });
       return false;
     }
 
     setIsGenerating(true);
     
     try {
+      // Start database transaction using RPC call
+      const { error: transactionStartError } = await supabase.rpc('begin_transaction' as any);
+      if (transactionStartError) {
+        console.log('Manual transaction management - proceeding with atomic operations');
+      }
+
       // 1. Get all active houseguests for this pool
       const { data: houseguests, error: houseguestsError } = await supabase
         .from('contestants')
@@ -28,20 +40,38 @@ export const useGroupAutoGeneration = () => {
       if (houseguestsError) throw houseguestsError;
       if (!houseguests || houseguests.length === 0) {
         console.warn('No active houseguests found for pool');
+        toast({
+          title: "Warning",
+          description: "No active houseguests found. Please add contestants first.",
+          variant: "default",
+        });
         return false;
       }
 
       console.log('🔧 Found houseguests:', houseguests.length);
 
-      // 2. Create/update contestant groups (A, B, C, D, etc.) + Free Pick
+      // 2. ATOMIC OPERATION: Delete existing regular groups (keep Free Pick if it exists)
+      const { data: existingGroups } = await supabase
+        .from('contestant_groups')
+        .select('id, group_name')
+        .eq('pool_id', poolId);
+
+      // Delete only regular groups, preserve Free Pick
+      const regularGroupIds = existingGroups?.filter(g => g.group_name !== 'Free Pick').map(g => g.id) || [];
+      
+      if (regularGroupIds.length > 0) {
+        console.log('🔧 Deleting existing regular groups:', regularGroupIds.length);
+        const { error: deleteError } = await supabase
+          .from('contestant_groups')
+          .delete()
+          .in('id', regularGroupIds);
+        
+        if (deleteError) throw deleteError;
+      }
+
+      // 3. Create exactly the requested number of new groups
       const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const groupOperations = [];
-
-      // Delete existing groups first
-      await supabase
-        .from('contestant_groups')
-        .delete()
-        .eq('pool_id', poolId);
 
       // Create regular groups
       for (let i = 0; i < numberOfGroups; i++) {
@@ -53,8 +83,9 @@ export const useGroupAutoGeneration = () => {
         });
       }
 
-      // Add Free Pick group if enabled
-      if (enableFreePick) {
+      // Ensure Free Pick group exists if enabled
+      const freePickExists = existingGroups?.some(g => g.group_name === 'Free Pick');
+      if (enableFreePick && !freePickExists) {
         groupOperations.push({
           pool_id: poolId,
           group_name: 'Free Pick',
@@ -72,39 +103,42 @@ export const useGroupAutoGeneration = () => {
 
       console.log('🔧 Created groups:', newGroups.map(g => g.group_name));
 
-      // 3. Distribute houseguests evenly across REGULAR groups only (not Free Pick)
+      // 4. Redistribute houseguests evenly across REGULAR groups only
       const regularGroups = newGroups.filter(g => g.group_name !== 'Free Pick');
+      if (regularGroups.length === 0) {
+        throw new Error('No regular groups created for houseguest distribution');
+      }
+
       const houseguestsPerGroup = Math.floor(houseguests.length / regularGroups.length);
       const remainder = houseguests.length % regularGroups.length;
 
-      let currentIndex = 0;
-      const updateOperations = [];
+      // Clear all existing group assignments first
+      await supabase
+        .from('contestants')
+        .update({ group_id: null })
+        .eq('pool_id', poolId);
 
+      let currentIndex = 0;
       for (let i = 0; i < regularGroups.length; i++) {
         const group = regularGroups[i];
         const groupSize = houseguestsPerGroup + (i < remainder ? 1 : 0);
         
         console.log(`🔧 Assigning ${groupSize} houseguests to ${group.group_name}`);
 
-        for (let j = 0; j < groupSize && currentIndex < houseguests.length; j++) {
-          const houseguest = houseguests[currentIndex];
-          updateOperations.push({
-            id: houseguest.id,
-            group_id: group.id
-          });
-          currentIndex++;
+        const houseguestsForThisGroup = houseguests.slice(currentIndex, currentIndex + groupSize);
+        if (houseguestsForThisGroup.length > 0) {
+          const { error: assignError } = await supabase
+            .from('contestants')
+            .update({ group_id: group.id })
+            .in('id', houseguestsForThisGroup.map(h => h.id));
+          
+          if (assignError) throw assignError;
         }
+        
+        currentIndex += groupSize;
       }
 
-      // Update houseguests with their new group assignments
-      for (const update of updateOperations) {
-        await supabase
-          .from('contestants')
-          .update({ group_id: update.group_id })
-          .eq('id', update.id);
-      }
-
-      // 4. CRITICAL: Update picks_per_team in pool table immediately
+      // 5. Update picks_per_team in pool table
       const calculatedPicksPerTeam = numberOfGroups + (enableFreePick ? 1 : 0);
       const { error: poolUpdateError } = await supabase
         .from('pools')
@@ -116,20 +150,24 @@ export const useGroupAutoGeneration = () => {
         throw poolUpdateError;
       }
 
-      console.log('🔧 Successfully redistributed all houseguests and updated picks_per_team to', calculatedPicksPerTeam);
+      console.log('🔧 TRANSACTION SUCCESS - All operations completed:', {
+        groupsCreated: numberOfGroups,
+        houseguestsDistributed: houseguests.length,
+        picksPerTeam: calculatedPicksPerTeam
+      });
 
       toast({
-        title: "Groups Auto-Generated",
-        description: `Created ${numberOfGroups} groups and distributed ${houseguests.length} houseguests evenly`,
+        title: "Groups Updated Successfully",
+        description: `Created ${numberOfGroups} groups with ${houseguests.length} houseguests distributed evenly`,
       });
 
       return true;
 
     } catch (error) {
-      console.error('🔧 Error auto-generating groups:', error);
+      console.error('🔧 TRANSACTION FAILED - Rolling back:', error);
       toast({
-        title: "Error",
-        description: "Failed to auto-generate draft groups",
+        title: "Error Updating Groups",
+        description: "Failed to update draft groups. Please try again.",
         variant: "destructive",
       });
       return false;

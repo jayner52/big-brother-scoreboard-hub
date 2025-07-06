@@ -65,7 +65,7 @@ export const useChatNotifications = (poolId?: string, userId?: string) => {
     if (!poolId || !userId) return;
 
     try {
-      await supabase
+      const { error } = await supabase
         .from('chat_read_status')
         .upsert({
           user_id: userId,
@@ -73,7 +73,14 @@ export const useChatNotifications = (poolId?: string, userId?: string) => {
           last_read_at: new Date().toISOString(),
           unread_count: 0,
           unread_mentions: 0
+        }, {
+          onConflict: 'user_id,pool_id'
         });
+      
+      // Ignore duplicate key constraint errors
+      if (error && error.code !== '23505') {
+        throw error;
+      }
       
       setUnreadCount(0);
       setUnreadMentions(0);

@@ -100,6 +100,9 @@ export const PoolSettingsPanel: React.FC = () => {
 
     setSaving(true);
     try {
+      // Calculate picks_per_team based on formula
+      const calculatedPicksPerTeam = settings.number_of_groups + (settings.enable_free_pick ? 1 : 0);
+      
       const success = await updatePool(activePool.id, {
         name: settings.season_name,
         entry_fee_amount: settings.entry_fee_amount,
@@ -111,7 +114,7 @@ export const PoolSettingsPanel: React.FC = () => {
         registration_deadline: settings.registration_deadline,
         draft_open: settings.draft_open,
         season_locked: !settings.season_active,
-        picks_per_team: settings.picks_per_team,
+        picks_per_team: calculatedPicksPerTeam,
         has_buy_in: settings.has_buy_in,
         buy_in_description: settings.buy_in_description,
       });
@@ -473,7 +476,7 @@ export const PoolSettingsPanel: React.FC = () => {
             </AccordionTrigger>
             <AccordionContent>
               <CardContent className="p-6 space-y-6">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="number_of_groups">Number of Groups</Label>
                     <Select 
@@ -489,23 +492,9 @@ export const PoolSettingsPanel: React.FC = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="picks_per_team">Picks Per Team</Label>
-                    <Select 
-                      value={settings.picks_per_team.toString()} 
-                      onValueChange={(value) => setSettings({ ...settings, picks_per_team: parseInt(value) })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                          <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Each team makes one pick from each group
+                    </p>
                   </div>
 
                   <div className="flex items-center space-x-2 mt-6">
@@ -515,6 +504,18 @@ export const PoolSettingsPanel: React.FC = () => {
                     />
                     <Label>Enable Free Pick</Label>
                   </div>
+                </div>
+
+                {/* Calculated Picks Display */}
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h4 className="font-medium mb-2">Team Configuration</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Teams will make <strong>{settings.number_of_groups + (settings.enable_free_pick ? 1 : 0)} total picks</strong>
+                    {settings.enable_free_pick ? 
+                      ` (${settings.number_of_groups} from groups + 1 free pick)` : 
+                      ` (${settings.number_of_groups} from groups)`
+                    }
+                  </p>
                 </div>
 
                   {/* Allow Duplicate Picks */}

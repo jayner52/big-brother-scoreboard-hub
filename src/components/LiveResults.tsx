@@ -8,6 +8,7 @@ import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { formatEventType, getEventDisplayText } from '@/utils/eventFormatters';
 import { useCurrentWeek } from '@/contexts/CurrentWeekContext';
+import { usePool } from '@/contexts/PoolContext';
 
 interface WeeklyResult {
   week_number: number;
@@ -37,22 +38,28 @@ export const LiveResults: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showSpoilers, setShowSpoilers] = useState(false);
   const { currentWeek } = useCurrentWeek();
+  const { activePool } = usePool();
   const [currentWeekData, setCurrentWeekData] = useState<WeeklyResult | null>(null);
 
   useEffect(() => {
-    loadWeeklyResults();
-    
-    // Auto-refresh every 5 seconds to get live updates
-    const interval = setInterval(loadWeeklyResults, 5000);
-    
-    return () => clearInterval(interval);
-  }, []);
+    if (activePool?.id) {
+      loadWeeklyResults();
+      
+      // Auto-refresh every 5 seconds to get live updates
+      const interval = setInterval(loadWeeklyResults, 5000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [activePool?.id]);
 
   const loadWeeklyResults = async () => {
+    if (!activePool?.id) return;
+    
     try {
       const { data, error } = await supabase
         .from('weekly_results')
         .select('*')
+        .eq('pool_id', activePool.id)
         .order('week_number', { ascending: false });
 
       if (error) throw error;
@@ -68,6 +75,7 @@ export const LiveResults: React.FC = () => {
             description,
             contestants(name)
           `)
+          .eq('pool_id', activePool.id)
           .order('week_number', { ascending: false }),
         supabase
           .from('weekly_events')
@@ -77,6 +85,7 @@ export const LiveResults: React.FC = () => {
             contestants(name)
           `)
           .eq('event_type', 'bb_arena_winner')
+          .eq('pool_id', activePool.id)
           .order('week_number', { ascending: false })
       ]);
 

@@ -18,7 +18,7 @@ export const useWeeklyEvents = () => {
     loadData
   } = useWeeklyEventsData(activePool?.id);
 
-  const { handleSubmitWeek } = useWeeklyEventsSubmission(contestants, scoringRules);
+  const { handleSubmitWeek } = useWeeklyEventsSubmission(contestants, scoringRules, activePool?.id || '');
   
   const [eventForm, setEventForm] = useState<WeeklyEventForm | null>(null);
 

@@ -6,7 +6,8 @@ import { useAutoPointsRecalculation } from './useAutoPointsRecalculation';
 
 export const useWeeklyEventsSubmission = (
   contestants: ContestantWithBio[],
-  scoringRules: DetailedScoringRule[]
+  scoringRules: DetailedScoringRule[],
+  poolId: string
 ) => {
   const { toast } = useToast();
   const { triggerRecalculation } = useAutoPointsRecalculation();
@@ -15,8 +16,8 @@ export const useWeeklyEventsSubmission = (
     try {
       // First delete existing data for this week to avoid duplicates
       await Promise.all([
-        supabase.from('weekly_events').delete().eq('week_number', eventForm.week),
-        supabase.from('special_events').delete().eq('week_number', eventForm.week)
+        supabase.from('weekly_events').delete().eq('week_number', eventForm.week).eq('pool_id', poolId),
+        supabase.from('special_events').delete().eq('week_number', eventForm.week).eq('pool_id', poolId)
       ]);
 
       // Create weekly events entries
@@ -28,7 +29,8 @@ export const useWeeklyEventsSubmission = (
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.hohWinner)?.id,
           event_type: 'hoh_winner',
-          points_awarded: calculatePoints('hoh_winner', undefined, scoringRules)
+          points_awarded: calculatePoints('hoh_winner', undefined, scoringRules),
+          pool_id: poolId
         });
       }
 
@@ -38,7 +40,8 @@ export const useWeeklyEventsSubmission = (
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.povWinner)?.id,
           event_type: 'pov_winner',
-          points_awarded: calculatePoints('pov_winner', undefined, scoringRules)
+          points_awarded: calculatePoints('pov_winner', undefined, scoringRules),
+          pool_id: poolId
         });
       }
 
@@ -48,7 +51,8 @@ export const useWeeklyEventsSubmission = (
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.povUsedOn)?.id,
           event_type: 'pov_used_on',
-          points_awarded: 1
+          points_awarded: 1,
+          pool_id: poolId
         });
       }
 
@@ -58,7 +62,8 @@ export const useWeeklyEventsSubmission = (
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === nominee)?.id,
           event_type: 'nominee',
-          points_awarded: calculatePoints('nominee', undefined, scoringRules)
+          points_awarded: calculatePoints('nominee', undefined, scoringRules),
+          pool_id: poolId
         });
       });
 
@@ -68,7 +73,8 @@ export const useWeeklyEventsSubmission = (
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.replacementNominee)?.id,
           event_type: 'replacement_nominee',
-          points_awarded: calculatePoints('replacement_nominee', undefined, scoringRules)
+          points_awarded: calculatePoints('replacement_nominee', undefined, scoringRules),
+          pool_id: poolId
         });
       }
 
@@ -78,7 +84,8 @@ export const useWeeklyEventsSubmission = (
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.evicted)?.id,
           event_type: 'evicted',
-          points_awarded: 0 // No points for being evicted
+          points_awarded: 0, // No points for being evicted
+          pool_id: poolId
         });
       }
 
@@ -90,7 +97,8 @@ export const useWeeklyEventsSubmission = (
     const { data: allEvictedData } = await supabase
       .from('weekly_events')
       .select('contestants!inner(name)')
-      .eq('event_type', 'evicted');
+      .eq('event_type', 'evicted')
+      .eq('pool_id', poolId);
     
     const allEvictedNames = allEvictedData?.map(event => (event.contestants as any).name) || [];
     const currentlyEvicted = [...allEvictedNames, ...currentWeekEvicted];
@@ -102,7 +110,8 @@ export const useWeeklyEventsSubmission = (
           week_number: eventForm.week,
           contestant_id: contestant.id,
           event_type: 'survival',
-          points_awarded: calculatePoints('survival', undefined, scoringRules)
+          points_awarded: calculatePoints('survival', undefined, scoringRules),
+          pool_id: poolId
         });
       });
 
@@ -112,7 +121,8 @@ export const useWeeklyEventsSubmission = (
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.aiArenaWinner)?.id,
           event_type: 'bb_arena_winner',
-          points_awarded: calculatePoints('bb_arena_winner', undefined, scoringRules)
+          points_awarded: calculatePoints('bb_arena_winner', undefined, scoringRules),
+          pool_id: poolId
         });
       }
 
@@ -123,7 +133,8 @@ export const useWeeklyEventsSubmission = (
             week_number: eventForm.week,
             contestant_id: contestant.id,
             event_type: 'jury_member',
-            points_awarded: calculatePoints('jury_member', undefined, scoringRules)
+            points_awarded: calculatePoints('jury_member', undefined, scoringRules),
+            pool_id: poolId
           });
         });
       }
@@ -147,7 +158,8 @@ export const useWeeklyEventsSubmission = (
           contestant_id: contestants.find(c => c.name === se.contestant)?.id,
           event_type: se.eventType,
           description: se.description,
-          points_awarded: calculatePoints(se.eventType, se.customPoints, scoringRules)
+          points_awarded: calculatePoints(se.eventType, se.customPoints, scoringRules),
+          pool_id: poolId
         }))
         .filter(se => se.contestant_id);
 
@@ -167,7 +179,8 @@ export const useWeeklyEventsSubmission = (
         const { error: contestantError } = await supabase
           .from('contestants')
           .update({ is_active: false })
-          .eq('name', evictedName);
+          .eq('name', evictedName)
+          .eq('pool_id', poolId);
 
         if (contestantError) throw contestantError;
       }
@@ -175,6 +188,7 @@ export const useWeeklyEventsSubmission = (
       // Update or insert into weekly_results table
       const weekData = {
         week_number: eventForm.week,
+        pool_id: poolId,
         hoh_winner: (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') ? eventForm.hohWinner : null,
         pov_winner: (eventForm.povWinner && eventForm.povWinner !== 'no-winner') ? eventForm.povWinner : null,
         nominees: eventForm.nominees.filter(n => n),
@@ -203,6 +217,7 @@ export const useWeeklyEventsSubmission = (
         .from('weekly_results')
         .select('id')
         .eq('week_number', eventForm.week)
+        .eq('pool_id', poolId)
         .single();
 
       if (existingWeek) {
@@ -210,7 +225,8 @@ export const useWeeklyEventsSubmission = (
         const { error: updateError } = await supabase
           .from('weekly_results')
           .update(weekData)
-          .eq('week_number', eventForm.week);
+          .eq('week_number', eventForm.week)
+          .eq('pool_id', poolId);
         
         if (updateError) throw updateError;
       } else {
@@ -236,6 +252,7 @@ export const useWeeklyEventsSubmission = (
           .from('weekly_results')
           .select('week_number, is_draft')
           .eq('is_draft', false)
+          .eq('pool_id', poolId)
           .order('week_number', { ascending: true });
         
         const completedWeeks = allWeeklyResults?.map(w => w.week_number) || [];

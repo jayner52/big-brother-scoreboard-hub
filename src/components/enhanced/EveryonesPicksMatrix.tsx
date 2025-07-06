@@ -3,10 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { usePool } from '@/contexts/PoolContext';
 import { TeamDisplaySection } from './everyone-picks/TeamDisplaySection';
 import { BonusQuestionsMatrix } from './everyone-picks/BonusQuestionsMatrix';
 
 export const EveryonesPicksMatrix: React.FC = () => {
+  const { activePool } = usePool();
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,8 +16,10 @@ export const EveryonesPicksMatrix: React.FC = () => {
   const { houseguestPoints } = useHouseguestPoints();
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (activePool?.id) {
+      loadData();
+    }
+  }, [activePool?.id]);
 
   // Set up real-time subscription for new entries
   useEffect(() => {
@@ -40,15 +44,20 @@ export const EveryonesPicksMatrix: React.FC = () => {
   }, []);
 
   const loadData = async () => {
+    if (!activePool?.id) return;
+    
     try {
+      console.log('EveryonesPicksMatrix: Loading data for pool', activePool.id);
       const [entriesResponse, questionsResponse] = await Promise.all([
         supabase
           .from('pool_entries')
           .select('*')
+          .eq('pool_id', activePool.id)
           .order('team_name'),
         supabase
           .from('bonus_questions')
           .select('*')
+          .eq('pool_id', activePool.id)
           .eq('is_active', true)
           .order('sort_order')
       ]);

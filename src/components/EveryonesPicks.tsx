@@ -5,62 +5,37 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { usePool } from '@/contexts/PoolContext';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, EyeOff } from 'lucide-react';
 import { evaluateBonusAnswer, formatBonusAnswer, formatCorrectAnswers } from '@/utils/bonusQuestionUtils';
 
 export const EveryonesPicks: React.FC = () => {
+  const { activePool } = usePool();
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activePool, setActivePool] = useState<any>(null);
   const { houseguestPoints, loading: pointsLoading, error: pointsError } = useHouseguestPoints();
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (activePool?.id) {
+      loadData();
+    }
+  }, [activePool?.id]);
 
   const loadData = async () => {
+    if (!activePool?.id) return;
+    
     try {
       setError(null);
       setLoading(true);
-
-      // Get current user's active pool
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.user) {
-        setPoolEntries([]);
-        setBonusQuestions([]);
-        return;
-      }
-
-      const { data: membership } = await supabase
-        .from('pool_memberships')
-        .select('pool_id')
-        .eq('user_id', session.session.user.id)
-        .eq('active', true)
-        .limit(1)
-        .single();
-
-      if (!membership) {
-        setPoolEntries([]);
-        setBonusQuestions([]);
-        return;
-      }
-
-      // Get pool settings to check if picks should be hidden
-      const { data: poolData } = await supabase
-        .from('pools')
-        .select('*')
-        .eq('id', membership.pool_id)
-        .single();
-
-      setActivePool(poolData);
+      console.log('EveryonesPicks: Loading data for pool', activePool.id);
       
       const [entriesResult, questionsResult] = await Promise.all([
-        supabase.from('pool_entries').select('*').eq('pool_id', membership.pool_id).order('participant_name'),
-        supabase.from('bonus_questions').select('*').eq('pool_id', membership.pool_id).eq('is_active', true).order('sort_order')
+        supabase.from('pool_entries').select('*').eq('pool_id', activePool.id).order('participant_name'),
+        supabase.from('bonus_questions').select('*').eq('pool_id', activePool.id).eq('is_active', true).order('sort_order')
       ]);
 
       if (entriesResult.error) throw entriesResult.error;

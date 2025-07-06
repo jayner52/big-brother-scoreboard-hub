@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { usePool } from '@/contexts/PoolContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useBonusQuestions } from '@/hooks/useBonusQuestions';
 import { useAutoPointsRecalculation } from '@/hooks/useAutoPointsRecalculation';
@@ -14,6 +15,7 @@ import { BonusQuestionCard } from './bonus-questions/BonusQuestionCard';
 import { Plus, Settings } from 'lucide-react';
 
 export const EnhancedBonusQuestionsPanel: React.FC = () => {
+  const { activePool } = usePool();
   const { toast } = useToast();
   const { triggerRecalculation } = useAutoPointsRecalculation();
   const {
@@ -42,11 +44,13 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
   }, [bonusQuestions]);
 
   const handleGlobalToggle = async (enabled: boolean) => {
+    if (!activePool?.id) return;
+    
     try {
       const { error } = await supabase
         .from('bonus_questions')
         .update({ is_active: enabled })
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all
+        .eq('pool_id', activePool.id);
 
       if (error) throw error;
       
@@ -68,11 +72,14 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
   };
 
   const handleIndividualToggle = async (questionId: string, enabled: boolean) => {
+    if (!activePool?.id) return;
+    
     try {
       const { error } = await supabase
         .from('bonus_questions')
         .update({ is_active: enabled })
-        .eq('id', questionId);
+        .eq('id', questionId)
+        .eq('pool_id', activePool.id);
 
       if (error) throw error;
 
@@ -94,10 +101,13 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
   };
 
   const handleCreateQuestion = async () => {
+    if (!activePool?.id) return;
+    
     try {
       const { error } = await supabase
         .from('bonus_questions')
         .insert({
+          pool_id: activePool.id,
           question_text: newQuestion.question_text,
           question_type: newQuestion.question_type,
           points_value: newQuestion.points_value,
@@ -133,11 +143,14 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
   };
 
   const handlePointsChange = async (questionId: string, points: number) => {
+    if (!activePool?.id) return;
+    
     try {
       const { error } = await supabase
         .from('bonus_questions')
         .update({ points_value: points })
-        .eq('id', questionId);
+        .eq('id', questionId)
+        .eq('pool_id', activePool.id);
 
       if (error) throw error;
 

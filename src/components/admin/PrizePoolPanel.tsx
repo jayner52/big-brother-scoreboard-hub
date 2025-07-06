@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Trophy, Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { usePool } from '@/contexts/PoolContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PrizePool {
@@ -18,15 +19,10 @@ interface PrizePool {
   is_active: boolean;
 }
 
-interface PoolSettings {
-  entry_fee_amount: number;
-  entry_fee_currency: string;
-}
-
 export const PrizePoolPanel: React.FC = () => {
+  const { activePool } = usePool();
   const { toast } = useToast();
   const [prizePools, setPrizePools] = useState<PrizePool[]>([]);
-  const [poolSettings, setPoolSettings] = useState<PoolSettings | null>(null);
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading, setLoading] = useState(true);
   const [newPrize, setNewPrize] = useState({
@@ -36,23 +32,23 @@ export const PrizePoolPanel: React.FC = () => {
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (activePool?.id) {
+      loadData();
+    }
+  }, [activePool?.id]);
 
   const loadData = async () => {
+    if (!activePool?.id) return;
+    
     try {
-      const [prizeResult, settingsResult, entriesResult] = await Promise.all([
+      console.log('PrizePoolPanel: Loading data for pool', activePool.id);
+      const [prizeResult, entriesResult] = await Promise.all([
         supabase.from('prize_pools').select('*').order('place_number'),
-        supabase.from('pool_settings').select('entry_fee_amount, entry_fee_currency').limit(1).single(),
-        supabase.from('pool_entries').select('id')
+        supabase.from('pool_entries').select('id').eq('pool_id', activePool.id)
       ]);
 
       if (prizeResult.data) {
         setPrizePools(prizeResult.data);
-      }
-
-      if (settingsResult.data) {
-        setPoolSettings(settingsResult.data);
       }
 
       setTotalEntries(entriesResult.data?.length || 0);
@@ -76,7 +72,7 @@ export const PrizePoolPanel: React.FC = () => {
           place_number: newPrize.place_number,
           prize_amount: newPrize.prize_amount,
           description: newPrize.description || null,
-          currency: poolSettings?.entry_fee_currency || 'CAD'
+          currency: activePool?.entry_fee_currency || 'CAD'
         });
 
       if (error) throw error;
@@ -152,9 +148,9 @@ export const PrizePoolPanel: React.FC = () => {
     return <div className="text-center py-8">Loading prize pool management...</div>;
   }
 
-  const totalExpected = poolSettings ? (totalEntries * poolSettings.entry_fee_amount) : 0;
+  const totalExpected = activePool ? (totalEntries * activePool.entry_fee_amount) : 0;
   const totalPrizes = prizePools.reduce((sum, prize) => sum + prize.prize_amount, 0);
-  const currency = poolSettings?.entry_fee_currency || 'CAD';
+  const currency = activePool?.entry_fee_currency || 'CAD';
 
   return (
     <div className="p-6 space-y-6">

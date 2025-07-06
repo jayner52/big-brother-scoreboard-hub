@@ -4,9 +4,11 @@ import { BonusQuestionCard } from './bonus-questions/BonusQuestionCard';
 import { MultipleCorrectAnswers } from './bonus-questions/MultipleCorrectAnswers';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePool } from '@/contexts/PoolContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const BonusQuestionsPanel: React.FC = () => {
+  const { activePool } = usePool();
   const { toast } = useToast();
   const {
     contestants,
@@ -17,11 +19,14 @@ export const BonusQuestionsPanel: React.FC = () => {
   } = useBonusQuestions();
 
   const handlePointsChange = async (questionId: string, points: number) => {
+    if (!activePool?.id) return;
+    
     try {
       const { error } = await supabase
         .from('bonus_questions')
         .update({ points_value: points })
-        .eq('id', questionId);
+        .eq('id', questionId)
+        .eq('pool_id', activePool.id);
 
       if (error) throw error;
 
@@ -40,11 +45,14 @@ export const BonusQuestionsPanel: React.FC = () => {
   };
 
   const handleMultipleAnswersUpdate = async (questionId: string, correctAnswers: string[]) => {
+    if (!activePool?.id) return;
+    
     try {
       const { error } = await supabase
         .from('bonus_questions')
         .update({ correct_answer: correctAnswers.join('|') }) // Store multiple answers separated by |
-        .eq('id', questionId);
+        .eq('id', questionId)
+        .eq('pool_id', activePool.id);
 
       if (error) throw error;
 

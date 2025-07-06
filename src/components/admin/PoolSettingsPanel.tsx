@@ -399,32 +399,6 @@ export const PoolSettingsPanel: React.FC = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="entry_fee">Entry Fee Amount</Label>
-                    <Input
-                      id="entry_fee"
-                      type="number"
-                      value={settings.entry_fee_amount}
-                      onChange={(e) => setSettings({ ...settings, entry_fee_amount: parseFloat(e.target.value) || 0 })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="currency">Currency</Label>
-                    <Select 
-                      value={settings.entry_fee_currency} 
-                      onValueChange={(value) => setSettings({ ...settings, entry_fee_currency: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CAD">CAD</SelectItem>
-                        <SelectItem value="USD">USD</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
 
                 <div>
                   <Label htmlFor="draft_deadline">Draft Due Date & Time</Label>

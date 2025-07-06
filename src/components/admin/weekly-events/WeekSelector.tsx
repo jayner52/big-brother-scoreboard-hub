@@ -85,8 +85,10 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
     }
 
     const icons = [];
+    const isDoubleEviction = week.data.is_double_eviction;
+    const isTripleEviction = week.data.is_triple_eviction;
     
-    // HOH Winner - Crown (yellow if filled, gray if empty)
+    // First round icons
     icons.push(
       <Crown 
         key="hoh"
@@ -94,9 +96,9 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
       />
     );
     
-    // Nominees - Target icons (red if filled, based on count)
+    // Nominees - Target icons (red if filled)
     const nomineesCount = week.data.nominees?.length || 0;
-    const maxNominees = Math.max(2, nomineesCount); // Show at least 2, up to actual count
+    const maxNominees = Math.max(2, nomineesCount);
     
     for (let i = 0; i < Math.min(maxNominees, 4); i++) {
       icons.push(
@@ -107,7 +109,7 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
       );
     }
     
-    // POV Winner - Award (green if filled, gray if empty)
+    // POV Winner - Award (green if filled)
     icons.push(
       <Award 
         key="pov"
@@ -115,7 +117,7 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
       />
     );
     
-    // Veto Used - RotateCcw (blue if used, gray if not)
+    // Veto Used - RotateCcw (blue if used)
     icons.push(
       <RotateCcw 
         key="veto"
@@ -123,8 +125,8 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
       />
     );
     
-    // Evicted - DoorOpen (brown if someone evicted, gray if not)
-    const hasEviction = week.data.evicted_contestant || week.data.second_evicted_contestant || week.data.third_evicted_contestant;
+    // Evicted - DoorOpen (brown if someone evicted)
+    const hasEviction = week.data.evicted_contestant;
     icons.push(
       <DoorOpen 
         key="evicted"
@@ -132,7 +134,99 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
       />
     );
 
-    return <div className="flex gap-1 ml-2">{icons}</div>;
+    // Add double/triple eviction indicators
+    if (isDoubleEviction || isTripleEviction) {
+      // Add DE/TE indicator
+      icons.push(
+        <span key="de-indicator" className="text-xs font-bold text-purple-600 mx-1">
+          {isTripleEviction ? 'TE' : 'DE'}
+        </span>
+      );
+
+      // Second round icons
+      icons.push(
+        <Crown 
+          key="hoh2"
+          className={`h-3 w-3 ${week.data.second_hoh_winner ? 'text-yellow-500' : 'text-gray-300'}`} 
+        />
+      );
+      
+      const secondNomineesCount = week.data.second_nominees?.length || 0;
+      for (let i = 0; i < Math.min(2, Math.max(2, secondNomineesCount)); i++) {
+        icons.push(
+          <Target 
+            key={`nominee2-${i}`}
+            className={`h-3 w-3 ${i < secondNomineesCount ? 'text-red-500' : 'text-gray-300'}`} 
+          />
+        );
+      }
+      
+      icons.push(
+        <Award 
+          key="pov2"
+          className={`h-3 w-3 ${week.data.second_pov_winner ? 'text-green-500' : 'text-gray-300'}`} 
+        />
+      );
+      
+      icons.push(
+        <RotateCcw 
+          key="veto2"
+          className={`h-3 w-3 ${week.data.second_pov_used ? 'text-blue-500' : 'text-gray-300'}`} 
+        />
+      );
+      
+      const hasSecondEviction = week.data.second_evicted_contestant;
+      icons.push(
+        <DoorOpen 
+          key="evicted2"
+          className={`h-3 w-3 ${hasSecondEviction ? 'text-amber-700' : 'text-gray-300'}`} 
+        />
+      );
+
+      // Third round icons for triple eviction
+      if (isTripleEviction) {
+        icons.push(
+          <Crown 
+            key="hoh3"
+            className={`h-3 w-3 ${week.data.third_hoh_winner ? 'text-yellow-500' : 'text-gray-300'}`} 
+          />
+        );
+        
+        const thirdNomineesCount = week.data.third_nominees?.length || 0;
+        for (let i = 0; i < Math.min(2, Math.max(2, thirdNomineesCount)); i++) {
+          icons.push(
+            <Target 
+              key={`nominee3-${i}`}
+              className={`h-3 w-3 ${i < thirdNomineesCount ? 'text-red-500' : 'text-gray-300'}`} 
+            />
+          );
+        }
+        
+        icons.push(
+          <Award 
+            key="pov3"
+            className={`h-3 w-3 ${week.data.third_pov_winner ? 'text-green-500' : 'text-gray-300'}`} 
+          />
+        );
+        
+        icons.push(
+          <RotateCcw 
+            key="veto3"
+            className={`h-3 w-3 ${week.data.third_pov_used ? 'text-blue-500' : 'text-gray-300'}`} 
+          />
+        );
+        
+        const hasThirdEviction = week.data.third_evicted_contestant;
+        icons.push(
+          <DoorOpen 
+            key="evicted3"
+            className={`h-3 w-3 ${hasThirdEviction ? 'text-amber-700' : 'text-gray-300'}`} 
+          />
+        );
+      }
+    }
+
+    return <div className="flex gap-1 ml-2 flex-wrap">{icons}</div>;
   };
 
   return (

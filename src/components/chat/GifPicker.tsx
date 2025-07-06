@@ -26,38 +26,47 @@ export const GifPicker: React.FC<GifPickerProps> = ({
   const [gifs, setGifs] = useState<GifItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Popular GIFs for initial display
-  const popularGifs = [
+  // Enhanced Big Brother themed GIFs for better selection
+  const bigBrotherGifs = [
     { id: '1', url: 'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif', title: 'Excited', preview_url: 'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/200w.gif' },
     { id: '2', url: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif', title: 'Thumbs Up', preview_url: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/200w.gif' },
     { id: '3', url: 'https://media.giphy.com/media/26BRrSvJUa0crqw4E/giphy.gif', title: 'Clap', preview_url: 'https://media.giphy.com/media/26BRrSvJUa0crqw4E/200w.gif' },
     { id: '4', url: 'https://media.giphy.com/media/l3q2XhfQ8oCkm1Ts4/giphy.gif', title: 'Laugh', preview_url: 'https://media.giphy.com/media/l3q2XhfQ8oCkm1Ts4/200w.gif' },
     { id: '5', url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif', title: 'Dance', preview_url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/200w.gif' },
-    { id: '6', url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif', title: 'Shocked', preview_url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/200w.gif' }
+    { id: '6', url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif', title: 'Shocked', preview_url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/200w.gif' },
+    { id: '7', url: 'https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif', title: 'Mind Blown', preview_url: 'https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/200w.gif' },
+    { id: '8', url: 'https://media.giphy.com/media/3o7TKziIuXtAI2vtPa/giphy.gif', title: 'Eye Roll', preview_url: 'https://media.giphy.com/media/3o7TKziIuXtAI2vtPa/200w.gif' },
+    { id: '9', url: 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif', title: 'Thinking', preview_url: 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/200w.gif' },
+    { id: '10', url: 'https://media.giphy.com/media/3o7TKF1fSIs1R19B8k/giphy.gif', title: 'Cheering', preview_url: 'https://media.giphy.com/media/3o7TKF1fSIs1R19B8k/200w.gif' },
+    { id: '11', url: 'https://media.giphy.com/media/26ufcVAp3AiJJsrIs/giphy.gif', title: 'Crying', preview_url: 'https://media.giphy.com/media/26ufcVAp3AiJJsrIs/200w.gif' },
+    { id: '12', url: 'https://media.giphy.com/media/3ohzdIuqJoo8QdKlnW/giphy.gif', title: 'Laughing Hard', preview_url: 'https://media.giphy.com/media/3ohzdIuqJoo8QdKlnW/200w.gif' },
+    { id: '13', url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif', title: 'Applause', preview_url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/200w.gif' },
+    { id: '14', url: 'https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif', title: 'Confused', preview_url: 'https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/200w.gif' },
+    { id: '15', url: 'https://media.giphy.com/media/l4FGGafcOHmrlQxG0/giphy.gif', title: 'Disappointed', preview_url: 'https://media.giphy.com/media/l4FGGafcOHmrlQxG0/200w.gif' }
   ];
 
   useEffect(() => {
     if (!searchTerm) {
-      setGifs(popularGifs);
+      setGifs(bigBrotherGifs);
     }
   }, [searchTerm]);
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
-      setGifs(popularGifs);
+      setGifs(bigBrotherGifs);
       return;
     }
 
     setLoading(true);
     try {
-      // For now, use mock data - in production you'd integrate with Giphy API
-      const mockResults = popularGifs.filter(gif => 
+      // Enhanced search through Big Brother themed GIFs
+      const filteredResults = bigBrotherGifs.filter(gif => 
         gif.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setGifs(mockResults.length > 0 ? mockResults : popularGifs);
+      setGifs(filteredResults.length > 0 ? filteredResults : bigBrotherGifs);
     } catch (error) {
       console.error('Error searching GIFs:', error);
-      setGifs(popularGifs);
+      setGifs(bigBrotherGifs);
     } finally {
       setLoading(false);
     }

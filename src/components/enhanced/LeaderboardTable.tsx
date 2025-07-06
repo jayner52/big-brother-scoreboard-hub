@@ -17,22 +17,18 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50">
-            <TableHead className="font-bold">Rank</TableHead>
-            {showHistoricalColumns && <TableHead className="font-bold text-center">Rank Δ</TableHead>}
-            <TableHead className="font-bold">Team Name</TableHead>
-            <TableHead className="font-bold">Participant</TableHead>
-            <TableHead className="font-bold">Houseguest 1</TableHead>
-            <TableHead className="font-bold">Houseguest 2</TableHead>
-            <TableHead className="font-bold">Houseguest 3</TableHead>
-            <TableHead className="font-bold">Houseguest 4</TableHead>
-            <TableHead className="font-bold">Houseguest 5</TableHead>
-            <TableHead className="font-bold text-center">Weekly Pts</TableHead>
-            {showHistoricalColumns && <TableHead className="font-bold text-center">Pts Δ</TableHead>}
-            <TableHead className="font-bold text-center">Bonus Pts</TableHead>
-            <TableHead className="font-bold text-center bg-yellow-100">Total</TableHead>
-            <TableHead className="font-bold text-center">Pts Δ</TableHead>
-            <TableHead className="font-bold text-center">Payment</TableHead>
+          <TableRow className="bg-muted">
+            <TableHead className="w-16 text-center font-bold">Rank</TableHead>
+            {showHistoricalColumns && <TableHead className="w-20 text-center font-bold">Rank Δ</TableHead>}
+            <TableHead className="w-48 font-bold">Team Name</TableHead>
+            <TableHead className="w-32 font-bold">Participant</TableHead>
+            <TableHead className="flex-1 font-bold">Houseguests</TableHead>
+            <TableHead className="w-20 text-center font-bold">Weekly</TableHead>
+            {showHistoricalColumns && <TableHead className="w-20 text-center font-bold">Week Δ</TableHead>}
+            <TableHead className="w-20 text-center font-bold">Bonus</TableHead>
+            <TableHead className="w-24 text-center font-bold bg-gradient-to-r from-yellow-100 to-yellow-200">Total</TableHead>
+            <TableHead className="w-20 text-center font-bold">Δ</TableHead>
+            <TableHead className="w-20 text-center font-bold">Payment</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

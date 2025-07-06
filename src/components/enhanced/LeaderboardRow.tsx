@@ -73,9 +73,13 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            <span className={`cursor-help ${isEliminated ? 'line-through text-red-600' : ''}`}>
+            <span className={`text-xs px-2 py-1 rounded-full inline-block ${
+              isEliminated 
+                ? 'bg-red-100 text-red-700 line-through' 
+                : 'bg-muted text-foreground'
+            }`}>
               {playerName}
-              {points !== undefined && ` (${points}pts)`}
+              {points !== undefined && ` (${points})`}
             </span>
           </TooltipTrigger>
           <TooltipContent>
@@ -91,6 +95,15 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
     );
   };
 
+  const getRankIcon = (rank: number) => {
+    switch (rank) {
+      case 1: return <span className="text-2xl">🥇</span>;
+      case 2: return <span className="text-2xl">🥈</span>;
+      case 3: return <span className="text-2xl">🥉</span>;
+      default: return <span className="text-lg font-bold text-muted-foreground">{rank}</span>;
+    }
+  };
+
   const isSnapshot = 'pool_entries' in entry;
   const teamData = isSnapshot ? entry.pool_entries : entry;
   const rankPosition = isSnapshot ? entry.rank_position : index + 1;
@@ -103,9 +116,13 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   const actualTotalPoints = actualWeeklyPoints + actualBonusPoints;
 
   return (
-    <TableRow className={rankPosition === 1 ? "bg-yellow-50" : index % 2 === 0 ? "bg-gray-50" : ""}>
-      <TableCell className="font-bold">
-        {rankPosition === 1 ? "🏆" : rankPosition}
+    <TableRow className={`
+      ${rankPosition === 1 ? "bg-gradient-to-r from-yellow-50 to-yellow-100" : ""} 
+      ${index % 2 === 0 ? "bg-muted/50" : ""} 
+      hover:bg-muted/70 transition-colors
+    `}>
+      <TableCell className="text-center">
+        {getRankIcon(rankPosition)}
       </TableCell>
       
       {showHistoricalColumns && (
@@ -123,9 +140,14 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <span className="font-semibold text-blue-600 cursor-help">
-                {teamData.team_name}
-              </span>
+              <div className="cursor-help">
+                <div className="font-semibold text-primary">
+                  {teamData.team_name}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {actualTotalPoints} pts total
+                </div>
+              </div>
             </TooltipTrigger>
             <TooltipContent>
               <div className="text-xs space-y-1">
@@ -144,12 +166,16 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
           </Tooltip>
         </TooltipProvider>
       </TableCell>
-      <TableCell>{teamData.participant_name}</TableCell>
-      {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
-        const playerKey = `player_${i + 1}` as keyof typeof teamData;
-        const playerName = teamData[playerKey] as string;
-        return <TableCell key={i}>{renderPlayerName(playerName)}</TableCell>;
-      })}
+      <TableCell className="text-sm text-muted-foreground">{teamData.participant_name}</TableCell>
+      <TableCell>
+        <div className="flex flex-wrap gap-1">
+          {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+            const playerKey = `player_${i + 1}` as keyof typeof teamData;
+            const playerName = teamData[playerKey] as string;
+            return playerName ? renderPlayerName(playerName) : null;
+          }).filter(Boolean)}
+        </div>
+      </TableCell>
       <TableCell className="text-center">
         <TooltipProvider>
           <Tooltip>

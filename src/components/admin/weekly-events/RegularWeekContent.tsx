@@ -62,6 +62,13 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
             eventForm={eventForm}
             setEventForm={setEventForm}
           />
+
+          {/* First Evicted Contestant - NOW INSIDE THE BLUE PANE */}
+          <EvictionSection
+            eventForm={eventForm}
+            setEventForm={setEventForm}
+            evictionLabel={eventForm.isDoubleEviction ? "First Evicted Contestant" : "Evicted Contestant"}
+          />
         </div>
       </div>
 
@@ -85,18 +92,11 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
         />
       )}
 
-      {/* BB Arena Section - positioned before eviction */}
+      {/* BB Arena Section - positioned before special events */}
       <AIArenaSection
         eventForm={eventForm}
         setEventForm={setEventForm}
         activeContestants={activeContestants}
-      />
-
-      {/* Evicted Contestant */}
-      <EvictionSection
-        eventForm={eventForm}
-        setEventForm={setEventForm}
-        evictionLabel={eventForm.isDoubleEviction ? "First Evicted Contestant" : "Evicted Contestant"}
       />
 
       {/* Special Events */}

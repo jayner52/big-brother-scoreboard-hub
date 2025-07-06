@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { usePool } from '@/contexts/PoolContext';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface CompetitionWinnersProps {
@@ -15,7 +16,8 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
   eventForm,
   setEventForm,
 }) => {
-  const { activeContestants } = useActiveContestants();
+  const { activePool } = usePool();
+  const { activeContestants } = useActiveContestants(activePool?.id);
   
   return (
     <div>

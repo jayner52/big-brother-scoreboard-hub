@@ -39,136 +39,152 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
   const [unansweredQuestions, setUnansweredQuestions] = useState(0);
   const [steps, setSteps] = useState<SetupStep[]>([]);
 
+  // Consolidated useEffect for proper loading and visibility management
   useEffect(() => {
-    if (activePool?.id) {
-      checkSetupStatus();
-    }
-  }, [activePool?.id]);
+    const initializeWizard = async () => {
+      if (!activePool?.id) {
+        setIsLoading(false);
+        return;
+      }
 
-  const checkSetupStatus = async () => {
-    if (!activePool?.id) return;
+      try {
+        setIsLoading(true);
+        
+        // Check if any entries exist
+        const { count: entriesCount } = await supabase
+          .from('pool_entries')
+          .select('id', { count: 'exact' })
+          .eq('pool_id', activePool.id);
 
-    try {
-      // Check if any entries exist
-      const { count: entriesCount } = await supabase
-        .from('pool_entries')
-        .select('id', { count: 'exact' })
-        .eq('pool_id', activePool.id);
+        setHasAnyEntries((entriesCount || 0) > 0);
 
-      setHasAnyEntries((entriesCount || 0) > 0);
+        // Check unanswered bonus questions
+        const { count: questionCount } = await supabase
+          .from('bonus_questions')
+          .select('id', { count: 'exact' })
+          .eq('pool_id', activePool.id)
+          .eq('is_active', true);
 
-      // Check unanswered bonus questions
-      const { count: questionCount } = await supabase
-        .from('bonus_questions')
-        .select('id', { count: 'exact' })
-        .eq('pool_id', activePool.id)
-        .eq('is_active', true);
+        setUnansweredQuestions(questionCount || 0);
 
-      setUnansweredQuestions(questionCount || 0);
-
-      // Build setup steps
-      const setupSteps: SetupStep[] = [
-        {
-          id: 'pool-created',
-          title: 'Pool Created',
-          description: `Welcome! Your pool "${activePool.name}" is ready to configure.`,
-          icon: <CheckCircle className="h-5 w-5 text-green-600" />,
-          completed: true,
-        },
-        {
-          id: 'draft-config',
-          title: 'Configure Draft Settings',
-          description: 'Set the number of contestant groups and picks per team.',
-          icon: hasAnyEntries ? 
-            <CheckCircle className="h-5 w-5 text-green-600" /> : 
-            <UserCheck className="h-5 w-5 text-blue-600" />,
-          completed: activePool.draft_configuration_locked || false,
-          warning: hasAnyEntries ? undefined : 'This cannot be changed after the first person drafts!',
-          action: () => {
-            // Navigate to draft configuration without closing wizard
-            const adminPanel = document.querySelector('[data-admin-panel]');
-            if (adminPanel) {
-              adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              
-              // Expand the draft configuration accordion
-              setTimeout(() => {
-                const trigger = document.querySelector('[data-value="draft-configuration"]');
-                if (trigger && !trigger.getAttribute('data-state')?.includes('open')) {
-                  (trigger as HTMLElement).click();
-                }
-              }, 500);
-            }
+        // Build setup steps
+        const setupSteps: SetupStep[] = [
+          {
+            id: 'pool-created',
+            title: 'Pool Created',
+            description: `Welcome! Your pool "${activePool.name}" is ready to configure.`,
+            icon: <CheckCircle className="h-5 w-5 text-green-600" />,
+            completed: true,
           },
-          actionLabel: 'Configure →'
-        },
-        {
-          id: 'payment-setup',
-          title: 'Payment Information',
-          description: activePool.has_buy_in ? 
-            'Configure how participants will pay the entry fee.' : 
-            'No buy-in required for this pool.',
-          icon: activePool.has_buy_in ? 
-            (activePool.payment_method_1 ? 
+          {
+            id: 'draft-config',
+            title: 'Configure Draft Settings',
+            description: 'Set the number of contestant groups and picks per team.',
+            icon: (entriesCount || 0) > 0 ? 
               <CheckCircle className="h-5 w-5 text-green-600" /> : 
-              <DollarSign className="h-5 w-5 text-blue-600" />
-            ) : 
-            <CheckCircle className="h-5 w-5 text-green-600" />,
-          completed: !activePool.has_buy_in || !!activePool.payment_method_1,
-          action: activePool.has_buy_in && !activePool.payment_method_1 ? 
-            () => {
-              // Navigate to settings tab for payment setup via URL
-              const currentUrl = new URL(window.location.href);
-              currentUrl.searchParams.set('tab', 'settings');
-              window.history.pushState({}, '', currentUrl.toString());
-              
-              // Navigate and reload
+              <UserCheck className="h-5 w-5 text-blue-600" />,
+            completed: activePool.draft_configuration_locked || false,
+            warning: (entriesCount || 0) > 0 ? undefined : 'This cannot be changed after the first person drafts!',
+            action: () => {
               const adminPanel = document.querySelector('[data-admin-panel]');
               if (adminPanel) {
                 adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                setTimeout(() => window.location.reload(), 100);
+                
+                setTimeout(() => {
+                  const trigger = document.querySelector('[data-value="draft-configuration"]');
+                  if (trigger && !trigger.getAttribute('data-state')?.includes('open')) {
+                    (trigger as HTMLElement).click();
+                  }
+                }, 500);
               }
-            } : undefined,
-          actionLabel: 'Set up →'
-        },
-        {
-          id: 'bonus-questions',
-          title: 'Review Bonus Questions',
-          description: `${unansweredQuestions} prediction questions available for customization.`,
-          icon: <UserCheck className="h-5 w-5 text-blue-600" />,
-          completed: false, // Always show as available for review
-          action: () => {
-            // Navigate to bonus questions tab without closing wizard
-            const adminPanel = document.querySelector('[data-admin-panel]');
-            if (adminPanel) {
-              adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              
-              // Click the bonus questions tab
-              setTimeout(() => {
-                const bonusTab = document.querySelector('[data-value="bonus"]');
-                if (bonusTab) {
-                  (bonusTab as HTMLElement).click();
-                }
-              }, 500);
-            }
+            },
+            actionLabel: 'Configure →'
           },
-          actionLabel: 'Review →'
-        },
-        {
-          id: 'invite-participants',
-          title: 'Ready to Invite!',
-          description: `Share your invite code: ${activePool.invite_code}`,
-          icon: <Share2 className="h-5 w-5 text-green-600" />,
-          completed: !activePool.has_buy_in || !!activePool.payment_method_1,
-          action: () => copyInviteCode(),
-          actionLabel: 'Copy Code'
-        }
-      ];
+          {
+            id: 'payment-setup',
+            title: 'Payment Information',
+            description: activePool.has_buy_in ? 
+              'Configure how participants will pay the entry fee.' : 
+              'No buy-in required for this pool.',
+            icon: activePool.has_buy_in ? 
+              (activePool.payment_method_1 ? 
+                <CheckCircle className="h-5 w-5 text-green-600" /> : 
+                <DollarSign className="h-5 w-5 text-blue-600" />
+              ) : 
+              <CheckCircle className="h-5 w-5 text-green-600" />,
+            completed: !activePool.has_buy_in || !!activePool.payment_method_1,
+            action: activePool.has_buy_in && !activePool.payment_method_1 ? 
+              () => {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('tab', 'settings');
+                window.history.pushState({}, '', currentUrl.toString());
+                
+                const adminPanel = document.querySelector('[data-admin-panel]');
+                if (adminPanel) {
+                  adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setTimeout(() => window.location.reload(), 100);
+                }
+              } : undefined,
+            actionLabel: 'Set up →'
+          },
+          {
+            id: 'bonus-questions',
+            title: 'Review Bonus Questions',
+            description: `${questionCount || 0} prediction questions available for customization.`,
+            icon: <UserCheck className="h-5 w-5 text-blue-600" />,
+            completed: false,
+            action: () => {
+              const adminPanel = document.querySelector('[data-admin-panel]');
+              if (adminPanel) {
+                adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                setTimeout(() => {
+                  const bonusTab = document.querySelector('[data-value="bonus"]');
+                  if (bonusTab) {
+                    (bonusTab as HTMLElement).click();
+                  }
+                }, 500);
+              }
+            },
+            actionLabel: 'Review →'
+          },
+          {
+            id: 'invite-participants',
+            title: 'Ready to Invite!',
+            description: `Share your invite code: ${activePool.invite_code}`,
+            icon: <Share2 className="h-5 w-5 text-green-600" />,
+            completed: !activePool.has_buy_in || !!activePool.payment_method_1,
+            action: () => copyInviteCode(),
+            actionLabel: 'Copy Code'
+          }
+        ];
 
-      setSteps(setupSteps);
-    } catch (error) {
-      console.error('Error checking setup status:', error);
+        setSteps(setupSteps);
+
+        // Determine visibility after steps are built
+        if (forceShow) {
+          setIsVisible(true);
+        } else {
+          const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
+          setIsVisible(!dismissed);
+        }
+        
+      } catch (error) {
+        console.error('Error initializing wizard:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeWizard();
+  }, [activePool?.id, forceShow]);
+
+  // Handle force show changes
+  useEffect(() => {
+    if (forceShow && steps.length > 0) {
+      setIsVisible(true);
     }
-  };
+  }, [forceShow, steps.length]);
 
   const navigateToSection = (section: string) => {
     // Add a small delay to ensure smooth transition
@@ -204,22 +220,18 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
   };
 
   // Handle visibility logic with proper force-show support and prevent flash
+  // This effect now just handles component cleanup
   useEffect(() => {
-    const handleVisibility = async () => {
-      if (activePool?.id && steps.length > 0) {
-        if (forceShow) {
-          setIsVisible(true);
-          setIsLoading(false);
-        } else {
-          const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
-          setIsVisible(!dismissed);
-          setIsLoading(false);
+    return () => {
+      // Cleanup on unmount
+      if (!forceShow && activePool?.id) {
+        const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
+        if (!dismissed && !isVisible) {
+          localStorage.setItem(`wizard-dismissed-${activePool.id}`, 'true');
         }
       }
     };
-    
-    handleVisibility();
-  }, [activePool?.id, forceShow, steps.length]);
+  }, [isVisible, forceShow, activePool?.id]);
 
   if (isLoading || !isVisible || !activePool) return null;
 

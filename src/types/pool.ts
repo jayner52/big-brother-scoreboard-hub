@@ -95,6 +95,15 @@ export interface TeamRoster {
   player_5: string;
 }
 
+export interface PrizeDistribution {
+  first_place_percentage: number;
+  second_place_percentage: number;
+  third_place_percentage: number;
+  first_place_amount: number;
+  second_place_amount: number;
+  third_place_amount: number;
+}
+
 export interface Pool {
   id: string;
   owner_id: string;
@@ -123,6 +132,9 @@ export interface Pool {
   hide_picks_until_draft_closed?: boolean;
   season_locked?: boolean;
   allow_duplicate_picks?: boolean;
+  prize_distribution?: any;
+  season_complete?: boolean;
+  draft_configuration_locked?: boolean;
 }
 
 export interface PoolMembership {

@@ -663,12 +663,61 @@ export type Database = {
         }
         Relationships: []
       }
+      pool_winners: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          payment_submitted: boolean | null
+          place: number
+          pool_id: string
+          team_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          payment_submitted?: boolean | null
+          place: number
+          pool_id: string
+          team_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          payment_submitted?: boolean | null
+          place?: number
+          pool_id?: string
+          team_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pool_winners_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pool_winners_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "pool_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pools: {
         Row: {
           allow_duplicate_picks: boolean | null
           buy_in_description: string | null
           created_at: string
           description: string | null
+          draft_configuration_locked: boolean | null
           draft_locked: boolean
           draft_open: boolean
           enable_bonus_questions: boolean
@@ -689,7 +738,9 @@ export type Database = {
           payment_method_1: string
           payment_method_2: string | null
           picks_per_team: number
+          prize_distribution: Json | null
           registration_deadline: string | null
+          season_complete: boolean | null
           season_locked: boolean | null
           updated_at: string
         }
@@ -698,6 +749,7 @@ export type Database = {
           buy_in_description?: string | null
           created_at?: string
           description?: string | null
+          draft_configuration_locked?: boolean | null
           draft_locked?: boolean
           draft_open?: boolean
           enable_bonus_questions?: boolean
@@ -718,7 +770,9 @@ export type Database = {
           payment_method_1?: string
           payment_method_2?: string | null
           picks_per_team?: number
+          prize_distribution?: Json | null
           registration_deadline?: string | null
+          season_complete?: boolean | null
           season_locked?: boolean | null
           updated_at?: string
         }
@@ -727,6 +781,7 @@ export type Database = {
           buy_in_description?: string | null
           created_at?: string
           description?: string | null
+          draft_configuration_locked?: boolean | null
           draft_locked?: boolean
           draft_open?: boolean
           enable_bonus_questions?: boolean
@@ -747,7 +802,9 @@ export type Database = {
           payment_method_1?: string
           payment_method_2?: string | null
           picks_per_team?: number
+          prize_distribution?: Json | null
           registration_deadline?: string | null
+          season_complete?: boolean | null
           season_locked?: boolean | null
           updated_at?: string
         }
@@ -1125,6 +1182,47 @@ export type Database = {
           },
           {
             foreignKeyName: "weekly_team_snapshots_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      winner_payment_details: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          payment_info: string
+          place: number
+          pool_id: string
+          preferred_method: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          payment_info: string
+          place: number
+          pool_id: string
+          preferred_method: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          payment_info?: string
+          place?: number
+          pool_id?: string
+          preferred_method?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "winner_payment_details_pool_id_fkey"
             columns: ["pool_id"]
             isOneToOne: false
             referencedRelation: "pools"

@@ -2,8 +2,9 @@ import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Send, Smile } from 'lucide-react';
+import { Send, Smile, Image } from 'lucide-react';
 import { BigBrotherEmojis } from '@/components/chat/BigBrotherEmojis';
+import { GifPicker } from '@/components/chat/GifPicker';
 
 interface ChatInputProps {
   newMessage: string;
@@ -13,6 +14,9 @@ interface ChatInputProps {
   showEmojis: boolean;
   onToggleEmojis: () => void;
   onEmojiSelect: (emoji: string) => void;
+  showGifs: boolean;
+  onToggleGifs: () => void;
+  onGifSelect: (gifUrl: string) => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -22,7 +26,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onKeyPress,
   showEmojis,
   onToggleEmojis,
-  onEmojiSelect
+  onEmojiSelect,
+  showGifs,
+  onToggleGifs,
+  onGifSelect
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +45,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           isOpen={showEmojis}
           onEmojiSelect={handleEmojiSelect}
         />
+        <GifPicker
+          isOpen={showGifs}
+          onGifSelect={onGifSelect}
+          onClose={() => onToggleGifs()}
+        />
         <div className="flex gap-2">
           <Button
             variant="ghost"
@@ -46,6 +58,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             className="shrink-0 hover:bg-primary/10"
           >
             <Smile className="h-4 w-4 text-primary" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleGifs}
+            className="shrink-0 hover:bg-primary/10"
+          >
+            <Image className="h-4 w-4 text-primary" />
           </Button>
           <Input
             ref={inputRef}

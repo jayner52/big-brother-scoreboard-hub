@@ -170,7 +170,7 @@ export const useChat = (poolId?: string, userId?: string) => {
   };
 
   // Delete a message
-  const deleteMessage = async (messageId: string) => {
+  const deleteMessage = async (messageId: string): Promise<boolean> => {
     if (!userId) return false;
 
     try {

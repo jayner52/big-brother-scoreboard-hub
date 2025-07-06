@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, ContestantGroup } from '@/types/admin';
-import { Pencil, Save, X, Trash2 } from 'lucide-react';
+import { Pencil, Save, X, Trash2, Eye, Camera } from 'lucide-react';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
 interface ContestantCardProps {
@@ -20,6 +20,7 @@ interface ContestantCardProps {
   onCancel: () => void;
   onFormChange: (updates: Partial<ContestantWithBio>) => void;
   onDelete: (id: string) => void;
+  onView?: (contestant: ContestantWithBio) => void;
 }
 
 export const ContestantCard: React.FC<ContestantCardProps> = ({
@@ -32,6 +33,7 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
   onCancel,
   onFormChange,
   onDelete,
+  onView,
 }) => {
   const { evictedContestants } = useEvictedContestants();
   const isEvicted = evictedContestants.includes(contestant.name);
@@ -149,13 +151,22 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex gap-4">
-            {contestant.photo_url && (
-              <img 
-                src={contestant.photo_url} 
-                alt={contestant.name}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            )}
+            <div className="relative">
+              {contestant.photo_url ? (
+                <img 
+                  src={contestant.photo_url} 
+                  alt={contestant.name}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center border-2 border-border">
+                  <Camera className="h-6 w-6 text-muted-foreground" />
+                </div>
+              )}
+            </div>
             <div>
               <h3 className={`font-semibold text-lg ${isEvicted ? 'text-red-600' : 'text-green-600'}`}>
                 {contestant.name}
@@ -181,6 +192,11 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
             </div>
           </div>
           <div className="flex gap-2">
+            {onView && (
+              <Button size="sm" variant="outline" onClick={() => onView(contestant)}>
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
             <Button size="sm" variant="outline" onClick={() => onEdit(contestant)}>
               <Pencil className="h-4 w-4" />
             </Button>

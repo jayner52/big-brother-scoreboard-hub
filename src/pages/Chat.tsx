@@ -34,12 +34,15 @@ const Chat: React.FC = () => {
     newMessage,
     showUserList,
     showEmojis,
+    showGifs,
     handleMessageInput,
     insertMention,
     handleEmojiSelect,
+    handleGifSelect,
     clearMessage,
     filteredUsers,
-    setShowEmojis
+    setShowEmojis,
+    setShowGifs
   } = useChatInput();
 
   // Mark messages as read when component mounts or pool changes
@@ -123,6 +126,9 @@ const Chat: React.FC = () => {
           showEmojis={showEmojis}
           onToggleEmojis={() => setShowEmojis(!showEmojis)}
           onEmojiSelect={handleEmojiSelect}
+          showGifs={showGifs}
+          onToggleGifs={() => setShowGifs(!showGifs)}
+          onGifSelect={handleGifSelect}
         />
       </div>
     </div>

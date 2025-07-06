@@ -7,6 +7,7 @@ export const useChatInput = () => {
   const [tagSearch, setTagSearch] = useState('');
   const [tagPosition, setTagPosition] = useState<number | null>(null);
   const [showEmojis, setShowEmojis] = useState(false);
+  const [showGifs, setShowGifs] = useState(false);
 
   // Handle message input with @mention detection
   const handleMessageInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,6 +54,11 @@ export const useChatInput = () => {
     setShowEmojis(false);
   }, []);
 
+  const handleGifSelect = useCallback((gifUrl: string) => {
+    setNewMessage(gifUrl);
+    setShowGifs(false);
+  }, []);
+
   const clearMessage = useCallback(() => {
     setNewMessage('');
     setShowUserList(false);
@@ -69,11 +75,14 @@ export const useChatInput = () => {
     showUserList,
     tagSearch,
     showEmojis,
+    showGifs,
     handleMessageInput,
     insertMention,
     handleEmojiSelect,
+    handleGifSelect,
     clearMessage,
     filteredUsers,
-    setShowEmojis
+    setShowEmojis,
+    setShowGifs
   };
 };

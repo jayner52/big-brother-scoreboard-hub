@@ -21,6 +21,7 @@ interface ManageContestantsTabProps {
   onDelete: (id: string) => void;
   onClearAll: () => void;
   onRefresh: () => void;
+  onView?: (contestant: ContestantWithBio) => void;
 }
 
 export const ManageContestantsTab: React.FC<ManageContestantsTabProps> = ({
@@ -36,7 +37,8 @@ export const ManageContestantsTab: React.FC<ManageContestantsTabProps> = ({
   onAddContestant,
   onDelete,
   onClearAll,
-  onRefresh
+  onRefresh,
+  onView
 }) => {
   return (
     <div className="space-y-6">

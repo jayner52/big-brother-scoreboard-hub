@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChatMessage as ChatMessageType } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { DeleteConfirmDialog } from '@/components/chat/DeleteConfirmDialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatMessageProps {
   message: ChatMessageType;
   isOwn: boolean;
   isMentioned: boolean;
   currentUserId: string;
-  onDelete?: (messageId: string) => void;
+  onDelete?: (messageId: string) => Promise<boolean>;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ 
@@ -19,6 +21,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   currentUserId,
   onDelete 
 }) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { toast } = useToast();
   const bgColor = isMentioned 
     ? 'bg-yellow-50 border-yellow-200' 
     : isOwn 
@@ -33,8 +37,32 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    if (onDelete) {
+      const success = await onDelete(message.id);
+      if (success) {
+        toast({
+          title: "Message deleted",
+          description: "Your message has been deleted successfully.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete message. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+    setShowDeleteDialog(false);
+  };
+
   const renderMessageText = (text: string) => {
-    // Simple mention highlighting - could be enhanced with proper parsing
+    // Check if message is a GIF URL
+    if (text.includes('giphy.com') && (text.endsWith('.gif') || text.includes('/giphy.gif'))) {
+      return `<img src="${text}" alt="GIF" class="max-w-48 max-h-48 rounded-md mt-1" loading="lazy" />`;
+    }
+    
+    // Simple mention highlighting
     const mentionRegex = /@(\w+)/g;
     return text.replace(mentionRegex, '<span class="bg-primary/20 text-primary px-1 rounded text-sm font-medium">@$1</span>');
   };
@@ -70,13 +98,19 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => onDelete(message.id)}
+            onClick={() => setShowDeleteDialog(true)}
             className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
           >
             <Trash2 className="h-3 w-3" />
           </Button>
         )}
       </div>
+      
+      <DeleteConfirmDialog
+        isOpen={showDeleteDialog}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
     </div>
   );
 };

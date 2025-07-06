@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
+import { AdminSetupWizard } from '@/components/admin/AdminSetupWizard';
+import { SeasonCompletionPanel } from '@/components/admin/SeasonCompletionPanel';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { usePool } from '@/contexts/PoolContext';
 
 const Admin = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const { activePool } = usePool();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -41,6 +45,16 @@ const Admin = () => {
             Manage weekly results, houseguest status, and bonus questions
           </p>
         </div>
+
+        {/* Admin Setup Wizard */}
+        <AdminSetupWizard />
+
+        {/* Season Completion Panel */}
+        {activePool && (
+          <div className="mb-6">
+            <SeasonCompletionPanel />
+          </div>
+        )}
 
         {/* Admin Panels */}
         <AdminScoringPanel />

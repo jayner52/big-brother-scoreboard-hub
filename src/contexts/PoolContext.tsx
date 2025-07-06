@@ -352,6 +352,21 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Non-critical error, pool is still usable
       }
 
+      // CRITICAL: Always populate Season 26 houseguests automatically
+      try {
+        const { populateSeason26Houseguests } = await import('@/data/season26Houseguests');
+        const s26Result = await populateSeason26Houseguests(pool.id);
+        
+        if (s26Result.success) {
+          console.log('✅ Season 26 houseguests populated automatically:', s26Result.count);
+        } else {
+          console.warn('⚠️ Season 26 population failed:', s26Result.error);
+        }
+      } catch (s26Error) {
+        console.error('❌ Error auto-populating Season 26:', s26Error);
+        // Non-critical error, pool is still usable
+      }
+
       // Reload pools to include the new one
       await loadUserPools();
       

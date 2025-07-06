@@ -10,9 +10,13 @@ import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
 import { ContestantProfileModal } from '@/components/admin/contestants/ContestantProfileModal';
 import { usePool } from '@/contexts/PoolContext';
 
+interface ContestantWithGroup extends ContestantWithBio {
+  group_name?: string;
+}
+
 export const ContestantBios: React.FC = () => {
-  const [contestants, setContestants] = useState<ContestantWithBio[]>([]);
-  const [selectedContestant, setSelectedContestant] = useState<ContestantWithBio | null>(null);
+  const [contestants, setContestants] = useState<ContestantWithGroup[]>([]);
+  const [selectedContestant, setSelectedContestant] = useState<ContestantWithGroup | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const { activePool } = usePool();
@@ -20,9 +24,27 @@ export const ContestantBios: React.FC = () => {
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
   const { evictionWeeks } = useEvictionWeeks();
 
-  const handleContestantClick = (contestant: ContestantWithBio) => {
+  const handleContestantClick = (contestant: ContestantWithGroup) => {
     setSelectedContestant(contestant);
     setShowProfileModal(true);
+  };
+
+  const getGroupBadge = (contestant: ContestantWithGroup) => {
+    if (!contestant.group_name) return null;
+    
+    const groupLetter = contestant.group_name.replace('Group ', '');
+    const colors = {
+      'A': 'bg-red-100 text-red-700',
+      'B': 'bg-blue-100 text-blue-700', 
+      'C': 'bg-green-100 text-green-700',
+      'D': 'bg-purple-100 text-purple-700',
+    };
+    
+    return (
+      <Badge className={`absolute top-2 left-2 w-6 h-6 rounded-full text-xs p-0 flex items-center justify-center ${colors[groupLetter as keyof typeof colors] || 'bg-gray-100 text-gray-700'}`}>
+        {groupLetter}
+      </Badge>
+    );
   };
 
   useEffect(() => {
@@ -38,10 +60,15 @@ export const ContestantBios: React.FC = () => {
     }
     
     try {
-      // Load contestants for the current pool only
+      // Load contestants with group information for the current pool
       const { data: contestantsData } = await supabase
         .from('contestants')
-        .select('*')
+        .select(`
+          *,
+          contestant_groups!contestants_group_id_fkey (
+            group_name
+          )
+        `)
         .eq('pool_id', activePool.id)
         .order('sort_order', { ascending: true });
       
@@ -51,6 +78,7 @@ export const ContestantBios: React.FC = () => {
           name: c.name,
           isActive: !evictedContestants.includes(c.name),
           group_id: c.group_id,
+          group_name: c.contestant_groups?.group_name,
           sort_order: c.sort_order,
           bio: c.bio,
           photo_url: c.photo_url,
@@ -100,6 +128,7 @@ export const ContestantBios: React.FC = () => {
             onClick={() => handleContestantClick(contestant)}
           >
              <div className="relative">
+                {getGroupBadge(contestant)}
                 {contestant.photo_url ? (
                   <img 
                     src={contestant.photo_url} 

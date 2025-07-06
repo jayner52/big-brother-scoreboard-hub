@@ -1,11 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const PrizePoolSection: React.FC = () => {
   const { activePool } = usePool();
+  const [totalEntries, setTotalEntries] = useState(0);
+
+  useEffect(() => {
+    if (activePool?.id) {
+      loadEntryCount();
+    }
+  }, [activePool?.id]);
+
+  const loadEntryCount = async () => {
+    if (!activePool?.id) return;
+    
+    try {
+      const { count } = await supabase
+        .from('pool_entries')
+        .select('id', { count: 'exact' })
+        .eq('pool_id', activePool.id);
+      
+      setTotalEntries(count || 0);
+    } catch (error) {
+      console.error('Error loading entry count:', error);
+      setTotalEntries(0);
+    }
+  };
 
   if (!activePool || !activePool.has_buy_in) {
     return null;
@@ -14,9 +38,7 @@ export const PrizePoolSection: React.FC = () => {
   const prizeConfig = activePool.prize_distribution;
   const currency = activePool.entry_fee_currency || 'CAD';
   
-  // Calculate total entries - this would need to be passed as prop or fetched
-  // For now, we'll use a placeholder
-  const totalEntries = 10; // This should be passed as prop or fetched
+  // Calculate totals with real entry count
   const totalPot = totalEntries * activePool.entry_fee_amount;
   const adminFee = prizeConfig?.admin_fee || 0;
   const availablePool = totalPot - adminFee;
@@ -58,7 +80,7 @@ export const PrizePoolSection: React.FC = () => {
 
   const prizes = getPrizes();
 
-  if (prizes.length === 0) {
+  if (prizes.length === 0 || totalEntries === 0) {
     return null;
   }
 
@@ -101,7 +123,7 @@ export const PrizePoolSection: React.FC = () => {
           ))}
         </div>
         <div className="text-center mt-4 text-sm text-gray-600">
-          Winners will be determined based on final ranking at the end of the season
+          Winners will be determined based on final ranking at the end of the season • Based on {totalEntries} current {totalEntries === 1 ? 'entry' : 'entries'}
         </div>
       </CardContent>
     </Card>

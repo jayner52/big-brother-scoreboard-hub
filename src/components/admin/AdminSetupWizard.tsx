@@ -83,7 +83,19 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
             <UserCheck className="h-5 w-5 text-blue-600" />,
           completed: activePool.draft_configuration_locked || false,
           warning: hasAnyEntries ? undefined : 'This cannot be changed after the first person drafts!',
-          action: () => navigateToSection('#draft-settings'),
+          action: () => {
+            // Use URL parameter navigation for settings
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('tab', 'settings');
+            window.history.pushState({}, '', currentUrl.toString());
+            
+            // Navigate and reload
+            const adminPanel = document.querySelector('[data-admin-panel]');
+            if (adminPanel) {
+              adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              setTimeout(() => window.location.reload(), 100);
+            }
+          },
           actionLabel: 'Configure →'
         },
         {
@@ -100,7 +112,19 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
             <CheckCircle className="h-5 w-5 text-green-600" />,
           completed: !activePool.has_buy_in || !!activePool.payment_method_1,
           action: activePool.has_buy_in && !activePool.payment_method_1 ? 
-            () => navigateToSection('#payment-settings') : undefined,
+            () => {
+              // Navigate to settings tab for payment setup via URL
+              const currentUrl = new URL(window.location.href);
+              currentUrl.searchParams.set('tab', 'settings');
+              window.history.pushState({}, '', currentUrl.toString());
+              
+              // Navigate and reload
+              const adminPanel = document.querySelector('[data-admin-panel]');
+              if (adminPanel) {
+                adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => window.location.reload(), 100);
+              }
+            } : undefined,
           actionLabel: 'Set up →'
         },
         {
@@ -109,7 +133,29 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
           description: `${unansweredQuestions} prediction questions available for customization.`,
           icon: <UserCheck className="h-5 w-5 text-blue-600" />,
           completed: false, // Always show as available for review
-          action: () => window.location.href = '/admin?tab=bonus-questions',
+          action: () => {
+            // Use URL parameter navigation for better reliability
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('tab', 'bonus');
+            window.history.pushState({}, '', currentUrl.toString());
+            
+            // Trigger navigation
+            const adminPanel = document.querySelector('[data-admin-panel]');
+            if (adminPanel) {
+              adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              
+              // Flash the section
+              setTimeout(() => {
+                adminPanel.classList.add('ring-2', 'ring-primary', 'ring-opacity-50');
+                setTimeout(() => {
+                  adminPanel.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+                }, 2000);
+              }, 500);
+            }
+            
+            // Reload the page to trigger tab change
+            setTimeout(() => window.location.reload(), 100);
+          },
           actionLabel: 'Review →'
         },
         {

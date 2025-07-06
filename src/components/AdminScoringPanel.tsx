@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
@@ -17,6 +17,16 @@ const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEven
 
 export const AdminScoringPanel: React.FC = () => {
   const { canManagePool } = usePool();
+  const [activeTab, setActiveTab] = useState('events');
+
+  // Handle URL parameters for tab navigation
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab && ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, []);
 
   if (!canManagePool()) {
     return (
@@ -44,7 +54,7 @@ export const AdminScoringPanel: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        <Tabs defaultValue="events" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 text-xs lg:text-sm">
             <TabsTrigger value="events">Weekly Events</TabsTrigger>
             <TabsTrigger value="legacy">Week Overview</TabsTrigger>

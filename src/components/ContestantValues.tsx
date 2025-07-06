@@ -3,29 +3,43 @@ import { ContestantPerformanceCard } from './contestant-values/ContestantPerform
 import { ContestantGroupsOverview } from './contestant-values/ContestantGroupsOverview';
 import { useContestantStats } from '@/hooks/useContestantStats';
 import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 export const ContestantValues: React.FC = () => {
   const { contestants, contestantGroups, contestantStats, loading } = useContestantStats();
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
 
   if (loading) {
-    return <div className="text-center py-8">Loading houseguest values...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-pulse text-lg">Loading houseguest values...</div>
+          <p className="text-sm text-muted-foreground mt-2">Calculating performance metrics...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <ContestantPerformanceCard
-        contestantStats={contestantStats}
-        contestants={contestants}
-        hohWinner={hohWinner}
-        povWinner={povWinner}
-        nominees={nominees}
-      />
-      
-      <ContestantGroupsOverview
-        contestants={contestants}
-        contestantGroups={contestantGroups}
-      />
-    </div>
+    <ErrorBoundary>
+      <div className="space-y-6">
+        <ErrorBoundary>
+          <ContestantPerformanceCard
+            contestantStats={contestantStats}
+            contestants={contestants}
+            hohWinner={hohWinner}
+            povWinner={povWinner}
+            nominees={nominees}
+          />
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          <ContestantGroupsOverview
+            contestants={contestants}
+            contestantGroups={contestantGroups}
+          />
+        </ErrorBoundary>
+      </div>
+    </ErrorBoundary>
   );
 };

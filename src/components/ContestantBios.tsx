@@ -90,11 +90,11 @@ export const ContestantBios: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {contestants.map((contestant) => (
           <Card 
             key={contestant.id} 
-            className={`overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer ${
+            className={`overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:scale-105 ${
               !contestant.isActive ? 'opacity-60 border-destructive/20' : ''
             }`}
             onClick={() => handleContestantClick(contestant)}
@@ -119,9 +119,9 @@ export const ContestantBios: React.FC = () => {
                   style={{ display: contestant.photo_url ? 'none' : 'flex' }}
                 >
                   {contestant.photo_url ? (
-                    <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold">
-                      {contestant.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                    </div>
+                     <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold">
+                       {contestant.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                     </div>
                   ) : (
                     <Users className="h-8 w-8 text-muted-foreground" />
                   )}

@@ -84,16 +84,21 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
           completed: activePool.draft_configuration_locked || false,
           warning: hasAnyEntries ? undefined : 'This cannot be changed after the first person drafts!',
           action: () => {
-            // Use URL parameter navigation for settings
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('tab', 'settings');
-            window.history.pushState({}, '', currentUrl.toString());
-            
-            // Navigate and reload
+            // FIXED: Navigate to draft configuration accordion without page reload
             const adminPanel = document.querySelector('[data-admin-panel]');
             if (adminPanel) {
               adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              setTimeout(() => window.location.reload(), 100);
+              
+              // Find and expand the draft configuration accordion
+              setTimeout(() => {
+                const draftConfigAccordion = document.querySelector('[data-accordion-value="draft-config"]');
+                if (draftConfigAccordion) {
+                  const trigger = draftConfigAccordion.querySelector('[data-state="closed"]');
+                  if (trigger) {
+                    (trigger as HTMLElement).click();
+                  }
+                }
+              }, 500);
             }
           },
           actionLabel: 'Configure →'
@@ -134,27 +139,19 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
           icon: <UserCheck className="h-5 w-5 text-blue-600" />,
           completed: false, // Always show as available for review
           action: () => {
-            // Use URL parameter navigation for better reliability
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('tab', 'bonus');
-            window.history.pushState({}, '', currentUrl.toString());
-            
-            // Trigger navigation
+            // FIXED: Navigate to bonus questions tab without page reload
             const adminPanel = document.querySelector('[data-admin-panel]');
             if (adminPanel) {
               adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
               
-              // Flash the section
+              // Find and click the bonus questions tab
               setTimeout(() => {
-                adminPanel.classList.add('ring-2', 'ring-primary', 'ring-opacity-50');
-                setTimeout(() => {
-                  adminPanel.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
-                }, 2000);
+                const bonusTab = document.querySelector('[data-tab-value="bonus"]');
+                if (bonusTab) {
+                  (bonusTab as HTMLElement).click();
+                }
               }, 500);
             }
-            
-            // Reload the page to trigger tab change
-            setTimeout(() => window.location.reload(), 100);
           },
           actionLabel: 'Review →'
         },
@@ -209,15 +206,15 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
     }
   };
 
-  // Check if wizard was previously dismissed
+  // FIXED: Check if wizard was previously dismissed with proper force-show logic
   useEffect(() => {
     if (activePool?.id) {
-      const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
-      if (dismissed && !forceShow) {
-        setShowWizard(false);
-      } else if (forceShow) {
+      if (forceShow) {
         // Always show when force-shown, regardless of dismissal status
         setShowWizard(true);
+      } else {
+        const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
+        setShowWizard(!dismissed);
       }
     }
   }, [activePool?.id, forceShow]);

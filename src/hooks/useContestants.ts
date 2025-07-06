@@ -25,8 +25,8 @@ export const useContestants = (poolId?: string) => {
       
       console.log('🔥 Pool-specific contestants:', poolContestants?.length || 0);
       
-      // If we have fewer than expected contestants, ensure default data is seeded
-      if (!poolContestants || poolContestants.length < 10) {
+      // If we have fewer than expected contestants (16 for Season 26), ensure default data is seeded
+      if (!poolContestants || poolContestants.length < 16) {
         console.log('🔥 Pool has few contestants, checking if defaults need to be seeded...');
         
         // Check if defaults exist

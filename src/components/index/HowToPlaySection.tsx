@@ -24,7 +24,6 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
         <div className="max-w-6xl mx-auto">
           {/* Prize Pool Section */}
           <PrizePoolSection />
-          
           {/* How It Works Section */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="text-center">

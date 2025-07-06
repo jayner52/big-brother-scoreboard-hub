@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Settings, DollarSign, Mail, HelpCircle, Clock, Eye, EyeOff } from 'lucide-react';
+import { Settings, DollarSign, Mail, HelpCircle, Clock, Eye, EyeOff, Users, Calculator } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { EnhancedPrizePoolPanel } from '@/components/admin/EnhancedPrizePoolPanel';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
@@ -374,7 +374,7 @@ export const PoolSettingsPanel: React.FC = () => {
         className="space-y-6"
       >
         {/* Basic Pool Settings */}
-        <AccordionItem value="basic-settings" className="border-0">
+        <AccordionItem value="basic-settings" className="border-0" data-accordion-value="basic-settings">
           <Card>
             <AccordionTrigger className="hover:no-underline p-0">
               <CardHeader className="bg-gradient-to-r from-teal-700 to-teal-600 text-white rounded-t-lg w-full">
@@ -547,12 +547,12 @@ export const PoolSettingsPanel: React.FC = () => {
 
 
         {/* Draft Configuration */}
-        <AccordionItem value="draft-config" className="border-0">
+        <AccordionItem value="draft-config" className="border-0" data-accordion-value="draft-config">
           <Card>
             <AccordionTrigger className="hover:no-underline p-0">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
-                  <Mail className="h-5 w-5" />
+                  <Users className="h-5 w-5" />
                   Draft Configuration
                 </CardTitle>
                 <CardDescription className="text-purple-100 text-left">
@@ -789,13 +789,13 @@ export const PoolSettingsPanel: React.FC = () => {
            </Card>
          </AccordionItem>
 
-         {/* Custom Scoring Rules */}
+        {/* Custom Scoring Rules */}
         <AccordionItem value="custom-scoring" className="border-0">
           <Card>
             <AccordionTrigger className="hover:no-underline p-0">
               <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
-                  <Settings className="h-5 w-5" />
+                  <Calculator className="h-5 w-5" />
                   Custom Scoring Rules
                 </CardTitle>
                 <CardDescription className="text-indigo-100 text-left">

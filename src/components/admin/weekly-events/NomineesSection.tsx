@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Minus } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { usePool } from '@/contexts/PoolContext';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface NomineesSectionProps {
@@ -16,7 +17,8 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
   eventForm,
   setEventForm,
 }) => {
-  const { activeContestants } = useActiveContestants();
+  const { activePool } = usePool();
+  const { activeContestants } = useActiveContestants(activePool?.id);
   
   // Get contestants who are still in the game and not HoH
   const eligibleNominees = activeContestants.filter(c => 

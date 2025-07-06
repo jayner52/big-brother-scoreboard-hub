@@ -9,6 +9,7 @@ import { SpecialEventsSection } from './SpecialEventsSection';
 import { SecondEvictionSection } from './SecondEvictionSection';
 import { ThirdEvictionSection } from './ThirdEvictionSection';
 import { AIArenaSection } from './AIArenaSection';
+import { StepByStepFlow } from './StepByStepFlow';
 
 interface RegularWeekContentProps {
   eventForm: WeeklyEventForm;
@@ -27,6 +28,9 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
 }) => {
   return (
     <>
+      {/* Step-by-Step Progress */}
+      <StepByStepFlow eventForm={eventForm} />
+      
       {/* Regular Week Content */}
       <div className={eventForm.isDoubleEviction ? "border rounded-lg p-4 bg-blue-50 border-blue-200" : ""}>
         {eventForm.isDoubleEviction && (

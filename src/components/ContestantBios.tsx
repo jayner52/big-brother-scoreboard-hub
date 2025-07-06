@@ -76,14 +76,14 @@ export const ContestantBios: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading contestant information...</div>;
+    return <div className="text-center py-8">Loading houseguest information...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-          Meet the Contestants
+          Meet the Houseguests
         </h2>
         <p className="text-muted-foreground">
           Get to know the houseguests competing in {activePool?.name || 'Big Brother'}

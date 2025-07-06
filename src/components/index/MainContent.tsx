@@ -8,6 +8,7 @@ import { ContestantValues } from '@/components/ContestantValues';
 import { ContestantBios } from '@/components/ContestantBios';
 import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
 import { DraftFormData } from '@/hooks/useDraftForm';
+import { usePool } from '@/contexts/PoolContext';
 
 interface MainContentProps {
   formData: DraftFormData;
@@ -15,17 +16,28 @@ interface MainContentProps {
 }
 
 export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam = 5 }) => {
+  const { activePool } = usePool();
+  
   // Check if user has any draft progress based on dynamic team size
   const hasAnyPlayers = Array.from({ length: picksPerTeam }, (_, i) => 
     formData[`player_${i + 1}` as keyof DraftFormData]
   ).some(player => typeof player === 'string' && player.trim().length > 0);
 
+  // Check if Everyone's Picks should be hidden
+  const shouldHideEveronesPicks = activePool?.hide_picks_until_draft_closed && activePool?.draft_open;
+  
+  // Count how many tabs to show for grid layout
+  const totalTabs = shouldHideEveronesPicks ? 5 : 6;
+  const gridCols = totalTabs === 5 ? 'grid-cols-5' : 'grid-cols-6';
+
   return (
     <Tabs defaultValue="draft" className="w-full">
-      <TabsList className="grid w-full grid-cols-6 mb-8">
+      <TabsList className={`grid w-full ${gridCols} mb-8`}>
         <TabsTrigger value="draft">Draft Team</TabsTrigger>
         <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-        <TabsTrigger value="picks">Everyone's Picks</TabsTrigger>
+        {!shouldHideEveronesPicks && (
+          <TabsTrigger value="picks">Everyone's Picks</TabsTrigger>
+        )}
         <TabsTrigger value="results">Live Results</TabsTrigger>
         <TabsTrigger value="contestants">Houseguest Values</TabsTrigger>
         <TabsTrigger value="bios">Houseguest Bios</TabsTrigger>
@@ -45,9 +57,11 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
         <EnhancedTeamLeaderboard />
       </TabsContent>
 
-      <TabsContent value="picks">
-        <EveryonesPicksMatrix />
-      </TabsContent>
+      {!shouldHideEveronesPicks && (
+        <TabsContent value="picks">
+          <EveryonesPicksMatrix />
+        </TabsContent>
+      )}
 
       <TabsContent value="results">
         <LiveResults />

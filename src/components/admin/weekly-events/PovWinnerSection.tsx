@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { usePool } from '@/contexts/PoolContext';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface PovWinnerSectionProps {
@@ -15,7 +16,8 @@ export const PovWinnerSection: React.FC<PovWinnerSectionProps> = ({
   eventForm,
   setEventForm,
 }) => {
-  const { activeContestants } = useActiveContestants();
+  const { activePool } = usePool();
+  const { activeContestants } = useActiveContestants(activePool?.id);
   
   // Check if nominees are selected (required before POV winner)
   const nomineesSelected = eventForm.nominees.some(n => n && n !== '');

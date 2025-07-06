@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { usePool } from '@/contexts/PoolContext';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface EvictionSectionProps {
@@ -14,9 +15,10 @@ interface EvictionSectionProps {
 export const EvictionSection: React.FC<EvictionSectionProps> = ({
   eventForm,
   setEventForm,
-  evictionLabel = "Evicted Contestant",
+  evictionLabel = "Evicted Houseguest",
 }) => {
-  const { activeContestants } = useActiveContestants();
+  const { activePool } = usePool();
+  const { activeContestants } = useActiveContestants(activePool?.id);
   // Calculate final nominees (after POV ceremony) and exclude BB Arena winner
   const getFinalNominees = () => {
     let finalNominees = [...eventForm.nominees.filter(n => n)];
@@ -56,7 +58,7 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
         disabled={arenaRequired}
       >
         <SelectTrigger className="mt-1">
-          <SelectValue placeholder="Select evicted contestant" />
+          <SelectValue placeholder="Select evicted houseguest" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="no-eviction">No eviction</SelectItem>
@@ -76,9 +78,9 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
         </SelectContent>
       </Select>
       {finalNominees.length > 0 && (
-        <p className="text-xs text-muted-foreground mt-1">
-          Showing final nominees after POV ceremony
-        </p>
+      <p className="text-xs text-muted-foreground mt-1">
+        Showing final houseguests after POV ceremony
+      </p>
       )}
     </div>
   );

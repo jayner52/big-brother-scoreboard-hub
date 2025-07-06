@@ -9,7 +9,7 @@ export const ContestantValues: React.FC = () => {
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
 
   if (loading) {
-    return <div className="text-center py-8">Loading contestant values...</div>;
+    return <div className="text-center py-8">Loading houseguest values...</div>;
   }
 
   return (

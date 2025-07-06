@@ -73,7 +73,7 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
       <div className="flex items-center justify-between mb-2">
         <Label className="font-semibold flex items-center gap-2">
           <BigBrotherIcon type="nominees" className="h-4 w-4" />
-          Nominees {!hohSelected && <span className="text-gray-400 text-sm">(Select HOH first)</span>}
+          Nominated Houseguests {!hohSelected && <span className="text-gray-400 text-sm">(Select HOH first)</span>}
         </Label>
         <div className="flex gap-2">
           <Button
@@ -103,10 +103,10 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
             disabled={!hohSelected}
           >
             <SelectTrigger>
-              <SelectValue placeholder={`Nominee ${index + 1}`} />
+              <SelectValue placeholder={`Houseguest ${index + 1}`} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="no-nominee">No nominee</SelectItem>
+              <SelectItem value="no-nominee">No houseguest</SelectItem>
               {eligibleNominees
                 .map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>

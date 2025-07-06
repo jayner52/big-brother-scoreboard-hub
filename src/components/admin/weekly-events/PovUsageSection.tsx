@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { usePool } from '@/contexts/PoolContext';
 
 interface PovUsageSectionProps {
   eventForm: WeeklyEventForm;
@@ -15,7 +16,8 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
   eventForm,
   setEventForm,
 }) => {
-  const { activeContestants } = useActiveContestants();
+  const { activePool } = usePool();
+  const { activeContestants } = useActiveContestants(activePool?.id);
   if (!eventForm.povWinner || eventForm.povWinner === 'no-winner') {
     return null;
   }
@@ -49,13 +51,13 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
           </div>
 
           <div>
-            <Label className="font-semibold">Replacement Nominee</Label>
+            <Label className="font-semibold">Replacement Houseguest</Label>
             <Select 
               value={eventForm.replacementNominee || ''} 
               onValueChange={(value) => setEventForm(prev => ({ ...prev, replacementNominee: value }))}
             >
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select replacement nominee" />
+                <SelectValue placeholder="Select replacement houseguest" />
               </SelectTrigger>
               <SelectContent>
                 {activeContestants

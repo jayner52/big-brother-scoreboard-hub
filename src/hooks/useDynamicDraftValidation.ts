@@ -27,16 +27,16 @@ export const useDynamicDraftValidation = () => {
       const playerSelection = formData[playerKey];
       
       if (!playerSelection || !playerSelection.trim()) {
-        errors.push(`Please select Player ${i}`);
+        errors.push(`Please select Houseguest ${i}`);
       } else {
         selectedPlayers.push(playerSelection.trim());
       }
     }
 
-    // Check for duplicate players
+    // Check for duplicate houseguests (only if pool doesn't allow duplicates)
     const uniquePlayers = new Set(selectedPlayers);
     if (uniquePlayers.size !== selectedPlayers.length) {
-      errors.push("You cannot select the same player multiple times");
+      errors.push("You cannot select the same houseguest multiple times");
     }
 
     // Bonus questions validation

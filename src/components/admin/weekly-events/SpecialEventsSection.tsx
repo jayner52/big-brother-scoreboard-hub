@@ -68,7 +68,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
             <Card key={index} className="p-3">
               <div className="grid grid-cols-12 gap-2 items-end">
                 <div className="col-span-3">
-                  <Label className="text-xs">Contestant</Label>
+                  <Label className="text-xs">Houseguest</Label>
                   <Select 
                     value={event.contestant} 
                     onValueChange={(value) => updateSpecialEvent(index, 'contestant', value)}

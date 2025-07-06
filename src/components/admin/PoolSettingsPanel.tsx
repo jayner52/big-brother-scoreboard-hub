@@ -249,35 +249,6 @@ export const PoolSettingsPanel: React.FC = () => {
     }
   };
 
-  const handleAllowDuplicatesToggle = async (allowDuplicates: boolean) => {
-    if (!activePool) return;
-    setIsUpdating(true);
-    try {
-      const success = await updatePool(activePool.id, {
-        allow_duplicate_picks: allowDuplicates
-      });
-
-      if (success) {
-        toast({
-          title: allowDuplicates ? "Duplicate Picks Allowed" : "Duplicate Picks Blocked",
-          description: allowDuplicates 
-            ? "Multiple teams can now draft the same houseguest"
-            : "Each houseguest can only be drafted by one team",
-        });
-      } else {
-        throw new Error('Failed to update duplicate picks setting');
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update duplicate picks setting",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   if (loading) {
     return <div className="text-center py-8">Loading pool settings...</div>;
   }
@@ -517,24 +488,22 @@ export const PoolSettingsPanel: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Allow Duplicate Picks */}
-                <div className="border-t pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="allow-duplicates-toggle" className="text-base font-medium">
-                        Allow Duplicate Picks
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        When enabled, multiple teams can draft the same houseguest
-                      </p>
+                  {/* Allow Duplicate Picks - Coming Soon */}
+                  <div className="border-t pt-4 opacity-50">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label className="text-base font-medium text-muted-foreground">
+                          Allow Duplicate Picks (Coming Soon)
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Feature will be available after next database update
+                        </p>
+                      </div>
+                      <Switch
+                        disabled={true}
+                        checked={true}
+                      />
                     </div>
-                    <Switch
-                      id="allow-duplicates-toggle"
-                      checked={activePool?.allow_duplicate_picks ?? true}
-                      onCheckedChange={handleAllowDuplicatesToggle}
-                      disabled={isUpdating || activePool?.season_locked}
-                    />
-                  </div>
                 </div>
 
                 <div>

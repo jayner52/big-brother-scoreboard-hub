@@ -50,14 +50,17 @@ export const useGroupAutoGeneration = () => {
 
       console.log('🔧 Found houseguests:', houseguests.length);
 
-      // 2. CRITICAL FIX: Clear all contestant group assignments BEFORE deleting groups
-      console.log('🔧 Clearing contestant group assignments...');
-      const { error: clearAssignmentsError } = await supabase
-        .from('contestants')
-        .update({ group_id: null })
-        .eq('pool_id', poolId);
-      
-      if (clearAssignmentsError) throw clearAssignmentsError;
+  // CRITICAL FIX: Clear all contestant group assignments BEFORE deleting groups
+  console.log('🔧 Clearing contestant group assignments...');
+  const { error: clearAssignmentsError } = await supabase
+    .from('contestants')
+    .update({ group_id: null })
+    .eq('pool_id', poolId);
+  
+  if (clearAssignmentsError) {
+    console.error('🔧 Failed to clear group assignments:', clearAssignmentsError);
+    throw clearAssignmentsError;
+  }
 
       // 3. Now safely delete existing regular groups (keep Free Pick if it exists)
       const { data: existingGroups } = await supabase

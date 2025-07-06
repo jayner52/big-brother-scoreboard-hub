@@ -33,7 +33,8 @@ interface AdminSetupWizardProps {
 export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = false }) => {
   const { activePool } = usePool();
   const { toast } = useToast();
-  const [showWizard, setShowWizard] = useState(true);
+  const [isVisible, setIsVisible] = useState(forceShow);
+  const [isLoading, setIsLoading] = useState(true);
   const [hasAnyEntries, setHasAnyEntries] = useState(false);
   const [unansweredQuestions, setUnansweredQuestions] = useState(0);
   const [steps, setSteps] = useState<SetupStep[]>([]);
@@ -84,19 +85,16 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
           completed: activePool.draft_configuration_locked || false,
           warning: hasAnyEntries ? undefined : 'This cannot be changed after the first person drafts!',
           action: () => {
-            // FIXED: Navigate to draft configuration accordion without page reload
+            // Navigate to draft configuration without closing wizard
             const adminPanel = document.querySelector('[data-admin-panel]');
             if (adminPanel) {
               adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
               
-              // Find and expand the draft configuration accordion
+              // Expand the draft configuration accordion
               setTimeout(() => {
-                const draftConfigAccordion = document.querySelector('[data-accordion-value="draft-config"]');
-                if (draftConfigAccordion) {
-                  const trigger = draftConfigAccordion.querySelector('[data-state="closed"]');
-                  if (trigger) {
-                    (trigger as HTMLElement).click();
-                  }
+                const trigger = document.querySelector('[data-value="draft-configuration"]');
+                if (trigger && !trigger.getAttribute('data-state')?.includes('open')) {
+                  (trigger as HTMLElement).click();
                 }
               }, 500);
             }
@@ -139,14 +137,14 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
           icon: <UserCheck className="h-5 w-5 text-blue-600" />,
           completed: false, // Always show as available for review
           action: () => {
-            // FIXED: Navigate to bonus questions tab without page reload
+            // Navigate to bonus questions tab without closing wizard
             const adminPanel = document.querySelector('[data-admin-panel]');
             if (adminPanel) {
               adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
               
-              // Find and click the bonus questions tab
+              // Click the bonus questions tab
               setTimeout(() => {
-                const bonusTab = document.querySelector('[data-tab-value="bonus"]');
+                const bonusTab = document.querySelector('[data-value="bonus"]');
                 if (bonusTab) {
                   (bonusTab as HTMLElement).click();
                 }
@@ -199,27 +197,32 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
   };
 
   const dismissWizard = () => {
-    setShowWizard(false);
+    setIsVisible(false);
     if (!forceShow) {
-      // Only save dismissal to localStorage if not force-shown
       localStorage.setItem(`wizard-dismissed-${activePool?.id}`, 'true');
     }
   };
 
-  // FIXED: Check if wizard was previously dismissed with proper force-show logic
+  // Handle visibility logic with proper force-show support
   useEffect(() => {
-    if (activePool?.id) {
+    if (activePool?.id && !isLoading) {
       if (forceShow) {
-        // Always show when force-shown, regardless of dismissal status
-        setShowWizard(true);
+        setIsVisible(true);
       } else {
         const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
-        setShowWizard(!dismissed);
+        setIsVisible(!dismissed);
       }
     }
-  }, [activePool?.id, forceShow]);
+  }, [activePool?.id, forceShow, isLoading]);
 
-  if (!showWizard || !activePool) return null;
+  // Set loading to false after initial setup
+  useEffect(() => {
+    if (activePool?.id) {
+      setIsLoading(false);
+    }
+  }, [activePool?.id]);
+
+  if (isLoading || !isVisible || !activePool) return null;
 
   const completedSteps = steps.filter(s => s.completed).length;
   const totalSteps = steps.length;

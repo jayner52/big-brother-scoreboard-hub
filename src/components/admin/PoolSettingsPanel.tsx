@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Settings, DollarSign, Mail, HelpCircle, Clock, Eye, EyeOff, Users, Calculator } from 'lucide-react';
+import { Settings, DollarSign, UserCheck, HelpCircle, Clock, Eye, EyeOff, Users, Calculator } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { EnhancedPrizePoolPanel } from '@/components/admin/EnhancedPrizePoolPanel';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
@@ -215,25 +215,26 @@ export const PoolSettingsPanel: React.FC = () => {
     
     const newPicksPerTeam = count + (settings.enable_free_pick ? 1 : 0);
     
-    setSettings({ 
-      ...settings, 
-      number_of_groups: count,
-      group_names: newNames,
-      picks_per_team: newPicksPerTeam
-    });
-
-    // Execute database transaction via validated hook
-    const success = await redistributeHouseguests(activePool.id, count, settings.enable_free_pick);
-    
-    if (!success) {
-      // Revert UI state if database update failed
-      console.error('⚠️ Database update failed, reverting UI state');
-      setSettings({ 
-        ...settings, 
-        number_of_groups: settings.number_of_groups, // Keep previous value
-        group_names: settings.group_names // Keep previous names
-      });
-    }
+      const success = await redistributeHouseguests(activePool.id, count, settings.enable_free_pick);
+      
+      if (success) {
+        // Update local state with new configuration
+        setSettings({ 
+          ...settings, 
+          number_of_groups: count,
+          group_names: newNames,
+          picks_per_team: newPicksPerTeam
+        });
+        console.log('✅ Database update successful, UI state updated');
+      } else {
+        // Database update failed - show error and keep original state
+        console.error('❌ Database update failed');
+        toast({
+          title: "Error Updating Groups",
+          description: "Failed to update groups. Please try again.",
+          variant: "destructive",
+        });
+      }
   };
 
   const handleExpandedSectionsChange = (value: string[]) => {
@@ -552,7 +553,7 @@ export const PoolSettingsPanel: React.FC = () => {
             <AccordionTrigger className="hover:no-underline p-0">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
-                  <Users className="h-5 w-5" />
+                  <UserCheck className="h-5 w-5" />
                   Draft Configuration
                 </CardTitle>
                 <CardDescription className="text-purple-100 text-left">

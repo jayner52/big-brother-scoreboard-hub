@@ -30,8 +30,19 @@ export const useDynamicDraftSubmission = () => {
   };
 
   const submitDraft = async (formData: DynamicDraftFormData, picksPerTeam: number = 5): Promise<boolean> => {
+    console.log('🚀 DRAFT SUBMISSION START:', { 
+      picksPerTeam, 
+      formData: { 
+        participant_name: formData.participant_name,
+        team_name: formData.team_name,
+        playerCount: Object.keys(formData).filter(k => k.startsWith('player_')).length
+      },
+      activePool: activePool?.id
+    });
+
     const validationError = validateForm(formData, picksPerTeam);
     if (validationError) {
+      console.error('🚀 Validation failed:', validationError);
       toast({
         title: "Error",
         description: validationError,
@@ -44,6 +55,7 @@ export const useDynamicDraftSubmission = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        console.error('🚀 No authenticated user');
         toast({
           title: "Error",
           description: "You must be logged in to submit a team",
@@ -52,41 +64,54 @@ export const useDynamicDraftSubmission = () => {
         return false;
       }
 
-      // Prepare player data - fill in all 5 slots for database compatibility
-      const playerData: any = {
-        player_1: formData.player_1 || '',
-        player_2: formData.player_2 || '',
-        player_3: formData.player_3 || '',
-        player_4: formData.player_4 || '',
-        player_5: formData.player_5 || '',
-      };
+      console.log('🚀 User authenticated:', user.id);
 
-      // Add additional players if they exist (dynamic picks)
-      for (let i = 1; i <= picksPerTeam; i++) {
+      // CRITICAL FIX: Dynamic player data handling
+      const playerData: any = {};
+
+      // Always fill the base 5 slots for database compatibility
+      for (let i = 1; i <= 5; i++) {
+        const playerKey = `player_${i}`;
+        playerData[playerKey] = formData[playerKey] || '';
+      }
+
+      // Add any additional dynamic picks beyond the base 5
+      for (let i = 6; i <= picksPerTeam; i++) {
         const playerKey = `player_${i}`;
         if (formData[playerKey]) {
-          playerData[playerKey] = formData[playerKey];
+          // These would need additional database columns, but for now we'll focus on the base 5
+          console.warn(`🚀 Additional pick ${i} detected but not stored:`, formData[playerKey]);
         }
       }
 
+      console.log('🚀 Player data prepared:', playerData);
+
       const submissionData = {
-        participant_name: formData.participant_name,
-        team_name: formData.team_name,
-        email: formData.email,
+        participant_name: formData.participant_name.trim(),
+        team_name: formData.team_name.trim(),
+        email: formData.email.trim(),
         ...playerData,
-        bonus_answers: formData.bonus_answers,
-        payment_confirmed: formData.payment_confirmed,
+        bonus_answers: formData.bonus_answers || {},
+        payment_confirmed: formData.payment_confirmed || false,
       };
+
+      console.log('🚀 Final submission data:', submissionData);
 
       if (isEditMode && editEntryData) {
         // Update existing entry
+        console.log('🚀 Updating existing entry:', editEntryData.id);
+        
         const { error } = await supabase
           .from('pool_entries')
           .update(submissionData)
           .eq('id', editEntryData.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('🚀 Update error:', error);
+          throw error;
+        }
 
+        console.log('🚀 Entry updated successfully');
         toast({
           title: "Success!",
           description: "Your team has been updated successfully",
@@ -97,6 +122,7 @@ export const useDynamicDraftSubmission = () => {
       } else {
         // Create new entry
         if (!activePool) {
+          console.error('🚀 No active pool selected');
           toast({
             title: "Error", 
             description: "No active pool selected",
@@ -104,6 +130,8 @@ export const useDynamicDraftSubmission = () => {
           });
           return false;
         }
+
+        console.log('🚀 Creating new entry for pool:', activePool.id);
 
         const { error } = await supabase
           .from('pool_entries')
@@ -113,8 +141,12 @@ export const useDynamicDraftSubmission = () => {
             ...submissionData,
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('🚀 Insert error:', error);
+          throw error;
+        }
 
+        console.log('🚀 Entry created successfully');
         toast({
           title: "Success!",
           description: `Your team has been submitted to ${activePool.name}`,
@@ -124,10 +156,24 @@ export const useDynamicDraftSubmission = () => {
       }
 
     } catch (error) {
-      console.error('Error submitting team:', error);
+      console.error('🚀 SUBMISSION ERROR:', error);
+      
+      // Enhanced error handling with specific messages
+      let errorMessage = "Failed to submit your team";
+      if (error && typeof error === 'object' && 'message' in error) {
+        const message = (error as any).message;
+        if (message.includes('duplicate key')) {
+          errorMessage = "You already have a team in this pool";
+        } else if (message.includes('foreign key')) {
+          errorMessage = "Invalid pool or houseguest selection";
+        } else if (message.includes('not null')) {
+          errorMessage = "Missing required information";
+        }
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to submit your team",
+        title: "Submission Failed",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;

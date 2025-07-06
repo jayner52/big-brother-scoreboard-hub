@@ -8,6 +8,13 @@ export const useDynamicDraftValidation = () => {
     picksPerTeam: number = 5,
     allowDuplicatePicks: boolean = true
   ): { isValid: boolean; errors: string[] } => {
+    console.log('🔍 Validating draft form:', { 
+      picksPerTeam, 
+      allowDuplicatePicks, 
+      participantName: formData.participant_name?.trim(),
+      teamName: formData.team_name?.trim()
+    });
+
     const errors: string[] = [];
 
     // Basic info validation
@@ -34,11 +41,14 @@ export const useDynamicDraftValidation = () => {
       }
     }
 
-    // Check for duplicate houseguests (only if pool doesn't allow duplicates)
-    if (!allowDuplicatePicks) {
+    console.log('🔍 Selected players:', selectedPlayers);
+
+    // CRITICAL FIX: Check for duplicate houseguests (only if pool doesn't allow duplicates)
+    if (!allowDuplicatePicks && selectedPlayers.length > 0) {
       const uniquePlayers = new Set(selectedPlayers);
       if (uniquePlayers.size !== selectedPlayers.length) {
-        errors.push("You cannot select the same houseguest multiple times");
+        errors.push("Duplicate picks not allowed in this pool");
+        console.log('🔍 Duplicate validation failed:', { unique: uniquePlayers.size, total: selectedPlayers.length });
       }
     }
 

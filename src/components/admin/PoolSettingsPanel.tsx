@@ -13,6 +13,7 @@ import { Settings, DollarSign, Mail, HelpCircle, Clock, Eye, EyeOff } from 'luci
 import { usePool } from '@/contexts/PoolContext';
 import { PrizePoolPanel } from '@/components/admin/PrizePoolPanel';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
+import { useGroupAutoGeneration } from '@/hooks/useGroupAutoGeneration';
 
 interface PoolSettings {
   id: string;
@@ -37,6 +38,7 @@ interface PoolSettings {
 export const PoolSettingsPanel: React.FC = () => {
   const { toast } = useToast();
   const { activePool, updatePool } = usePool();
+  const { redistributeHouseguests, isGenerating } = useGroupAutoGeneration();
   const [settings, setSettings] = useState<PoolSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -144,8 +146,11 @@ export const PoolSettingsPanel: React.FC = () => {
     setSettings({ ...settings, group_names: newNames });
   };
 
-  const updateNumberOfGroups = (count: number) => {
-    if (!settings) return;
+  const updateNumberOfGroups = async (count: number) => {
+    if (!settings || !activePool) return;
+    
+    console.log('🏗️ Updating number of groups:', count);
+    
     const newNames = [];
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     
@@ -158,6 +163,10 @@ export const PoolSettingsPanel: React.FC = () => {
       number_of_groups: count,
       group_names: newNames
     });
+
+    // CRITICAL FIX: Auto-generate groups when count changes
+    const { redistributeHouseguests } = await import('@/hooks/useGroupAutoGeneration').then(m => m.useGroupAutoGeneration());
+    await redistributeHouseguests(activePool.id, count);
   };
 
   const handleExpandedSectionsChange = (value: string[]) => {
@@ -358,6 +367,71 @@ export const PoolSettingsPanel: React.FC = () => {
                     value={settings.registration_deadline ? new Date(settings.registration_deadline).toISOString().slice(0, 16) : ''}
                     onChange={(e) => setSettings({ ...settings, registration_deadline: e.target.value ? new Date(e.target.value).toISOString() : null })}
                   />
+                </div>
+
+                {/* CRITICAL FIX: Consolidated Buy-In Settings */}
+                <div className="space-y-4 p-4 border rounded-lg bg-green-50">
+                  <h4 className="font-semibold text-green-800 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Buy-In Settings
+                  </h4>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={settings.has_buy_in}
+                      onCheckedChange={(checked) => setSettings({ ...settings, has_buy_in: checked })}
+                    />
+                    <Label>Has Buy-In</Label>
+                  </div>
+
+                  {settings.has_buy_in && (
+                    <div className="grid grid-cols-2 gap-4 ml-6">
+                      <div>
+                        <Label htmlFor="buy_in_amount">Buy-In Amount</Label>
+                        <Input
+                          id="buy_in_amount"
+                          type="number"
+                          value={settings.entry_fee_amount}
+                          onChange={(e) => setSettings({ ...settings, entry_fee_amount: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="buy_in_currency">Currency</Label>
+                        <Select 
+                          value={settings.entry_fee_currency} 
+                          onValueChange={(value) => setSettings({ ...settings, entry_fee_currency: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="CAD">CAD</SelectItem>
+                            <SelectItem value="USD">USD</SelectItem>
+                            <SelectItem value="EUR">EUR</SelectItem>
+                            <SelectItem value="GBP">GBP</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="payment_method">Payment Method</Label>
+                        <Input
+                          id="payment_method"
+                          value={settings.payment_method_1}
+                          onChange={(e) => setSettings({ ...settings, payment_method_1: e.target.value })}
+                          placeholder="e.g., E-transfer, Venmo, PayPal"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="payment_details">Payment Details</Label>
+                        <Input
+                          id="payment_details"
+                          value={settings.payment_details_1}
+                          onChange={(e) => setSettings({ ...settings, payment_details_1: e.target.value })}
+                          placeholder="email@example.com or @username"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">

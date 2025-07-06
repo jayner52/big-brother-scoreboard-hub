@@ -2,7 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
-import { useActiveContestants } from '@/hooks/useActiveContestants';
+import { useActiveContestantsFiltered } from '@/hooks/useActiveContestantsFiltered';
 import { usePool } from '@/contexts/PoolContext';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
@@ -18,7 +18,7 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
   evictionLabel = "Evicted Houseguest",
 }) => {
   const { activePool } = usePool();
-  const { activeContestants } = useActiveContestants(activePool?.id);
+  const { activeContestants } = useActiveContestantsFiltered(activePool?.id);
   // Calculate final nominees (after POV ceremony) and exclude BB Arena winner
   const getFinalNominees = () => {
     let finalNominees = [...eventForm.nominees.filter(n => n)];
@@ -62,13 +62,15 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="no-eviction">No eviction</SelectItem>
-          {finalNominees.length > 0 ? (
+           {finalNominees.length > 0 ? (
+            // CRITICAL FIX: Use filtered nominees (already filtered by POV and AI Arena)
             finalNominees.map(nominee => (
               <SelectItem key={nominee} value={nominee}>
                 {nominee}
               </SelectItem>
             ))
            ) : (
+              // CRITICAL FIX: Only show active contestants (evicted contestants filtered out)
               activeContestants.map(contestant => (
                 <SelectItem key={contestant.id} value={contestant.name}>
                   {contestant.name}

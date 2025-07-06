@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,10 +10,12 @@ import {
   DollarSign, 
   Share2,
   X,
-  CheckSquare
+  CheckSquare,
+  Loader2
 } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
+import { useSetupChecklistTracking } from '@/hooks/useSetupChecklistTracking';
 
 interface ChecklistItemProps {
   completed: boolean;
@@ -81,6 +83,24 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
   const { activePool } = usePool();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(forceShow);
+  
+  // Use enhanced setup checklist tracking
+  const { 
+    steps, 
+    completedCount, 
+    totalSteps, 
+    loading, 
+    refreshStatus, 
+    isComplete 
+  } = useSetupChecklistTracking();
+
+  // Force show when forceShow prop changes
+  useEffect(() => {
+    if (forceShow) {
+      setIsOpen(true);
+      refreshStatus(); // Refresh data when forced to show
+    }
+  }, [forceShow, refreshStatus]);
 
   if (!activePool) return null;
 
@@ -98,91 +118,14 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
     }
   };
 
-  const scrollToAdminSection = (section?: string) => {
-    const adminPanel = document.querySelector('[data-admin-panel]');
-    if (adminPanel) {
-      adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      
-      if (section) {
-        setTimeout(() => {
-          const trigger = document.querySelector(`[data-value="${section}"]`);
-          if (trigger && !trigger.getAttribute('data-state')?.includes('open')) {
-            (trigger as HTMLElement).click();
-          }
-        }, 500);
-      }
-    }
-  };
-
-  // Setup steps configuration
-  const steps = [
-    {
-      id: 'pool-created',
-      title: 'Pool Created',
-      description: `Welcome! Your pool "${activePool.name}" is ready to configure.`,
-      icon: <CheckCircle className="h-5 w-5 text-green-600" />,
-      completed: true,
-    },
-    {
-      id: 'draft-config',
-      title: 'Configure Draft Settings',
-      description: 'Set the number of contestant groups and picks per team.',
-      icon: activePool.draft_configuration_locked ? 
-        <CheckCircle className="h-5 w-5 text-green-600" /> : 
-        <UserCheck className="h-5 w-5 text-blue-600" />,
-      completed: activePool.draft_configuration_locked || false,
-      warning: !activePool.draft_configuration_locked ? 'This cannot be changed after the first person drafts!' : undefined,
-      action: () => scrollToAdminSection('pool-settings'),
-      actionLabel: 'Configure →'
-    },
-    {
-      id: 'payment-setup',
-      title: 'Payment Information',
-      description: activePool.has_buy_in ? 
-        'Configure how participants will pay the entry fee.' : 
-        'No buy-in required for this pool.',
-      icon: activePool.has_buy_in ? 
-        (activePool.payment_method_1 ? 
-          <CheckCircle className="h-5 w-5 text-green-600" /> : 
-          <DollarSign className="h-5 w-5 text-blue-600" />
-        ) : 
-        <CheckCircle className="h-5 w-5 text-green-600" />,
-      completed: !activePool.has_buy_in || !!activePool.payment_method_1,
-      action: activePool.has_buy_in && !activePool.payment_method_1 ? 
-        () => scrollToAdminSection('pool-settings') : undefined,
-      actionLabel: 'Set up →'
-    },
-    {
-      id: 'bonus-questions',
-      title: 'Review Bonus Questions',
-      description: 'Customize prediction questions and point values.',
-      icon: <UserCheck className="h-5 w-5 text-blue-600" />,
-      completed: false,
-      action: () => scrollToAdminSection('bonus'),
-      actionLabel: 'Review →'
-    },
-    {
-      id: 'special-events',
-      title: 'Configure Special Events',
-      description: 'Choose which special events can be tracked during weekly scoring.',
-      icon: <UserCheck className="h-5 w-5 text-blue-600" />,
-      completed: false,
-      action: () => scrollToAdminSection('pool-settings'),
-      actionLabel: 'Configure →'
-    },
-    {
-      id: 'invite-participants',
-      title: 'Ready to Invite!',
-      description: `Share your invite code: ${activePool.invite_code}`,
-      icon: <Share2 className="h-5 w-5 text-green-600" />,
-      completed: true,
-      action: copyInviteCode,
-      actionLabel: 'Copy Code'
-    }
-  ];
-
-  const completedSteps = steps.filter(s => s.completed).length;
-  const totalSteps = steps.length;
+  if (loading) {
+    return (
+      <div className="mb-6 flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="text-sm text-muted-foreground">Loading setup status...</span>
+      </div>
+    );
+  }
 
   if (!isOpen) {
     return (
@@ -193,7 +136,7 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
           className="flex items-center gap-2"
         >
           <CheckSquare className="h-4 w-4" />
-          Show Setup Checklist
+          Show Setup Checklist ({completedCount}/{totalSteps})
         </Button>
       </div>
     );
@@ -209,33 +152,56 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
             </h3>
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="secondary">
-                {completedSteps}/{totalSteps} Complete
+                {completedCount}/{totalSteps} Complete
               </Badge>
               <div className="w-32 bg-muted rounded-full h-2">
                 <div 
                   className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
+                  style={{ width: `${(completedCount / totalSteps) * 100}%` }}
                 />
               </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleWizard}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refreshStatus}
+              disabled={loading}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : '↻'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleWizard}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-3">
           {steps.map((step) => (
-            <ChecklistItem key={step.id} {...step} />
+            <ChecklistItem 
+              key={step.id} 
+              completed={step.completed}
+              icon={step.completed ? 
+                <CheckCircle className="h-5 w-5 text-green-600" /> : 
+                <UserCheck className="h-5 w-5 text-blue-600" />
+              }
+              title={step.title}
+              description={step.description}
+              warning={step.warning}
+              action={step.action}
+              actionLabel={step.actionLabel}
+            />
           ))}
         </div>
 
-        {completedSteps === totalSteps && (
+        {isComplete && (
           <div className="mt-4 p-3 bg-green-100 border border-green-200 rounded-lg">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-600" />

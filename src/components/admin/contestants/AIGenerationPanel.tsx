@@ -10,6 +10,7 @@ import { Wand2, Users, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePool } from '@/contexts/PoolContext';
+import { populateSeason26Houseguests } from '@/data/season26Houseguests';
 
 interface AIContestantProfile {
   name: string;
@@ -151,6 +152,43 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
       return;
     }
 
+    // CRITICAL FIX: Handle Season 26 with instant population (no AI)
+    if (seasonConfig.season_number === 26) {
+      setIsGenerating(true);
+      setProgress(10);
+      setError(null);
+      
+      try {
+        setProgress(50);
+        const result = await populateSeason26Houseguests(activePool?.id || '');
+        setProgress(100);
+        
+        if (result.success) {
+          toast({
+            title: "✅ Season 26 Populated!",
+            description: `Successfully added ${result.count} Season 26 houseguests instantly!`,
+          });
+          
+          // Trigger parent component refresh
+          onProfilesGenerated([]);
+        } else {
+          throw new Error(result.error || 'Failed to populate Season 26 houseguests');
+        }
+      } catch (error) {
+        console.error('❌ Season 26 population failed:', error);
+        setError(error.message || 'Failed to populate Season 26 houseguests');
+        toast({
+          title: "Population Failed",
+          description: error.message || 'Failed to populate Season 26 houseguests',
+          variant: "destructive",
+        });
+      } finally {
+        setIsGenerating(false);
+        setProgress(0);
+      }
+      return;
+    }
+
     // Check if season number is below 26
     if (seasonConfig.season_number < 26) {
       toast({
@@ -161,7 +199,7 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
       return;
     }
     
-    // Always generate full cast and include pool_id
+    // Continue with AI generation for non-Season 26 seasons
     const fullCastConfig = { 
       ...seasonConfig, 
       count: season.cast,
@@ -374,29 +412,35 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">
-                {progress < 20 ? "Starting web scraping..." :
-                 progress < 40 ? "Validating contestant photos..." :
-                 progress < 60 ? "Processing batch 1 of 2..." :
-                 progress < 80 ? "Processing batch 2 of 2..." :
-                 "Finalizing database operations..."}
+                {seasonConfig.season_number === 26 ? 
+                  (progress < 50 ? "Populating Season 26 houseguests..." : "Finalizing houseguest setup...") :
+                  (progress < 20 ? "Starting web scraping..." :
+                   progress < 40 ? "Validating contestant photos..." :
+                   progress < 60 ? "Processing batch 1 of 2..." :
+                   progress < 80 ? "Processing batch 2 of 2..." :
+                   "Finalizing database operations...")}
               </span>
             </div>
             <Progress value={progress} className="w-full" />
             <div className="text-xs text-muted-foreground">
-              Robust processing with retry logic and rate limiting
+              {seasonConfig.season_number === 26 ? 
+                "Instant population with verified Season 26 cast" :
+                "Robust processing with retry logic and rate limiting"}
             </div>
           </div>
         )}
 
         {/* Generation Button */}
         <div className="flex justify-center">
-          <Button 
+            <Button 
             onClick={generateFullCast}
             disabled={isGenerating || seasonConfig.season_number === 27}
             className="flex items-center gap-2 px-8"
           >
             <Users className="h-4 w-4" />
-            {isGenerating ? "Generating..." : `Generate Full Cast (${showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})`}
+            {isGenerating ? "Processing..." : 
+             seasonConfig.season_number === 26 ? `Populate Season 26 (${showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})` :
+             `Generate Full Cast (${showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})`}
           </Button>
         </div>
 

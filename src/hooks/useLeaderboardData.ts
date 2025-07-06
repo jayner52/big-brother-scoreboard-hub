@@ -53,15 +53,17 @@ export const useLeaderboardData = () => {
 
   const loadCurrentPoolEntries = async () => {
     try {
-      console.log('🔍 Leaderboard - Loading current pool entries...');
+      console.log('🔍 LEADERBOARD DEBUG - Loading current pool entries...');
       
       // Get current user's active pool
       const { data: session } = await supabase.auth.getSession();
       if (!session.session?.user) {
-        console.log('❌ Leaderboard - User not authenticated');
+        console.log('❌ LEADERBOARD DEBUG - User not authenticated');
         setPoolEntries([]);
         return;
       }
+
+      console.log('🔍 LEADERBOARD DEBUG - User ID:', session.session.user.id);
 
       const { data: membership } = await supabase
         .from('pool_memberships')
@@ -72,12 +74,12 @@ export const useLeaderboardData = () => {
         .single();
 
       if (!membership) {
-        console.log('❌ Leaderboard - No active pool membership found');
+        console.log('❌ LEADERBOARD DEBUG - No active pool membership found');
         setPoolEntries([]);
         return;
       }
 
-      console.log('🔍 Leaderboard - Loading entries for pool:', membership.pool_id);
+      console.log('🔍 LEADERBOARD DEBUG - Active pool ID:', membership.pool_id);
       
       const { data, error } = await supabase
         .from('pool_entries')
@@ -86,23 +88,43 @@ export const useLeaderboardData = () => {
         .order('total_points', { ascending: false });
 
       if (error) {
-        console.error('❌ Leaderboard - Query error:', error);
+        console.error('❌ LEADERBOARD DEBUG - Query error:', error);
         throw error;
       }
       
-      console.log('✅ Leaderboard - Raw pool entries data:', data?.length || 0, 'entries found');
+      console.log('✅ LEADERBOARD DEBUG - Raw pool entries data:', {
+        entryCount: data?.length || 0,
+        sampleEntry: data?.[0] ? {
+          id: data[0].id,
+          team_name: data[0].team_name,
+          participant_name: data[0].participant_name,
+          total_points: data[0].total_points
+        } : null
+      });
       
-      const mappedEntries = data?.map(entry => ({
+      if (!data || data.length === 0) {
+        console.log('⚠️ LEADERBOARD DEBUG - No pool entries found for pool:', membership.pool_id);
+        setPoolEntries([]);
+        return;
+      }
+      
+      const mappedEntries = data.map(entry => ({
         ...entry,
         bonus_answers: entry.bonus_answers as Record<string, any>,
         created_at: new Date(entry.created_at),
         updated_at: new Date(entry.updated_at)
-      })) || [];
+      }));
       
-      console.log('✅ Leaderboard - Mapped entries:', mappedEntries.length);
+      console.log('✅ LEADERBOARD DEBUG - Mapped entries count:', mappedEntries.length);
+      console.log('✅ LEADERBOARD DEBUG - Sample mapped entry:', {
+        team_name: mappedEntries[0]?.team_name,
+        total_points: mappedEntries[0]?.total_points,
+        participant_name: mappedEntries[0]?.participant_name
+      });
+      
       setPoolEntries(mappedEntries);
     } catch (error) {
-      console.error('❌ Leaderboard - Error loading pool entries:', error);
+      console.error('❌ LEADERBOARD DEBUG - Error loading pool entries:', error);
       setPoolEntries([]);
     } finally {
       setLoading(false);
@@ -111,7 +133,7 @@ export const useLeaderboardData = () => {
 
   const handleWeekChange = async (weekStr: string) => {
     setLoading(true);
-    console.log('🔍 Leaderboard - Week change requested:', weekStr);
+    console.log('🔍 LEADERBOARD DEBUG - Week change requested:', weekStr);
     
     if (weekStr === 'current') {
       setSelectedWeek(null);
@@ -123,7 +145,7 @@ export const useLeaderboardData = () => {
       // Get current user's active pool first
       const { data: session } = await supabase.auth.getSession();
       if (!session.session?.user) {
-        console.log('❌ Leaderboard - User not authenticated for week change');
+        console.log('❌ LEADERBOARD DEBUG - User not authenticated for week change');
         setLoading(false);
         return;
       }
@@ -137,12 +159,12 @@ export const useLeaderboardData = () => {
         .single();
 
       if (!membership) {
-        console.log('❌ Leaderboard - No pool membership for week change');
+        console.log('❌ LEADERBOARD DEBUG - No pool membership for week change');
         setLoading(false);
         return;
       }
 
-      console.log('🔍 Leaderboard - Checking snapshots for week', week, 'pool', membership.pool_id);
+      console.log('🔍 LEADERBOARD DEBUG - Checking snapshots for week', week, 'pool', membership.pool_id);
 
       // First check if snapshots exist for this week and pool
       const { data: existingSnapshots } = await supabase
@@ -153,12 +175,12 @@ export const useLeaderboardData = () => {
         .limit(1);
       
       if (!existingSnapshots || existingSnapshots.length === 0) {
-        console.log('🔄 Leaderboard - No snapshots found for week', week, 'generating...');
+        console.log('🔄 LEADERBOARD DEBUG - No snapshots found for week', week, 'generating...');
         try {
           await supabase.rpc('generate_weekly_snapshots', { week_num: week });
-          console.log('✅ Leaderboard - Snapshots generated for week', week);
+          console.log('✅ LEADERBOARD DEBUG - Snapshots generated for week', week);
         } catch (error) {
-          console.error('❌ Leaderboard - Error generating snapshots for week', week, ':', error);
+          console.error('❌ LEADERBOARD DEBUG - Error generating snapshots for week', week, ':', error);
         }
       }
       

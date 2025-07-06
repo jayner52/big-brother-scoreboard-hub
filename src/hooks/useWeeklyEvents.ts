@@ -87,7 +87,7 @@ export const useWeeklyEvents = () => {
             evicted: weekData?.evicted_contestant || '',
             isDoubleEviction: weekData?.is_double_eviction || false,
             isTripleEviction: weekData?.is_triple_eviction || false,
-            isFinalWeek: weekData?.finale_week_enabled || false,
+            isFinalWeek: false, // Final week is handled at pool level, not weekly results level
             isJuryPhase: weekData?.jury_phase_started || false,
             aiArenaEnabled: weekData?.ai_arena_enabled || false,
             aiArenaWinner: weekData?.ai_arena_winner || '',

@@ -26,7 +26,11 @@ interface SetupStep {
   actionLabel?: string;
 }
 
-export const AdminSetupWizard: React.FC = () => {
+interface AdminSetupWizardProps {
+  forceShow?: boolean;
+}
+
+export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = false }) => {
   const { activePool } = usePool();
   const { toast } = useToast();
   const [showWizard, setShowWizard] = useState(true);
@@ -126,8 +130,11 @@ export const AdminSetupWizard: React.FC = () => {
   };
 
   const navigateToSection = (section: string) => {
-    window.location.hash = section;
-    window.location.reload(); // Simple way to trigger section focus
+    // Scroll to the admin scoring panel section instead of using hash
+    const adminPanel = document.querySelector('[data-admin-panel]');
+    if (adminPanel) {
+      adminPanel.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const copyInviteCode = () => {
@@ -142,19 +149,23 @@ export const AdminSetupWizard: React.FC = () => {
 
   const dismissWizard = () => {
     setShowWizard(false);
-    // Could save this preference to localStorage or user profile
-    localStorage.setItem(`wizard-dismissed-${activePool?.id}`, 'true');
+    if (!forceShow) {
+      // Only save dismissal to localStorage if not force-shown
+      localStorage.setItem(`wizard-dismissed-${activePool?.id}`, 'true');
+    }
   };
 
   // Check if wizard was previously dismissed
   useEffect(() => {
     if (activePool?.id) {
       const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
-      if (dismissed) {
+      if (dismissed && !forceShow) {
         setShowWizard(false);
+      } else if (forceShow) {
+        setShowWizard(true);
       }
     }
-  }, [activePool?.id]);
+  }, [activePool?.id, forceShow]);
 
   if (!showWizard || !activePool) return null;
 

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
 import { AdminSetupWizard } from '@/components/admin/AdminSetupWizard';
-import { SeasonCompletionPanel } from '@/components/admin/SeasonCompletionPanel';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { ArrowLeft, Settings, CheckSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -12,6 +11,7 @@ import { usePool } from '@/contexts/PoolContext';
 const Admin = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
   const { activePool } = usePool();
 
   useEffect(() => {
@@ -19,6 +19,14 @@ const Admin = () => {
       setUser(user);
     });
   }, []);
+
+  // Reset showSetupWizard after it's been shown
+  useEffect(() => {
+    if (showSetupWizard) {
+      const timer = setTimeout(() => setShowSetupWizard(false), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showSetupWizard]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -33,6 +41,17 @@ const Admin = () => {
             <ArrowLeft className="h-4 w-4" />
             {user ? 'Back to Dashboard' : 'Back to Home'}
           </Button>
+          
+          {activePool && (
+            <Button 
+              variant="outline" 
+              onClick={() => setShowSetupWizard(true)}
+              className="flex items-center gap-2"
+            >
+              <CheckSquare className="h-4 w-4" />
+              Show Setup Checklist
+            </Button>
+          )}
         </div>
 
         {/* Header */}
@@ -47,17 +66,14 @@ const Admin = () => {
         </div>
 
         {/* Admin Setup Wizard */}
-        <AdminSetupWizard />
-
-        {/* Season Completion Panel */}
-        {activePool && (
-          <div className="mb-6">
-            <SeasonCompletionPanel />
-          </div>
+        {(showSetupWizard || !localStorage.getItem(`wizard-dismissed-${activePool?.id}`)) && (
+          <AdminSetupWizard forceShow={showSetupWizard} />
         )}
 
         {/* Admin Panels */}
-        <AdminScoringPanel />
+        <div data-admin-panel>
+          <AdminScoringPanel />
+        </div>
 
         {/* Footer */}
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">

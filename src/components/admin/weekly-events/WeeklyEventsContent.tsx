@@ -3,6 +3,7 @@ import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types
 import { FinalWeekSection } from './FinalWeekSection';
 import { RegularWeekContent } from './RegularWeekContent';
 import { PointsPreview } from './PointsPreview';
+import { SeasonCompletionSection } from './SeasonCompletionSection';
 
 interface WeeklyEventsContentProps {
   eventForm: WeeklyEventForm;
@@ -48,6 +49,12 @@ export const WeeklyEventsContent: React.FC<WeeklyEventsContentProps> = ({
         contestants={contestants}
         evictedThisWeek={evictedThisWeek}
         eventForm={eventForm}
+      />
+
+      {/* Season Completion Section - Shows when Final Week is enabled */}
+      <SeasonCompletionSection
+        eventForm={eventForm}
+        setEventForm={setEventForm}
       />
     </>
   );

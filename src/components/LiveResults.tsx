@@ -108,22 +108,28 @@ export const LiveResults: React.FC = () => {
       
       setSpecialEvents([...mappedSpecialEvents, ...mappedBBArenaEvents]);
       
-      // Find the current week data or create placeholder
-      const currentWeekResult = data?.find(week => week.week_number === currentWeek);
-      setCurrentWeekData(currentWeekResult || {
-        week_number: currentWeek,
-        hoh_winner: null,
-        pov_winner: null,
-        evicted_contestant: null,
-        nominees: null,
-        pov_used: null,
-        pov_used_on: null,
-        replacement_nominee: null,
-        is_double_eviction: null,
-        is_triple_eviction: null,
-        jury_phase_started: null,
-        is_draft: true
-      });
+      // Find the current in-progress week (first week with is_draft=true)
+      const inProgressWeek = data?.find(week => week.is_draft === true);
+      
+      if (inProgressWeek) {
+        setCurrentWeekData(inProgressWeek);
+      } else {
+        // If no in-progress week found, use the current week as placeholder
+        setCurrentWeekData({
+          week_number: currentWeek,
+          hoh_winner: null,
+          pov_winner: null,
+          evicted_contestant: null,
+          nominees: null,
+          pov_used: null,
+          pov_used_on: null,
+          replacement_nominee: null,
+          is_double_eviction: null,
+          is_triple_eviction: null,
+          jury_phase_started: null,
+          is_draft: true
+        });
+      }
     } catch (error) {
       console.error('Error loading weekly results:', error);
     } finally {

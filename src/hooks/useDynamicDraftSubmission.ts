@@ -29,7 +29,7 @@ export const useDynamicDraftSubmission = () => {
     return null;
   };
 
-  const submitDraft = async (formData: DynamicDraftFormData, picksPerTeam: number = 5): Promise<boolean> => {
+  const submitDraft = async (formData: DynamicDraftFormData, picksPerTeam: number = 5, editingTeamId?: string | null): Promise<boolean> => {
     console.log('🚀 DRAFT SUBMISSION START:', { 
       picksPerTeam, 
       formData: { 
@@ -97,14 +97,15 @@ export const useDynamicDraftSubmission = () => {
 
       console.log('🚀 Final submission data:', submissionData);
 
-      if (isEditMode && editEntryData) {
+      if (editingTeamId || (isEditMode && editEntryData)) {
         // Update existing entry
-        console.log('🚀 Updating existing entry:', editEntryData.id);
+        const entryId = editingTeamId || editEntryData?.id;
+        console.log('🚀 Updating existing entry:', entryId);
         
         const { error } = await supabase
           .from('pool_entries')
           .update(submissionData)
-          .eq('id', editEntryData.id);
+          .eq('id', entryId);
 
         if (error) {
           console.error('🚀 Update error:', error);

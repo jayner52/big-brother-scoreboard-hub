@@ -90,7 +90,7 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
     icons.push(
       <Crown 
         key="hoh"
-        className={`h-3 w-3 ${week.data.hoh_winner ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} 
+        className={`h-3 w-3 ${week.data.hoh_winner ? 'text-yellow-500' : 'text-gray-300'}`} 
       />
     );
     
@@ -102,7 +102,7 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
       icons.push(
         <Target 
           key={`nominee-${i}`}
-          className={`h-3 w-3 ${i < nomineesCount ? 'text-red-500 fill-red-500' : 'text-gray-300'}`} 
+          className={`h-3 w-3 ${i < nomineesCount ? 'text-red-500' : 'text-gray-300'}`} 
         />
       );
     }
@@ -111,7 +111,7 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
     icons.push(
       <Award 
         key="pov"
-        className={`h-3 w-3 ${week.data.pov_winner ? 'text-green-500 fill-green-500' : 'text-gray-300'}`} 
+        className={`h-3 w-3 ${week.data.pov_winner ? 'text-green-500' : 'text-gray-300'}`} 
       />
     );
     
@@ -119,16 +119,16 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
     icons.push(
       <RotateCcw 
         key="veto"
-        className={`h-3 w-3 ${week.data.pov_used ? 'text-blue-500 fill-blue-500' : 'text-gray-300'}`} 
+        className={`h-3 w-3 ${week.data.pov_used ? 'text-blue-500' : 'text-gray-300'}`} 
       />
     );
     
-    // Evicted - DoorOpen (red if someone evicted, gray if not)
+    // Evicted - DoorOpen (brown if someone evicted, gray if not)
     const hasEviction = week.data.evicted_contestant || week.data.second_evicted_contestant || week.data.third_evicted_contestant;
     icons.push(
       <DoorOpen 
         key="evicted"
-        className={`h-3 w-3 ${hasEviction ? 'text-red-600 fill-red-600' : 'text-gray-300'}`} 
+        className={`h-3 w-3 ${hasEviction ? 'text-amber-700' : 'text-gray-300'}`} 
       />
     );
 

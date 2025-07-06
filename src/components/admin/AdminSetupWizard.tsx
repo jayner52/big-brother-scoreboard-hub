@@ -203,24 +203,23 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
     }
   };
 
-  // Handle visibility logic with proper force-show support
+  // Handle visibility logic with proper force-show support and prevent flash
   useEffect(() => {
-    if (activePool?.id && !isLoading) {
-      if (forceShow) {
-        setIsVisible(true);
-      } else {
-        const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
-        setIsVisible(!dismissed);
+    const handleVisibility = async () => {
+      if (activePool?.id && steps.length > 0) {
+        if (forceShow) {
+          setIsVisible(true);
+          setIsLoading(false);
+        } else {
+          const dismissed = localStorage.getItem(`wizard-dismissed-${activePool.id}`);
+          setIsVisible(!dismissed);
+          setIsLoading(false);
+        }
       }
-    }
-  }, [activePool?.id, forceShow, isLoading]);
-
-  // Set loading to false after initial setup
-  useEffect(() => {
-    if (activePool?.id) {
-      setIsLoading(false);
-    }
-  }, [activePool?.id]);
+    };
+    
+    handleVisibility();
+  }, [activePool?.id, forceShow, steps.length]);
 
   if (isLoading || !isVisible || !activePool) return null;
 

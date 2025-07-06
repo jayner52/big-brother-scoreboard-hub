@@ -42,10 +42,12 @@ export const BonusQuestionCard: React.FC<BonusQuestionCardProps> = ({
     await triggerRecalculation(`Bonus question ${checked ? 'revealed' : 'hidden'}`);
   };
 
-  const handlePointsSave = () => {
+  const handlePointsSave = async () => {
     const points = parseInt(editingPoints);
     if (!isNaN(points) && onPointsChange) {
-      onPointsChange(question.id, points);
+      await onPointsChange(question.id, points);
+      // Update local state to reflect the change immediately
+      question.points_value = points;
       setIsEditingPoints(false);
     }
   };

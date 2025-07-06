@@ -18,17 +18,21 @@ export const useChatInput = () => {
     const textBeforeCursor = value.substring(0, cursorPosition);
     const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
     
-    if (lastAtSymbol !== -1 && lastAtSymbol === textBeforeCursor.length - 1) {
-      setShowUserList(true);
-      setTagPosition(lastAtSymbol);
-      setTagSearch('');
-    } else if (showUserList && lastAtSymbol !== -1) {
+    if (lastAtSymbol !== -1) {
       const searchTerm = textBeforeCursor.substring(lastAtSymbol + 1);
-      setTagSearch(searchTerm.toLowerCase());
+      
+      // Only show mentions if there's no space after @ (mentions can't contain spaces)
+      if (!searchTerm.includes(' ')) {
+        setShowUserList(true);
+        setTagPosition(lastAtSymbol);
+        setTagSearch(searchTerm.toLowerCase());
+      } else {
+        setShowUserList(false);
+      }
     } else {
       setShowUserList(false);
     }
-  }, [showUserList]);
+  }, []);
 
   // Insert mention when user is selected
   const insertMention = useCallback((user: PoolMember) => {

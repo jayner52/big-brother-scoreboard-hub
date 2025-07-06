@@ -21,7 +21,7 @@ export const UserMentionDropdown: React.FC<UserMentionDropdownProps> = ({
   if (!isVisible || filteredUsers.length === 0) return null;
 
   return (
-    <Card className="mx-4 mb-2 border-border shadow-lg">
+    <Card className="absolute bottom-16 left-4 right-4 border-border shadow-lg z-50 bg-background">
       <CardContent className="p-2">
         <div className="text-xs text-muted-foreground mb-2 px-2">Select user to mention:</div>
         {filteredUsers.slice(0, 5).map((user) => (

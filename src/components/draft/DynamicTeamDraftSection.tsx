@@ -19,14 +19,13 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
   onFormDataChange,
 }) => {
   const picksPerTeam = poolData?.picks_per_team || 5;
-  const enableFreePickLogic = contestantGroups.some(group => group.group_name === 'Free Pick');
   
-  // **CRITICAL FIX: Create unique groups list to prevent duplicates**
+  // **FIXED: Create unique groups list to prevent duplicates**
   const uniqueGroups = contestantGroups.filter((group, index, self) => 
     index === self.findIndex(g => g.group_name === group.group_name)
   );
 
-  // **CRITICAL FIX: Dynamic player slots based on pool settings**
+  // **FIXED: Dynamic player slots based on pool settings**
   const playerSlots = Array.from({ length: picksPerTeam }, (_, i) => `player_${i + 1}`);
   
   const selectedPlayers = playerSlots.map(slot => formData[slot]).filter(player => player?.trim());
@@ -40,36 +39,19 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
             <Users className="h-7 w-7" />
             Draft Your Dream Team
           </h3>
-          <p className="text-emerald-100 text-lg">
-            {enableFreePickLogic 
-              ? `Select ${picksPerTeam} houseguests strategically - one from each group plus a free pick`
-              : `Select ${picksPerTeam} houseguests strategically from the available groups`
-            }
+           <p className="text-emerald-100 text-lg">
+            Select {picksPerTeam} houseguests strategically from {uniqueGroups.length} groups
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
         {playerSlots.map((playerSlot, slotIndex) => {
-          // CRITICAL FIX: Map each player slot to appropriate group or free pick
-          let group, groupIndex;
-          
-          if (slotIndex < uniqueGroups.length && uniqueGroups[slotIndex].group_name !== 'Free Pick') {
-            // Regular group pick
-            group = uniqueGroups[slotIndex];
-            groupIndex = slotIndex;
-          } else {
-            // Free pick or overflow - use all contestants
-            group = {
-              id: 'free-pick',
-              group_name: 'Free Pick',
-              contestants: uniqueGroups.flatMap(g => g.contestants || [])
-            };
-            groupIndex = slotIndex;
-          }
+          // **FIXED: Each slot maps to a specific group in order, cycling if needed**
+          const groupIndex = slotIndex % uniqueGroups.length;
+          const group = uniqueGroups[groupIndex];
           
           const playerKey = playerSlot;
-          const isFreePick = group.group_name === 'Free Pick';
           const currentSelection = formData[playerKey];
           const hasSelection = currentSelection && currentSelection.trim();
 
@@ -81,17 +63,13 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
               }`}
             >
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between text-lg">
-                  <div className="flex items-center gap-2">
-                    {isFreePick ? (
-                      <Star className="h-5 w-5 text-yellow-600" />
-                     ) : (
-                       <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">
-                         {slotIndex + 1}
-                       </div>
-                     )}
-                     {isFreePick ? `Pick ${slotIndex + 1} (Free)` : group.group_name}
+              <CardTitle className="flex items-center justify-between text-lg">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">
+                    {slotIndex + 1}
                   </div>
+                  Pick {slotIndex + 1} - {group.group_name}
+                </div>
                   {hasSelection && (
                     <Badge variant="secondary" className="bg-green-100 text-green-700">
                       Selected
@@ -99,10 +77,7 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                   )}
                 </CardTitle>
                 <CardDescription>
-                  {isFreePick 
-                    ? 'Pick any houseguest from all groups' 
-                    : `Choose your player from ${group.group_name}`
-                  }
+                  Choose your player from {group.group_name}
                 </CardDescription>
               </CardHeader>
               
@@ -116,11 +91,7 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                   <SelectTrigger className={`transition-all duration-200 ${
                     hasSelection ? 'border-green-300 bg-green-50' : ''
                   }`}>
-                    <SelectValue placeholder={
-                      isFreePick 
-                        ? 'Free pick - any player' 
-                        : `Select from ${group.group_name}`
-                    } />
+                    <SelectValue placeholder={`Select from ${group.group_name}`} />
                   </SelectTrigger>
                    <SelectContent className="z-50">
                     {(group.contestants || []).map(contestant => (

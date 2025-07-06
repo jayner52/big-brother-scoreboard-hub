@@ -50,15 +50,32 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
-        {uniqueGroups.slice(0, picksPerTeam).map((group, groupIndex) => {
+        {playerSlots.map((playerSlot, slotIndex) => {
+          // CRITICAL FIX: Map each player slot to appropriate group or free pick
+          let group, groupIndex;
+          
+          if (slotIndex < uniqueGroups.length && uniqueGroups[slotIndex].group_name !== 'Free Pick') {
+            // Regular group pick
+            group = uniqueGroups[slotIndex];
+            groupIndex = slotIndex;
+          } else {
+            // Free pick or overflow - use all contestants
+            group = {
+              id: 'free-pick',
+              group_name: 'Free Pick',
+              contestants: uniqueGroups.flatMap(g => g.contestants || [])
+            };
+            groupIndex = slotIndex;
+          }
+          
+          const playerKey = playerSlot;
           const isFreePick = group.group_name === 'Free Pick';
-          const playerKey = `player_${groupIndex + 1}`;
           const currentSelection = formData[playerKey];
           const hasSelection = currentSelection && currentSelection.trim();
 
           return (
             <Card 
-              key={`${group.id}-${groupIndex}`} // **CRITICAL FIX: Unique React keys**
+              key={`${playerKey}-${group.id}`} // **CRITICAL FIX: Use playerKey for unique keys**
               className={`transition-all duration-200 hover:shadow-md border-2 ${
                 hasSelection ? 'border-green-200 bg-green-50/50' : 'hover:border-purple-200'
               }`}
@@ -68,12 +85,12 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                   <div className="flex items-center gap-2">
                     {isFreePick ? (
                       <Star className="h-5 w-5 text-yellow-600" />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">
-                        {groupIndex + 1}
-                      </div>
-                    )}
-                    {group.group_name}
+                     ) : (
+                       <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">
+                         {slotIndex + 1}
+                       </div>
+                     )}
+                     {isFreePick ? `Pick ${slotIndex + 1} (Free)` : group.group_name}
                   </div>
                   {hasSelection && (
                     <Badge variant="secondary" className="bg-green-100 text-green-700">
@@ -83,7 +100,7 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                 </CardTitle>
                 <CardDescription>
                   {isFreePick 
-                    ? 'Pick any remaining houseguest as your wildcard' 
+                    ? 'Pick any houseguest from all groups' 
                     : `Choose your player from ${group.group_name}`
                   }
                 </CardDescription>
@@ -105,13 +122,10 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                         : `Select from ${group.group_name}`
                     } />
                   </SelectTrigger>
-                  <SelectContent className="z-50">
-                    {(isFreePick 
-                      ? uniqueGroups.flatMap(g => g.contestants || [])
-                      : group.contestants || []
-                    ).map(contestant => (
+                   <SelectContent className="z-50">
+                    {(group.contestants || []).map(contestant => (
                       <SelectItem 
-                        key={`${contestant.id}-${group.id}`} // **CRITICAL FIX: Unique keys**
+                        key={`${contestant.id}-${playerKey}`}
                         value={contestant.name}
                       >
                         {contestant.name}
@@ -125,10 +139,18 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
         })}
       </div>
 
-      {duplicateCheck && (
+      {duplicateCheck && !poolData?.allow_duplicate_picks && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-700 text-sm">
-            ⚠️ You have selected the same player multiple times. Each player can only be selected once.
+            ⚠️ You have selected the same player multiple times. This pool doesn't allow duplicate picks.
+          </p>
+        </div>
+      )}
+      
+      {duplicateCheck && poolData?.allow_duplicate_picks && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-blue-700 text-sm">
+            ℹ️ You have selected duplicate players. This is allowed in this pool.
           </p>
         </div>
       )}

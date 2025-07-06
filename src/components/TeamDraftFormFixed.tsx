@@ -49,14 +49,23 @@ export const TeamDraftFormFixed: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('🔧 FORM SUBMISSION:', { 
+    console.log('🔧 FORM SUBMISSION - DETAILED DEBUG:', { 
       formData, 
-      picksPerTeam, 
-      allowDuplicates: poolData?.allow_duplicate_picks 
+      picksPerTeam,
+      poolId: poolData?.id,
+      poolName: poolData?.name,
+      allowDuplicatePicksFromPool: poolData?.allow_duplicate_picks,
+      selectedPlayers: Object.keys(formData).filter(k => k.startsWith('player_')).map(k => ({ [k]: formData[k] }))
     });
     
-    // CRITICAL FIX: Use pool's allow_duplicate_picks setting
+    // CRITICAL FIX: Use pool's allow_duplicate_picks setting with extensive logging
     const allowDuplicates = poolData?.allow_duplicate_picks ?? true;
+    console.log('🔧 DUPLICATE VALIDATION SETTINGS:', {
+      rawPoolValue: poolData?.allow_duplicate_picks,
+      finalAllowDuplicates: allowDuplicates,
+      validation: allowDuplicates ? 'SKIPPING duplicate validation' : 'ENFORCING duplicate validation'
+    });
+    
     const validation = validateDraftForm(formData, bonusQuestions, picksPerTeam, allowDuplicates);
     setValidationErrors(validation.errors);
     
@@ -88,15 +97,17 @@ export const TeamDraftFormFixed: React.FC = () => {
         {/* CRITICAL FIX: Only show payment info if pool has buy-in */}
         {poolData?.has_buy_in && (
           <>
-            {(() => {
-              const poolSettings = {
-                ...poolData,
-                season_name: poolData.name,
-                season_active: !poolData.draft_locked,
-                registration_deadline: poolData.registration_deadline
-              };
-              return <PaymentInfoDisplay poolSettings={poolSettings} />;
-            })()}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-green-800 mb-2">💰 Entry Fee Required</h3>
+              <div className="space-y-2 text-sm">
+                <p><strong>Amount:</strong> ${poolData.entry_fee_amount} {poolData.entry_fee_currency}</p>
+                <p><strong>Payment Method:</strong> {poolData.payment_method_1}</p>
+                <p><strong>Details:</strong> {poolData.payment_details_1}</p>
+                {poolData.buy_in_description && (
+                  <p><strong>Instructions:</strong> {poolData.buy_in_description}</p>
+                )}
+              </div>
+            </div>
             <Separator className="my-6" />
           </>
         )}

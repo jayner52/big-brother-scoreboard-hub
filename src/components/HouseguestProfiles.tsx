@@ -93,18 +93,36 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   };
 
   const handleEditTeam = (entry: PoolEntry) => {
-    if (draftLocked) {
+    try {
+      if (draftLocked) {
+        toast({
+          title: "Draft Locked",
+          description: "Draft editing is currently locked. Contact the admin to unlock editing.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!entry || !entry.id) {
+        toast({
+          title: "Error",
+          description: "Invalid team data. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Store the entry data for editing
+      localStorage.setItem('edit_entry_data', JSON.stringify(entry));
+      navigate('/draft?edit=true');
+    } catch (error) {
+      console.error('Error navigating to edit team:', error);
       toast({
-        title: "Draft Locked",
-        description: "Draft editing is currently locked. Contact the admin to unlock editing.",
+        title: "Error",
+        description: "Failed to open team editor. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-    
-    // Store the entry data for editing
-    localStorage.setItem('edit_entry_data', JSON.stringify(entry));
-    navigate('/draft?edit=true');
   };
 
   const renderPlayerName = (playerName: string) => {

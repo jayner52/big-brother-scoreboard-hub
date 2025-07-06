@@ -51,7 +51,7 @@ export const AdminScoringPanel: React.FC = () => {
             <TabsTrigger value="settings">Pool Settings</TabsTrigger>
             <TabsTrigger value="bonus">Bonus Questions</TabsTrigger>
             <TabsTrigger value="entries">Pool Entries</TabsTrigger>
-            <TabsTrigger value="contestants">Contestants</TabsTrigger>
+            <TabsTrigger value="contestants">Houseguests</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events" className="space-y-4">
@@ -96,7 +96,7 @@ export const AdminScoringPanel: React.FC = () => {
 
           <TabsContent value="contestants" className="space-y-4">
             <ErrorBoundary>
-              <Suspense fallback={<div className="text-center py-8">Loading contestant management...</div>}>
+              <Suspense fallback={<div className="text-center py-8">Loading houseguest management...</div>}>
                 <ContestantManagement />
               </Suspense>
             </ErrorBoundary>

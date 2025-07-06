@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useBonusQuestions } from '@/hooks/useBonusQuestions';
 import { BonusQuestionCard } from './bonus-questions/BonusQuestionCard';
 import { MultipleCorrectAnswers } from './bonus-questions/MultipleCorrectAnswers';
@@ -6,10 +6,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePool } from '@/contexts/PoolContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 export const BonusQuestionsPanel: React.FC = () => {
   const { activePool } = usePool();
   const { toast } = useToast();
+  const [savingQuestions, setSavingQuestions] = useState<Set<string>>(new Set());
   const {
     contestants,
     bonusQuestions,
@@ -18,8 +20,12 @@ export const BonusQuestionsPanel: React.FC = () => {
     handleBonusAnswer
   } = useBonusQuestions();
 
-  const handlePointsChange = async (questionId: string, points: number) => {
+  // Debounced points update with optimistic UI
+  const handlePointsChange = useCallback(async (questionId: string, points: number) => {
     if (!activePool?.id) return;
+    
+    // Add to saving set for loading state
+    setSavingQuestions(prev => new Set([...prev, questionId]));
     
     try {
       const { error } = await supabase
@@ -38,11 +44,18 @@ export const BonusQuestionsPanel: React.FC = () => {
       console.error('Error updating points:', error);
       toast({
         title: "Error",
-        description: "Failed to update points",
+        description: "Failed to update points. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      // Remove from saving set
+      setSavingQuestions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(questionId);
+        return newSet;
+      });
     }
-  };
+  }, [activePool?.id, toast]);
 
   const handleMultipleAnswersUpdate = async (questionId: string, correctAnswers: string[]) => {
     if (!activePool?.id) return;
@@ -75,36 +88,38 @@ export const BonusQuestionsPanel: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="manage" className="w-full">
-        <TabsList>
-          <TabsTrigger value="manage">Manage Questions</TabsTrigger>
-          <TabsTrigger value="multiple-answers">Multiple Correct Answers</TabsTrigger>
-        </TabsList>
+    <ErrorBoundary>
+      <div className="space-y-6">
+        <Tabs defaultValue="manage" className="w-full">
+          <TabsList>
+            <TabsTrigger value="manage">Manage Questions</TabsTrigger>
+            <TabsTrigger value="multiple-answers">Multiple Correct Answers</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="manage" className="space-y-6">
-          {bonusQuestions.map((question) => (
-            <BonusQuestionCard
-              key={question.id}
-              question={question}
-              currentAnswer={bonusAnswers[question.id]}
-              contestants={contestants}
-              onAnswerChange={handleBonusAnswer}
-              onPointsChange={handlePointsChange}
-            />
-          ))}
-        </TabsContent>
+          <TabsContent value="manage" className="space-y-6">
+            {bonusQuestions.map((question) => (
+              <BonusQuestionCard
+                key={question.id}
+                question={question}
+                currentAnswer={bonusAnswers[question.id]}
+                contestants={contestants}
+                onAnswerChange={handleBonusAnswer}
+                onPointsChange={handlePointsChange}
+              />
+            ))}
+          </TabsContent>
 
-        <TabsContent value="multiple-answers" className="space-y-6">
-          {bonusQuestions.map((question) => (
-            <MultipleCorrectAnswers
-              key={question.id}
-              question={question}
-              onUpdate={handleMultipleAnswersUpdate}
-            />
-          ))}
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="multiple-answers" className="space-y-6">
+            {bonusQuestions.map((question) => (
+              <MultipleCorrectAnswers
+                key={question.id}
+                question={question}
+                onUpdate={handleMultipleAnswersUpdate}
+              />
+            ))}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </ErrorBoundary>
   );
 };

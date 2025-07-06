@@ -32,12 +32,12 @@ const Admin = () => {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
-            Admin Panel
+        <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-6 px-8 rounded-lg shadow-lg mb-6">
+          <h1 className="text-4xl font-bold mb-2">
+            🏠 Admin Panel
           </h1>
-          <p className="text-lg text-gray-600">
-            Manage weekly results, contestant status, and bonus questions
+          <p className="text-lg text-red-100">
+            Manage weekly results, houseguest status, and bonus questions
           </p>
         </div>
 

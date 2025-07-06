@@ -44,11 +44,13 @@ export const PoolSettingsPanel: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [hasExistingEntries, setHasExistingEntries] = useState(false);
 
 
   useEffect(() => {
     if (activePool) {
       loadSettings();
+      checkExistingEntries();
     }
     // Load expanded sections from localStorage
     const saved = localStorage.getItem('pool_settings_expanded');
@@ -60,6 +62,34 @@ export const PoolSettingsPanel: React.FC = () => {
       }
     }
   }, [activePool]);
+
+  const checkExistingEntries = async () => {
+    if (!activePool) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('pool_entries')
+        .select('id')
+        .eq('pool_id', activePool.id)
+        .limit(1);
+      
+      if (error) throw error;
+      setHasExistingEntries((data || []).length > 0);
+    } catch (error) {
+      console.error('Error checking existing entries:', error);
+    }
+  };
+
+  const handleBuyInAmountChange = (newAmount: number) => {
+    if (hasExistingEntries && newAmount !== settings?.entry_fee_amount) {
+      toast({
+        title: "⚠️ Buy-In Amount Changed",
+        description: "This change may cause confusion for participants who already paid the previous amount. Consider communicating this change to your pool members.",
+        variant: "default",
+      });
+    }
+    setSettings({ ...settings!, entry_fee_amount: newAmount });
+  };
 
   const loadSettings = async () => {
     if (!activePool) return;
@@ -164,8 +194,7 @@ export const PoolSettingsPanel: React.FC = () => {
       group_names: newNames
     });
 
-    // CRITICAL FIX: Auto-generate groups when count changes
-    const { redistributeHouseguests } = await import('@/hooks/useGroupAutoGeneration').then(m => m.useGroupAutoGeneration());
+    // FIXED: Use hook properly
     await redistributeHouseguests(activePool.id, count);
   };
 
@@ -392,8 +421,14 @@ export const PoolSettingsPanel: React.FC = () => {
                           id="buy_in_amount"
                           type="number"
                           value={settings.entry_fee_amount}
-                          onChange={(e) => setSettings({ ...settings, entry_fee_amount: parseFloat(e.target.value) || 0 })}
+                          onChange={(e) => handleBuyInAmountChange(parseFloat(e.target.value) || 0)}
                         />
+                        {hasExistingEntries && (
+                          <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                            <HelpCircle className="h-3 w-3" />
+                            Warning: Changing buy-in amount may create confusion for participants who already paid
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="buy_in_currency">Currency</Label>

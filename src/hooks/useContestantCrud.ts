@@ -1,12 +1,14 @@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
+import { usePool } from '@/contexts/PoolContext';
 
 export const useContestantCrud = (
   contestants: ContestantWithBio[],
   setContestants: React.Dispatch<React.SetStateAction<ContestantWithBio[]>>
 ) => {
   const { toast } = useToast();
+  const { activePool } = usePool();
 
   const saveContestant = async (editForm: Partial<ContestantWithBio>, editingId: string) => {
     if (!editingId || !editForm.name) return false;
@@ -135,22 +137,20 @@ export const useContestantCrud = (
   };
 
   const clearAllContestants = async () => {
-    try {
-      // Get pool_id from one of the contestants to ensure we only clear from current pool
-      const firstContestant = contestants[0];
-      if (!firstContestant?.pool_id) {
-        toast({
-          title: "Error",
-          description: "No pool context found for clearing contestants",
-          variant: "destructive",
-        });
-        return false;
-      }
+    if (!activePool?.id) {
+      toast({
+        title: "Error",
+        description: "No active pool found for clearing contestants",
+        variant: "destructive",
+      });
+      return false;
+    }
 
+    try {
       const { error } = await supabase
         .from('contestants')
         .delete()
-        .eq('pool_id', firstContestant.pool_id);
+        .eq('pool_id', activePool.id);
 
       if (error) throw error;
 

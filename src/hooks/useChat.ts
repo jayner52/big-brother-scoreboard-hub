@@ -159,10 +159,35 @@ export const useChat = (poolId?: string, userId?: string) => {
         });
 
       if (error) throw error;
+      
+      // No need to manually add to messages - realtime will handle it
       return true;
     } catch (err) {
       console.error('Error sending message:', err);
       setError(err instanceof Error ? err.message : 'Failed to send message');
+      return false;
+    }
+  };
+
+  // Delete a message
+  const deleteMessage = async (messageId: string) => {
+    if (!userId) return false;
+
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ is_deleted: true })
+        .eq('id', messageId)
+        .eq('user_id', userId); // Only allow deleting own messages
+
+      if (error) throw error;
+      
+      // Remove from local state immediately
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      return true;
+    } catch (err) {
+      console.error('Error deleting message:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete message');
       return false;
     }
   };
@@ -196,6 +221,7 @@ export const useChat = (poolId?: string, userId?: string) => {
     loading,
     error,
     sendMessage,
+    deleteMessage,
     extractMentions,
     renderMessageWithMentions,
     refreshMessages: loadMessages

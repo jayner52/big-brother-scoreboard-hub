@@ -7,12 +7,14 @@ interface ChatMessagesAreaProps {
   messages: ChatMessageType[];
   loading: boolean;
   userId: string | null;
+  onDeleteMessage?: (messageId: string) => Promise<boolean>;
 }
 
 export const ChatMessagesArea: React.FC<ChatMessagesAreaProps> = ({
   messages,
   loading,
-  userId
+  userId,
+  onDeleteMessage
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +41,7 @@ export const ChatMessagesArea: React.FC<ChatMessagesAreaProps> = ({
               isOwn={msg.user_id === userId}
               isMentioned={msg.mentioned_user_ids?.includes(userId || '')}
               currentUserId={userId || ''}
+              onDelete={onDeleteMessage}
             />
           ))}
           <div ref={messagesEndRef} />

@@ -27,7 +27,7 @@ const Chat: React.FC = () => {
     });
   }, []);
 
-  const { messages, loading, sendMessage, extractMentions } = useChat(activePool?.id, userId || undefined);
+  const { messages, loading, sendMessage, deleteMessage, extractMentions } = useChat(activePool?.id, userId || undefined);
   const { markAsRead } = useChatNotifications(activePool?.id, userId || undefined);
   const { poolMembers } = usePoolMembers(activePool?.id);
   const {
@@ -106,6 +106,7 @@ const Chat: React.FC = () => {
           messages={messages}
           loading={loading}
           userId={userId}
+          onDeleteMessage={deleteMessage}
         />
 
         <UserMentionDropdown 

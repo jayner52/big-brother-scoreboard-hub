@@ -1,5 +1,7 @@
 import React from 'react';
 import { ChatMessage as ChatMessageType } from '@/hooks/useChat';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ChatMessageProps {
@@ -7,13 +9,15 @@ interface ChatMessageProps {
   isOwn: boolean;
   isMentioned: boolean;
   currentUserId: string;
+  onDelete?: (messageId: string) => void;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ 
   message, 
   isOwn, 
   isMentioned,
-  currentUserId 
+  currentUserId,
+  onDelete 
 }) => {
   const bgColor = isMentioned 
     ? 'bg-yellow-50 border-yellow-200' 
@@ -36,7 +40,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   return (
-    <div className={`p-3 rounded-lg border ${bgColor} ${isOwn ? 'ml-auto' : 'mr-auto'} max-w-[70%] relative`}>
+    <div className={`p-3 rounded-lg border ${bgColor} ${isOwn ? 'ml-auto' : 'mr-auto'} max-w-[70%] relative group`}>
       {isMentioned && (
         <div className="absolute -left-1 top-0 bottom-0 w-1 bg-yellow-400 rounded-l-lg" />
       )}
@@ -61,6 +65,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             }}
           />
         </div>
+        
+        {isOwn && onDelete && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onDelete(message.id)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )}
       </div>
     </div>
   );

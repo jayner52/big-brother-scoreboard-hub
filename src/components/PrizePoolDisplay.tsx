@@ -19,11 +19,28 @@ interface PoolSettings {
   entry_fee_currency: string;
 }
 
+interface PrizeConfiguration {
+  mode: 'percentage' | 'custom';
+  admin_fee: number;
+  percentage_distribution: {
+    first_place_percentage: number;
+    second_place_percentage: number;
+    third_place_percentage: number;
+  };
+  custom_prizes: Array<{
+    id: string;
+    place: number;
+    amount: number;
+    description: string;
+  }>;
+}
+
 export const PrizePoolDisplay: React.FC = () => {
   const { activePool } = usePool();
   const [prizePools, setPrizePools] = useState<PrizePool[]>([]);
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState<PrizeConfiguration | null>(null);
 
   useEffect(() => {
     if (activePool?.id) {
@@ -45,6 +62,11 @@ export const PrizePoolDisplay: React.FC = () => {
       }
 
       setTotalEntries(entriesResult.data?.length || 0);
+      
+      // Load prize configuration from pool
+      if (activePool.prize_distribution && activePool.prize_distribution.mode) {
+        setConfig(activePool.prize_distribution);
+      }
     } catch (error) {
       console.error('Error loading prize pool data:', error);
     } finally {
@@ -57,7 +79,19 @@ export const PrizePoolDisplay: React.FC = () => {
   }
 
   const totalExpected = activePool ? (totalEntries * activePool.entry_fee_amount) : 0;
-  const totalPrizes = prizePools.reduce((sum, prize) => sum + prize.prize_amount, 0);
+  const adminFee = config?.admin_fee || 0;  
+  const availablePool = totalExpected - adminFee;
+  
+  let totalPrizes = 0;
+  let isOverBudget = false;
+  
+  if (config?.mode === 'custom') {
+    totalPrizes = config.custom_prizes.reduce((sum, prize) => sum + prize.amount, 0);
+    isOverBudget = totalPrizes > availablePool;
+  } else {
+    totalPrizes = prizePools.reduce((sum, prize) => sum + prize.prize_amount, 0);
+  }
+  
   const currency = activePool?.entry_fee_currency || 'CAD';
 
   const getOrdinalSuffix = (num: number) => {
@@ -93,12 +127,19 @@ export const PrizePoolDisplay: React.FC = () => {
                 {currency} ${Math.round(totalExpected)}
               </p>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg border">
-              <Trophy className="h-6 w-6 mx-auto text-purple-600 mb-2" />
-              <h4 className="font-semibold text-purple-800">Total Prizes</h4>
-              <p className="text-2xl font-bold text-purple-900">
+            <div className={`text-center p-4 rounded-lg border ${isOverBudget ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-200'}`}>
+              <Trophy className={`h-6 w-6 mx-auto mb-2 ${isOverBudget ? 'text-red-600' : 'text-purple-600'}`} />
+              <h4 className={`font-semibold ${isOverBudget ? 'text-red-800' : 'text-purple-800'}`}>
+                Total Prizes {isOverBudget && '(Over Budget)'}
+              </h4>
+              <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-900' : 'text-purple-900'}`}>
                 {currency} ${Math.round(totalPrizes)}
               </p>
+              {isOverBudget && (
+                <p className="text-xs text-red-600 mt-1">
+                  Over by ${Math.round(totalPrizes - availablePool)}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>

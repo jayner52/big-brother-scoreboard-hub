@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
-import { AdminSetupWizard } from '@/components/admin/AdminSetupWizard';
+import { AdminSetupWizardSimplified } from '@/components/admin/AdminSetupWizardSimplified';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Settings, CheckSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -66,7 +66,7 @@ const Admin = () => {
         </div>
 
         {/* Admin Setup Wizard */}
-        <AdminSetupWizard forceShow={showSetupWizard} />
+        <AdminSetupWizardSimplified forceShow={showSetupWizard} />
 
         {/* Admin Panels */}
         <div data-admin-panel>

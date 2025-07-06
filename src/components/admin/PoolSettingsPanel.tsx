@@ -95,7 +95,18 @@ export const PoolSettingsPanel: React.FC = () => {
     if (!activePool) return;
     
     try {
-      // Load from pools table, not pool_settings
+      // Load current groups from database to get actual count and names
+      const { data: currentGroups } = await supabase
+        .from('contestant_groups')
+        .select('group_name, sort_order')
+        .eq('pool_id', activePool.id)
+        .neq('group_name', 'Free Pick')
+        .order('sort_order');
+      
+      const actualGroupCount = currentGroups?.length || 4;
+      const actualGroupNames = currentGroups?.map(g => g.group_name) || ['Group A', 'Group B', 'Group C', 'Group D'];
+      
+      // Load from pools table with actual group data
       setSettings({
         id: activePool.id,
         season_name: activePool.name,
@@ -108,10 +119,10 @@ export const PoolSettingsPanel: React.FC = () => {
         registration_deadline: activePool.registration_deadline,
         draft_open: activePool.draft_open,
         season_active: !activePool.season_locked,
-        number_of_groups: 4, // Will be calculated from contestant_groups
+        number_of_groups: actualGroupCount, // Use actual count from database
         picks_per_team: activePool.picks_per_team,
         enable_free_pick: true,
-        group_names: ['Group A', 'Group B', 'Group C', 'Group D'], // Will be loaded from contestant_groups
+        group_names: actualGroupNames, // Use actual names from database
         has_buy_in: activePool.has_buy_in,
         buy_in_description: activePool.buy_in_description
       });

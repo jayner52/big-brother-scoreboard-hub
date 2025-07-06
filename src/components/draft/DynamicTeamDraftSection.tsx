@@ -20,13 +20,13 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
 }) => {
   const picksPerTeam = poolData?.picks_per_team || 5;
   
-  // **FIXED: Create unique groups list and separate Free Pick**
-  const uniqueGroups = contestantGroups.filter((group, index, self) => 
-    index === self.findIndex(g => g.group_name === group.group_name)
+  // **CRITICAL FIX: Filter groups by those that have contestants to avoid empty dropdowns**
+  const groupsWithContestants = contestantGroups.filter(group => 
+    group.contestants && group.contestants.length > 0
   );
   
-  const regularGroups = uniqueGroups.filter(g => g.group_name !== 'Free Pick');
-  const freePickGroup = uniqueGroups.find(g => g.group_name === 'Free Pick');
+  const regularGroups = groupsWithContestants.filter(g => g.group_name !== 'Free Pick');
+  const freePickGroup = contestantGroups.find(g => g.group_name === 'Free Pick'); // Free Pick can be empty initially
   
   // **FIXED: Create draft slots with proper Free Pick handling**
   const createDraftSlots = () => {

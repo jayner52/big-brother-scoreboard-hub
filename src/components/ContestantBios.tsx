@@ -32,35 +32,29 @@ export const ContestantBios: React.FC = () => {
   const getGroupBadge = (contestant: ContestantWithGroup) => {
     if (!contestant.group_name) return null;
     
-    // Handle custom group names and extract identifiers
-    let groupIdentifier = '';
-    let colorClass = 'bg-gray-100 text-gray-700';
+    // **CRITICAL FIX: Show full group name, not just letters**
+    // This works for both "Group A" and custom names like "The Young Guys"
+    const groupName = contestant.group_name;
     
-    if (contestant.group_name.startsWith('Group ')) {
-      // Standard group naming like "Group A", "Group B", etc.
-      groupIdentifier = contestant.group_name.replace('Group ', '');
-    } else {
-      // Custom group names - use first letter
-      groupIdentifier = contestant.group_name.charAt(0).toUpperCase();
-    }
+    // Color mapping based on group sort order or hash for custom names
+    const colors = [
+      'bg-red-100 text-red-700',
+      'bg-blue-100 text-blue-700', 
+      'bg-green-100 text-green-700',
+      'bg-purple-100 text-purple-700',
+      'bg-yellow-100 text-yellow-700',
+      'bg-pink-100 text-pink-700',
+      'bg-indigo-100 text-indigo-700',
+      'bg-orange-100 text-orange-700',
+    ];
     
-    // Color mapping based on alphabetical order
-    const colors = {
-      'A': 'bg-red-100 text-red-700',
-      'B': 'bg-blue-100 text-blue-700', 
-      'C': 'bg-green-100 text-green-700',
-      'D': 'bg-purple-100 text-purple-700',
-      'E': 'bg-yellow-100 text-yellow-700',
-      'F': 'bg-pink-100 text-pink-700',
-      'G': 'bg-indigo-100 text-indigo-700',
-      'H': 'bg-orange-100 text-orange-700',
-    };
-    
-    colorClass = colors[groupIdentifier as keyof typeof colors] || 'bg-gray-100 text-gray-700';
+    // Use hash of group name to get consistent color
+    const hash = groupName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colorClass = colors[hash % colors.length];
     
     return (
-      <Badge className={`absolute top-2 left-2 w-6 h-6 rounded-full text-xs p-0 flex items-center justify-center ${colorClass}`}>
-        {groupIdentifier}
+      <Badge className={`absolute top-2 left-2 text-xs px-2 py-1 font-medium ${colorClass}`}>
+        {groupName}
       </Badge>
     );
   };

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Send, Users } from 'lucide-react';
+import { ArrowLeft, Send, Users, MessageCircle } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { useChat } from '@/hooks/useChat';
 import { useChatNotifications } from '@/hooks/useChatNotifications';

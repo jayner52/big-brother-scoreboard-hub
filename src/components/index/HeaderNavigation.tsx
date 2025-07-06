@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Settings, BookOpen, LogOut, User, Users } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { ChatIcon } from '@/components/chat/ChatIcon';
 
 interface HeaderNavigationProps {
   user: SupabaseUser | null;
@@ -72,8 +73,9 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
         )}
       </div>
 
-      {/* Right Side - Admin */}
+      {/* Right Side - Chat and Admin */}
       <div className="flex items-center gap-4">
+        {user && <ChatIcon />}
         <Link to="/admin">
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />

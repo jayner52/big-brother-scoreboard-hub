@@ -1157,6 +1157,14 @@ export type Database = {
         Args: { target_pool_id: string }
         Returns: boolean
       }
+      increment_unread_counts: {
+        Args: {
+          target_user_id: string
+          target_pool_id: string
+          is_mention?: boolean
+        }
+        Returns: undefined
+      }
       join_pool_by_invite: {
         Args: { invite_code_param: string }
         Returns: Json

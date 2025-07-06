@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Settings, DollarSign, Mail, HelpCircle, Clock, Eye, EyeOff } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
-import { PrizePoolPanel } from '@/components/admin/PrizePoolPanel';
+import { EnhancedPrizePoolPanel } from '@/components/admin/EnhancedPrizePoolPanel';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
 import { useGroupAutoGeneration } from '@/hooks/useGroupAutoGeneration';
 
@@ -225,9 +225,14 @@ export const PoolSettingsPanel: React.FC = () => {
     // Execute database transaction via validated hook
     const success = await redistributeHouseguests(activePool.id, count, settings.enable_free_pick);
     
-    if (success) {
-      // Refresh pool data to update draft form immediately
-      loadSettings(); // Reload from database to ensure consistency
+    if (!success) {
+      // Revert UI state if database update failed
+      console.error('⚠️ Database update failed, reverting UI state');
+      setSettings({ 
+        ...settings, 
+        number_of_groups: settings.number_of_groups, // Keep previous value
+        group_names: settings.group_names // Keep previous names
+      });
     }
   };
 
@@ -509,6 +514,38 @@ export const PoolSettingsPanel: React.FC = () => {
                           placeholder="email@example.com or @username"
                         />
                       </div>
+                      <div>
+                        <Label htmlFor="payment_method_2">Secondary Payment Method (Optional)</Label>
+                        <Select 
+                          value={settings.payment_method_2 || 'none'} 
+                          onValueChange={(value) => setSettings({ ...settings, payment_method_2: value === 'none' ? null : value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select payment method" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="E-transfer">E-transfer</SelectItem>
+                            <SelectItem value="Venmo">Venmo</SelectItem>
+                            <SelectItem value="PayPal">PayPal</SelectItem>
+                            <SelectItem value="Zelle">Zelle</SelectItem>
+                            <SelectItem value="Cash">Cash</SelectItem>
+                            <SelectItem value="Cash App">Cash App</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {settings.payment_method_2 && (
+                        <div>
+                          <Label htmlFor="payment_details_2">Secondary Payment Details</Label>
+                          <Input
+                            id="payment_details_2"
+                            value={settings.payment_details_2 || ''}
+                            onChange={(e) => setSettings({ ...settings, payment_details_2: e.target.value })}
+                            placeholder="email@example.com or @username"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -534,84 +571,6 @@ export const PoolSettingsPanel: React.FC = () => {
           </Card>
         </AccordionItem>
 
-        {/* Payment Settings */}
-        <AccordionItem value="payment-methods" className="border-0">
-          <Card>
-            <AccordionTrigger className="hover:no-underline p-0">
-              <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg w-full">
-                <CardTitle className="flex items-center gap-2 text-left">
-                  <DollarSign className="h-5 w-5" />
-                  Payment Methods
-                </CardTitle>
-                <CardDescription className="text-green-100 text-left">
-                  Configure payment options
-                </CardDescription>
-              </CardHeader>
-            </AccordionTrigger>
-            <AccordionContent>
-              <CardContent className="p-6 space-y-4">
-                <div>
-                  <Label htmlFor="payment_method_1">Primary Payment Method</Label>
-                  <Select 
-                    value={settings.payment_method_1} 
-                    onValueChange={(value) => setSettings({ ...settings, payment_method_1: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="E-transfer">E-transfer</SelectItem>
-                      <SelectItem value="Venmo">Venmo</SelectItem>
-                      <SelectItem value="PayPal">PayPal</SelectItem>
-                      <SelectItem value="Cash App">Cash App</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="payment_details_1">Primary Payment Details</Label>
-                  <Input
-                    id="payment_details_1"
-                    value={settings.payment_details_1}
-                    onChange={(e) => setSettings({ ...settings, payment_details_1: e.target.value })}
-                    placeholder="email@example.com or @username"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="payment_method_2">Secondary Payment Method (Optional)</Label>
-                  <Select 
-                    value={settings.payment_method_2 || 'none'} 
-                    onValueChange={(value) => setSettings({ ...settings, payment_method_2: value === 'none' ? null : value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select payment method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      <SelectItem value="E-transfer">E-transfer</SelectItem>
-                      <SelectItem value="Venmo">Venmo</SelectItem>
-                      <SelectItem value="PayPal">PayPal</SelectItem>
-                      <SelectItem value="Cash App">Cash App</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {settings.payment_method_2 && (
-                  <div>
-                    <Label htmlFor="payment_details_2">Secondary Payment Details</Label>
-                    <Input
-                      id="payment_details_2"
-                      value={settings.payment_details_2 || ''}
-                      onChange={(e) => setSettings({ ...settings, payment_details_2: e.target.value })}
-                      placeholder="email@example.com or @username"
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </AccordionContent>
-          </Card>
-        </AccordionItem>
 
         {/* Draft Configuration */}
         <AccordionItem value="draft-config" className="border-0">
@@ -894,7 +853,7 @@ export const PoolSettingsPanel: React.FC = () => {
             </AccordionTrigger>
             <AccordionContent>
               <CardContent className="p-0">
-                <PrizePoolPanel />
+                <EnhancedPrizePoolPanel />
               </CardContent>
             </AccordionContent>
           </Card>

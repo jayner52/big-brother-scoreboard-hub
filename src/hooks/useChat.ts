@@ -34,8 +34,16 @@ export const useChat = (poolId?: string, userId?: string) => {
       const { data, error } = await supabase
         .from('chat_messages')
         .select(`
-          *,
-          profiles!inner(display_name)
+          id,
+          pool_id,
+          user_id,
+          message,
+          mentioned_user_ids,
+          parent_message_id,
+          is_edited,
+          is_deleted,
+          created_at,
+          updated_at
         `)
         .eq('pool_id', poolId)
         .eq('is_deleted', false)
@@ -43,9 +51,18 @@ export const useChat = (poolId?: string, userId?: string) => {
 
       if (error) throw error;
 
-      const messagesWithUserInfo = (data || []).map(msg => ({
-        ...msg,
-        user_name: (msg.profiles as any)?.display_name || 'Unknown User'
+      // Get user info for each message
+      const messagesWithUserInfo = await Promise.all((data || []).map(async (msg) => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', msg.user_id)
+          .maybeSingle();
+        
+        return {
+          ...msg,
+          user_name: profile?.display_name || 'Unknown User'
+        };
       }));
 
       setMessages(messagesWithUserInfo);

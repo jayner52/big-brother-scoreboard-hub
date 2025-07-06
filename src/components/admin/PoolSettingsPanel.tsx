@@ -377,12 +377,12 @@ export const PoolSettingsPanel: React.FC = () => {
         <AccordionItem value="basic-settings" className="border-0">
           <Card>
             <AccordionTrigger className="hover:no-underline p-0">
-              <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-t-lg w-full">
+              <CardHeader className="bg-gradient-to-r from-teal-700 to-teal-600 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
                   <Settings className="h-5 w-5" />
                   Basic Settings
                 </CardTitle>
-                <CardDescription className="text-blue-100 text-left">
+                <CardDescription className="text-teal-100 text-left">
                   Core pool configuration
                 </CardDescription>
               </CardHeader>

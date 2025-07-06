@@ -30,7 +30,7 @@ export const TeamLeaderboard: React.FC = () => {
       <Card className="w-full">
         <CardContent className="p-8 text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={reload} variant="outline">
+          <Button onClick={() => reload()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry
           </Button>
@@ -63,7 +63,7 @@ export const TeamLeaderboard: React.FC = () => {
               <Badge variant="secondary" className="bg-white/20">HOH/POV: 3 pts each</Badge>
               <Badge variant="secondary" className="bg-white/20">Bonus: 5-10 pts</Badge>
               <Button 
-                onClick={reload} 
+                onClick={() => reload()} 
                 variant="ghost" 
                 size="sm" 
                 className="ml-auto text-white hover:bg-white/20"

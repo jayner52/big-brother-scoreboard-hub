@@ -41,7 +41,7 @@ export const useSimpleLeaderboard = () => {
     };
   }, [activePool?.id]);
 
-  const loadLeaderboard = async () => {
+  const loadLeaderboard = async (retryCount = 0) => {
     if (!activePool?.id) {
       console.log('❌ No active pool to load leaderboard for');
       setPoolEntries([]);
@@ -52,7 +52,7 @@ export const useSimpleLeaderboard = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('🔍 Loading leaderboard for pool:', activePool.id);
+      console.log('🔍 Loading leaderboard for pool:', activePool.id, 'retry:', retryCount);
 
       const { data, error: queryError } = await supabase
         .from('pool_entries')
@@ -77,7 +77,15 @@ export const useSimpleLeaderboard = () => {
       setPoolEntries(mappedEntries);
     } catch (err) {
       console.error('❌ Failed to load leaderboard:', err);
-      setError('Failed to load leaderboard');
+      
+      // Retry logic for reliability
+      if (retryCount < 2) {
+        console.log('🔄 Retrying leaderboard load in 1 second...');
+        setTimeout(() => loadLeaderboard(retryCount + 1), 1000);
+        return;
+      }
+      
+      setError('Failed to load leaderboard after multiple attempts');
       setPoolEntries([]);
     } finally {
       setLoading(false);

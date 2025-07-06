@@ -16,16 +16,60 @@ export const useContestants = (poolId?: string) => {
     try {
       console.log('🔥 Querying database for contestants...');
       
-      const { data } = await supabase
+      // First try to get pool-specific contestants
+      const { data: poolContestants } = await supabase
         .from('contestants')
         .select('*')
         .eq('pool_id', poolId)
         .order('name', { ascending: true });
       
-      console.log('🔥 Raw database response:', { count: data?.length, data: data?.slice(0, 2) });
+      console.log('🔥 Pool-specific contestants:', poolContestants?.length || 0);
       
-      if (data) {
-        const mappedContestants = data.map(c => ({
+      // If we have fewer than expected contestants, ensure default data is seeded
+      if (!poolContestants || poolContestants.length < 10) {
+        console.log('🔥 Pool has few contestants, checking if defaults need to be seeded...');
+        
+        // Check if defaults exist
+        const { data: defaultContestants } = await supabase
+          .from('contestants')
+          .select('*')
+          .is('pool_id', null)
+          .order('name', { ascending: true });
+        
+        console.log('🔥 Default contestants available:', defaultContestants?.length || 0);
+        
+        // If defaults exist but pool has none, trigger seeding
+        if (defaultContestants && defaultContestants.length > 0 && (!poolContestants || poolContestants.length === 0)) {
+          console.log('🔥 Triggering pool seeding...');
+          try {
+            await supabase.rpc('seed_new_pool_defaults', { target_pool_id: poolId });
+            console.log('🔥 Pool seeding completed, reloading contestants...');
+            
+            // Reload after seeding
+            const { data: reloadedData } = await supabase
+              .from('contestants')
+              .select('*')
+              .eq('pool_id', poolId)
+              .order('name', { ascending: true });
+            
+            console.log('🔥 Reloaded contestants after seeding:', reloadedData?.length || 0);
+            poolContestants.splice(0, poolContestants.length, ...(reloadedData || []));
+          } catch (seedError) {
+            console.error('🔥 Pool seeding failed:', seedError);
+            toast({
+              title: "Warning",
+              description: "Failed to load default contestants. You may need to add contestants manually.",
+              variant: "destructive",
+            });
+          }
+        }
+      }
+      
+      const finalData = poolContestants || [];
+      console.log('🔥 Final contestant data:', { count: finalData.length });
+      
+      if (finalData.length > 0) {
+        const mappedContestants = finalData.map(c => ({
           id: c.id,
           name: c.name,
           isActive: c.is_active,
@@ -39,16 +83,11 @@ export const useContestants = (poolId?: string) => {
         }));
         
         console.log('🔥 Mapped contestants:', { count: mappedContestants.length, sample: mappedContestants[0] });
-        
-        // Filter by pool_id for logging
-        const defaultContestants = data.filter(c => c.pool_id === null);
-        const poolContestants = data.filter(c => c.pool_id !== null);
-        
-        console.log('🔥 Default contestants (pool_id = null):', defaultContestants.length);
-        console.log('🔥 Pool contestants (pool_id != null):', poolContestants.length);
-        
         setContestants(mappedContestants);
         console.log('🔥 State updated with contestants');
+      } else {
+        console.log('🔥 No contestants found, setting empty state');
+        setContestants([]);
       }
     } catch (error) {
       console.error('🔥 ERROR LOADING CONTESTANTS:', error);

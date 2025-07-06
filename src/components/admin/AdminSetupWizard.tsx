@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { 
   CheckCircle, 
   AlertCircle, 
-  Settings, 
   Users, 
+  UserCheck, 
   DollarSign, 
   Share2,
   X
@@ -80,7 +80,7 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
           description: 'Set the number of contestant groups and picks per team.',
           icon: hasAnyEntries ? 
             <CheckCircle className="h-5 w-5 text-green-600" /> : 
-            <Settings className="h-5 w-5 text-blue-600" />,
+            <UserCheck className="h-5 w-5 text-blue-600" />,
           completed: activePool.draft_configuration_locked || false,
           warning: hasAnyEntries ? undefined : 'This cannot be changed after the first person drafts!',
           action: () => navigateToSection('#draft-settings'),
@@ -107,7 +107,7 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
           id: 'bonus-questions',
           title: 'Review Bonus Questions',
           description: `${unansweredQuestions} prediction questions available for customization.`,
-          icon: <Settings className="h-5 w-5 text-blue-600" />,
+          icon: <UserCheck className="h-5 w-5 text-blue-600" />,
           completed: false, // Always show as available for review
           action: () => window.location.href = '/admin?tab=bonus-questions',
           actionLabel: 'Review →'
@@ -130,11 +130,19 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
   };
 
   const navigateToSection = (section: string) => {
-    // Scroll to the admin scoring panel section instead of using hash
-    const adminPanel = document.querySelector('[data-admin-panel]');
-    if (adminPanel) {
-      adminPanel.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Add a small delay to ensure smooth transition
+    setTimeout(() => {
+      const adminPanel = document.querySelector('[data-admin-panel]');
+      if (adminPanel) {
+        adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Flash the target section to indicate navigation
+        adminPanel.classList.add('ring-2', 'ring-primary', 'ring-opacity-50');
+        setTimeout(() => {
+          adminPanel.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+        }, 2000);
+      }
+    }, 100);
   };
 
   const copyInviteCode = () => {
@@ -162,6 +170,7 @@ export const AdminSetupWizard: React.FC<AdminSetupWizardProps> = ({ forceShow = 
       if (dismissed && !forceShow) {
         setShowWizard(false);
       } else if (forceShow) {
+        // Always show when force-shown, regardless of dismissal status
         setShowWizard(true);
       }
     }

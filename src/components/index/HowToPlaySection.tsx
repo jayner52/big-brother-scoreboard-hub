@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Target, Trophy, DollarSign } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
+import { PrizePoolSection } from './PrizePoolSection';
 
 interface HowToPlaySectionProps {
   showRules: boolean;
@@ -21,6 +22,9 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
 
       {showRules && (
         <div className="max-w-6xl mx-auto">
+          {/* Prize Pool Section */}
+          <PrizePoolSection />
+          
           {/* How It Works Section */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="text-center">

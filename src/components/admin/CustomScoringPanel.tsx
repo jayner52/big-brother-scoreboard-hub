@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Target, Plus, Save, X } from 'lucide-react';
+import { Calculator, Plus, Save, X } from 'lucide-react';
 
 interface ScoringRule {
   id: string;

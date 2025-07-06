@@ -90,8 +90,8 @@ export const AdminInstructionsModal: React.FC = () => {
                 <div className="bg-orange-50 p-3 rounded mt-2">
                   <p className="text-sm"><strong>Question Types:</strong></p>
                   <ul className="text-xs space-y-1 ml-2">
-                    <li>• Player Select: Choose one contestant</li>
-                    <li>• Dual Player: Choose two contestants</li>
+                    <li>• Player Select: Choose one houseguest</li>
+                    <li>• Dual Player: Choose two houseguests</li>
                     <li>• Yes/No: True or false question</li>
                     <li>• Number: Numeric prediction</li>
                   </ul>

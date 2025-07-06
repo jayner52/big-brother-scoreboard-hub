@@ -28,12 +28,12 @@ export const ContestantPerformanceCard: React.FC<ContestantPerformanceCardProps>
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Contestant Performance & Values</CardTitle>
-            <p className="text-sm text-gray-600">
-              Track how each contestant is performing and their fantasy value
-            </p>
-          </div>
+        <div>
+          <CardTitle>Houseguest Performance & Values</CardTitle>
+          <p className="text-sm text-gray-600">
+            Track how each houseguest is performing and their fantasy value
+          </p>
+        </div>
           <Button
             variant="outline"
             size="sm"

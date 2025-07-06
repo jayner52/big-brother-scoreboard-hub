@@ -46,7 +46,8 @@ export const TeamDraftForm: React.FC = () => {
     e.preventDefault();
     
     // Validate form
-    const validation = validateDraftForm(formData, bonusQuestions, picksPerTeam);
+    const allowDuplicates = poolData?.allow_duplicate_picks ?? true;
+    const validation = validateDraftForm(formData, bonusQuestions, picksPerTeam, allowDuplicates);
     setValidationErrors(validation.errors);
     
     if (!validation.isValid) {

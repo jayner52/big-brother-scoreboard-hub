@@ -122,6 +122,7 @@ export interface Pool {
   finale_week_enabled?: boolean;
   hide_picks_until_draft_closed?: boolean;
   season_locked?: boolean;
+  allow_duplicate_picks?: boolean;
 }
 
 export interface PoolMembership {

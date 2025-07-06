@@ -249,6 +249,35 @@ export const PoolSettingsPanel: React.FC = () => {
     }
   };
 
+  const handleAllowDuplicatePicksToggle = async (allowDuplicates: boolean) => {
+    if (!activePool) return;
+    setIsUpdating(true);
+    try {
+      const success = await updatePool(activePool.id, {
+        allow_duplicate_picks: allowDuplicates
+      });
+
+      if (success) {
+        toast({
+          title: allowDuplicates ? "Duplicate Picks Allowed" : "Duplicate Picks Disabled",
+          description: allowDuplicates 
+            ? "Teams can now draft the same houseguest"
+            : "Each houseguest can only be drafted once per team",
+        });
+      } else {
+        throw new Error('Failed to update duplicate picks setting');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update duplicate picks setting",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading pool settings...</div>;
   }
@@ -488,20 +517,21 @@ export const PoolSettingsPanel: React.FC = () => {
                   </div>
                 </div>
 
-                  {/* Allow Duplicate Picks - Coming Soon */}
-                  <div className="border-t pt-4 opacity-50">
+                  {/* Allow Duplicate Picks */}
+                  <div className="border-t pt-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <Label className="text-base font-medium text-muted-foreground">
-                          Allow Duplicate Picks (Coming Soon)
+                        <Label className="text-base font-medium">
+                          Allow Duplicate Picks
                         </Label>
                         <p className="text-sm text-muted-foreground">
-                          Feature will be available after next database update
+                          Teams can draft the same houseguest if enabled
                         </p>
                       </div>
                       <Switch
-                        disabled={true}
-                        checked={true}
+                        checked={activePool?.allow_duplicate_picks ?? true}
+                        onCheckedChange={handleAllowDuplicatePicksToggle}
+                        disabled={isUpdating || activePool?.season_locked}
                       />
                     </div>
                 </div>

@@ -146,7 +146,7 @@ export const ThirdEvictionSection: React.FC<ThirdEvictionSectionProps> = ({
                     onValueChange={(value) => setEventForm(prev => ({ ...prev, thirdPovUsedOn: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select contestant" />
+                      <SelectValue placeholder="Select houseguest" />
                     </SelectTrigger>
                     <SelectContent>
                       {eventForm.thirdNominees?.filter(n => n).map((nominee) => (
@@ -182,15 +182,15 @@ export const ThirdEvictionSection: React.FC<ThirdEvictionSectionProps> = ({
           </div>
         )}
 
-        {/* Third Evicted Contestant */}
+        {/* Third Evicted Houseguest */}
         <div>
-          <Label htmlFor="third-evicted">Third Evicted Contestant</Label>
+          <Label htmlFor="third-evicted">Third Evicted Houseguest</Label>
           <Select
             value={eventForm.thirdEvicted || ''}
             onValueChange={(value) => setEventForm(prev => ({ ...prev, thirdEvicted: value }))}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select evicted contestant" />
+              <SelectValue placeholder="Select evicted houseguest" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="no-eviction">No Eviction</SelectItem>

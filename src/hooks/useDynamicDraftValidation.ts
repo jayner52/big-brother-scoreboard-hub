@@ -5,7 +5,8 @@ export const useDynamicDraftValidation = () => {
   const validateDraftForm = (
     formData: DynamicDraftFormData, 
     bonusQuestions: BonusQuestion[] = [],
-    picksPerTeam: number = 5
+    picksPerTeam: number = 5,
+    allowDuplicatePicks: boolean = true
   ): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
 
@@ -34,9 +35,11 @@ export const useDynamicDraftValidation = () => {
     }
 
     // Check for duplicate houseguests (only if pool doesn't allow duplicates)
-    const uniquePlayers = new Set(selectedPlayers);
-    if (uniquePlayers.size !== selectedPlayers.length) {
-      errors.push("You cannot select the same houseguest multiple times");
+    if (!allowDuplicatePicks) {
+      const uniquePlayers = new Set(selectedPlayers);
+      if (uniquePlayers.size !== selectedPlayers.length) {
+        errors.push("You cannot select the same houseguest multiple times");
+      }
     }
 
     // Bonus questions validation

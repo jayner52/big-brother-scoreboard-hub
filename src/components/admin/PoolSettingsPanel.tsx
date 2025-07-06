@@ -413,13 +413,24 @@ export const PoolSettingsPanel: React.FC = () => {
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="payment_method">Payment Method</Label>
-                        <Input
-                          id="payment_method"
-                          value={settings.payment_method_1}
-                          onChange={(e) => setSettings({ ...settings, payment_method_1: e.target.value })}
-                          placeholder="e.g., E-transfer, Venmo, PayPal"
-                        />
+                        <Label htmlFor="payment_method">Primary Payment Method</Label>
+                        <Select 
+                          value={settings.payment_method_1} 
+                          onValueChange={(value) => setSettings({ ...settings, payment_method_1: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select payment method" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="E-transfer">E-transfer</SelectItem>
+                            <SelectItem value="Venmo">Venmo</SelectItem>
+                            <SelectItem value="PayPal">PayPal</SelectItem>
+                            <SelectItem value="Zelle">Zelle</SelectItem>
+                            <SelectItem value="Cash">Cash</SelectItem>
+                            <SelectItem value="Cash App">Cash App</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label htmlFor="payment_details">Payment Details</Label>

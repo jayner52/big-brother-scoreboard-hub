@@ -40,6 +40,24 @@ export interface ContestantWithBio {
   hometown?: string;
   age?: number;
   occupation?: string;
+  // Additional database fields
+  personality_traits?: string[] | any;
+  family_info?: string;
+  relationship_status?: string;
+  gameplay_strategy?: string;
+  backstory?: string;
+  current_hoh?: boolean;
+  current_pov_winner?: boolean;
+  currently_nominated?: boolean;
+  times_on_block_at_eviction?: number;
+  times_saved_by_veto?: number;
+  final_placement?: number;
+  americas_favorite?: boolean;
+  physical_description?: any;
+  ai_generated?: boolean;
+  generation_metadata?: any;
+  season_number?: number;
+  data_source?: string;
 }
 
 export interface ContestantGroup {

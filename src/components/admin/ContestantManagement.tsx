@@ -3,6 +3,7 @@ import { Bot } from 'lucide-react';
 import { useContestants } from '@/hooks/useContestants';
 import { useContestantActions } from '@/hooks/useContestantActions';
 import { ContestantProfileModal } from './contestants/ContestantProfileModal';
+import { EnhancedContestantProfileModal } from './contestants/EnhancedContestantProfileModal';
 import { ContestantManagementHeader } from './contestants/ContestantManagementHeader';
 import { ManageContestantsTab } from './contestants/ManageContestantsTab';
 import { AIGenerationTab } from './contestants/AIGenerationTab';
@@ -83,10 +84,11 @@ export const ContestantManagement: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      <ContestantProfileModal
+      <EnhancedContestantProfileModal
         contestant={selectedContestant}
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
+        onUpdate={loadContestants}
       />
     </div>
   );

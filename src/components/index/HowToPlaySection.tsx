@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Target, Trophy, DollarSign } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { PrizePoolSection } from './PrizePoolSection';
+import { DynamicPrizeDisplay } from './DynamicPrizeDisplay';
 
 interface HowToPlaySectionProps {
   showRules: boolean;
@@ -22,8 +23,14 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
 
       {showRules && (
         <div className="max-w-6xl mx-auto">
-          {/* Prize Pool Section */}
+          {/* Dynamic Prize Pool Section */}
+          <div className="mb-8">
+            <DynamicPrizeDisplay />
+          </div>
+          
+          {/* Static Prize Pool Fallback */}
           <PrizePoolSection />
+          
           {/* How It Works Section */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="text-center">

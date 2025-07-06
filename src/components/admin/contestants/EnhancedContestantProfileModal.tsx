@@ -61,8 +61,8 @@ export const EnhancedContestantProfileModal: React.FC<EnhancedContestantProfileM
     }
   };
 
-  const personalityTraits = Array.isArray(contestant.personalityTraits) 
-    ? contestant.personalityTraits 
+  const personalityTraits = Array.isArray(contestant.personality_traits) 
+    ? contestant.personality_traits 
     : [];
 
   return (
@@ -134,11 +134,11 @@ export const EnhancedContestantProfileModal: React.FC<EnhancedContestantProfileM
                       {contestant.bio || 'No bio available'}
                     </p>
                   </div>
-                  {contestant.familyInfo && (
+                  {contestant.family_info && (
                     <div>
                       <span className="font-medium block mb-1">Family:</span>
                       <p className="text-sm text-muted-foreground">
-                        {contestant.familyInfo}
+                        {contestant.family_info}
                       </p>
                     </div>
                   )}
@@ -179,19 +179,19 @@ export const EnhancedContestantProfileModal: React.FC<EnhancedContestantProfileM
               </CardHeader>
               <CardContent>
                 <p className="text-sm">
-                  {contestant.gameplayStrategy || 'No strategy information available'}
+                  {contestant.gameplay_strategy || 'No strategy information available'}
                 </p>
               </CardContent>
             </Card>
             
-            {contestant.backStory && (
+            {contestant.backstory && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Backstory</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm">
-                    {contestant.backStory}
+                    {contestant.backstory}
                   </p>
                 </CardContent>
               </Card>
@@ -207,20 +207,20 @@ export const EnhancedContestantProfileModal: React.FC<EnhancedContestantProfileM
                 <CardContent className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">HOH Winner:</span>
-                    <Badge variant={contestant.currentHoh ? "default" : "outline"}>
-                      {contestant.currentHoh ? 'Yes' : 'No'}
+                    <Badge variant={contestant.current_hoh ? "default" : "outline"}>
+                      {contestant.current_hoh ? 'Yes' : 'No'}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="font-medium">POV Winner:</span>
-                    <Badge variant={contestant.currentPovWinner ? "default" : "outline"}>
-                      {contestant.currentPovWinner ? 'Yes' : 'No'}
+                    <Badge variant={contestant.current_pov_winner ? "default" : "outline"}>
+                      {contestant.current_pov_winner ? 'Yes' : 'No'}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Nominated:</span>
-                    <Badge variant={contestant.currentlyNominated ? "destructive" : "outline"}>
-                      {contestant.currentlyNominated ? 'Yes' : 'No'}
+                    <Badge variant={contestant.currently_nominated ? "destructive" : "outline"}>
+                      {contestant.currently_nominated ? 'Yes' : 'No'}
                     </Badge>
                   </div>
                 </CardContent>

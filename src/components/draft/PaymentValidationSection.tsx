@@ -3,6 +3,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard } from 'lucide-react';
+import { usePool } from '@/contexts/PoolContext';
 
 interface PaymentValidationSectionProps {
   paymentConfirmed: boolean;
@@ -13,6 +14,13 @@ export const PaymentValidationSection: React.FC<PaymentValidationSectionProps> =
   paymentConfirmed,
   onPaymentConfirmedChange,
 }) => {
+  const { activePool } = usePool();
+  
+  // Don't render if pool doesn't have buy-in
+  if (!activePool?.has_buy_in) {
+    return null;
+  }
+  
   return (
     <Card className="border-2 border-green-200">
       <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
@@ -21,7 +29,7 @@ export const PaymentValidationSection: React.FC<PaymentValidationSectionProps> =
           Payment Confirmation
         </CardTitle>
         <CardDescription className="text-green-100">
-          Confirm your entry fee payment to complete registration
+          Confirm your {activePool?.entry_fee_currency} ${activePool?.entry_fee_amount} entry fee payment
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
@@ -32,7 +40,7 @@ export const PaymentValidationSection: React.FC<PaymentValidationSectionProps> =
             onCheckedChange={onPaymentConfirmedChange}
           />
           <Label htmlFor="payment-confirmed" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            I have sent my entry fee payment (you can update this later if needed)
+            I have sent my {activePool?.entry_fee_currency} ${activePool?.entry_fee_amount} via {activePool?.payment_method_1} to {activePool?.payment_details_1}
           </Label>
         </div>
         <p className="text-xs text-gray-600 mt-2">

@@ -200,7 +200,7 @@ export const PoolEntriesManagement: React.FC = () => {
                   <TableHead>Team Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Team</TableHead>
-                  <TableHead>Payment</TableHead>
+                  {activePool?.has_buy_in && <TableHead>Payment</TableHead>}
                   <TableHead>Points</TableHead>
                   <TableHead>Submitted</TableHead>
                   <TableHead>Actions</TableHead>
@@ -217,11 +217,13 @@ export const PoolEntriesManagement: React.FC = () => {
                     <TableCell className="text-sm">
                       {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => entry[`player_${i + 1}` as keyof typeof entry]).filter(Boolean).join(', ')}
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={entry.payment_confirmed ? "default" : "destructive"}>
-                        {entry.payment_confirmed ? "Confirmed" : "Pending"}
-                      </Badge>
-                    </TableCell>
+                    {activePool?.has_buy_in && (
+                      <TableCell>
+                        <Badge variant={entry.payment_confirmed ? "default" : "destructive"}>
+                          {entry.payment_confirmed ? "Confirmed" : "Pending"}
+                        </Badge>
+                      </TableCell>
+                    )}
                     <TableCell className="text-center font-bold">
                       {entry.total_points}
                     </TableCell>
@@ -230,36 +232,41 @@ export const PoolEntriesManagement: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2 flex-wrap">
-                        {/* User can mark their own payment as sent */}
-                        {currentUserId === entry.user_id && !entry.payment_confirmed && (
-                          <UserPaymentButton 
-                            entryId={entry.id}
-                            paymentConfirmed={entry.payment_confirmed}
-                          />
-                        )}
-                        
-                        {/* Admin controls */}
-                        {!entry.payment_confirmed && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updatePaymentStatus(entry.id, true)}
-                            className="text-green-600 hover:bg-green-50 h-7"
-                          >
-                            <Check className="h-3 w-3 mr-1" />
-                            Confirm
-                          </Button>
-                        )}
-                        {entry.payment_confirmed && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updatePaymentStatus(entry.id, false)}
-                            className="text-red-600 hover:bg-red-50 h-7"
-                          >
-                            <X className="h-3 w-3 mr-1" />
-                            Pending
-                          </Button>
+                        {/* Payment controls - only show if pool has buy-in */}
+                        {activePool?.has_buy_in && (
+                          <>
+                            {/* User can mark their own payment as sent */}
+                            {currentUserId === entry.user_id && !entry.payment_confirmed && (
+                              <UserPaymentButton 
+                                entryId={entry.id}
+                                paymentConfirmed={entry.payment_confirmed}
+                              />
+                            )}
+                            
+                            {/* Admin controls */}
+                            {!entry.payment_confirmed && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updatePaymentStatus(entry.id, true)}
+                                className="text-green-600 hover:bg-green-50 h-7"
+                              >
+                                <Check className="h-3 w-3 mr-1" />
+                                Confirm
+                              </Button>
+                            )}
+                            {entry.payment_confirmed && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updatePaymentStatus(entry.id, false)}
+                                className="text-red-600 hover:bg-red-50 h-7"
+                              >
+                                <X className="h-3 w-3 mr-1" />
+                                Pending
+                              </Button>
+                            )}
+                          </>
                         )}
                         
                         <AlertDialog>

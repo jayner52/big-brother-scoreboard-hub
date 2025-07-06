@@ -267,17 +267,19 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
               {draftLocked ? "Locked" : "Edit Team"}
             </Button>
             
-            {/* Payment Toggle */}
-            <Button
-              variant={currentEntry.payment_confirmed ? "default" : "outline"}
-              size="sm"
-              onClick={() => handlePaymentToggle(currentEntry.id, currentEntry.payment_confirmed)}
-              disabled={updating}
-              className="h-8 px-3 text-xs"
-            >
-              <CreditCard className="h-3 w-3 mr-1" />
-              {updating ? "..." : currentEntry.payment_confirmed ? "Paid" : "Pay"}
-            </Button>
+            {/* Payment Toggle - only show if pool has buy-in */}
+            {activePool?.has_buy_in && (
+              <Button
+                variant={currentEntry.payment_confirmed ? "default" : "outline"}
+                size="sm"
+                onClick={() => handlePaymentToggle(currentEntry.id, currentEntry.payment_confirmed)}
+                disabled={updating}
+                className="h-8 px-3 text-xs"
+              >
+                <CreditCard className="h-3 w-3 mr-1" />
+                {updating ? "..." : currentEntry.payment_confirmed ? "Paid" : "Pay"}
+              </Button>
+            )}
             
             {/* Score Display */}
             <div className="bg-primary/10 rounded-lg px-3 py-1 border">

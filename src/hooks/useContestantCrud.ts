@@ -136,10 +136,21 @@ export const useContestantCrud = (
 
   const clearAllContestants = async () => {
     try {
+      // Get pool_id from one of the contestants to ensure we only clear from current pool
+      const firstContestant = contestants[0];
+      if (!firstContestant?.pool_id) {
+        toast({
+          title: "Error",
+          description: "No pool context found for clearing contestants",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       const { error } = await supabase
         .from('contestants')
         .delete()
-        .eq('season_number', 26);
+        .eq('pool_id', firstContestant.pool_id);
 
       if (error) throw error;
 
@@ -147,7 +158,7 @@ export const useContestantCrud = (
       
       toast({
         title: "Success!",
-        description: "All contestants cleared",
+        description: "All contestants cleared from this pool",
       });
 
       return true;

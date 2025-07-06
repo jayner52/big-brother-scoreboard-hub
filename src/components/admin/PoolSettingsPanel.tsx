@@ -123,7 +123,7 @@ export const PoolSettingsPanel: React.FC = () => {
           number_of_groups: actualGroupCount, // Use actual count from database
           picks_per_team: activePool.picks_per_team,
           enable_free_pick: true,
-          number_of_free_picks: activePool.number_of_free_picks || 1,
+          number_of_free_picks: (activePool as any).number_of_free_picks || 1,
           group_names: actualGroupNames, // Use actual names from database
           has_buy_in: activePool.has_buy_in,
           buy_in_description: activePool.buy_in_description
@@ -163,7 +163,7 @@ export const PoolSettingsPanel: React.FC = () => {
         number_of_free_picks: settings.number_of_free_picks || 1,
         has_buy_in: settings.has_buy_in,
         buy_in_description: settings.buy_in_description,
-      });
+      } as any);
 
       if (!success) throw new Error('Failed to update pool');
 

@@ -7,6 +7,7 @@ import { WeekControls } from './weekly-events/WeekControls';
 import { WeeklyEventsHeader } from './weekly-events/WeeklyEventsHeader';
 import { WeeklyEventsToggles } from './weekly-events/WeeklyEventsToggles';
 import { WeeklyEventsContent } from './weekly-events/WeeklyEventsContent';
+import { WeekSelector } from './weekly-events/WeekSelector';
 import { usePool } from '@/contexts/PoolContext';
 
 export const WeeklyEventsPanel: React.FC = () => {
@@ -86,6 +87,11 @@ export const WeeklyEventsPanel: React.FC = () => {
         />
         
         <CardContent className="p-6 space-y-6">
+          {/* Week Selector */}
+          <WeekSelector
+            currentWeek={eventForm.week}
+            onWeekChange={handleWeekChange}
+          />
 
           {/* Week Controls */}
           <WeekControls

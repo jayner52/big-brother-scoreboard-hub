@@ -732,6 +732,7 @@ export type Database = {
           jury_start_timestamp: string | null
           jury_start_week: number | null
           name: string
+          number_of_free_picks: number | null
           owner_id: string
           payment_details_1: string
           payment_details_2: string | null
@@ -764,6 +765,7 @@ export type Database = {
           jury_start_timestamp?: string | null
           jury_start_week?: number | null
           name: string
+          number_of_free_picks?: number | null
           owner_id: string
           payment_details_1?: string
           payment_details_2?: string | null
@@ -796,6 +798,7 @@ export type Database = {
           jury_start_timestamp?: string | null
           jury_start_week?: number | null
           name?: string
+          number_of_free_picks?: number | null
           owner_id?: string
           payment_details_1?: string
           payment_details_2?: string | null

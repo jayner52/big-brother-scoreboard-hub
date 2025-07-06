@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, ContestantGroup } from '@/types/admin';
-import { Pencil, Save, X } from 'lucide-react';
+import { Pencil, Save, X, Trash2 } from 'lucide-react';
 import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 
 interface ContestantCardProps {
@@ -19,6 +19,7 @@ interface ContestantCardProps {
   onSave: () => void;
   onCancel: () => void;
   onFormChange: (updates: Partial<ContestantWithBio>) => void;
+  onDelete: (id: string) => void;
 }
 
 export const ContestantCard: React.FC<ContestantCardProps> = ({
@@ -30,6 +31,7 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
   onSave,
   onCancel,
   onFormChange,
+  onDelete,
 }) => {
   const { evictedContestants } = useEvictedContestants();
   const isEvicted = evictedContestants.includes(contestant.name);
@@ -178,9 +180,19 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
               )}
             </div>
           </div>
-          <Button size="sm" variant="outline" onClick={() => onEdit(contestant)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => onEdit(contestant)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => onDelete(contestant.id)}
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

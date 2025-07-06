@@ -11,6 +11,7 @@ interface ContestantListProps {
   onSave: () => void;
   onCancel: () => void;
   onFormChange: (updates: Partial<ContestantWithBio>) => void;
+  onDelete: (id: string) => void;
 }
 
 export const ContestantList: React.FC<ContestantListProps> = ({
@@ -22,6 +23,7 @@ export const ContestantList: React.FC<ContestantListProps> = ({
   onSave,
   onCancel,
   onFormChange,
+  onDelete,
 }) => {
   return (
     <div className="grid gap-4">
@@ -36,6 +38,7 @@ export const ContestantList: React.FC<ContestantListProps> = ({
           onSave={onSave}
           onCancel={onCancel}
           onFormChange={onFormChange}
+          onDelete={onDelete}
         />
       ))}
     </div>

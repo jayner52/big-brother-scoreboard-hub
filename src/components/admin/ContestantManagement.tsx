@@ -64,6 +64,9 @@ export const ContestantManagement: React.FC = () => {
             onCancel={handleCancel}
             onFormChange={handleFormChange}
             onAddContestant={handleAddContestant}
+            onDelete={handleDelete}
+            onClearAll={handleClearAll}
+            onRefresh={loadContestants}
           />
         </TabsContent>
         

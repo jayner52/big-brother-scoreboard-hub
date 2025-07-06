@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -33,8 +33,9 @@ const Admin = () => {
 
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-6 px-8 rounded-lg shadow-lg mb-6">
-          <h1 className="text-4xl font-bold mb-2">
-            🏠 Admin Panel
+          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+            <Settings className="h-8 w-8" />
+            Admin Panel
           </h1>
           <p className="text-lg text-red-100">
             Manage weekly results, houseguest status, and bonus questions

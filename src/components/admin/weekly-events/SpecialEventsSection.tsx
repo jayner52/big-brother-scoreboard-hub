@@ -33,13 +33,27 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     }));
   };
 
+  // Handle special events with houseguest revival
   const updateSpecialEvent = (index: number, field: string, value: string | number) => {
-    setEventForm(prev => ({
-      ...prev,
-      specialEvents: prev.specialEvents.map((event, i) => 
-        i === index ? { ...event, [field]: value } : event
-      )
-    }));
+    setEventForm(prev => {
+      const newForm = {
+        ...prev,
+        specialEvents: prev.specialEvents.map((event, i) => 
+          i === index ? { ...event, [field]: value } : event
+        )
+      };
+
+      // Auto-handle houseguest revival when "came_back_after_evicted" is selected
+      if (field === 'eventType' && value === 'came_back_after_evicted') {
+        const contestantName = newForm.specialEvents[index].contestant;
+        if (contestantName) {
+          console.log('🔄 SpecialEvents - Auto-reviving houseguest:', contestantName);
+          // This would trigger houseguest revival in the submission handler
+        }
+      }
+
+      return newForm;
+    });
   };
 
   const removeSpecialEvent = (index: number) => {
@@ -77,14 +91,19 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                      <SelectContent>
-                       {eligibleContestants.map(contestant => {
-                         const isEvicted = evictedContestants.includes(contestant.name);
-                         return (
-                           <SelectItem key={contestant.id} value={contestant.name}>
-                             {contestant.name} {isEvicted && '(Evicted)'}
-                           </SelectItem>
-                         );
-                       })}
+                       {eligibleContestants
+                         .filter((contestant, index, self) => 
+                           // Remove duplicates based on contestant ID
+                           index === self.findIndex(c => c.id === contestant.id)
+                         )
+                         .map(contestant => {
+                           const isEvicted = evictedContestants.includes(contestant.name);
+                           return (
+                             <SelectItem key={contestant.id} value={contestant.name}>
+                               {contestant.name} {isEvicted && '(Evicted)'}
+                             </SelectItem>
+                           );
+                         })}
                      </SelectContent>
                   </Select>
                 </div>
@@ -99,15 +118,17 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                     </SelectTrigger>
                      <SelectContent>
                        <SelectItem value="custom">Custom Event</SelectItem>
-                       {scoringRules
-                         .filter(r => r.category === 'special_events' && r.subcategory && 
-                           r.subcategory.trim() !== '' && 
-                           r.subcategory !== 'bb_arena_winner') // Exclude BB Arena as it's handled separately
-                         .map(rule => (
-                           <SelectItem key={rule.id} value={rule.subcategory!}>
-                             {rule.description} ({rule.points > 0 ? '+' : ''}{rule.points}pts)
-                           </SelectItem>
-                         ))}
+                       <SelectItem value="won_secret_power">Won Secret Power/Advantage (+3pts)</SelectItem>
+                       <SelectItem value="received_penalty_vote">Received Penalty Vote/Nomination (-2pts)</SelectItem>
+                       <SelectItem value="came_back_after_evicted">Returned to House After Eviction (+5pts)</SelectItem>
+                       <SelectItem value="self_evicted">Self-Evicted/Quit Game (-5pts)</SelectItem>
+                       <SelectItem value="removed_from_game">Removed by Production (-5pts)</SelectItem>
+                       <SelectItem value="won_safety">Won Safety for the Week (+2pts)</SelectItem>
+                       <SelectItem value="used_special_power">Used Power/Advantage (+1pt)</SelectItem>
+                       <SelectItem value="won_luxury_comp">Won Luxury Competition (+2pts)</SelectItem>
+                       <SelectItem value="lost_luxury_comp">Lost Luxury Competition (-1pt)</SelectItem>
+                       <SelectItem value="punishment">Received Punishment (-1pt)</SelectItem>
+                       <SelectItem value="prize_won">Won Prize (+1pt)</SelectItem>
                      </SelectContent>
                   </Select>
                 </div>

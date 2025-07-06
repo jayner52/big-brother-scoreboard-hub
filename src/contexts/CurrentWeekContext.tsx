@@ -36,11 +36,32 @@ export const CurrentWeekProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setError(null);
       setIsCurrentWeekLoading(true);
       
-      // Get all completed weeks to calculate the current week
+      // Get current user's active pool first
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.user) return;
+
+      const { data: membership } = await supabase
+        .from('pool_memberships')
+        .select('pool_id')
+        .eq('user_id', session.session.user.id)
+        .eq('active', true)
+        .limit(1)
+        .single();
+
+      if (!membership) {
+        console.log('CurrentWeekContext: No active pool membership found');
+        setCurrentWeekState(MIN_WEEK);
+        return;
+      }
+
+      console.log('CurrentWeekContext: Loading weeks for pool:', membership.pool_id);
+      
+      // Get all completed weeks for THIS POOL ONLY to calculate the current week
       const { data: weeklyData, error: fetchError } = await supabase
         .from('weekly_results')
         .select('week_number')
         .eq('is_draft', false)
+        .eq('pool_id', membership.pool_id)
         .order('week_number', { ascending: false });
       
       if (fetchError) {
@@ -53,12 +74,12 @@ export const CurrentWeekProvider: React.FC<{ children: React.ReactNode }> = ({ c
         ? Math.min(Math.max(...completedWeeks) + 1, MAX_WEEK)
         : MIN_WEEK;
       
-      console.log(`CurrentWeekContext: Completed weeks: [${completedWeeks.join(', ')}], Current week: ${calculatedWeek}`);
+      console.log(`CurrentWeekContext: Pool ${membership.pool_id} - Completed weeks: [${completedWeeks.join(', ')}], Current week: ${calculatedWeek}`);
       setCurrentWeekState(calculatedWeek);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error loading current week';
-      console.error('Error loading current week:', errorMessage);
+      console.error('❌ CurrentWeekContext - Error loading current week:', errorMessage);
       setError(errorMessage);
       // Keep the existing week on error rather than defaulting to 1
     } finally {
@@ -70,7 +91,7 @@ export const CurrentWeekProvider: React.FC<{ children: React.ReactNode }> = ({ c
   useEffect(() => {
     loadCurrentWeek();
 
-    // Subscribe to changes in weekly_results table
+    // Subscribe to changes in weekly_results table for the current pool
     const channel = supabase
       .channel('weekly-results-changes')
       .on(
@@ -82,7 +103,7 @@ export const CurrentWeekProvider: React.FC<{ children: React.ReactNode }> = ({ c
           filter: 'is_draft=eq.false'
         },
         (payload) => {
-          console.log('Weekly results changed:', payload);
+          console.log('CurrentWeekContext: Weekly results changed:', payload);
           // Refresh current week when any non-draft weekly result is added/updated/deleted
           loadCurrentWeek();
         }

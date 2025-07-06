@@ -53,11 +53,15 @@ export const useLeaderboardData = () => {
 
   const loadCurrentPoolEntries = async () => {
     try {
-      console.log('Loading current pool entries...');
+      console.log('🔍 Leaderboard - Loading current pool entries...');
       
       // Get current user's active pool
       const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.user) return;
+      if (!session.session?.user) {
+        console.log('❌ Leaderboard - User not authenticated');
+        setPoolEntries([]);
+        return;
+      }
 
       const { data: membership } = await supabase
         .from('pool_memberships')
@@ -68,12 +72,12 @@ export const useLeaderboardData = () => {
         .single();
 
       if (!membership) {
-        console.log('No active pool membership found');
+        console.log('❌ Leaderboard - No active pool membership found');
         setPoolEntries([]);
         return;
       }
 
-      console.log('Loading entries for pool:', membership.pool_id);
+      console.log('🔍 Leaderboard - Loading entries for pool:', membership.pool_id);
       
       const { data, error } = await supabase
         .from('pool_entries')
@@ -81,9 +85,12 @@ export const useLeaderboardData = () => {
         .eq('pool_id', membership.pool_id)
         .order('total_points', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Leaderboard - Query error:', error);
+        throw error;
+      }
       
-      console.log('Raw pool entries data:', data?.length || 0, 'entries found');
+      console.log('✅ Leaderboard - Raw pool entries data:', data?.length || 0, 'entries found');
       
       const mappedEntries = data?.map(entry => ({
         ...entry,
@@ -92,10 +99,11 @@ export const useLeaderboardData = () => {
         updated_at: new Date(entry.updated_at)
       })) || [];
       
-      console.log('Mapped entries:', mappedEntries.length);
+      console.log('✅ Leaderboard - Mapped entries:', mappedEntries.length);
       setPoolEntries(mappedEntries);
     } catch (error) {
-      console.error('Error loading pool entries:', error);
+      console.error('❌ Leaderboard - Error loading pool entries:', error);
+      setPoolEntries([]);
     } finally {
       setLoading(false);
     }
@@ -103,7 +111,7 @@ export const useLeaderboardData = () => {
 
   const handleWeekChange = async (weekStr: string) => {
     setLoading(true);
-    console.log('Week change requested:', weekStr);
+    console.log('🔍 Leaderboard - Week change requested:', weekStr);
     
     if (weekStr === 'current') {
       setSelectedWeek(null);
@@ -114,7 +122,11 @@ export const useLeaderboardData = () => {
       
       // Get current user's active pool first
       const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.user) return;
+      if (!session.session?.user) {
+        console.log('❌ Leaderboard - User not authenticated for week change');
+        setLoading(false);
+        return;
+      }
 
       const { data: membership } = await supabase
         .from('pool_memberships')
@@ -124,7 +136,13 @@ export const useLeaderboardData = () => {
         .limit(1)
         .single();
 
-      if (!membership) return;
+      if (!membership) {
+        console.log('❌ Leaderboard - No pool membership for week change');
+        setLoading(false);
+        return;
+      }
+
+      console.log('🔍 Leaderboard - Checking snapshots for week', week, 'pool', membership.pool_id);
 
       // First check if snapshots exist for this week and pool
       const { data: existingSnapshots } = await supabase
@@ -135,12 +153,12 @@ export const useLeaderboardData = () => {
         .limit(1);
       
       if (!existingSnapshots || existingSnapshots.length === 0) {
-        console.log('No snapshots found for week', week, 'generating...');
+        console.log('🔄 Leaderboard - No snapshots found for week', week, 'generating...');
         try {
           await supabase.rpc('generate_weekly_snapshots', { week_num: week });
-          console.log('Snapshots generated for week', week);
+          console.log('✅ Leaderboard - Snapshots generated for week', week);
         } catch (error) {
-          console.error('Error generating snapshots for week', week, ':', error);
+          console.error('❌ Leaderboard - Error generating snapshots for week', week, ':', error);
         }
       }
       

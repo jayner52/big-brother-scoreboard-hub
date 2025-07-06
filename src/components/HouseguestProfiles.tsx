@@ -94,6 +94,8 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
 
   const handleEditTeam = (entry: PoolEntry) => {
     try {
+      console.log('🔍 EditTeam - Attempting to edit entry:', entry.id);
+      
       if (draftLocked) {
         toast({
           title: "Draft Locked",
@@ -104,22 +106,47 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
       }
       
       if (!entry || !entry.id) {
+        console.error('❌ EditTeam - Invalid entry data:', entry);
         toast({
           title: "Error",
-          description: "Invalid team data. Please try again.",
+          description: "Invalid team data. Please refresh and try again.",
           variant: "destructive",
         });
         return;
       }
+
+      // Validate entry data before storing
+      const validatedEntry = {
+        id: entry.id,
+        team_name: entry.team_name || '',
+        participant_name: entry.participant_name || '',
+        user_id: entry.user_id,
+        pool_id: entry.pool_id,
+        player_1: entry.player_1 || '',
+        player_2: entry.player_2 || '',
+        player_3: entry.player_3 || '',
+        player_4: entry.player_4 || '',
+        player_5: entry.player_5 || '',
+        bonus_answers: entry.bonus_answers || {},
+        weekly_points: entry.weekly_points || 0,
+        bonus_points: entry.bonus_points || 0,
+        total_points: entry.total_points || 0,
+        current_rank: entry.current_rank || null,
+        payment_confirmed: entry.payment_confirmed || false,
+        created_at: entry.created_at,
+        updated_at: entry.updated_at
+      };
       
-      // Store the entry data for editing
-      localStorage.setItem('edit_entry_data', JSON.stringify(entry));
+      console.log('✅ EditTeam - Storing validated entry data');
+      
+      // Store the validated entry data for editing
+      localStorage.setItem('edit_entry_data', JSON.stringify(validatedEntry));
       navigate('/draft?edit=true');
     } catch (error) {
-      console.error('Error navigating to edit team:', error);
+      console.error('❌ EditTeam - Error navigating to edit team:', error);
       toast({
         title: "Error",
-        description: "Failed to open team editor. Please try again.",
+        description: "Failed to open team editor. Please try refreshing the page.",
         variant: "destructive",
       });
     }

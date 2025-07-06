@@ -4,10 +4,12 @@ import { useActiveContestants } from './useActiveContestants';
 import { useContestantData } from './useContestantData';
 import { calculateContestantStats } from '@/utils/contestantStatsCalculator';
 import { createBlockSurvivalBonuses } from '@/utils/blockSurvivalUtils';
+import { usePool } from '@/contexts/PoolContext';
 
 export const useContestantStats = () => {
   const [contestantStats, setContestantStats] = useState<ContestantStats[]>([]);
   const { evictedContestants } = useActiveContestants();
+  const { activePool } = usePool();
   const { 
     contestants, 
     contestantGroups, 
@@ -16,16 +18,24 @@ export const useContestantStats = () => {
     specialEvents, 
     loading,
     refetchData
-  } = useContestantData();
+  } = useContestantData(activePool?.id);
 
   useEffect(() => {
-    if (!loading && contestants.length > 0) {
+    console.log('🔍 ContestantStats Effect - Loading:', loading, 'Contestants:', contestants.length, 'Pool:', activePool?.id);
+    if (!loading && contestants.length > 0 && activePool?.id) {
       processContestantStats();
     }
-  }, [loading, contestants, weeklyEvents, specialEvents, evictedContestants]);
+  }, [loading, contestants, weeklyEvents, specialEvents, evictedContestants, activePool?.id]);
 
   const processContestantStats = async () => {
+    if (!activePool?.id) {
+      console.error('❌ ContestantStats - No active pool ID');
+      return;
+    }
+    
     try {
+      console.log('🔄 ContestantStats - Processing stats for pool:', activePool.id);
+      
       // Create special events for block survival bonuses
       await createBlockSurvivalBonuses(contestants, weeklyEvents);
       
@@ -43,9 +53,10 @@ export const useContestantStats = () => {
         7 // Updated to current game week
       );
       
+      console.log('✅ ContestantStats - Generated stats for', stats.length, 'contestants');
       setContestantStats(stats);
     } catch (error) {
-      console.error('Error processing contestant stats:', error);
+      console.error('❌ ContestantStats - Error processing stats:', error);
     }
   };
 

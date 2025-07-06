@@ -163,12 +163,22 @@ export const useWeeklyEventsSubmission = (
         }))
         .filter(se => se.contestant_id);
 
-      if (specialEvents.length > 0) {
-        const { error: specialError } = await supabase
-          .from('special_events')
-          .insert(specialEvents);
-
-        if (specialError) throw specialError;
+      // Handle special houseguest revival automatically
+      for (const se of specialEvents) {
+        if (se.event_type === 'came_back_after_evicted' && se.contestant_id) {
+          console.log('🔄 WeeklyEvents - Auto-reviving houseguest:', se.contestant_id);
+          const { error: revivalError } = await supabase
+            .from('contestants')
+            .update({ is_active: true })
+            .eq('id', se.contestant_id)
+            .eq('pool_id', poolId);
+          
+          if (revivalError) {
+            console.error('❌ WeeklyEvents - Revival error:', revivalError);
+          } else {
+            console.log('✅ WeeklyEvents - Houseguest revived successfully');
+          }
+        }
       }
 
       // Update evicted contestant statuses

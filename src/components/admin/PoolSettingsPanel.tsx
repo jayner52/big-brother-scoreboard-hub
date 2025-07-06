@@ -38,7 +38,7 @@ interface PoolSettings {
 export const PoolSettingsPanel: React.FC = () => {
   const { toast } = useToast();
   const { activePool, updatePool } = usePool();
-  const { redistributeHouseguests, isGenerating } = useGroupAutoGeneration();
+  const { redistributeHouseguests, saveGroupNames, isGenerating } = useGroupAutoGeneration();
   const [settings, setSettings] = useState<PoolSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -169,11 +169,14 @@ export const PoolSettingsPanel: React.FC = () => {
     }
   };
 
-  const updateGroupNames = (index: number, name: string) => {
-    if (!settings) return;
+  const updateGroupNames = async (index: number, name: string) => {
+    if (!settings || !activePool) return;
     const newNames = [...settings.group_names];
     newNames[index] = name;
     setSettings({ ...settings, group_names: newNames });
+    
+    // CRITICAL FIX: Save group names to database immediately
+    await saveGroupNames(activePool.id, newNames);
   };
 
   const updateNumberOfGroups = async (count: number) => {
@@ -188,14 +191,23 @@ export const PoolSettingsPanel: React.FC = () => {
       newNames.push(settings.group_names[i] || `Group ${alphabet[i]}`);
     }
     
+    // Calculate new picks per team
+    const newPicksPerTeam = count + (settings.enable_free_pick ? 1 : 0);
+    
     setSettings({ 
       ...settings, 
       number_of_groups: count,
-      group_names: newNames
+      group_names: newNames,
+      picks_per_team: newPicksPerTeam
     });
 
-    // FIXED: Use hook properly
-    await redistributeHouseguests(activePool.id, count);
+    // CRITICAL FIX: Use hook with Free Pick parameter and trigger refresh
+    const success = await redistributeHouseguests(activePool.id, count, settings.enable_free_pick);
+    
+    if (success) {
+      // Trigger a refresh of pool data in context to update draft form
+      window.location.reload(); // Simple but effective refresh
+    }
   };
 
   const handleExpandedSectionsChange = (value: string[]) => {

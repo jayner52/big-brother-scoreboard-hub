@@ -111,7 +111,7 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                 <CardDescription>
                   {slot.isFreePick 
                     ? 'Pick any remaining houseguest as your wildcard' 
-                    : `Choose your player from ${slot.group.group_name}`
+                    : `Choose your houseguest from ${slot.group.group_name}`
                   }
                 </CardDescription>
               </CardHeader>
@@ -126,11 +126,11 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                   <SelectTrigger className={`transition-all duration-200 ${
                     hasSelection ? 'border-green-300 bg-green-50' : ''
                   } ${slot.isFreePick ? 'border-yellow-300 bg-yellow-50' : ''}`}>
-                    <SelectValue placeholder={
-                      slot.isFreePick 
-                        ? 'Free pick - any player' 
-                        : `Select from ${slot.group.group_name}`
-                    } />
+                  <SelectValue placeholder={
+                    slot.isFreePick 
+                      ? 'Free pick - any houseguest' 
+                      : `Select from ${slot.group.group_name}`
+                  } />
                   </SelectTrigger>
                   <SelectContent className="z-50">
                     {availableContestants.map(contestant => (

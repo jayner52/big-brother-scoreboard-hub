@@ -30,6 +30,7 @@ interface PoolSettings {
   number_of_groups: number;
   picks_per_team: number;
   enable_free_pick: boolean;
+  number_of_free_picks: number;
   group_names: string[];
   has_buy_in: boolean;
   buy_in_description?: string;
@@ -106,26 +107,27 @@ export const PoolSettingsPanel: React.FC = () => {
       const actualGroupCount = currentGroups?.length || 4;
       const actualGroupNames = currentGroups?.map(g => g.group_name) || ['Group A', 'Group B', 'Group C', 'Group D'];
       
-      // Load from pools table with actual group data
-      setSettings({
-        id: activePool.id,
-        season_name: activePool.name,
-        entry_fee_amount: activePool.entry_fee_amount,
-        entry_fee_currency: activePool.entry_fee_currency,
-        payment_method_1: activePool.payment_method_1,
-        payment_details_1: activePool.payment_details_1,
-        payment_method_2: activePool.payment_method_2,
-        payment_details_2: activePool.payment_details_2,
-        registration_deadline: activePool.registration_deadline,
-        draft_open: activePool.draft_open,
-        season_active: !activePool.season_locked,
-        number_of_groups: actualGroupCount, // Use actual count from database
-        picks_per_team: activePool.picks_per_team,
-        enable_free_pick: true,
-        group_names: actualGroupNames, // Use actual names from database
-        has_buy_in: activePool.has_buy_in,
-        buy_in_description: activePool.buy_in_description
-      });
+        // Load from pools table with actual group data
+        setSettings({
+          id: activePool.id,
+          season_name: activePool.name,
+          entry_fee_amount: activePool.entry_fee_amount,
+          entry_fee_currency: activePool.entry_fee_currency,
+          payment_method_1: activePool.payment_method_1,
+          payment_details_1: activePool.payment_details_1,
+          payment_method_2: activePool.payment_method_2,
+          payment_details_2: activePool.payment_details_2,
+          registration_deadline: activePool.registration_deadline,
+          draft_open: activePool.draft_open,
+          season_active: !activePool.season_locked,
+          number_of_groups: actualGroupCount, // Use actual count from database
+          picks_per_team: activePool.picks_per_team,
+          enable_free_pick: true,
+          number_of_free_picks: activePool.number_of_free_picks || 1,
+          group_names: actualGroupNames, // Use actual names from database
+          has_buy_in: activePool.has_buy_in,
+          buy_in_description: activePool.buy_in_description
+        });
     } catch (error) {
       console.error('Error loading settings:', error);
       toast({
@@ -144,7 +146,7 @@ export const PoolSettingsPanel: React.FC = () => {
     setSaving(true);
     try {
       // Calculate picks_per_team based on formula
-      const calculatedPicksPerTeam = settings.number_of_groups + (settings.enable_free_pick ? 1 : 0);
+      const calculatedPicksPerTeam = settings.number_of_groups + (settings.enable_free_pick ? (settings.number_of_free_picks || 1) : 0);
       
       const success = await updatePool(activePool.id, {
         name: settings.season_name,
@@ -158,6 +160,7 @@ export const PoolSettingsPanel: React.FC = () => {
         draft_open: settings.draft_open,
         season_locked: !settings.season_active,
         picks_per_team: calculatedPicksPerTeam,
+        number_of_free_picks: settings.number_of_free_picks || 1,
         has_buy_in: settings.has_buy_in,
         buy_in_description: settings.buy_in_description,
       });
@@ -565,17 +568,26 @@ export const PoolSettingsPanel: React.FC = () => {
               <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="number_of_groups">Number of Groups (1-8)</Label>
+                    <Label htmlFor="number_of_groups">Number of Groups (0-8)</Label>
                     <Select 
                       value={settings.number_of_groups.toString()} 
                       onValueChange={(value) => {
                         const count = parseInt(value);
-                        if (count >= 1 && count <= 8) {
+                        if (count >= 0 && count <= 8) {
                           updateNumberOfGroups(count);
+                          // If 0 groups selected, enable free picks
+                          if (count === 0 && !settings.enable_free_pick) {
+                            setSettings({ 
+                              ...settings, 
+                              number_of_groups: count,
+                              enable_free_pick: true,
+                              number_of_free_picks: Math.max(settings.number_of_free_picks || 1, 1)
+                            });
+                          }
                         } else {
                           toast({
                             title: "Invalid Selection",
-                            description: "Please select between 1 and 8 groups",
+                            description: "Please select between 0 and 8 groups",
                             variant: "destructive",
                           });
                         }
@@ -585,7 +597,7 @@ export const PoolSettingsPanel: React.FC = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                        {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(num => (
                           <SelectItem key={num} value={num.toString()}>
                             {num} Group{num !== 1 ? 's' : ''}
                           </SelectItem>
@@ -593,29 +605,70 @@ export const PoolSettingsPanel: React.FC = () => {
                       </SelectContent>
                     </Select>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Each team makes one pick from each group
+                      {settings.number_of_groups === 0 
+                        ? "With 0 groups, teams will only draft free picks" 
+                        : "Each team makes one pick from each group"
+                      }
                     </p>
                   </div>
 
-                  <div className="flex items-center space-x-2 mt-6">
-                    <Switch
-                      checked={settings.enable_free_pick}
-                      onCheckedChange={(checked) => setSettings({ ...settings, enable_free_pick: checked })}
-                    />
-                    <Label>Enable Free Pick</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={settings.enable_free_pick}
+                        onCheckedChange={(checked) => setSettings({ ...settings, enable_free_pick: checked })}
+                        disabled={settings.number_of_groups === 0} // Always enabled when 0 groups
+                      />
+                      <Label>Enable Free Picks</Label>
+                      {settings.number_of_groups === 0 && (
+                        <span className="text-sm text-amber-600">(Required with 0 groups)</span>
+                      )}
+                    </div>
+                    
+                    {settings.enable_free_pick && (
+                      <div className="ml-6">
+                        <Label htmlFor="number_of_free_picks">Number of Free Picks</Label>
+                        <Select 
+                          value={(settings.number_of_free_picks || 1).toString()} 
+                          onValueChange={(value) => {
+                            const count = parseInt(value);
+                            setSettings({ ...settings, number_of_free_picks: count });
+                          }}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} Free Pick{num !== 1 ? 's' : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Calculated Picks Display */}
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">Team Configuration</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Teams will make <strong>{settings.number_of_groups + (settings.enable_free_pick ? 1 : 0)} total picks</strong>
-                    {settings.enable_free_pick ? 
-                      ` (${settings.number_of_groups} from groups + 1 free pick)` : 
-                      ` (${settings.number_of_groups} from groups)`
-                    }
-                  </p>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-800 mb-2">Team Configuration Summary</h4>
+                  <div className="space-y-1">
+                    {settings.number_of_groups > 0 && (
+                      <p className="text-sm">
+                        {settings.number_of_groups} pick{settings.number_of_groups !== 1 ? 's' : ''} from groups
+                      </p>
+                    )}
+                    {settings.enable_free_pick && (
+                      <p className="text-sm">
+                        {settings.number_of_free_picks || 1} free pick{(settings.number_of_free_picks || 1) !== 1 ? 's' : ''}
+                      </p>
+                    )}
+                    <p className="text-lg font-bold text-blue-900 pt-2 border-t border-blue-200">
+                      Total picks per team: {settings.number_of_groups + (settings.enable_free_pick ? (settings.number_of_free_picks || 1) : 0)}
+                    </p>
+                  </div>
                 </div>
 
                   {/* Allow Duplicate Picks */}

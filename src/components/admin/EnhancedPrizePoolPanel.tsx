@@ -270,17 +270,30 @@ export const EnhancedPrizePoolPanel: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Mode Selection */}
-          <div className="flex items-center space-x-4">
-            <Label>Prize Mode:</Label>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={config.mode === 'custom'}
-                onCheckedChange={(checked) => setConfig({ ...config, mode: checked ? 'custom' : 'percentage' })}
-              />
-              <Label>
-                {config.mode === 'percentage' ? 'Percentage-based' : 'Custom amounts'}
-              </Label>
+          {/* Mode Selection - Two Buttons */}
+          <div className="space-y-2">
+            <Label>Prize Distribution Mode:</Label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfig({ ...config, mode: 'percentage' })}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                  config.mode === 'percentage'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                📊 Percentage Based
+              </button>
+              <button
+                onClick={() => setConfig({ ...config, mode: 'custom' })}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                  config.mode === 'custom'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                💰 Custom Amounts
+              </button>
             </div>
           </div>
 
@@ -420,9 +433,9 @@ export const EnhancedPrizePoolPanel: React.FC = () => {
               </div>
 
               {totalCustom > availablePool && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-800">
-                    ⚠️ Total prizes ({currency} ${totalCustom}) exceed available pool ({currency} ${availablePool}).
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <p className="text-amber-800">
+                    💡 Over-allocated by {currency} ${(totalCustom - availablePool).toFixed(0)} - admin will top up the difference
                   </p>
                 </div>
               )}

@@ -18,18 +18,30 @@ export const FinalWeekToggle: React.FC<FinalWeekToggleProps> = ({
   setEventForm,
   activeContestants,
 }) => {
+  const handleFinalWeekToggle = (checked: boolean) => {
+    try {
+      console.log('🏁 Final Week Toggle:', { checked, currentForm: eventForm });
+      setEventForm(prev => ({ 
+        ...prev, 
+        isFinalWeek: checked,
+        // Reset final week fields when toggling off
+        winner: checked ? prev.winner : '',
+        runnerUp: checked ? prev.runnerUp : '',
+        americasFavorite: checked ? prev.americasFavorite : ''
+      }));
+      console.log('🏁 Final Week Toggle successful');
+    } catch (error) {
+      console.error('🏁 Final Week Toggle error:', error);
+      // Re-throw to show user the error
+      throw error;
+    }
+  };
+
   return (
     <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg px-2 py-1">
       <Switch
         checked={eventForm.isFinalWeek}
-        onCheckedChange={(checked) => setEventForm(prev => ({ 
-          ...prev, 
-          isFinalWeek: checked,
-          // Reset final week fields when toggling off
-          winner: checked ? prev.winner : '',
-          runnerUp: checked ? prev.runnerUp : '',
-          americasFavorite: checked ? prev.americasFavorite : ''
-        }))}
+        onCheckedChange={handleFinalWeekToggle}
       />
       <span className="text-sm font-medium text-yellow-800">Final Week</span>
     </div>

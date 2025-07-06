@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { X, Plus, Zap } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
+import { usePool } from '@/contexts/PoolContext';
+import { SPECIAL_EVENTS_CONFIG, getDefaultPointsForEvent } from '@/constants/specialEvents';
 
 interface SpecialEventsSectionProps {
   eventForm: WeeklyEventForm;
@@ -23,9 +25,17 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   scoringRules,
   allContestants,
 }) => {
+  const { activePool } = usePool();
+  
   // Use week-aware contestants for proper eviction status
   const { allContestants: weekAwareContestants, evictedContestants } = useWeekAwareContestants(eventForm.week);
   const eligibleContestants = weekAwareContestants.length > 0 ? weekAwareContestants : (allContestants || activeContestants);
+  
+  // Filter enabled special events from pool settings
+  const enabledEventIds = (activePool as any)?.enabled_special_events || [];
+  const availableEvents = SPECIAL_EVENTS_CONFIG.toggleable.filter(
+    event => enabledEventIds.includes(event.id)
+  );
   const addSpecialEvent = () => {
     setEventForm(prev => ({
       ...prev,
@@ -62,6 +72,18 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
       specialEvents: prev.specialEvents.filter((_, i) => i !== index)
     }));
   };
+
+  if (availableEvents.length === 0) {
+    return (
+      <div className="p-4 bg-muted/30 rounded-lg border border-dashed">
+        <div className="text-center text-muted-foreground">
+          <Zap className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p className="font-medium">No Special Events Enabled</p>
+          <p className="text-sm">Enable special events in Pool Settings to track them here.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -117,18 +139,16 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                      <SelectContent>
-                       <SelectItem value="custom">Custom Event</SelectItem>
-                       <SelectItem value="won_secret_power">Won Secret Power/Advantage (+3pts)</SelectItem>
-                       <SelectItem value="received_penalty_vote">Received Penalty Vote/Nomination (-2pts)</SelectItem>
-                       <SelectItem value="came_back_after_evicted">Returned to House After Eviction (+5pts)</SelectItem>
-                       <SelectItem value="self_evicted">Self-Evicted/Quit Game (-5pts)</SelectItem>
-                       <SelectItem value="removed_from_game">Removed by Production (-5pts)</SelectItem>
-                       <SelectItem value="won_safety">Won Safety for the Week (+2pts)</SelectItem>
-                       <SelectItem value="used_special_power">Used Power/Advantage (+1pt)</SelectItem>
-                       <SelectItem value="won_luxury_comp">Won Luxury Competition (+2pts)</SelectItem>
-                       <SelectItem value="lost_luxury_comp">Lost Luxury Competition (-1pt)</SelectItem>
-                       <SelectItem value="punishment">Received Punishment (-1pt)</SelectItem>
-                       <SelectItem value="prize_won">Won Prize (+1pt)</SelectItem>
+                       {availableEvents.map(event => (
+                         <SelectItem key={event.id} value={event.id}>
+                           {event.emoji} {event.label}
+                           {event.points !== undefined && (
+                             <span className="ml-1 text-muted-foreground">
+                               ({event.points > 0 ? '+' : ''}{event.points}pts)
+                             </span>
+                           )}
+                         </SelectItem>
+                       ))}
                      </SelectContent>
                   </Select>
                 </div>

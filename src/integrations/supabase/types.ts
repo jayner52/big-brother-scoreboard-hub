@@ -721,6 +721,7 @@ export type Database = {
           draft_locked: boolean
           draft_open: boolean
           enable_bonus_questions: boolean
+          enabled_special_events: string[] | null
           entry_fee_amount: number
           entry_fee_currency: string
           finale_week_enabled: boolean | null
@@ -740,6 +741,7 @@ export type Database = {
           payment_method_2: string | null
           picks_per_team: number
           prize_distribution: Json | null
+          prize_mode: string | null
           registration_deadline: string | null
           season_complete: boolean | null
           season_locked: boolean | null
@@ -754,6 +756,7 @@ export type Database = {
           draft_locked?: boolean
           draft_open?: boolean
           enable_bonus_questions?: boolean
+          enabled_special_events?: string[] | null
           entry_fee_amount?: number
           entry_fee_currency?: string
           finale_week_enabled?: boolean | null
@@ -773,6 +776,7 @@ export type Database = {
           payment_method_2?: string | null
           picks_per_team?: number
           prize_distribution?: Json | null
+          prize_mode?: string | null
           registration_deadline?: string | null
           season_complete?: boolean | null
           season_locked?: boolean | null
@@ -787,6 +791,7 @@ export type Database = {
           draft_locked?: boolean
           draft_open?: boolean
           enable_bonus_questions?: boolean
+          enabled_special_events?: string[] | null
           entry_fee_amount?: number
           entry_fee_currency?: string
           finale_week_enabled?: boolean | null
@@ -806,6 +811,7 @@ export type Database = {
           payment_method_2?: string | null
           picks_per_team?: number
           prize_distribution?: Json | null
+          prize_mode?: string | null
           registration_deadline?: string | null
           season_complete?: boolean | null
           season_locked?: boolean | null

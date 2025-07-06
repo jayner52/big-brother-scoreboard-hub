@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Settings, BookOpen, LogOut, User, Users } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { ChatIcon } from '@/components/chat/ChatIcon';
+import { EnhancedChatIcon } from '@/components/chat/EnhancedChatIcon';
+import { usePool } from '@/contexts/PoolContext';
+import { useUserPoolRole } from '@/hooks/useUserPoolRole';
+import { supabase } from '@/integrations/supabase/client';
 
 interface HeaderNavigationProps {
   user: SupabaseUser | null;
@@ -21,6 +24,16 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
   onSignOut,
   onJoinPool,
 }) => {
+  const { activePool } = usePool();
+  const [userId, setUserId] = React.useState<string | null>(null);
+  
+  React.useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id || null);
+    });
+  }, []);
+
+  const { isAdmin } = useUserPoolRole(activePool?.id, userId || undefined);
   return (
     <div className="flex justify-between items-start mb-8">
       {/* Left Side - Auth and How to Play */}
@@ -75,13 +88,15 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
 
       {/* Right Side - Chat and Admin */}
       <div className="flex items-center gap-4">
-        {user && <ChatIcon />}
-        <Link to="/admin">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Admin
-          </Button>
-        </Link>
+        {user && <EnhancedChatIcon />}
+        {user && isAdmin && (
+          <Link to="/admin">
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Admin
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

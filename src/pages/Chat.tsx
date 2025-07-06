@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Send, Users, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Send, Users, MessageCircle, Smile } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { useChat } from '@/hooks/useChat';
 import { useChatNotifications } from '@/hooks/useChatNotifications';
 import { ChatMessage } from '@/components/chat/ChatMessage';
+import { ChatSidebar } from '@/components/chat/ChatSidebar';
+import { BigBrotherEmojis } from '@/components/chat/BigBrotherEmojis';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PoolMember {
@@ -25,6 +27,8 @@ const Chat: React.FC = () => {
   const [showUserList, setShowUserList] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
   const [tagPosition, setTagPosition] = useState<number | null>(null);
+  const [activeChat, setActiveChat] = useState<'group' | string>('group');
+  const [showEmojis, setShowEmojis] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -48,7 +52,7 @@ const Chat: React.FC = () => {
           .from('pool_memberships')
           .select(`
             user_id,
-            profiles:user_id (display_name)
+            profiles!inner(display_name)
           `)
           .eq('pool_id', activePool.id)
           .eq('active', true);
@@ -142,6 +146,12 @@ const Chat: React.FC = () => {
     }
   };
 
+  const handleEmojiSelect = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+    setShowEmojis(false);
+    inputRef.current?.focus();
+  };
+
   if (!activePool) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -162,56 +172,67 @@ const Chat: React.FC = () => {
   ) : [];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <Card className="rounded-none border-x-0 border-t-0">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate('/dashboard')}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <div className="flex-1">
-              <CardTitle className="text-xl font-bold">
-                {activePool.name} Chat
-              </CardTitle>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Users className="h-3 w-3" />
-                <span>{poolMembers.length} members</span>
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex">
+      {/* Sidebar */}
+      <ChatSidebar 
+        poolId={activePool.id}
+        currentUserId={userId || ''}
+        activeChat={activeChat}
+        onChatSelect={setActiveChat}
+      />
+      
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <Card className="rounded-none border-x-0 border-t-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/dashboard')}
+                className="hover:bg-primary/10"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <div className="flex-1">
+                <CardTitle className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  {activeChat === 'group' ? `${activePool.name} - Group Chat` : `Private Chat`}
+                </CardTitle>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Users className="h-3 w-3" />
+                  <span>{poolMembers.length} members</span>
+                </div>
               </div>
             </div>
-          </div>
-        </CardHeader>
-      </Card>
+          </CardHeader>
+        </Card>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/20">
-        {loading ? (
-          <div className="text-center text-muted-foreground">Loading messages...</div>
-        ) : messages.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No messages yet. Be the first to say hello!</p>
-          </div>
-        ) : (
-          <>
-            {messages.map((msg) => (
-              <ChatMessage 
-                key={msg.id} 
-                message={msg} 
-                isOwn={msg.user_id === userId}
-                isMentioned={msg.mentioned_user_ids?.includes(userId || '')}
-                currentUserId={userId || ''}
-              />
-            ))}
-            <div ref={messagesEndRef} />
-          </>
-        )}
-      </div>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-muted/10 to-muted/30">
+          {loading ? (
+            <div className="text-center text-muted-foreground">Loading messages...</div>
+          ) : messages.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No messages yet. Be the first to say hello!</p>
+            </div>
+          ) : (
+            <>
+              {messages.map((msg) => (
+                <ChatMessage 
+                  key={msg.id} 
+                  message={msg} 
+                  isOwn={msg.user_id === userId}
+                  isMentioned={msg.mentioned_user_ids?.includes(userId || '')}
+                  currentUserId={userId || ''}
+                />
+              ))}
+              <div ref={messagesEndRef} />
+            </>
+          )}
+        </div>
 
       {/* User mention dropdown */}
       {showUserList && filteredUsers.length > 0 && (
@@ -231,33 +252,47 @@ const Chat: React.FC = () => {
         </Card>
       )}
 
-      {/* Input */}
-      <Card className="rounded-none border-x-0 border-b-0">
-        <CardContent className="p-4">
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
-              type="text"
-              value={newMessage}
-              onChange={handleMessageInput}
-              onKeyPress={handleKeyPress}
-              placeholder="Type a message... Use @ to mention someone"
-              className="flex-1"
-              maxLength={1000}
+        {/* Input */}
+        <Card className="rounded-none border-x-0 border-b-0 bg-gradient-to-r from-background to-muted/20">
+          <CardContent className="p-4 relative">
+            <BigBrotherEmojis 
+              isOpen={showEmojis}
+              onEmojiSelect={handleEmojiSelect}
             />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
-              size="icon"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            Press Enter to send, Shift+Enter for new line
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowEmojis(!showEmojis)}
+                className="shrink-0 hover:bg-primary/10"
+              >
+                <Smile className="h-4 w-4 text-primary" />
+              </Button>
+              <Input
+                ref={inputRef}
+                type="text"
+                value={newMessage}
+                onChange={handleMessageInput}
+                onKeyPress={handleKeyPress}
+                placeholder="Type a message... Use @ to mention someone"
+                className="flex-1 border-primary/20 focus:border-primary/40"
+                maxLength={1000}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim()}
+                size="icon"
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Press Enter to send, Shift+Enter for new line
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

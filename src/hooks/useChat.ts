@@ -35,7 +35,7 @@ export const useChat = (poolId?: string, userId?: string) => {
         .from('chat_messages')
         .select(`
           *,
-          profiles:user_id (display_name)
+          profiles!inner(display_name)
         `)
         .eq('pool_id', poolId)
         .eq('is_deleted', false)
@@ -78,7 +78,7 @@ export const useChat = (poolId?: string, userId?: string) => {
           .from('profiles')
           .select('display_name')
           .eq('user_id', payload.new.user_id)
-          .single();
+          .maybeSingle();
 
         const newMessage = {
           ...payload.new,

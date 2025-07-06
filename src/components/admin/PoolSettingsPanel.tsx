@@ -548,7 +548,7 @@ export const PoolSettingsPanel: React.FC = () => {
 
 
         {/* Draft Configuration */}
-        <AccordionItem value="draft-config" className="border-0" data-accordion-value="draft-config">
+        <AccordionItem value="draft-configuration" className="border-0" data-value="draft-configuration">
           <Card>
             <AccordionTrigger className="hover:no-underline p-0">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg w-full">
@@ -794,12 +794,12 @@ export const PoolSettingsPanel: React.FC = () => {
         <AccordionItem value="custom-scoring" className="border-0">
           <Card>
             <AccordionTrigger className="hover:no-underline p-0">
-              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-t-lg w-full">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
                   <Calculator className="h-5 w-5" />
                   Custom Scoring Rules
                 </CardTitle>
-                <CardDescription className="text-indigo-100 text-left">
+                <CardDescription className="text-orange-100 text-left">
                   Configure point values and scoring logic
                 </CardDescription>
               </CardHeader>

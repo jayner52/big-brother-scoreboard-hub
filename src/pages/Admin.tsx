@@ -66,9 +66,7 @@ const Admin = () => {
         </div>
 
         {/* Admin Setup Wizard */}
-        {(showSetupWizard || !localStorage.getItem(`wizard-dismissed-${activePool?.id}`)) && (
-          <AdminSetupWizard forceShow={showSetupWizard} />
-        )}
+        <AdminSetupWizard forceShow={showSetupWizard} />
 
         {/* Admin Panels */}
         <div data-admin-panel>
@@ -78,6 +76,15 @@ const Admin = () => {
         {/* Footer */}
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">
           <p>Admin access only • Big Brother Fantasy Pool Management</p>
+          <p className="mt-2">
+            Need support? Email us at{' '}
+            <a 
+              href="mailto:admin@poolside-picks.com" 
+              className="text-blue-600 hover:underline"
+            >
+              admin@poolside-picks.com
+            </a>
+          </p>
         </footer>
       </div>
     </div>

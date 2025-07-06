@@ -30,6 +30,9 @@ interface PoolContextType {
   getUserRole: (poolId?: string) => 'owner' | 'admin' | 'member' | null;
   canManagePool: (poolId?: string) => boolean;
   
+  // Pool-specific data
+  poolEntries: PoolEntry[];
+  
   // State flags
   loading: boolean;
   error: string | null;
@@ -38,10 +41,11 @@ interface PoolContextType {
 const PoolContext = createContext<PoolContextType | undefined>(undefined);
 
 export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activePool, setActivePool] = useState<Pool | null>(null);
+  const [activePool, setActivePoolState] = useState<Pool | null>(null);
   const [userPools, setUserPools] = useState<PoolMembership[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   
   // Use refs to track subscriptions
   const poolsChannelRef = useRef<RealtimeChannel | null>(null);
@@ -52,6 +56,44 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     activePoolIdRef.current = activePool?.id || null;
   }, [activePool]);
+
+  // Load pool entries for the active pool
+  const loadPoolEntries = useCallback(async (poolId: string) => {
+    try {
+      const { data: entries, error } = await supabase
+        .from('pool_entries')
+        .select('*')
+        .eq('pool_id', poolId)
+        .order('total_points', { ascending: false });
+      
+      if (error) {
+        console.error('Error loading pool entries:', error);
+        return;
+      }
+      
+      setPoolEntries((entries || []).map(entry => ({
+        ...entry,
+        bonus_answers: entry.bonus_answers as Record<string, any>,
+        created_at: new Date(entry.created_at),
+        updated_at: new Date(entry.updated_at)
+      })));
+    } catch (error) {
+      console.error('Error loading pool entries:', error);
+    }
+  }, []);
+
+  // Enhanced setActivePool that loads pool-specific data
+  const setActivePool = useCallback((pool: Pool | null) => {
+    console.log('Setting active pool:', pool?.name || 'null');
+    setActivePoolState(pool);
+    
+    if (pool) {
+      // Load pool entries when active pool changes
+      loadPoolEntries(pool.id);
+    } else {
+      setPoolEntries([]);
+    }
+  }, [loadPoolEntries]);
 
   // Load user's pools
   const loadUserPools = useCallback(async () => {
@@ -138,7 +180,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
           async (payload) => {
             console.log('Pool changed:', payload);
             // Only reload if this affects a pool the user is a member of
-            const affectedPoolId = payload.new?.id || payload.old?.id;
+            const affectedPoolId = (payload.new as any)?.id || (payload.old as any)?.id;
             if (affectedPoolId && isMounted) {
               const { data: membership } = await supabase
                 .from('pool_memberships')
@@ -485,6 +527,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     leavePool,
     getUserRole,
     canManagePool,
+    poolEntries,
     loading,
     error,
   };

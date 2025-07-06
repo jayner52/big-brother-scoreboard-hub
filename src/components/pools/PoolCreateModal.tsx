@@ -60,16 +60,16 @@ export const PoolCreateModal = ({ open, onOpenChange, onSuccess }: PoolCreateMod
         buy_in_description: null,
       };
       
-      const pool = await createPool(poolData);
-      if (pool) {
-        setActivePool(pool);
+      const result = await createPool(poolData);
+      if (result.success && result.data) {
+        setActivePool(result.data);
         toast({
           title: "Success!",
-          description: `Pool "${pool.name}" created successfully`,
+          description: `Pool "${result.data.name}" created successfully`,
         });
         
         // Show onboarding flow
-        setCreatedPoolName(pool.name);
+        setCreatedPoolName(result.data.name);
         onOpenChange(false); // Close create modal
         setShowOnboarding(true); // Show onboarding
         onSuccess?.();

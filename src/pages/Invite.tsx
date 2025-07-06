@@ -47,9 +47,9 @@ const Invite = () => {
     try {
       const result = await joinPoolByCode(code);
       
-      if (result.success) {
-        if (result.pool) {
-          setActivePool(result.pool);
+      if (result.success && result.data) {
+        if (result.data) {
+          setActivePool(result.data);
         }
         toast({
           title: "Success!",

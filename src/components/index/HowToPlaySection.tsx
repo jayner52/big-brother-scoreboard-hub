@@ -33,13 +33,12 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
 
       {showRules && (
         <div className="max-w-6xl mx-auto">
-          {/* Dynamic Prize Pool Section */}
-          <div className="mb-8">
-            <DynamicPrizeDisplay />
-          </div>
-          
-          {/* Static Prize Pool Fallback */}
-          <PrizePoolSection />
+          {/* Dynamic Prize Pool Section - Only show if pool has buy-in and participants */}
+          {activePool?.has_buy_in && (
+            <div className="mb-8">
+              <PrizePoolSection />
+            </div>
+          )}
           
           {/* How It Works Section */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

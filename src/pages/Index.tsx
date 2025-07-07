@@ -9,6 +9,7 @@ import { HeroSection } from '@/components/index/HeroSection';
 import { HowToPlaySection } from '@/components/index/HowToPlaySection';
 import { MainContent } from '@/components/index/MainContent';
 import { Footer } from '@/components/index/Footer';
+import { StatsBar } from '@/components/dashboard/StatsBar';
 import { PoolSwitcher } from '@/components/pools/PoolSwitcher';
 import { InviteFriendsButton } from '@/components/pools/InviteFriendsButton';
 import { PoolCreateModal } from '@/components/pools/PoolCreateModal';
@@ -203,7 +204,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple/5 via-background to-teal/5">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <HeaderNavigation
@@ -220,6 +221,8 @@ const Index = () => {
         </div>
         
         <HeroSection />
+        
+        <StatsBar />
         
         <HowToPlaySection
           showRules={showRules}

@@ -43,6 +43,16 @@ All colors MUST be HSL.
     --purple-foreground: 210 40% 98%;
     --purple-muted: 262.1 83.3% 87.8%;
 
+    /* Dashboard gradient system */
+    --gradient-primary: linear-gradient(135deg, hsl(262.1 83.3% 57.8%), hsl(180 100% 25%));
+    --gradient-secondary: linear-gradient(135deg, hsl(262.1 83.3% 67.8%), hsl(180 100% 35%));
+    --gradient-accent: linear-gradient(90deg, hsl(262.1 83.3% 77.8%), hsl(180 100% 45%));
+    
+    /* Teal accent color */
+    --teal: 180 100% 25%;
+    --teal-foreground: 210 40% 98%;
+    --teal-muted: 180 100% 35%;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -155,5 +165,43 @@ All colors MUST be HSL.
   /* Touch-friendly interactive elements */
   .touch-item {
     @apply cursor-pointer select-none rounded-md p-3 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none;
+  }
+
+  /* Dashboard animations */
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 5px hsl(var(--purple) / 0.5);
+    }
+    to {
+      box-shadow: 0 0 20px hsl(var(--purple) / 0.8), 0 0 30px hsl(var(--teal) / 0.4);
+    }
+  }
+
+  .animate-number {
+    animation: numberPop 0.3s ease-out;
+  }
+
+  @keyframes numberPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  /* Tab hover effects */
+  .tab-hover {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+  }
+
+  .tab-active {
+    @apply relative;
+  }
+
+  .tab-active::after {
+    content: '';
+    @apply absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple to-teal rounded-full;
   }
 }

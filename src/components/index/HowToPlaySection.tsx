@@ -6,6 +6,7 @@ import { Users, Target, Trophy, DollarSign } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { PrizePoolSection } from './PrizePoolSection';
 import { DynamicPrizeDisplay } from './DynamicPrizeDisplay';
+import { useScoringRules } from '@/hooks/useScoringRules';
 
 interface HowToPlaySectionProps {
   showRules: boolean;
@@ -17,7 +18,16 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
   onToggleRules,
 }) => {
   const { activePool } = usePool();
+  const { scoringRules, loading } = useScoringRules();
   const picksPerTeam = activePool?.picks_per_team || 5;
+
+  // Group scoring rules by category
+  const getRulesByCategory = (category: string) =>
+    scoringRules.filter(rule => rule.category === category);
+
+  const weeklyRules = getRulesByCategory('weekly');
+  const specialRules = getRulesByCategory('special_events');
+  const finalRules = getRulesByCategory('final_results');
   return (
     <div className="mb-8 text-center">
 
@@ -89,97 +99,75 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
               <p className="text-sm text-gray-600">How your houseguests earn points each week</p>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Weekly Competition Points</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Head of Household (HoH)</span>
-                    <Badge variant="secondary">+3 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Power of Veto (PoV)</span>
-                    <Badge variant="secondary">+2 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Saved by Veto</span>
-                    <Badge variant="secondary">+1 point</Badge>
-                  </div>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple mx-auto"></div>
+                  <p className="text-muted-foreground mt-2">Loading scoring rules...</p>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {weeklyRules.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Weekly Competition Points</h3>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {weeklyRules.map((rule) => (
+                          <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
+                            <span>{rule.description || rule.subcategory}</span>
+                            <Badge 
+                              variant={rule.points >= 0 ? "secondary" : "destructive"}
+                            >
+                              {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Survival Points</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Surviving Each Week</span>
-                    <Badge variant="secondary">+1 point</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Being Evicted</span>
-                    <Badge variant="destructive">0 points</Badge>
-                  </div>
-                </div>
-              </div>
+                  {specialRules.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Special Events & Achievements</h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {specialRules.map((rule) => (
+                          <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
+                            <span>{rule.description || rule.subcategory}</span>
+                            <Badge 
+                              variant={rule.points >= 0 ? "secondary" : "destructive"}
+                            >
+                              {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Special Events & Achievements</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Making it to Jury</span>
-                    <Badge variant="secondary">+2 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Leaves not at eviction</span>
-                    <Badge variant="destructive">-3 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>4 weeks, no comp wins</span>
-                    <Badge variant="secondary">+1 point</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>2 rounds on block, survives</span>
-                    <Badge variant="secondary">+3 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>4 rounds on block, survives</span>
-                    <Badge variant="secondary">+5 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Comes back after eviction</span>
-                    <Badge variant="secondary">+5 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>In a showmance</span>
-                    <Badge variant="secondary">+2 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Wins a prize</span>
-                    <Badge variant="secondary">+2 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Given/Wins Special Power</span>
-                    <Badge variant="secondary">+2 points</Badge>
-                  </div>
-                </div>
-              </div>
+                  {finalRules.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Final Results</h3>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {finalRules.map((rule) => (
+                          <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
+                            <span>{rule.description || rule.subcategory}</span>
+                            <Badge 
+                              variant={rule.points >= 0 ? "secondary" : "destructive"}
+                            >
+                              {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Final Results</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Winner</span>
-                    <Badge variant="secondary">+15 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Runner-up</span>
-                    <Badge variant="secondary">+10 points</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>America's Favorite</span>
-                    <Badge variant="secondary">+5 points</Badge>
-                  </div>
-                </div>
-              </div>
+                  {!loading && weeklyRules.length === 0 && specialRules.length === 0 && finalRules.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No scoring rules configured for this pool yet.</p>
+                      <p className="text-sm mt-2">Contact your pool administrator to set up scoring rules.</p>
+                    </div>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

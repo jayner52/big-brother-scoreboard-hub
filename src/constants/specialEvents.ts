@@ -33,7 +33,7 @@ export const SPECIAL_EVENTS_CONFIG: {
     { id: 'won_bb_arena', label: 'Won BB Arena/AI Arena', emoji: '🛡️', points: 2 },
     { id: 'survived_block_2x', label: '2+ Week Block Survival Bonus', emoji: '💪', points: 2 },
     { id: 'survived_block_4x', label: '4+ Week Block Survival Bonus', emoji: '🔥', points: 4 },
-    { id: 'no_comp_wins_4weeks', label: '4+ Weeks No Comp Wins', emoji: '🥷', points: -2 },
+    { id: 'floater_achievement', label: 'Floater Achievement (4 consecutive weeks without wins)', emoji: '🛟', points: 2 },
     { id: 'afp_winner', label: "America's Favorite Player", emoji: '🌟', points: 10 },
     { id: 'runner_up', label: 'Runner-up (2nd Place)', emoji: '🥈', points: 15 },
     { id: 'season_winner', label: 'Season Winner (1st Place)', emoji: '👑', points: 25 },

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 interface YesNoInputProps {
   value: string;
@@ -13,11 +12,22 @@ export const YesNoInput: React.FC<YesNoInputProps> = ({
 }) => {
   return (
     <div className="flex items-center space-x-2">
-      <Switch
-        checked={value === 'yes'}
-        onCheckedChange={(checked) => onChange(checked ? 'yes' : 'no')}
-      />
-      <Label>{value === 'yes' ? 'Yes' : 'No'}</Label>
+      <Button
+        variant={value === 'yes' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => onChange('yes')}
+        className="px-6"
+      >
+        Yes
+      </Button>
+      <Button
+        variant={value === 'no' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => onChange('no')}
+        className="px-6"
+      >
+        No
+      </Button>
     </div>
   );
 };

@@ -36,6 +36,8 @@ export const createBlockSurvivalBonuses = async (contestants: any[], weeklyEvent
   try {
     for (const contestant of contestants) {
       await checkAndCreateBlockSurvivalEvents(contestant.id, weeklyEvents);
+      // Also check for floater achievement
+      await checkAndCreateFloaterAchievement(contestant.id, weeklyEvents);
     }
   } catch (error) {
     console.error('Error creating block survival bonuses:', error);
@@ -176,4 +178,95 @@ export const calculateBlockSurvivalBonus = async (timesOnBlockAtEviction: number
     bonus += getPointsForEvent('block_survival_4_weeks') || 5;
   }
   return bonus;
+};
+
+// Floater Achievement: 4 consecutive weeks without competition wins
+export const checkAndCreateFloaterAchievement = async (contestantId: string, weeklyEvents: any[]) => {
+  try {
+    // Check if contestant already earned floater achievement
+    const { data: contestant } = await supabase
+      .from('contestants')
+      .select('floater_achievement_earned, consecutive_weeks_no_wins, last_competition_win_week')
+      .eq('id', contestantId)
+      .single();
+
+    if (!contestant || contestant.floater_achievement_earned) {
+      return; // Already earned or contestant not found
+    }
+
+    // Get all competition wins for this contestant (HOH and POV)
+    const competitionWins = weeklyEvents.filter(event => 
+      event.contestant_id === contestantId && 
+      (event.event_type === 'hoh_winner' || event.event_type === 'pov_winner')
+    ).sort((a, b) => a.week_number - b.week_number);
+
+    // Get all weeks with events to determine the current week
+    const allWeeks = [...new Set(weeklyEvents.map(e => e.week_number))].sort((a, b) => a - b);
+    const currentWeek = Math.max(...allWeeks);
+
+    let consecutiveWeeks = 0;
+    let lastWinWeek = contestant.last_competition_win_week || 0;
+
+    // Calculate consecutive weeks without wins
+    for (let week = lastWinWeek + 1; week <= currentWeek; week++) {
+      const hasWinThisWeek = competitionWins.some(win => win.week_number === week);
+      
+      if (hasWinThisWeek) {
+        consecutiveWeeks = 0; // Reset counter
+        lastWinWeek = week;
+      } else {
+        // Check if contestant was still in the house this week (not evicted)
+        const wasEvicted = weeklyEvents.some(event => 
+          event.contestant_id === contestantId && 
+          event.event_type === 'evicted' && 
+          event.week_number <= week
+        );
+        
+        if (!wasEvicted) {
+          consecutiveWeeks++;
+        }
+      }
+    }
+
+    // Update contestant tracking data
+    await supabase
+      .from('contestants')
+      .update({
+        consecutive_weeks_no_wins: consecutiveWeeks,
+        last_competition_win_week: lastWinWeek
+      })
+      .eq('id', contestantId);
+
+    // Award floater achievement if earned
+    if (consecutiveWeeks >= 4) {
+      // Check if special event already exists
+      const { data: existingEvent } = await supabase
+        .from('special_events')
+        .select('id')
+        .eq('contestant_id', contestantId)
+        .eq('event_type', 'floater_achievement')
+        .maybeSingle();
+
+      if (!existingEvent) {
+        // Create special event
+        await supabase.from('special_events').insert({
+          contestant_id: contestantId,
+          event_type: 'floater_achievement',
+          description: 'Floater Achievement (4 consecutive weeks without wins)',
+          points_awarded: 2,
+          week_number: currentWeek
+        });
+
+        // Mark achievement as earned
+        await supabase
+          .from('contestants')
+          .update({ floater_achievement_earned: true })
+          .eq('id', contestantId);
+
+        console.log(`Floater achievement awarded to contestant ${contestantId} at week ${currentWeek}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error checking floater achievement:', error);
+  }
 };

@@ -244,6 +244,7 @@ export type Database = {
           bio: string | null
           block_survival_bonus_2_weeks: boolean | null
           block_survival_bonus_4_weeks: boolean | null
+          consecutive_weeks_no_wins: number | null
           created_at: string
           current_hoh: boolean
           current_pov_winner: boolean
@@ -251,12 +252,14 @@ export type Database = {
           data_source: string | null
           family_info: string | null
           final_placement: number | null
+          floater_achievement_earned: boolean | null
           gameplay_strategy: Json | null
           generation_metadata: Json | null
           group_id: string | null
           hometown: string | null
           id: string
           is_active: boolean
+          last_competition_win_week: number | null
           name: string
           occupation: string | null
           personality_traits: Json | null
@@ -278,6 +281,7 @@ export type Database = {
           bio?: string | null
           block_survival_bonus_2_weeks?: boolean | null
           block_survival_bonus_4_weeks?: boolean | null
+          consecutive_weeks_no_wins?: number | null
           created_at?: string
           current_hoh?: boolean
           current_pov_winner?: boolean
@@ -285,12 +289,14 @@ export type Database = {
           data_source?: string | null
           family_info?: string | null
           final_placement?: number | null
+          floater_achievement_earned?: boolean | null
           gameplay_strategy?: Json | null
           generation_metadata?: Json | null
           group_id?: string | null
           hometown?: string | null
           id?: string
           is_active?: boolean
+          last_competition_win_week?: number | null
           name: string
           occupation?: string | null
           personality_traits?: Json | null
@@ -312,6 +318,7 @@ export type Database = {
           bio?: string | null
           block_survival_bonus_2_weeks?: boolean | null
           block_survival_bonus_4_weeks?: boolean | null
+          consecutive_weeks_no_wins?: number | null
           created_at?: string
           current_hoh?: boolean
           current_pov_winner?: boolean
@@ -319,12 +326,14 @@ export type Database = {
           data_source?: string | null
           family_info?: string | null
           final_placement?: number | null
+          floater_achievement_earned?: boolean | null
           gameplay_strategy?: Json | null
           generation_metadata?: Json | null
           group_id?: string | null
           hometown?: string | null
           id?: string
           is_active?: boolean
+          last_competition_win_week?: number | null
           name?: string
           occupation?: string | null
           personality_traits?: Json | null

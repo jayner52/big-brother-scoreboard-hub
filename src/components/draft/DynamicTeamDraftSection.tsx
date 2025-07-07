@@ -31,9 +31,10 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
   // **FIXED: Create draft slots with proper Free Pick handling**
   const createDraftSlots = () => {
     const slots = [];
+    const numberOfFreePicks = (poolData as any)?.number_of_free_picks || 1;
     
-    // Regular group slots (first N-1 picks)
-    for (let i = 0; i < Math.min(regularGroups.length, picksPerTeam - 1); i++) {
+    // Regular group slots
+    for (let i = 0; i < regularGroups.length; i++) {
       slots.push({
         slotNumber: i + 1,
         group: regularGroups[i],
@@ -42,14 +43,17 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
       });
     }
     
-    // Free pick slot (always last if we have more picks than regular groups)
-    if (picksPerTeam > regularGroups.length && freePickGroup) {
-      slots.push({
-        slotNumber: picksPerTeam,
-        group: freePickGroup,
-        isFreePick: true,
-        playerKey: `player_${picksPerTeam}`
-      });
+    // Free pick slots - create multiple if needed
+    for (let i = 0; i < numberOfFreePicks; i++) {
+      const slotNumber = regularGroups.length + i + 1;
+      if (slotNumber <= picksPerTeam && freePickGroup) {
+        slots.push({
+          slotNumber: slotNumber,
+          group: freePickGroup,
+          isFreePick: true,
+          playerKey: `player_${slotNumber}`
+        });
+      }
     }
     
     return slots;
@@ -67,8 +71,8 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
             <Users className="h-7 w-7" />
             Draft Your Dream Team
           </h3>
-          <p className="text-emerald-100 text-lg">
-            Select {picksPerTeam} houseguests strategically from {regularGroups.length} groups + free pick
+           <p className="text-emerald-100 text-lg">
+            Select {picksPerTeam} houseguests strategically from {regularGroups.length} groups + {(poolData as any)?.number_of_free_picks || 1} free pick{((poolData as any)?.number_of_free_picks || 1) > 1 ? 's' : ''}
           </p>
         </div>
       </div>
@@ -100,7 +104,7 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                         {slot.slotNumber}
                       </div>
                     )}
-                    {slot.isFreePick ? 'Free Pick' : `Pick ${slot.slotNumber} - ${slot.group.group_name}`}
+                    {slot.isFreePick ? `Free Pick ${slot.slotNumber - (poolData?.picks_per_team - ((poolData as any)?.number_of_free_picks || 1))}` : `Pick ${slot.slotNumber} - ${slot.group.group_name}`}
                   </div>
                   {hasSelection && (
                     <Badge variant="secondary" className="bg-green-100 text-green-700">

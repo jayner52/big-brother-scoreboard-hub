@@ -4,18 +4,49 @@ export const useWeekCompletionValidation = () => {
   const validateWeekCompletion = (eventForm: WeeklyEventForm): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
 
-    console.log('🔍 Validating week completion:', eventForm);
+    console.log('🔍 FINAL WEEK VALIDATION - Full Form State:', eventForm);
+    console.log('🔍 FINAL WEEK VALIDATION - isFinalWeek:', eventForm.isFinalWeek);
+    console.log('🔍 FINAL WEEK VALIDATION - winner:', eventForm.winner);
+    console.log('🔍 FINAL WEEK VALIDATION - runnerUp:', eventForm.runnerUp);
+    console.log('🔍 FINAL WEEK VALIDATION - americasFavorite:', eventForm.americasFavorite);
+    console.log('🔍 FINAL WEEK VALIDATION - hohWinner:', eventForm.hohWinner);
+    console.log('🔍 FINAL WEEK VALIDATION - povWinner:', eventForm.povWinner);
+    console.log('🔍 FINAL WEEK VALIDATION - nominees:', eventForm.nominees);
+    console.log('🔍 FINAL WEEK VALIDATION - evicted:', eventForm.evicted);
 
-    // Basic required fields
-    if (!eventForm.hohWinner) {
+    // For final week, validate final week specific fields
+    if (eventForm.isFinalWeek) {
+      console.log('🔍 FINAL WEEK - Validating final week fields');
+      
+      if (!eventForm.winner || eventForm.winner.trim() === '') {
+        errors.push("Season Winner is required for final week");
+      }
+      
+      if (!eventForm.runnerUp || eventForm.runnerUp.trim() === '') {
+        errors.push("Runner-up is required for final week");
+      }
+      
+      // Americas Favorite is optional for final week
+      
+      console.log('🔍 FINAL WEEK - Validation complete, errors:', errors);
+      return {
+        isValid: errors.length === 0,
+        errors
+      };
+    }
+
+    // Regular week validation
+    console.log('🔍 REGULAR WEEK - Validating regular week fields');
+    
+    if (!eventForm.hohWinner || eventForm.hohWinner.trim() === '') {
       errors.push("HOH Winner is required");
     }
 
-    if (eventForm.nominees.filter(n => n && n.trim()).length < 2) {
+    if (!eventForm.nominees || eventForm.nominees.filter(n => n && n.trim()).length < 2) {
       errors.push("At least 2 nominees are required");
     }
 
-    if (!eventForm.povWinner) {
+    if (!eventForm.povWinner || eventForm.povWinner.trim() === '') {
       errors.push("POV Winner is required");
     }
 

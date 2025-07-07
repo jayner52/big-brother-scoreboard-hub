@@ -311,6 +311,11 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
     .find(cat => cat.id === activeCategory)?.gifs
     .filter(gif => !imageErrors.has(gif.id)) || [];
 
+  // Debug logging for category switching
+  console.log('🎯 GIF Picker - Active Category:', activeCategory);
+  console.log('🎯 GIF Picker - Available Categories:', Object.keys(VERIFIED_GIFS));
+  console.log('🎯 GIF Picker - Current Active GIFs:', activeGifs.length);
+
   if (!isOpen) return null;
 
   return (
@@ -340,12 +345,16 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
             return (
               <button
                 key={category.id}
-                onClick={() => setActiveCategory(category.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-muted/50 whitespace-nowrap ${
+                onClick={() => {
+                  console.log('🎯 GIF Category Clicked:', category.id);
+                  setActiveCategory(category.id);
+                }}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-muted/50 whitespace-nowrap cursor-pointer ${
                   activeCategory === category.id
                     ? 'border-b-2 border-coral text-coral bg-coral/5'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
+                style={{ pointerEvents: 'auto' }}
               >
                 <Icon className="h-4 w-4" />
                 <span className="hidden sm:inline">{category.name}</span>

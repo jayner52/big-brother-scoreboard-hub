@@ -48,29 +48,44 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
   }, [poolId]);
 
   const fetchPoolConfiguration = async () => {
+    console.log('🔧 HOW TO PLAY - Starting fetch for poolId:', poolId);
+    
     try {
       setLoading(true);
       setError(null);
 
       // Fetch pool details
+      console.log('🔧 HOW TO PLAY - Fetching pool details...');
       const { data: pool, error: poolError } = await supabase
         .from('pools')
         .select('*')
         .eq('id', poolId)
         .single();
 
-      if (poolError) throw poolError;
+      if (poolError) {
+        console.error('🔧 HOW TO PLAY - Pool fetch error:', poolError);
+        throw poolError;
+      }
+      
+      console.log('🔧 HOW TO PLAY - Pool data received:', pool);
 
       // Fetch scoring rules
+      console.log('🔧 HOW TO PLAY - Fetching scoring rules...');
       const { data: rules, error: rulesError } = await supabase
         .from('detailed_scoring_rules')
         .select('*')
         .eq('is_active', true)
         .order('category', { ascending: true });
 
-      if (rulesError) throw rulesError;
+      if (rulesError) {
+        console.error('🔧 HOW TO PLAY - Scoring rules fetch error:', rulesError);
+        throw rulesError;
+      }
+      
+      console.log('🔧 HOW TO PLAY - Scoring rules received:', rules);
 
       // Fetch bonus questions for this pool
+      console.log('🔧 HOW TO PLAY - Fetching bonus questions for pool:', poolId);
       const { data: questions, error: questionsError } = await supabase
         .from('bonus_questions')
         .select('*')
@@ -78,22 +93,40 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
         .eq('is_active', true)
         .order('sort_order');
 
-      if (questionsError) throw questionsError;
+      if (questionsError) {
+        console.error('🔧 HOW TO PLAY - Bonus questions fetch error:', questionsError);
+        throw questionsError;
+      }
+      
+      console.log('🔧 HOW TO PLAY - Bonus questions received:', questions);
 
       // Fetch entry count
+      console.log('🔧 HOW TO PLAY - Fetching entry count...');
       const { count, error: countError } = await supabase
         .from('pool_entries')
         .select('id', { count: 'exact' })
         .eq('pool_id', poolId);
 
-      if (countError) throw countError;
+      if (countError) {
+        console.error('🔧 HOW TO PLAY - Entry count fetch error:', countError);
+        throw countError;
+      }
+      
+      console.log('🔧 HOW TO PLAY - Entry count received:', count);
 
       setPoolConfig(pool);
       setScoringRules(rules || []);
       setBonusQuestions(questions || []);
       setTotalEntries(count || 0);
+      
+      console.log('🔧 HOW TO PLAY - Final state set:', {
+        poolName: pool?.name,
+        scoringRulesCount: rules?.length || 0,
+        bonusQuestionsCount: questions?.length || 0,
+        totalEntries: count || 0
+      });
     } catch (err) {
-      console.error('Error fetching pool configuration:', err);
+      console.error('🔧 HOW TO PLAY - ERROR fetching pool configuration:', err);
       setError('Failed to load pool configuration');
     } finally {
       setLoading(false);

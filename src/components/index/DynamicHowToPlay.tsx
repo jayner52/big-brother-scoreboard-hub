@@ -217,58 +217,42 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
           )}
           
           {/* How It Works Section */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
             <Card className="text-center">
               <CardHeader>
-                <Users className="h-8 w-8 mx-auto text-coral" />
-                <CardTitle>Draft Your Team</CardTitle>
+                <div className="text-4xl mb-4">🎉</div>
+                <CardTitle>Join the Fun</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Select {poolConfig.picks_per_team} houseguests to build your team for {poolConfig.name}.
+                  Get your invite code and jump into the ultimate Big Brother fantasy experience with friends!
                 </p>
               </CardContent>
             </Card>
 
-            {poolConfig.enable_bonus_questions && bonusQuestions.length > 0 && (
-              <Card className="text-center">
-                <CardHeader>
-                  <Target className="h-8 w-8 mx-auto text-brand-teal" />
-                  <CardTitle>Answer Bonus Questions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Answer {bonusQuestions.length} bonus questions to earn up to {bonusQuestions.reduce((sum, q) => sum + q.points_value, 0)} extra points.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
             <Card className="text-center">
               <CardHeader>
-                <Trophy className="h-8 w-8 mx-auto text-purple-600" />
-                <CardTitle>Earn Points</CardTitle>
+                <div className="text-4xl mb-4">👑</div>
+                <CardTitle>Build Your Dream Team</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Your houseguests earn points based on the custom scoring system configured for this pool.
+                  Choose your champions! Draft {poolConfig.picks_per_team} houseguests and put your Big Brother knowledge to the test.
                 </p>
               </CardContent>
             </Card>
 
-            {poolConfig.has_buy_in && (
-              <Card className="text-center">
-                <CardHeader>
-                  <DollarSign className="h-8 w-8 mx-auto text-yellow" />
-                  <CardTitle>Win Prizes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Compete for cash prizes! Entry fee: {formatPrize(poolConfig.entry_fee_amount, poolConfig.entry_fee_currency)}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            <Card className="text-center">
+              <CardHeader>
+                <div className="text-4xl mb-4">🏆</div>
+                <CardTitle>Win Glory (& Maybe Cash!)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Earn points all season long as your picks dominate competitions. Bragging rights guaranteed, prizes possible!
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Scoring System */}

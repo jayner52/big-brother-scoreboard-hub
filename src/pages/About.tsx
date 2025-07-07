@@ -221,61 +221,42 @@ const About = () => {
         </div>
 
         {/* How It Works Section */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
           <Card className="text-center">
             <CardHeader>
-              <Users className="h-8 w-8 mx-auto text-blue-500" />
-              <CardTitle>Draft Your Team</CardTitle>
+              <div className="text-4xl mb-4">🎉</div>
+              <CardTitle>Join the Fun</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Select {poolConfig.picks_per_team} houseguests from different groups to build your ultimate Big Brother team.
+                Get your invite code and jump into the ultimate Big Brother fantasy experience with friends!
               </p>
             </CardContent>
           </Card>
 
-          {poolConfig.enable_bonus_questions && (
-            <Card className="text-center">
-              <CardHeader>
-                <Target className="h-8 w-8 mx-auto text-green-500" />
-                <CardTitle>Make Predictions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">
-                  {bonusQuestions.length > 0 
-                    ? `Answer ${bonusQuestions.length} bonus questions to earn up to ${bonusQuestions.reduce((sum, q) => sum + q.points_value, 0)} extra points.`
-                    : 'Answer bonus questions about the season to earn extra points for your predictions.'
-                  }
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
           <Card className="text-center">
             <CardHeader>
-              <Trophy className="h-8 w-8 mx-auto text-purple-500" />
-              <CardTitle>Earn Points</CardTitle>
+              <div className="text-4xl mb-4">👑</div>
+              <CardTitle>Build Your Dream Team</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Your houseguests earn points based on the {scoringRules.length > 0 ? 'configured scoring system' : 'weekly competitions, surviving evictions, and more'}.
+                Choose your champions! Draft {poolConfig.picks_per_team} houseguests and put your Big Brother knowledge to the test.
               </p>
             </CardContent>
           </Card>
 
-          {poolConfig.has_buy_in && (
-            <Card className="text-center">
-              <CardHeader>
-                <DollarSign className="h-8 w-8 mx-auto text-yellow-500" />
-                <CardTitle>Win Prizes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">
-                  Top performers at the end of the season win cash prizes! Entry fee: {formatPrize(poolConfig.entry_fee_amount || 0, poolConfig.entry_fee_currency || 'CAD')}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="text-center">
+            <CardHeader>
+              <div className="text-4xl mb-4">🏆</div>
+              <CardTitle>Win Glory (& Maybe Cash!)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Earn points all season long as your picks dominate competitions. Bragging rights guaranteed, prizes possible!
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Scoring System */}

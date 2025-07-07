@@ -6,7 +6,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { HeaderNavigation } from '@/components/index/HeaderNavigation';
 import { HeroSection } from '@/components/index/HeroSection';
-import { HowToPlaySection } from '@/components/index/HowToPlaySection';
+import { DynamicHowToPlay } from '@/components/index/DynamicHowToPlay';
 import { MainContent } from '@/components/index/MainContent';
 import { Footer } from '@/components/index/Footer';
 import { StatsBar } from '@/components/dashboard/StatsBar';
@@ -224,10 +224,13 @@ const Index = () => {
         
         <StatsBar />
         
-        <HowToPlaySection
-          showRules={showRules}
-          onToggleRules={() => setShowRules(!showRules)}
-        />
+        {activePool && (
+          <DynamicHowToPlay 
+            poolId={activePool.id}
+            showRules={showRules}
+            onToggleRules={() => setShowRules(!showRules)}
+          />
+        )}
 
         <MainContent formData={formData} picksPerTeam={activePool?.picks_per_team || 5} />
 

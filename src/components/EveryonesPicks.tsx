@@ -89,7 +89,7 @@ export const EveryonesPicks: React.FC = () => {
   }
 
   // Check if picks should be hidden
-  const picksAreHidden = activePool?.hide_picks_until_draft_closed && activePool?.draft_open;
+  const picksAreHidden = activePool?.hide_picks_until_draft_closed || false;
 
   return (
     <ErrorBoundary>

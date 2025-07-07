@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePool } from '@/contexts/PoolContext';
 import { LockOverlay } from '@/components/ui/lock-overlay';
+import { isDraftAccessible, getDraftLockReason } from '@/utils/draftUtils';
 
 const Draft = () => {
   const navigate = useNavigate();
@@ -19,6 +20,9 @@ const Draft = () => {
 
 const DraftContent = ({ navigate }: { navigate: any }) => {
   const { activePool } = usePool();
+  
+  const isAccessible = isDraftAccessible(activePool);
+  const lockReason = getDraftLockReason(activePool);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50">
@@ -37,9 +41,9 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
 
         {/* Fixed Draft Form with all improvements */}
         <LockOverlay
-          isLocked={activePool ? !activePool.draft_open : false}
-          title="Draft Closed"
-          message="The draft period has ended. No new team registrations are being accepted."
+          isLocked={!isAccessible}
+          title={lockReason.title}
+          message={lockReason.message}
         >
           <TeamDraftFormFixed />
         </LockOverlay>

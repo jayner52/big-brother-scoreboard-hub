@@ -31,28 +31,42 @@ const VERIFIED_GIFS = {
       id: '1', 
       url: 'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif', 
       title: 'Excited', 
-      preview_url: 'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/200w.gif',
+      preview_url: 'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif',
       category: 'reactions' 
     },
     { 
       id: '2', 
       url: 'https://media.giphy.com/media/3o72FcJmLzIdYJdmDe/giphy.gif', 
       title: 'Shocked', 
-      preview_url: 'https://media.giphy.com/media/3o72FcJmLzIdYJdmDe/200w.gif',
+      preview_url: 'https://media.giphy.com/media/3o72FcJmLzIdYJdmDe/giphy.gif',
       category: 'reactions' 
     },
     { 
       id: '5', 
       url: 'https://media.giphy.com/media/xTiTnGeUsWOEwsGoG4/giphy.gif', 
       title: 'Thinking', 
-      preview_url: 'https://media.giphy.com/media/xTiTnGeUsWOEwsGoG4/200w.gif',
+      preview_url: 'https://media.giphy.com/media/xTiTnGeUsWOEwsGoG4/giphy.gif',
       category: 'reactions' 
     },
     { 
       id: '6', 
       url: 'https://media.giphy.com/media/10JhviFuU2gWD6/giphy.gif', 
       title: 'Laughing', 
-      preview_url: 'https://media.giphy.com/media/10JhviFuU2gWD6/200w.gif',
+      preview_url: 'https://media.giphy.com/media/10JhviFuU2gWD6/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '7', 
+      url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif', 
+      title: 'OMG', 
+      preview_url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '8', 
+      url: 'https://media.giphy.com/media/3ohhwxmNcPvwyRBpm8/giphy.gif', 
+      title: 'Eye Roll', 
+      preview_url: 'https://media.giphy.com/media/3ohhwxmNcPvwyRBpm8/giphy.gif',
       category: 'reactions' 
     }
   ],
@@ -61,28 +75,42 @@ const VERIFIED_GIFS = {
       id: '9', 
       url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/giphy.gif', 
       title: 'Clapping', 
-      preview_url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/200w.gif',
+      preview_url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/giphy.gif',
       category: 'celebrations' 
     },
     { 
       id: '10', 
       url: 'https://media.giphy.com/media/Is1O1TWV0LEJi/giphy.gif', 
       title: 'Victory Dance', 
-      preview_url: 'https://media.giphy.com/media/Is1O1TWV0LEJi/200w.gif',
+      preview_url: 'https://media.giphy.com/media/Is1O1TWV0LEJi/giphy.gif',
       category: 'celebrations' 
     },
     { 
       id: '12', 
       url: 'https://media.giphy.com/media/7rj2ZgttvgomY/giphy.gif', 
       title: 'Applause', 
-      preview_url: 'https://media.giphy.com/media/7rj2ZgttvgomY/200w.gif',
+      preview_url: 'https://media.giphy.com/media/7rj2ZgttvgomY/giphy.gif',
       category: 'celebrations' 
     },
     { 
       id: '13', 
       url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif', 
       title: 'Happy Dance', 
-      preview_url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/200w.gif',
+      preview_url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '14', 
+      url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif', 
+      title: 'Celebration', 
+      preview_url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '15', 
+      url: 'https://media.giphy.com/media/artj92V8o75VPL7AeQ/giphy.gif', 
+      title: 'Party Time', 
+      preview_url: 'https://media.giphy.com/media/artj92V8o75VPL7AeQ/giphy.gif',
       category: 'celebrations' 
     }
   ],

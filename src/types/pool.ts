@@ -135,6 +135,8 @@ export interface Pool {
   prize_distribution?: any;
   season_complete?: boolean;
   draft_configuration_locked?: boolean;
+  enabled_special_events?: string[];
+  number_of_free_picks?: number;
 }
 
 export interface PoolMembership {

@@ -95,44 +95,44 @@ export const AdminScoringPanel: React.FC = () => {
               <TabsList className="grid w-full h-auto gap-1 bg-transparent p-0 md:flex md:flex-wrap">
                 <TabsTrigger 
                   value="events" 
-                  className="text-xs font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Weekly Events
                 </TabsTrigger>
                 <TabsTrigger 
                   value="legacy" 
-                  className="text-xs font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Week Overview
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings" 
-                  className="text-xs font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Pool Settings
                 </TabsTrigger>
                 <TabsTrigger 
                   value="bonus" 
-                  className="text-xs font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Bonus Questions
                 </TabsTrigger>
                 <TabsTrigger 
                   value="entries" 
-                  className="text-xs font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Pool Entries
                 </TabsTrigger>
                 <TabsTrigger 
                   value="contestants" 
-                  className="text-xs font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Houseguests
                 </TabsTrigger>
                 {canManageRoles() && (
                   <TabsTrigger 
                     value="roles" 
-                    className="text-xs font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                    className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                   >
                     Roles
                   </TabsTrigger>

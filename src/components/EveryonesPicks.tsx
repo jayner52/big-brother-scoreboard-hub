@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, EyeOff } from 'lucide-react';
 import { evaluateBonusAnswer, formatBonusAnswer, formatCorrectAnswers } from '@/utils/bonusQuestionUtils';
+import { LockOverlay } from '@/components/ui/lock-overlay';
 
 export const EveryonesPicks: React.FC = () => {
   const { activePool } = usePool();
@@ -88,30 +89,22 @@ export const EveryonesPicks: React.FC = () => {
   }
 
   // Check if picks should be hidden
-  if (activePool?.hide_picks_until_draft_closed && activePool?.draft_open) {
-    return (
-      <div className="text-center py-16">
-        <div className="bg-muted/50 rounded-lg p-8 max-w-md mx-auto">
-          <EyeOff className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Picks Currently Hidden</h3>
-          <p className="text-muted-foreground">
-            Team selections will be revealed when the draft period closes. 
-            Check back later to see everyone's picks!
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const picksAreHidden = activePool?.hide_picks_until_draft_closed && activePool?.draft_open;
 
   return (
     <ErrorBoundary>
       <div className="space-y-6">
       {/* Team Picks */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Team Selections</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <LockOverlay
+        isLocked={picksAreHidden}
+        title="Picks Currently Hidden"
+        message="Team selections will be revealed when the draft period closes. Check back later to see everyone's picks!"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Team Selections</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-3">
              {enhancedPoolEntries.map((entry) => (
                <div key={entry.id} className="bg-background border rounded-lg p-4 shadow-sm">
@@ -156,13 +149,19 @@ export const EveryonesPicks: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      </LockOverlay>
 
       {/* Bonus Question Answers */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Bonus Question Answers</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <LockOverlay
+        isLocked={picksAreHidden}
+        title="Bonus Answers Hidden"
+        message="Bonus question answers will be revealed when the draft period closes."
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Bonus Question Answers</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
             {bonusQuestions.map((question) => (
                <div key={question.id} className="border rounded-lg p-4">
@@ -219,6 +218,7 @@ export const EveryonesPicks: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      </LockOverlay>
       </div>
     </ErrorBoundary>
   );

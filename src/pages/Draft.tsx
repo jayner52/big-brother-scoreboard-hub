@@ -1,11 +1,11 @@
 import React from 'react';
 import { PoolProvider } from '@/contexts/PoolContext';
 import { TeamDraftFormFixed } from '@/components/TeamDraftFormFixed';
-import { DraftLockedState } from '@/components/draft/DraftLockedState';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePool } from '@/contexts/PoolContext';
+import { LockOverlay } from '@/components/ui/lock-overlay';
 
 const Draft = () => {
   const navigate = useNavigate();
@@ -19,16 +19,6 @@ const Draft = () => {
 
 const DraftContent = ({ navigate }: { navigate: any }) => {
   const { activePool } = usePool();
-
-  // Check if registration is closed
-  if (activePool && !activePool.draft_open) {
-    return (
-      <DraftLockedState 
-        title="Draft Closed"
-        message="The draft period has ended. No new team registrations are being accepted."
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50">
@@ -46,7 +36,13 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
         </div>
 
         {/* Fixed Draft Form with all improvements */}
-        <TeamDraftFormFixed />
+        <LockOverlay
+          isLocked={activePool ? !activePool.draft_open : false}
+          title="Draft Closed"
+          message="The draft period has ended. No new team registrations are being accepted."
+        >
+          <TeamDraftFormFixed />
+        </LockOverlay>
 
         {/* Footer */}
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">

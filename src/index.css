@@ -53,6 +53,25 @@ All colors MUST be HSL.
     --teal-foreground: 210 40% 98%;
     --teal-muted: 180 100% 35%;
 
+    /* Poolside Picks Brand Colors */
+    --coral: 0 70% 69%;          /* #FF6B6B */
+    --coral-foreground: 210 40% 98%;
+    --brand-teal: 174 60% 61%;   /* #4ECDC4 */
+    --brand-teal-foreground: 210 40% 98%;
+    --yellow: 46 100% 70%;       /* #FFE66D */
+    --yellow-foreground: 222.2 47.4% 11.2%;
+    --orange: 23 100% 66%;       /* #FF8E53 */
+    --orange-foreground: 210 40% 98%;
+    --cream: 46 67% 95%;         /* #F7F3E9 */
+    --cream-foreground: 222.2 47.4% 11.2%;
+    --dark: 210 32% 25%;         /* #2C3E50 */
+    --dark-foreground: 210 40% 98%;
+
+    /* Poolside Picks Gradients */
+    --gradient-coral: linear-gradient(135deg, hsl(0 70% 69%), hsl(23 100% 66%));
+    --gradient-teal: linear-gradient(135deg, hsl(174 60% 61%), hsl(180 100% 35%));
+    --gradient-summer: linear-gradient(135deg, hsl(46 100% 70%), hsl(174 60% 61%));
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;

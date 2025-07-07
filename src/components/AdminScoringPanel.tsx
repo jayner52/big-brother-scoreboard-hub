@@ -17,7 +17,7 @@ const RoleManagementPanel = React.lazy(() => import('@/components/admin/RoleMana
 
 
 export const AdminScoringPanel: React.FC = () => {
-  const { canManagePool, canManageRoles, getUserRole } = usePool();
+  const { canManagePool, canManageRoles, getUserRole, activePool } = usePool();
   const [activeTab, setActiveTab] = useState('events');
   
   const userRole = getUserRole();
@@ -26,7 +26,6 @@ export const AdminScoringPanel: React.FC = () => {
 
   // Handle URL parameters and tab persistence
   useEffect(() => {
-    const { activePool } = usePool();
     const poolId = activePool?.id;
     
     // Try to restore from localStorage first
@@ -56,12 +55,11 @@ export const AdminScoringPanel: React.FC = () => {
         localStorage.setItem(`admin_panel_active_tab_${poolId}`, tab);
       }
     }
-  }, [canManageRoles]);
+  }, [canManageRoles, activePool?.id]);
 
   // Save tab changes to localStorage
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    const { activePool } = usePool();
     if (activePool?.id) {
       localStorage.setItem(`admin_panel_active_tab_${activePool.id}`, tab);
     }

@@ -61,9 +61,8 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
                   <tab.icon className="h-5 w-5" />
                   {tab.locked && <Lock className="h-3 w-3 absolute -top-1 -right-1" />}
                 </div>
-                <span className="text-xs leading-tight text-center flex items-center gap-1">
+                <span className="text-xs leading-tight text-center">
                   {tab.shortLabel}
-                  {tab.locked && <Lock className="h-2 w-2" />}
                 </span>
               </Button>
             ))}
@@ -102,9 +101,8 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
                 <tab.icon className="h-5 w-5" />
                 {tab.locked && <Lock className="h-3 w-3 absolute -top-1 -right-1" />}
               </div>
-              <span className="text-sm leading-tight text-center flex items-center gap-1">
+              <span className="text-sm leading-tight text-center">
                 {tab.shortLabel}
-                {tab.locked && <Lock className="h-2 w-2" />}
               </span>
             </Button>
           ))}

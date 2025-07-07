@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users } from 'lucide-react';
-import { BigBrotherIcon } from '@/components/BigBrotherIcons';
+import { Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePool } from '@/contexts/PoolContext';
+import { ResultTile } from './weekly-overview/ResultTile';
+import { PointsEarnedSection } from './weekly-overview/PointsEarnedSection';
+import { DoubleEvictionDisplay } from './weekly-overview/DoubleEvictionDisplay';
 
 interface WeekSummary {
   week_number: number;
@@ -20,6 +21,10 @@ interface WeekSummary {
   pov_used_on: string | null;
   nominees: string[] | null;
   replacement_nominee: string | null;
+  second_nominees?: string[] | null;
+  second_pov_used?: boolean | null;
+  second_pov_used_on?: string | null;
+  second_replacement_nominee?: string | null;
 }
 
 interface ContestantScore {
@@ -192,84 +197,59 @@ const loadWeekByWeekData = async () => {
                       <Badge variant="destructive">Double Eviction</Badge>
                     )}
                   </div>
-                  
-                   {/* Week Summary */}
-                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                     <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                       <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
-                       <p className="text-sm font-medium text-yellow-800">HOH</p>
-                       <p className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</p>
-                     </div>
-                     <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-                       <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
-                       <p className="text-sm font-medium text-green-800">POV</p>
-                       <p className="font-bold text-green-900">{week.pov_winner || "N/A"}</p>
-                       {week.second_pov_winner && (
-                         <p className="text-xs text-green-600">2nd: {week.second_pov_winner}</p>
-                       )}
-                     </div>
-                     <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
-                       <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
-                       <p className="text-sm font-medium text-orange-800">POV Used</p>
-                       <p className="font-bold text-orange-900">
-                         {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
-                       </p>
-                     </div>
-                     <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
-                       <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
-                       <p className="text-sm font-medium text-red-800">Evicted</p>
-                       <p className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</p>
-                     </div>
-                     {week.is_double_eviction && (
-                       <div className="text-center p-3 bg-red-100 rounded-lg border border-red-300">
-                         <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
-                         <p className="text-sm font-medium text-red-900">2nd Evicted</p>
-                         <p className="font-bold text-red-900">{week.second_evicted_contestant || "N/A"}</p>
-                       </div>
-                     )}
-                   </div>
-
-                   {/* Points Summary for this week */}
-                  {contestantScores[week.week_number] && (
-                    <div>
-                      <h4 className="font-medium mb-2">Points Earned This Week</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm">
-                        {contestantScores[week.week_number]
-                          .sort((a, b) => b.weeklyTotal - a.weeklyTotal)
-                          .map((contestant) => (
-                            <div key={contestant.name} className="flex justify-between bg-gray-50 p-2 rounded">
-                              <span className="truncate">{contestant.name}</span>
-                              <span className="font-bold text-green-600">+{contestant.weeklyTotal}</span>
-                            </div>
-                          ))}
+                   
+                  {/* Display double eviction or regular week */}
+                  {week.is_double_eviction ? (
+                    <DoubleEvictionDisplay 
+                      week={week}
+                      contestantScores={contestantScores[week.week_number]}
+                      specialEvents={specialEvents}
+                    />
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Regular Week Summary with Nominees Tile */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <ResultTile 
+                          label="HOH" 
+                          value={week.hoh_winner || "N/A"} 
+                          iconType="hoh" 
+                          colorScheme="yellow"
+                        />
+                        <ResultTile 
+                          label="Nominees" 
+                          value={
+                            week.nominees && week.nominees.length > 0 
+                              ? week.nominees.join(' & ')
+                              : "N/A"
+                          }
+                          iconType="nominees"
+                          colorScheme="orange"
+                        />
+                        <ResultTile 
+                          label="POV" 
+                          value={week.pov_winner || "N/A"} 
+                          iconType="pov" 
+                          colorScheme="green"
+                          subtitle={week.pov_used ? `Used on ${week.pov_used_on}` : undefined}
+                        />
+                        <ResultTile 
+                          label="Evicted" 
+                          value={week.evicted_contestant || "N/A"} 
+                          iconType="evicted" 
+                          colorScheme="red"
+                        />
                       </div>
-                       <div className="text-xs text-gray-500 mt-1">
-                         {(week.nominees || []).length > 0 && (
-                           <div>
-                             Nominees: {(week.nominees || []).map((nominee, index) => {
-                               const isSavedByVeto = week.pov_used && week.pov_used_on === nominee;
-                               const isSavedByArena = specialEvents.some(event => 
-                                 event.week_number === week.week_number && 
-                                 event.event_type === 'bb_arena_winner' && 
-                                 (event.contestants as any)?.name === nominee
-                               );
-                               return (
-                                 <span key={index}>
-                                   {index > 0 && ', '}
-                                   {isSavedByVeto || isSavedByArena ? (
-                                     <span className="line-through">{nominee}</span>
-                                   ) : (
-                                     nominee
-                                   )}
-                                 </span>
-                               );
-                             })}
-                             {week.replacement_nominee && (
-                               <span>, Replacement: {week.replacement_nominee}</span>
-                             )}
-                           </div>
-                         )}
-                       </div>
+
+                      {/* Points Section - Always show */}
+                      <PointsEarnedSection 
+                        weekNumber={week.week_number}
+                        contestantScores={contestantScores[week.week_number]}
+                        nominees={week.nominees || []}
+                        replacementNominee={week.replacement_nominee}
+                        povUsed={week.pov_used}
+                        povUsedOn={week.pov_used_on}
+                        specialEvents={specialEvents}
+                      />
                     </div>
                   )}
 

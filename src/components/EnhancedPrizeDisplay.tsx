@@ -147,18 +147,6 @@ export const EnhancedPrizeDisplay: React.FC<EnhancedPrizeDisplayProps> = ({ isAd
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          {isAdmin && (
-            <div className="text-center mb-6">
-              <div className="text-sm text-muted-foreground mb-2">Total Prize Pool (Admin Only)</div>
-              <div className="text-3xl font-bold text-coral">
-                {formatPrize(prizeCalculation.totalPrizePool, currency)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                from {totalEntries} {totalEntries === 1 ? 'entry' : 'entries'}
-              </div>
-            </div>
-          )}
-          
           {(showPrizeAmounts || isAdmin) && prizeCalculation.prizes.length > 0 && (
             <div className="space-y-3">
               <div className="text-center mb-4">

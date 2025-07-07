@@ -410,23 +410,65 @@ export const PrizePoolEnhanced: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Information */}
+      {/* Prize Visibility Controls */}
       <Card className="bg-muted/30">
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground space-y-2">
-            {prizeMode === 'percentage' ? (
-              <>
-                <p>• Prize amounts are calculated based on current number of entries ({totalEntries}) × entry fee (${activePool?.entry_fee_amount || 0})</p>
-                <p>• Amounts will update automatically as more participants join</p>
-                <p>• This distribution is specific to this pool only</p>
-              </>
-            ) : (
-              <>
-                <p>• Prize amounts are fixed regardless of entry count</p>
-                <p>• Total prize pool: {currency} ${customTotal}</p>
-                {isOverBudget && <p>• Admin must contribute {currency} ${overBudgetAmount} additional funds</p>}
-              </>
-            )}
+        <CardHeader>
+          <CardTitle className="text-lg">Prize Display Settings</CardTitle>
+          <CardDescription>Control what participants can see</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
+              <div>
+                <div className="font-medium">Show Total Prize Pool</div>
+                <div className="text-sm text-muted-foreground">Participants can see total collected amount</div>
+              </div>
+              <input 
+                type="checkbox"
+                defaultChecked={activePool?.show_prize_total ?? true}
+                onChange={async (e) => {
+                  if (activePool) {
+                    await updatePool(activePool.id, { show_prize_total: e.target.checked } as any);
+                  }
+                }}
+                className="h-4 w-4"
+              />
+            </label>
+            
+            <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
+              <div>
+                <div className="font-medium">Show Prize Amounts</div>
+                <div className="text-sm text-muted-foreground">Participants can see individual prize breakdowns</div>
+              </div>
+              <input 
+                type="checkbox"
+                defaultChecked={activePool?.show_prize_amounts ?? true}
+                onChange={async (e) => {
+                  if (activePool) {
+                    await updatePool(activePool.id, { show_prize_amounts: e.target.checked } as any);
+                  }
+                }}
+                className="h-4 w-4"
+              />
+            </label>
+          </div>
+          
+          <div className="pt-4 border-t">
+            <div className="text-sm text-muted-foreground space-y-2">
+              <div><strong>Current Mode:</strong> {prizeMode === 'percentage' ? 'Percentage' : 'Custom'} distribution</div>
+              {prizeMode === 'percentage' ? (
+                <>
+                  <p>• Prize amounts are calculated based on current number of entries ({totalEntries}) × entry fee (${activePool?.entry_fee_amount || 0})</p>
+                  <p>• Amounts will update automatically as more participants join</p>
+                </>
+              ) : (
+                <>
+                  <p>• Prize amounts are fixed regardless of entry count</p>
+                  <p>• Total prize pool: {currency} ${customTotal}</p>
+                  {isOverBudget && <p>• Admin must contribute {currency} ${overBudgetAmount} additional funds</p>}
+                </>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

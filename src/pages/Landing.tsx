@@ -53,162 +53,136 @@ const Landing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50">
-      <div className={`container mx-auto ${isMobile ? 'px-4 py-8' : 'px-4 py-16'}`}>
-        {/* Header with Auth State */}
-        <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'} mb-8`}>
-          <div className={`flex items-center gap-2 ${isMobile ? 'justify-center' : ''}`}>
-            <Trophy className="h-8 w-8 text-red-600" />
-            <h1 className={`${isMobile ? 'responsive-text-xl' : 'text-2xl'} font-bold bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent`}>
-              Big Brother Fantasy Pool
-            </h1>
+    <div className="min-h-screen bg-cream">
+      {/* Navigation Header */}
+      <nav className="bg-cream border-b border-brand-teal/20 px-4 py-4">
+        <div className="container mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <Trophy className="h-8 w-8 text-coral" />
+            <span className="text-xl font-bold text-dark">Poolside Picks</span>
           </div>
           
-          <div className={`flex items-center gap-4 ${isMobile ? 'justify-center' : ''}`}>
-            {user ? (
-              <>
-                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                  <User className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-green-800">
-                    {user.user_metadata?.display_name || user.email}
-                  </span>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="outline" onClick={() => navigate('/auth')}>
-                  Sign In
-                </Button>
-                <Button onClick={() => navigate('/auth')}>
-                  Sign Up
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Hero Section */}
-        <div className={`text-center ${isMobile ? 'mb-8' : 'mb-16'}`}>
-          <div className={`bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white rounded-xl shadow-2xl mb-8 ${isMobile ? 'py-8 px-6' : 'py-12 px-16'}`}>
-            <div className={`flex ${isMobile ? 'flex-col' : 'items-center justify-center'} mb-6`}>
-              <Trophy className={`${isMobile ? 'h-12 w-12 mx-auto mb-4' : 'h-16 w-16 mr-4'} text-white`} />
-              <h1 className={`${isMobile ? 'responsive-text-3xl' : 'text-6xl'} font-bold`}>
-                Big Brother Fantasy Pool
-              </h1>
+          {user ? (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-brand-teal/10 border border-brand-teal/30 rounded-lg px-3 py-2">
+                <User className="h-4 w-4 text-brand-teal" />
+                <span className="text-sm text-dark">
+                  {user.user_metadata?.display_name || user.email}
+                </span>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-brand-teal-foreground">
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
-            <p className={`${isMobile ? 'responsive-text-lg' : 'text-2xl'} text-red-100 mb-4`}>
-              Draft your dream team and compete with friends!
-            </p>
-            <p className={`${isMobile ? 'text-base' : 'text-lg'} text-red-200`}>
-              Create private pools, draft houseguests, and see who can predict the season best
+          ) : (
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/auth')}
+              className="border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-brand-teal-foreground"
+            >
+              Sign In
+            </Button>
+          )}
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <header className="hero-section py-16 px-4">
+        <div className="container mx-auto text-center">
+          <div className="mb-8">
+            <h1 className="text-5xl md:text-6xl font-bold text-dark mb-4">
+              Where Big Brother Meets the Pool
+            </h1>
+            <p className="text-xl md:text-2xl text-dark/80 mb-8">
+              Join the ultimate Big Brother fantasy experience
             </p>
           </div>
-        </div>
 
+          {/* Dual CTAs */}
+          <div className="hero-actions flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+            <Button 
+              onClick={() => setShowJoinModal(true)}
+              size="lg"
+              className="bg-coral hover:bg-coral/90 text-coral-foreground font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <Users className="h-5 w-5 mr-2" />
+              Join a Pool
+            </Button>
+            <Button 
+              onClick={() => setShowCreateModal(true)}
+              variant="outline"
+              size="lg"
+              className="border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-brand-teal-foreground font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Create Your Pool
+            </Button>
+          </div>
+
+          <p className="text-dark/60">
+            Returning player? <a href="#" onClick={() => navigate('/auth')} className="text-coral hover:text-coral/80 font-medium underline">Sign in</a> to access your pools
+          </p>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4">
         {/* How It Works Section */}
         <div className={`${isMobile ? 'mb-8' : 'mb-16'}`}>
-          <h2 className={`${isMobile ? 'responsive-text-2xl' : 'text-3xl'} font-bold text-center text-gray-800 mb-8`}>How It Works</h2>
+          <h2 className={`${isMobile ? 'responsive-text-2xl' : 'text-3xl'} font-bold text-center text-dark mb-8`}>How It Works</h2>
           <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'md:grid-cols-3 gap-8'}`}>
-            <Card className="text-center border-2 border-orange-200 hover:shadow-lg transition-shadow">
+            <Card className="text-center border-2 border-brand-teal/30 hover:shadow-lg transition-shadow bg-white">
               <CardHeader>
-                <Target className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-                <CardTitle className="text-xl">1. Draft Your Team</CardTitle>
+                <Target className="h-12 w-12 text-coral mx-auto mb-4" />
+                <CardTitle className="text-xl text-dark">1. Draft Your Team</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Select {activePool?.picks_per_team || 5} houseguests and answer bonus questions to build your winning strategy.</p>
+                <p className="text-dark/70">Select {activePool?.picks_per_team || 5} houseguests and answer bonus questions to build your winning strategy.</p>
               </CardContent>
             </Card>
             
-            <Card className="text-center border-2 border-green-200 hover:shadow-lg transition-shadow">
+            <Card className="text-center border-2 border-brand-teal/30 hover:shadow-lg transition-shadow bg-white">
               <CardHeader>
-                <Star className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                <CardTitle className="text-xl">2. Earn Points</CardTitle>
+                <Star className="h-12 w-12 text-brand-teal mx-auto mb-4" />
+                <CardTitle className="text-xl text-dark">2. Earn Points</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Score points when your houseguests win competitions, survive evictions, and hit milestones.</p>
+                <p className="text-dark/70">Score points when your houseguests win competitions, survive evictions, and hit milestones.</p>
               </CardContent>
             </Card>
             
-            <Card className="text-center border-2 border-purple-200 hover:shadow-lg transition-shadow">
+            <Card className="text-center border-2 border-brand-teal/30 hover:shadow-lg transition-shadow bg-white">
               <CardHeader>
-                <Award className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-                <CardTitle className="text-xl">3. Win Prizes</CardTitle>
+                <Award className="h-12 w-12 text-yellow mx-auto mb-4" />
+                <CardTitle className="text-xl text-dark">3. Win Prizes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Compete for the top spot on the leaderboard and claim your victory!</p>
+                <p className="text-dark/70">Compete for the top spot on the leaderboard and claim your victory!</p>
               </CardContent>
             </Card>
-          </div>
-        </div>
-
-        {/* Get Started Section */}
-        <div className={`text-center ${isMobile ? 'mb-8' : 'mb-16'}`}>
-          <div className={`${isMobile ? 'mx-4' : 'max-w-2xl mx-auto'}`}>
-            {!user ? (
-              <>
-                <Button 
-                  onClick={() => navigate('/auth')}
-                  size={isMobile ? "default" : "lg"}
-                  className={`bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 hover:from-red-700 hover:via-orange-600 hover:to-yellow-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 mb-6 ${isMobile ? 'mobile-button w-full responsive-text-lg' : 'px-12 py-4 text-xl'}`}
-                >
-                  Get Started - It's Free!
-                </Button>
-                <p className="text-gray-600 text-lg mb-4">
-                  Sign in to create or join a fantasy pool
-                </p>
-              </>
-            ) : (
-              <>
-                <h2 className={`${isMobile ? 'responsive-text-2xl' : 'text-3xl'} font-bold text-gray-800 mb-6`}>Ready to Play?</h2>
-                {/* Pool Action Buttons - Only for authenticated users */}
-                <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'md:grid-cols-2 gap-4'} ${isMobile ? 'w-full' : 'max-w-md'} mx-auto mb-6`}>
-                  <Button 
-                    onClick={() => setShowCreateModal(true)}
-                    className={`bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${isMobile ? 'mobile-button' : 'py-4 px-6'}`}
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Create Pool
-                  </Button>
-                  <Button 
-                    onClick={() => setShowJoinModal(true)}
-                    className={`bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${isMobile ? 'mobile-button' : 'py-4 px-6'}`}
-                  >
-                    <Users className="h-5 w-5 mr-2" />
-                    Join Pool
-                  </Button>
-                </div>
-                <p className="text-gray-600 text-lg">
-                  Create your own pool or join an existing one to get started
-                </p>
-              </>
-            )}
           </div>
         </div>
 
         {/* Features Section */}
         <div className="text-center mb-16">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-orange-200">
-            <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">Why Play?</h3>
+          <div className="bg-white rounded-xl p-8 shadow-lg border border-brand-teal/20">
+            <Trophy className="h-12 w-12 text-coral mx-auto mb-4" />
+            <h3 className="text-2xl font-bold text-dark mb-6">Why Play?</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">🎯 Strategic Fun</h4>
-                <p className="text-gray-600 text-sm">Draft wisely and predict outcomes to outsmart your friends.</p>
+                <h4 className="font-semibold text-dark mb-2">🎯 Strategic Fun</h4>
+                <p className="text-dark/70 text-sm">Draft wisely and predict outcomes to outsmart your friends.</p>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">👥 Social Gaming</h4>
-                <p className="text-gray-600 text-sm">Create private pools with friends, family, or coworkers.</p>
+                <h4 className="font-semibold text-dark mb-2">👥 Social Gaming</h4>
+                <p className="text-dark/70 text-sm">Create private pools with friends, family, or coworkers.</p>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">📊 Live Tracking</h4>
-                <p className="text-gray-600 text-sm">Real-time leaderboards and weekly score updates.</p>
+                <h4 className="font-semibold text-dark mb-2">📊 Live Tracking</h4>
+                <p className="text-dark/70 text-sm">Real-time leaderboards and weekly score updates.</p>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">🏆 Compete to Win</h4>
-                <p className="text-gray-600 text-sm">Optional buy-ins for prize pools or just play for bragging rights.</p>
+                <h4 className="font-semibold text-dark mb-2">🏆 Compete to Win</h4>
+                <p className="text-dark/70 text-sm">Optional buy-ins for prize pools or just play for bragging rights.</p>
               </div>
             </div>
           </div>
@@ -216,11 +190,11 @@ const Landing = () => {
 
         {/* Navigation to Dashboard for Authenticated Users */}
         {user && (
-          <div className="text-center">
-            <p className="text-gray-600 mb-4">Ready to manage your pools?</p>
+          <div className="text-center mb-16">
+            <p className="text-dark/70 mb-4">Ready to manage your pools?</p>
             <Button 
               onClick={() => navigate('/dashboard')}
-              className="px-8 py-3 text-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white"
+              className="px-8 py-3 text-lg font-semibold bg-brand-teal hover:bg-brand-teal/90 text-brand-teal-foreground rounded-xl"
             >
               Go to Dashboard
             </Button>
@@ -228,25 +202,21 @@ const Landing = () => {
         )}
 
         {/* Footer */}
-        <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t border-orange-200">
-          <p>© 2025 Big Brother Fantasy Pool | May the best picks win! 🏆</p>
+        <footer className="text-center text-dark/60 text-sm mt-16 py-8 border-t border-brand-teal/20">
+          <p>© 2025 Poolside Picks | May the best picks win! 🏆</p>
         </footer>
 
-        {/* Modals - Only for authenticated users */}
-        {user && (
-          <>
-            <PoolCreateModal 
-              open={showCreateModal} 
-              onOpenChange={setShowCreateModal}
-              onSuccess={handlePoolSuccess}
-            />
-            <PoolJoinModal 
-              open={showJoinModal} 
-              onOpenChange={setShowJoinModal}
-              onSuccess={handlePoolSuccess}
-            />
-          </>
-        )}
+        {/* Modals */}
+        <PoolCreateModal 
+          open={showCreateModal} 
+          onOpenChange={setShowCreateModal}
+          onSuccess={handlePoolSuccess}
+        />
+        <PoolJoinModal 
+          open={showJoinModal} 
+          onOpenChange={setShowJoinModal}
+          onSuccess={handlePoolSuccess}
+        />
       </div>
     </div>
   );

@@ -50,9 +50,12 @@ export const calculatePrizes = (
     };
   }
 
-  // Check for custom prizes FIRST (highest priority)
-  if (prizeConfig.custom_prizes && prizeConfig.custom_prizes.length > 0) {
-    console.log('🎨 Prize Calculation - Using custom prizes');
+  // Use pool's prize_mode to determine which distribution to use
+  const poolPrizeMode = pool.prize_mode || 'percentage';
+  console.log('🎯 Prize Calculation - Pool prize mode:', poolPrizeMode);
+  
+  if (poolPrizeMode === 'custom' && prizeConfig.custom_prizes && prizeConfig.custom_prizes.length > 0) {
+    console.log('🎨 Prize Calculation - Using custom prizes (mode-driven)');
     mode = 'custom';
     
     prizes = prizeConfig.custom_prizes
@@ -63,7 +66,7 @@ export const calculatePrizes = (
         description: prize.description || getPlaceText(prize.place)
       }));
 
-  } else if (prizeConfig.percentage_distribution) {
+  } else if (poolPrizeMode === 'percentage' && prizeConfig.percentage_distribution) {
     console.log('📊 Prize Calculation - Using percentage distribution');
     mode = 'percentage';
     

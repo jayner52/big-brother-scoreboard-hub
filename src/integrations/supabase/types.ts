@@ -759,6 +759,8 @@ export type Database = {
           registration_deadline: string | null
           season_complete: boolean | null
           season_locked: boolean | null
+          show_prize_amounts: boolean | null
+          show_prize_total: boolean | null
           updated_at: string
         }
         Insert: {
@@ -794,6 +796,8 @@ export type Database = {
           registration_deadline?: string | null
           season_complete?: boolean | null
           season_locked?: boolean | null
+          show_prize_amounts?: boolean | null
+          show_prize_total?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -829,6 +833,8 @@ export type Database = {
           registration_deadline?: string | null
           season_complete?: boolean | null
           season_locked?: boolean | null
+          show_prize_amounts?: boolean | null
+          show_prize_total?: boolean | null
           updated_at?: string
         }
         Relationships: []

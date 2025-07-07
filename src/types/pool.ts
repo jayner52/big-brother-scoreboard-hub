@@ -133,6 +133,9 @@ export interface Pool {
   season_locked?: boolean;
   allow_duplicate_picks?: boolean;
   prize_distribution?: any;
+  prize_mode?: string;
+  show_prize_total?: boolean;
+  show_prize_amounts?: boolean;
   season_complete?: boolean;
   draft_configuration_locked?: boolean;
   enabled_special_events?: string[];

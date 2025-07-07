@@ -334,13 +334,22 @@ export const PoolSettingsPanel: React.FC = () => {
 
   const handleAllowDuplicatePicksToggle = async (allowDuplicates: boolean) => {
     if (!activePool) return;
+    
+    console.log('🔧 Allow Duplicate Picks Toggle:', {
+      currentValue: activePool.allow_duplicate_picks,
+      newValue: allowDuplicates,
+      poolId: activePool.id
+    });
+    
     setIsUpdating(true);
     try {
-      const success = await updatePool(activePool.id, {
+      const result = await updatePool(activePool.id, {
         allow_duplicate_picks: allowDuplicates
       });
 
-      if (success) {
+      console.log('🔧 Update result:', result);
+
+      if (result.success) {
         toast({
           title: allowDuplicates ? "Duplicate Picks Allowed" : "Duplicate Picks Disabled",
           description: allowDuplicates 
@@ -348,9 +357,10 @@ export const PoolSettingsPanel: React.FC = () => {
             : "Each houseguest can only be drafted once per team",
         });
       } else {
-        throw new Error('Failed to update duplicate picks setting');
+        throw new Error(result.error || 'Failed to update duplicate picks setting');
       }
     } catch (error) {
+      console.error('🔧 Error updating duplicate picks:', error);
       toast({
         title: "Error",
         description: "Failed to update duplicate picks setting",

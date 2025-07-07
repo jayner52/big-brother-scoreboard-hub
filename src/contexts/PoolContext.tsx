@@ -431,16 +431,27 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: 'Pool ID is required' };
       }
 
+      console.log('🔧 PoolContext updatePool:', { poolId, updates });
+
       const { error } = await supabase
         .from('pools')
         .update(updates)
         .eq('id', poolId);
 
       if (error) {
+        console.error('🔧 Supabase update error:', error);
         return { success: false, error: error.message };
       }
 
+      console.log('🔧 Supabase update successful, reloading pools...');
       await loadUserPools();
+      
+      // Also update activePool if it's the same pool
+      if (activePool && activePool.id === poolId) {
+        console.log('🔧 Updating activePool state with new values');
+        setActivePoolState(prev => prev ? { ...prev, ...updates } : null);
+      }
+      
       return { success: true };
       
     } catch (err) {

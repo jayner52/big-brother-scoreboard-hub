@@ -34,28 +34,26 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
   if (isMobile) {
     return (
       <div className={cn('w-full', className)}>
-        {/* Mobile Dropdown */}
+        {/* Mobile Tiles */}
         <div className="mb-6">
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full h-14 text-base font-medium bg-gradient-to-r from-purple/10 to-teal/10 border-2 border-purple/20 hover:border-purple/40 transition-all duration-300">
-              <SelectValue>
-                <div className="flex items-center gap-3">
-                  {activeTabData?.icon && <activeTabData.icon className="h-5 w-5" />}
-                  <span>{activeTabData?.label}</span>
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="w-full">
-              {visibleTabs.map((tab) => (
-                <SelectItem key={tab.id} value={tab.id} className="text-base py-3">
-                  <div className="flex items-center gap-3">
-                    <tab.icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            {visibleTabs.map((tab) => (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? "default" : "outline"}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "h-20 flex flex-col items-center gap-2 text-sm font-medium transition-all duration-300",
+                  activeTab === tab.id 
+                    ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg" 
+                    : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple border-purple/20"
+                )}
+              >
+                <tab.icon className="h-5 w-5" />
+                <span className="text-xs leading-tight text-center">{tab.shortLabel}</span>
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Mobile Content */}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Users, Edit3 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Team {
   id: string;
@@ -62,7 +63,7 @@ export const MultiTeamSwitcher: React.FC<MultiTeamSwitcherProps> = ({
             variant="outline"
             size="sm"
             onClick={handlePrevious}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-blue-100"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -81,7 +82,7 @@ export const MultiTeamSwitcher: React.FC<MultiTeamSwitcherProps> = ({
             variant="outline"
             size="sm"
             onClick={handleNext}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-blue-100"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -110,27 +111,45 @@ export const MultiTeamSwitcher: React.FC<MultiTeamSwitcherProps> = ({
         </div>
       </div>
 
-      {/* Team Preview */}
+      {/* Team Navigation Dots */}
       <div className="mt-3 pt-3 border-t border-blue-100">
-        <div className="flex flex-wrap gap-1">
-          {filledSlots.map((player, index) => (
-            <Badge 
-              key={index} 
-              variant="outline" 
-              className="text-xs bg-blue-50 text-blue-700 border-blue-200"
-            >
-              {player}
-            </Badge>
-          ))}
-          {Array.from({ length: picksPerTeam - filledSlots.length }, (_, index) => (
-            <Badge 
-              key={`empty-${index}`} 
-              variant="outline" 
-              className="text-xs bg-gray-50 text-gray-400 border-dashed"
-            >
-              —
-            </Badge>
-          ))}
+        <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-1">
+            {filledSlots.map((player, index) => (
+              <Badge 
+                key={index} 
+                variant="outline" 
+                className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+              >
+                {player}
+              </Badge>
+            ))}
+            {Array.from({ length: picksPerTeam - filledSlots.length }, (_, index) => (
+              <Badge 
+                key={`empty-${index}`} 
+                variant="outline" 
+                className="text-xs bg-gray-50 text-gray-400 border-dashed"
+              >
+                —
+              </Badge>
+            ))}
+          </div>
+          
+          {/* Navigation Dots */}
+          <div className="flex gap-1">
+            {teams.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => onTeamChange(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all duration-200",
+                  index === currentTeamIndex 
+                    ? "bg-blue-600 scale-125" 
+                    : "bg-blue-200 hover:bg-blue-300"
+                )}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

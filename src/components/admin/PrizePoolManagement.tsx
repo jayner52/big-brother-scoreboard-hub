@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { DollarSign, Trophy, Save, Plus, Trash2, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { DollarSign, Trophy, Save, Plus, Trash2, AlertTriangle, Eye, EyeOff, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usePool } from '@/contexts/PoolContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -199,6 +199,44 @@ export const PrizePoolManagement: React.FC = () => {
     setConfig({ ...config, custom_prizes: [...config.custom_prizes, newPrize] });
   };
 
+  const addPercentagePlace = () => {
+    const currentPlaces = Object.keys(config.percentage_distribution).length;
+    const newPlace = currentPlaces + 1;
+    const placeKey = getPlaceKey(newPlace);
+    
+    setConfig({
+      ...config,
+      percentage_distribution: {
+        ...config.percentage_distribution,
+        [placeKey]: 0
+      }
+    });
+  };
+
+  const removePercentagePlace = (placeKey: string) => {
+    if (Object.keys(config.percentage_distribution).length <= 3) {
+      toast({
+        title: "Cannot Remove",
+        description: "At least three prize places must remain",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const newDistribution = { ...config.percentage_distribution };
+    delete newDistribution[placeKey as keyof typeof newDistribution];
+    
+    setConfig({
+      ...config,
+      percentage_distribution: newDistribution
+    });
+  };
+
+  const getPlaceKey = (place: number): string => {
+    const ordinals = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
+    return `${ordinals[place - 1] || `place_${place}`}_place_percentage`;
+  };
+
   const removeCustomPrize = (id: string) => {
     if (config.custom_prizes.length <= 1) {
       toast({
@@ -319,42 +357,24 @@ export const PrizePoolManagement: React.FC = () => {
             Prize Section Visibility
           </CardTitle>
           <CardDescription>
-            Control whether participants can see prize amounts on the About page
+            Control whether participants can see prize information on the About page
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
-              <div>
-                <div className="font-medium">Show Total Prize Pool to Participants</div>
-                <div className="text-sm text-muted-foreground">
-                  {showPrizeTotal 
-                    ? 'Participants can see the total prize pool amount' 
-                    : 'Total prize pool amount is hidden from participants'
-                  }
-                </div>
+          <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
+            <div>
+              <div className="font-medium">Show Prize Information to Participants</div>
+              <div className="text-sm text-muted-foreground">
+                {showPrizeAmounts 
+                  ? 'Participants can see prize breakdowns' 
+                  : 'Prize information is hidden from participants'
+                }
               </div>
-              <Switch 
-                checked={showPrizeTotal}
-                onCheckedChange={(checked) => updateVisibilitySetting('show_prize_total', checked)}
-              />
             </div>
-            
-            <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
-              <div>
-                <div className="font-medium">Show Individual Prize Amounts</div>
-                <div className="text-sm text-muted-foreground">
-                  {showPrizeAmounts 
-                    ? 'Participants can see individual prize breakdowns' 
-                    : 'Prize breakdown is hidden from participants'
-                  }
-                </div>
-              </div>
-              <Switch 
-                checked={showPrizeAmounts}
-                onCheckedChange={(checked) => updateVisibilitySetting('show_prize_amounts', checked)}
-              />
-            </div>
+            <Switch 
+              checked={showPrizeAmounts}
+              onCheckedChange={(checked) => updateVisibilitySetting('show_prize_amounts', checked)}
+            />
           </div>
         </CardContent>
       </Card>
@@ -474,18 +494,34 @@ export const PrizePoolManagement: React.FC = () => {
         <CardContent>
           {config.mode === 'percentage' ? (
             <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="font-semibold">Percentage Distribution</h4>
+                <Button onClick={addPercentagePlace} size="sm" variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Place
+                </Button>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {Object.entries(config.percentage_distribution).map(([key, percentage], index) => {
-                  if (percentage === 0 && index > 2) return null; // Hide zero percentages beyond first 3
-                  
                   const placeNumber = index + 1;
-                  const amount = percentageAmounts[key.replace('_percentage', '') as keyof typeof percentageAmounts];
+                  const amount = Math.round((availablePool * percentage) / 100);
                   
                   return (
                     <div key={key} className="p-4 border rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-2xl">{getPlaceEmoji(index)}</span>
                         <span className="font-medium">{getPlaceText(placeNumber)}</span>
+                        {Object.keys(config.percentage_distribution).length > 3 && (
+                          <Button
+                            onClick={() => removePercentagePlace(key)}
+                            size="sm"
+                            variant="ghost"
+                            className="ml-auto h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                       <div className="text-2xl font-bold text-primary mb-3">
                         {currency} ${amount}

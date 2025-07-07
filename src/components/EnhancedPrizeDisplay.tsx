@@ -119,15 +119,7 @@ export const EnhancedPrizeDisplay: React.FC<EnhancedPrizeDisplayProps> = ({ isAd
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Show Total Prize Pool to Participants</label>
-              <Switch 
-                checked={showPrizeTotal}
-                onCheckedChange={(checked) => updateVisibilitySetting('show_prize_total', checked)}
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Show Individual Prize Amounts</label>
+              <label className="text-sm font-medium">Show Prize Information to Participants</label>
               <Switch 
                 checked={showPrizeAmounts}
                 onCheckedChange={(checked) => updateVisibilitySetting('show_prize_amounts', checked)}
@@ -155,9 +147,9 @@ export const EnhancedPrizeDisplay: React.FC<EnhancedPrizeDisplayProps> = ({ isAd
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          {(showPrizeTotal || isAdmin) && (
+          {isAdmin && (
             <div className="text-center mb-6">
-              <div className="text-sm text-muted-foreground mb-2">Total Prize Pool</div>
+              <div className="text-sm text-muted-foreground mb-2">Total Prize Pool (Admin Only)</div>
               <div className="text-3xl font-bold text-coral">
                 {formatPrize(prizeCalculation.totalPrizePool, currency)}
               </div>

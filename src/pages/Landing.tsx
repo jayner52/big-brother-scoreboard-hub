@@ -76,9 +76,8 @@ const Landing = () => {
             </div>
           ) : (
             <Button 
-              variant="outline" 
               onClick={() => navigate('/auth')}
-              className="border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-brand-teal-foreground"
+              className="bg-coral hover:bg-coral/90 text-coral-foreground font-semibold px-6 py-2 rounded-lg"
             >
               Sign In
             </Button>
@@ -119,9 +118,19 @@ const Landing = () => {
             </Button>
           </div>
 
-          <p className="text-dark/60">
-            Returning player? <a href="#" onClick={() => navigate('/auth')} className="text-coral hover:text-coral/80 font-medium underline">Sign in</a> to access your pools
-          </p>
+          <div className="bg-gradient-to-r from-brand-teal/10 to-coral/10 border border-brand-teal/30 rounded-xl p-6 mt-8">
+            <p className="text-dark/80 text-lg mb-4">
+              Already have an account?
+            </p>
+            <Button 
+              onClick={() => navigate('/auth')}
+              variant="outline"
+              size="lg"
+              className="border-2 border-coral text-coral hover:bg-coral hover:text-coral-foreground font-semibold px-8 py-3 text-lg rounded-xl"
+            >
+              Sign In to Your Account
+            </Button>
+          </div>
         </div>
       </header>
 

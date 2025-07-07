@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import { Users, Trophy, Eye, BarChart2, DollarSign, ClipboardList } from 'lucide-react';
+import { Users, Trophy, Eye, BarChart2, DollarSign, ClipboardList, Lock } from 'lucide-react';
 
 export interface TabConfig {
   id: string;
@@ -12,6 +12,7 @@ export interface TabConfig {
   icon: React.ComponentType<{ className?: string }>;
   component: React.ReactNode;
   hidden?: boolean;
+  locked?: boolean;
 }
 
 interface EnhancedTabSystemProps {
@@ -29,6 +30,11 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
   const visibleTabs = tabs.filter(tab => !tab.hidden);
   const [activeTab, setActiveTab] = useState(defaultTab || visibleTabs[0]?.id || '');
 
+  const handleTabClick = (tabId: string, tab: TabConfig) => {
+    if (tab.locked) return; // Don't allow clicking locked tabs
+    setActiveTab(tabId);
+  };
+
   const activeTabData = visibleTabs.find(tab => tab.id === activeTab);
 
   if (isMobile) {
@@ -41,16 +47,24 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
               <Button
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "outline"}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabClick(tab.id, tab)}
+                disabled={tab.locked}
                 className={cn(
                   "h-20 flex flex-col items-center gap-2 text-sm font-medium transition-all duration-300",
                   activeTab === tab.id 
                     ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg" 
-                    : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple border-purple/20"
+                    : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple border-purple/20",
+                  tab.locked && "opacity-50 cursor-not-allowed"
                 )}
               >
-                <tab.icon className="h-5 w-5" />
-                <span className="text-xs leading-tight text-center">{tab.shortLabel}</span>
+                <div className="flex items-center justify-center relative">
+                  <tab.icon className="h-5 w-5" />
+                  {tab.locked && <Lock className="h-3 w-3 absolute -top-1 -right-1" />}
+                </div>
+                <span className="text-xs leading-tight text-center flex items-center gap-1">
+                  {tab.shortLabel}
+                  {tab.locked && <Lock className="h-2 w-2" />}
+                </span>
               </Button>
             ))}
           </div>
@@ -74,16 +88,24 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
             <Button
               key={tab.id}
               variant={activeTab === tab.id ? "default" : "ghost"}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id, tab)}
+              disabled={tab.locked}
               className={cn(
                 "relative h-16 flex flex-col items-center gap-2 text-base font-medium transition-all duration-300 hover:scale-105",
                 activeTab === tab.id 
                   ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg tab-active" 
-                  : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple"
+                  : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple",
+                tab.locked && "opacity-50 cursor-not-allowed"
               )}
             >
-              <tab.icon className="h-5 w-5" />
-              <span className="text-sm leading-tight text-center">{tab.shortLabel}</span>
+              <div className="flex items-center justify-center relative">
+                <tab.icon className="h-5 w-5" />
+                {tab.locked && <Lock className="h-3 w-3 absolute -top-1 -right-1" />}
+              </div>
+              <span className="text-sm leading-tight text-center flex items-center gap-1">
+                {tab.shortLabel}
+                {tab.locked && <Lock className="h-2 w-2" />}
+              </span>
             </Button>
           ))}
           {visibleTabs.length === 5 && <div></div>} {/* Spacer for 5 tabs */}

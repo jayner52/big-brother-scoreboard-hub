@@ -25,8 +25,8 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
     formData[`player_${i + 1}` as keyof DraftFormData]
   ).some(player => typeof player === 'string' && player.trim().length > 0);
 
-  // Check if Everyone's Picks should be hidden
-  const shouldHideEveronesPicks = activePool?.hide_picks_until_draft_closed && activePool?.draft_open;
+  // Check if Everyone's Picks should be locked (not hidden)
+  const shouldLockPicks = activePool?.hide_picks_until_draft_closed || false;
 
   const tabs: TabConfig[] = [
     {
@@ -59,7 +59,7 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       shortLabel: 'Picks',
       icon: Eye,
       component: <EveryonesPicksMatrix />,
-      hidden: shouldHideEveronesPicks
+      locked: shouldLockPicks
     },
     {
       id: 'results',

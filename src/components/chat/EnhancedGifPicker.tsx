@@ -68,6 +68,69 @@ const VERIFIED_GIFS = {
       title: 'Eye Roll', 
       preview_url: 'https://media.giphy.com/media/3ohhwxmNcPvwyRBpm8/giphy.gif',
       category: 'reactions' 
+    },
+    { 
+      id: '40', 
+      url: 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif', 
+      title: 'Confused', 
+      preview_url: 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '41', 
+      url: 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif', 
+      title: 'Nervous', 
+      preview_url: 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '42', 
+      url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif', 
+      title: 'Facepalm', 
+      preview_url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '43', 
+      url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif', 
+      title: 'Mind Blown', 
+      preview_url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '44', 
+      url: 'https://media.giphy.com/media/3o7abkhi6F9EWdczXW/giphy.gif', 
+      title: 'Yikes', 
+      preview_url: 'https://media.giphy.com/media/3o7abkhi6F9EWdczXW/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '45', 
+      url: 'https://media.giphy.com/media/26n6Gx9moCgs1pUuk/giphy.gif', 
+      title: 'Surprise', 
+      preview_url: 'https://media.giphy.com/media/26n6Gx9moCgs1pUuk/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '46', 
+      url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif', 
+      title: 'Annoyed', 
+      preview_url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '47', 
+      url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif', 
+      title: 'Crying Laughing', 
+      preview_url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif',
+      category: 'reactions' 
+    },
+    { 
+      id: '48', 
+      url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif', 
+      title: 'Dead', 
+      preview_url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif',
+      category: 'reactions' 
     }
   ],
   celebrations: [
@@ -112,6 +175,62 @@ const VERIFIED_GIFS = {
       title: 'Party Time', 
       preview_url: 'https://media.giphy.com/media/artj92V8o75VPL7AeQ/giphy.gif',
       category: 'celebrations' 
+    },
+    { 
+      id: '50', 
+      url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif', 
+      title: 'Cheering', 
+      preview_url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '51', 
+      url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif', 
+      title: 'Yes!', 
+      preview_url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '52', 
+      url: 'https://media.giphy.com/media/3o6fJeAiIpk5EeoC8o/giphy.gif', 
+      title: 'Confetti', 
+      preview_url: 'https://media.giphy.com/media/3o6fJeAiIpk5EeoC8o/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '53', 
+      url: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif', 
+      title: 'Champagne', 
+      preview_url: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '54', 
+      url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif', 
+      title: 'Fireworks', 
+      preview_url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '55', 
+      url: 'https://media.giphy.com/media/26BROrSHlmyzzHf3i/giphy.gif', 
+      title: 'Air Punch', 
+      preview_url: 'https://media.giphy.com/media/26BROrSHlmyzzHf3i/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '56', 
+      url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif', 
+      title: 'Jump for Joy', 
+      preview_url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif',
+      category: 'celebrations' 
+    },
+    { 
+      id: '57', 
+      url: 'https://media.giphy.com/media/l1ughbsd9qXz2s9SE/giphy.gif', 
+      title: 'High Five', 
+      preview_url: 'https://media.giphy.com/media/l1ughbsd9qXz2s9SE/giphy.gif',
+      category: 'celebrations' 
     }
   ],
   drama: [
@@ -119,21 +238,77 @@ const VERIFIED_GIFS = {
       id: '21', 
       url: 'https://media.giphy.com/media/3o7absbD7PbTFQa0c8/giphy.gif', 
       title: 'Game On', 
-      preview_url: 'https://media.giphy.com/media/3o7absbD7PbTFQa0c8/200w.gif',
+      preview_url: 'https://media.giphy.com/media/3o7absbD7PbTFQa0c8/giphy.gif',
       category: 'drama' 
     },
     { 
       id: '22', 
       url: 'https://media.giphy.com/media/BjHIjM2YFC3rEUaMrw/giphy.gif', 
       title: 'Challenge Accepted', 
-      preview_url: 'https://media.giphy.com/media/BjHIjM2YFC3rEUaMrw/200w.gif',
+      preview_url: 'https://media.giphy.com/media/BjHIjM2YFC3rEUaMrw/giphy.gif',
       category: 'drama' 
     },
     { 
       id: '25', 
       url: 'https://media.giphy.com/media/kyLYXonQYYfwYDIeZl/giphy.gif', 
       title: 'Winning', 
-      preview_url: 'https://media.giphy.com/media/kyLYXonQYYfwYDIeZl/200w.gif',
+      preview_url: 'https://media.giphy.com/media/kyLYXonQYYfwYDIeZl/giphy.gif',
+      category: 'drama' 
+    },
+    { 
+      id: '60', 
+      url: 'https://media.giphy.com/media/13cptIwW9bgzk6UVyr/giphy.gif', 
+      title: 'Popcorn', 
+      preview_url: 'https://media.giphy.com/media/13cptIwW9bgzk6UVyr/giphy.gif',
+      category: 'drama' 
+    },
+    { 
+      id: '61', 
+      url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif', 
+      title: 'Tea Spill', 
+      preview_url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif',
+      category: 'drama' 
+    },
+    { 
+      id: '62', 
+      url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif', 
+      title: 'Gasping', 
+      preview_url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif',
+      category: 'drama' 
+    },
+    { 
+      id: '63', 
+      url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif', 
+      title: 'Side Eye', 
+      preview_url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif',
+      category: 'drama' 
+    },
+    { 
+      id: '64', 
+      url: 'https://media.giphy.com/media/l0MYGb8173drMQx5S/giphy.gif', 
+      title: 'Oh No', 
+      preview_url: 'https://media.giphy.com/media/l0MYGb8173drMQx5S/giphy.gif',
+      category: 'drama' 
+    },
+    { 
+      id: '65', 
+      url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif', 
+      title: 'Messy', 
+      preview_url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif',
+      category: 'drama' 
+    },
+    { 
+      id: '66', 
+      url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif', 
+      title: 'Drama Alert', 
+      preview_url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif',
+      category: 'drama' 
+    },
+    { 
+      id: '67', 
+      url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif', 
+      title: 'Stirring Pot', 
+      preview_url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif',
       category: 'drama' 
     }
   ],
@@ -142,21 +317,70 @@ const VERIFIED_GIFS = {
       id: '27', 
       url: 'https://media.giphy.com/media/111ebonMs90YLu/giphy.gif', 
       title: 'Thumbs Up', 
-      preview_url: 'https://media.giphy.com/media/111ebonMs90YLu/200w.gif',
+      preview_url: 'https://media.giphy.com/media/111ebonMs90YLu/giphy.gif',
       category: 'competition' 
     },
     { 
       id: '29', 
       url: 'https://media.giphy.com/media/dM2xuxnJCg4H6/giphy.gif', 
       title: 'Amazing', 
-      preview_url: 'https://media.giphy.com/media/dM2xuxnJCg4H6/200w.gif',
+      preview_url: 'https://media.giphy.com/media/dM2xuxnJCg4H6/giphy.gif',
       category: 'competition' 
     },
     { 
       id: '30', 
       url: 'https://media.giphy.com/media/3o6fJ1BM7R2EBRDnxK/giphy.gif', 
       title: 'Awesome', 
-      preview_url: 'https://media.giphy.com/media/3o6fJ1BM7R2EBRDnxK/200w.gif',
+      preview_url: 'https://media.giphy.com/media/3o6fJ1BM7R2EBRDnxK/giphy.gif',
+      category: 'competition' 
+    },
+    { 
+      id: '70', 
+      url: 'https://media.giphy.com/media/26BROrSHlmyzzHf3i/giphy.gif', 
+      title: 'Winner', 
+      preview_url: 'https://media.giphy.com/media/26BROrSHlmyzzHf3i/giphy.gif',
+      category: 'competition' 
+    },
+    { 
+      id: '71', 
+      url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/giphy.gif', 
+      title: 'Strong', 
+      preview_url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/giphy.gif',
+      category: 'competition' 
+    },
+    { 
+      id: '72', 
+      url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif', 
+      title: 'Beast Mode', 
+      preview_url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif',
+      category: 'competition' 
+    },
+    { 
+      id: '73', 
+      url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif', 
+      title: 'Thumbs Down', 
+      preview_url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif',
+      category: 'competition' 
+    },
+    { 
+      id: '74', 
+      url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif', 
+      title: 'Victory', 
+      preview_url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif',
+      category: 'competition' 
+    },
+    { 
+      id: '75', 
+      url: 'https://media.giphy.com/media/l1ughbsd9qXz2s9SE/giphy.gif', 
+      title: 'Challenge', 
+      preview_url: 'https://media.giphy.com/media/l1ughbsd9qXz2s9SE/giphy.gif',
+      category: 'competition' 
+    },
+    { 
+      id: '76', 
+      url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif', 
+      title: 'Dominating', 
+      preview_url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif',
       category: 'competition' 
     }
   ],
@@ -165,14 +389,56 @@ const VERIFIED_GIFS = {
       id: '31', 
       url: 'https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif', 
       title: 'Perfect', 
-      preview_url: 'https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/200w.gif',
+      preview_url: 'https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif',
       category: 'positive' 
     },
     { 
       id: '32', 
       url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif', 
       title: 'Love It', 
-      preview_url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/200w.gif',
+      preview_url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif',
+      category: 'positive' 
+    },
+    { 
+      id: '80', 
+      url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif', 
+      title: 'Good Vibes', 
+      preview_url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif',
+      category: 'positive' 
+    },
+    { 
+      id: '81', 
+      url: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif', 
+      title: 'Blessed', 
+      preview_url: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif',
+      category: 'positive' 
+    },
+    { 
+      id: '82', 
+      url: 'https://media.giphy.com/media/3o6fJeAiIpk5EeoC8o/giphy.gif', 
+      title: 'So Good', 
+      preview_url: 'https://media.giphy.com/media/3o6fJeAiIpk5EeoC8o/giphy.gif',
+      category: 'positive' 
+    },
+    { 
+      id: '83', 
+      url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif', 
+      title: 'Fantastic', 
+      preview_url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif',
+      category: 'positive' 
+    },
+    { 
+      id: '84', 
+      url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif', 
+      title: 'Amazing', 
+      preview_url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif',
+      category: 'positive' 
+    },
+    { 
+      id: '85', 
+      url: 'https://media.giphy.com/media/26n6Gx9moCgs1pUuk/giphy.gif', 
+      title: 'Wonderful', 
+      preview_url: 'https://media.giphy.com/media/26n6Gx9moCgs1pUuk/giphy.gif',
       category: 'positive' 
     }
   ]

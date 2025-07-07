@@ -50,8 +50,20 @@ export const calculatePrizes = (
     };
   }
 
-  // Check if we're in percentage mode and have percentage_distribution
-  if (prizeConfig.percentage_distribution) {
+  // Check for custom prizes FIRST (highest priority)
+  if (prizeConfig.custom_prizes && prizeConfig.custom_prizes.length > 0) {
+    console.log('🎨 Prize Calculation - Using custom prizes');
+    mode = 'custom';
+    
+    prizes = prizeConfig.custom_prizes
+      .filter((prize: any) => prize.amount && prize.amount > 0)
+      .map((prize: any) => ({
+        place: prize.place,
+        amount: prize.amount,
+        description: prize.description || getPlaceText(prize.place)
+      }));
+
+  } else if (prizeConfig.percentage_distribution) {
     console.log('📊 Prize Calculation - Using percentage distribution');
     mode = 'percentage';
     
@@ -74,18 +86,6 @@ export const calculatePrizes = (
         description: getPlaceText(prize.place)
       }))
       .filter(prize => prize.amount > 0);
-
-  } else if (prizeConfig.custom_prizes) {
-    console.log('🎨 Prize Calculation - Using custom prizes');
-    mode = 'custom';
-    
-    prizes = prizeConfig.custom_prizes
-      .filter((prize: any) => prize.amount && prize.amount > 0)
-      .map((prize: any) => ({
-        place: prize.place,
-        amount: prize.amount,
-        description: prize.description || getPlaceText(prize.place)
-      }));
 
   } else {
     // Fallback: Check if custom amounts are configured (legacy structure)

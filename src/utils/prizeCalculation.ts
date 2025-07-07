@@ -50,56 +50,20 @@ export const calculatePrizes = (
     };
   }
 
-  // Check if custom amounts are configured (any *_amount field > 0)
-  const hasCustomAmounts = [
-    prizeConfig.first_place_amount,
-    prizeConfig.second_place_amount,
-    prizeConfig.third_place_amount,
-    prizeConfig.fourth_place_amount,
-    prizeConfig.fifth_place_amount
-  ].some(amount => amount && amount > 0);
-
-  // Check if percentages are configured (any *_percentage field > 0)
-  const hasPercentages = [
-    prizeConfig.first_place_percentage,
-    prizeConfig.second_place_percentage,
-    prizeConfig.third_place_percentage,
-    prizeConfig.fourth_place_percentage,
-    prizeConfig.fifth_place_percentage
-  ].some(percentage => percentage && percentage > 0);
-
-  if (hasCustomAmounts) {
-    console.log('🎨 Prize Calculation - Using custom amounts');
-    mode = 'custom';
-    
-    // Build prizes from custom amounts
-    const customPrizes = [
-      { place: 1, amount: prizeConfig.first_place_amount },
-      { place: 2, amount: prizeConfig.second_place_amount },
-      { place: 3, amount: prizeConfig.third_place_amount },
-      { place: 4, amount: prizeConfig.fourth_place_amount },
-      { place: 5, amount: prizeConfig.fifth_place_amount }
-    ];
-
-    prizes = customPrizes
-      .filter(prize => prize.amount && prize.amount > 0)
-      .map(prize => ({
-        place: prize.place,
-        amount: prize.amount,
-        description: getPlaceText(prize.place)
-      }));
-
-  } else if (hasPercentages) {
+  // Check if we're in percentage mode and have percentage_distribution
+  if (prizeConfig.percentage_distribution) {
     console.log('📊 Prize Calculation - Using percentage distribution');
     mode = 'percentage';
     
-    // Build prizes from percentages
+    const percentageConfig = prizeConfig.percentage_distribution;
+    
+    // Build prizes from percentage distribution
     const percentagePrizes = [
-      { place: 1, percentage: prizeConfig.first_place_percentage },
-      { place: 2, percentage: prizeConfig.second_place_percentage },
-      { place: 3, percentage: prizeConfig.third_place_percentage },
-      { place: 4, percentage: prizeConfig.fourth_place_percentage },
-      { place: 5, percentage: prizeConfig.fifth_place_percentage }
+      { place: 1, percentage: percentageConfig.first_place_percentage },
+      { place: 2, percentage: percentageConfig.second_place_percentage },
+      { place: 3, percentage: percentageConfig.third_place_percentage },
+      { place: 4, percentage: percentageConfig.fourth_place_percentage },
+      { place: 5, percentage: percentageConfig.fifth_place_percentage }
     ];
 
     prizes = percentagePrizes
@@ -110,6 +74,81 @@ export const calculatePrizes = (
         description: getPlaceText(prize.place)
       }))
       .filter(prize => prize.amount > 0);
+
+  } else if (prizeConfig.custom_prizes) {
+    console.log('🎨 Prize Calculation - Using custom prizes');
+    mode = 'custom';
+    
+    prizes = prizeConfig.custom_prizes
+      .filter((prize: any) => prize.amount && prize.amount > 0)
+      .map((prize: any) => ({
+        place: prize.place,
+        amount: prize.amount,
+        description: prize.description || getPlaceText(prize.place)
+      }));
+
+  } else {
+    // Fallback: Check if custom amounts are configured (legacy structure)
+    const hasCustomAmounts = [
+      prizeConfig.first_place_amount,
+      prizeConfig.second_place_amount,
+      prizeConfig.third_place_amount,
+      prizeConfig.fourth_place_amount,
+      prizeConfig.fifth_place_amount
+    ].some(amount => amount && amount > 0);
+
+    // Check if percentages are configured (legacy structure)
+    const hasPercentages = [
+      prizeConfig.first_place_percentage,
+      prizeConfig.second_place_percentage,
+      prizeConfig.third_place_percentage,
+      prizeConfig.fourth_place_percentage,
+      prizeConfig.fifth_place_percentage
+    ].some(percentage => percentage && percentage > 0);
+
+    if (hasCustomAmounts) {
+      console.log('🎨 Prize Calculation - Using legacy custom amounts');
+      mode = 'custom';
+      
+      // Build prizes from custom amounts
+      const customPrizes = [
+        { place: 1, amount: prizeConfig.first_place_amount },
+        { place: 2, amount: prizeConfig.second_place_amount },
+        { place: 3, amount: prizeConfig.third_place_amount },
+        { place: 4, amount: prizeConfig.fourth_place_amount },
+        { place: 5, amount: prizeConfig.fifth_place_amount }
+      ];
+
+      prizes = customPrizes
+        .filter(prize => prize.amount && prize.amount > 0)
+        .map(prize => ({
+          place: prize.place,
+          amount: prize.amount,
+          description: getPlaceText(prize.place)
+        }));
+
+    } else if (hasPercentages) {
+      console.log('📊 Prize Calculation - Using legacy percentage distribution');
+      mode = 'percentage';
+      
+      // Build prizes from percentages
+      const percentagePrizes = [
+        { place: 1, percentage: prizeConfig.first_place_percentage },
+        { place: 2, percentage: prizeConfig.second_place_percentage },
+        { place: 3, percentage: prizeConfig.third_place_percentage },
+        { place: 4, percentage: prizeConfig.fourth_place_percentage },
+        { place: 5, percentage: prizeConfig.fifth_place_percentage }
+      ];
+
+      prizes = percentagePrizes
+        .filter(prize => prize.percentage && prize.percentage > 0)
+        .map(prize => ({
+          place: prize.place,
+          amount: Math.round((availablePool * prize.percentage) / 100),
+          description: getPlaceText(prize.place)
+        }))
+        .filter(prize => prize.amount > 0);
+    }
   }
 
   console.log('✅ Prize Calculation - Final prizes:', prizes);

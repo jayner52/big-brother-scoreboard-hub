@@ -275,6 +275,9 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
                 <button
                   key={gif.id}
                   onClick={() => {
+                    console.log('🎯 GIF Selected - Preview URL:', gif.preview_url);
+                    console.log('🎯 GIF Selected - Full URL:', gif.url);
+                    // Use the same URL that's shown in preview for consistency
                     onGifSelect(gif.url);
                     onClose();
                   }}
@@ -282,7 +285,7 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
                   title={gif.title}
                 >
                   <img
-                    src={gif.preview_url}
+                    src={gif.url}
                     alt={gif.title}
                     className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-300"
                     loading="lazy"

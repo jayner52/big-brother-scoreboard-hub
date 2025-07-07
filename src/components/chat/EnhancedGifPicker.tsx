@@ -338,23 +338,30 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
         </div>
         
         {/* Category Tabs */}
-        <div className="flex border-b border-border bg-muted/30 overflow-x-auto">
+        <div className="flex border-b border-border bg-muted/30 overflow-x-auto relative z-10">
           {gifCategories.map(category => {
             const Icon = category.icon;
             const gifCount = category.gifs.filter(gif => !imageErrors.has(gif.id)).length;
             return (
               <button
                 key={category.id}
-                onClick={() => {
-                  console.log('🎯 GIF Category Clicked:', category.id);
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🎯 GIF Category Clicked:', category.id, 'Current:', activeCategory);
                   setActiveCategory(category.id);
                 }}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-muted/50 whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-muted/50 whitespace-nowrap cursor-pointer relative z-20 ${
                   activeCategory === category.id
                     ? 'border-b-2 border-coral text-coral bg-coral/5'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                style={{ pointerEvents: 'auto' }}
+                style={{ 
+                  pointerEvents: 'auto',
+                  zIndex: 20,
+                  position: 'relative'
+                }}
               >
                 <Icon className="h-4 w-4" />
                 <span className="hidden sm:inline">{category.name}</span>

@@ -137,35 +137,36 @@ const Landing = () => {
       <div className="container mx-auto px-4">
         {/* How It Works Section */}
         <div className={`${isMobile ? 'mb-8' : 'mb-16'}`}>
-          <h2 className={`${isMobile ? 'responsive-text-2xl' : 'text-3xl'} font-bold text-center text-dark mb-8`}>How It Works</h2>
+          <h2 className={`${isMobile ? 'responsive-text-2xl' : 'text-3xl'} font-bold text-center text-dark mb-8`}>Ready to Play?</h2>
+          <p className="text-center text-dark/80 text-lg mb-8">Join thousands of Big Brother fans in the ultimate fantasy experience</p>
           <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'md:grid-cols-3 gap-8'}`}>
             <Card className="text-center border-2 border-brand-teal/30 hover:shadow-lg transition-shadow bg-white">
               <CardHeader>
-                <Target className="h-12 w-12 text-coral mx-auto mb-4" />
-                <CardTitle className="text-xl text-dark">1. Draft Your Team</CardTitle>
+                <div className="text-4xl mb-4">🎉</div>
+                <CardTitle className="text-xl text-dark">Join the Fun</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-dark/70">Select {activePool?.picks_per_team || 5} houseguests and answer bonus questions to build your winning strategy.</p>
+                <p className="text-dark/70">Get your invite code and jump into the ultimate Big Brother fantasy experience with friends!</p>
               </CardContent>
             </Card>
             
             <Card className="text-center border-2 border-brand-teal/30 hover:shadow-lg transition-shadow bg-white">
               <CardHeader>
-                <Star className="h-12 w-12 text-brand-teal mx-auto mb-4" />
-                <CardTitle className="text-xl text-dark">2. Earn Points</CardTitle>
+                <div className="text-4xl mb-4">👑</div>
+                <CardTitle className="text-xl text-dark">Build Your Dream Team</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-dark/70">Score points when your houseguests win competitions, survive evictions, and hit milestones.</p>
+                <p className="text-dark/70">Choose your champions! Draft 7 houseguests and put your Big Brother knowledge to the test.</p>
               </CardContent>
             </Card>
             
             <Card className="text-center border-2 border-brand-teal/30 hover:shadow-lg transition-shadow bg-white">
               <CardHeader>
-                <Award className="h-12 w-12 text-yellow mx-auto mb-4" />
-                <CardTitle className="text-xl text-dark">3. Win Prizes</CardTitle>
+                <div className="text-4xl mb-4">🏆</div>
+                <CardTitle className="text-xl text-dark">Win Glory (& Maybe Cash!)</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-dark/70">Compete for the top spot on the leaderboard and claim your victory!</p>
+                <p className="text-dark/70">Earn points all season long as your picks dominate competitions. Bragging rights guaranteed, prizes possible!</p>
               </CardContent>
             </Card>
           </div>

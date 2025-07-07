@@ -99,7 +99,7 @@ export const DoubleEvictionDisplay: React.FC<DoubleEvictionDisplayProps> = ({
             value={week.pov_winner || "N/A"} 
             iconType="pov" 
             colorScheme="green"
-            subtitle={week.pov_used ? `Used on ${week.pov_used_on}` : undefined}
+            subtitle={week.pov_used ? `Used on ${week.pov_used_on}${week.replacement_nominee ? ` → ${week.replacement_nominee}` : ''}` : undefined}
           />
           <ResultTile 
             label="Evicted" 
@@ -131,7 +131,7 @@ export const DoubleEvictionDisplay: React.FC<DoubleEvictionDisplayProps> = ({
             value={week.second_pov_winner || "N/A"} 
             iconType="pov" 
             colorScheme="green"
-            subtitle={week.second_pov_used ? `Used on ${week.second_pov_used_on}` : undefined}
+            subtitle={week.second_pov_used ? `Used on ${week.second_pov_used_on}${week.second_replacement_nominee ? ` → ${week.second_replacement_nominee}` : ''}` : undefined}
           />
           <ResultTile 
             label="Evicted" 

@@ -230,7 +230,7 @@ const loadWeekByWeekData = async () => {
                           value={week.pov_winner || "N/A"} 
                           iconType="pov" 
                           colorScheme="green"
-                          subtitle={week.pov_used ? `Used on ${week.pov_used_on}` : undefined}
+                          subtitle={week.pov_used ? `Used on ${week.pov_used_on}${week.replacement_nominee ? ` → ${week.replacement_nominee}` : ''}` : undefined}
                         />
                         <ResultTile 
                           label="Evicted" 

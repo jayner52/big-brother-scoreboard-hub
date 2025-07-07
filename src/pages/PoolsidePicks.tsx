@@ -128,7 +128,7 @@ const PoolsidePicks = () => {
             The ultimate fantasy experience for Big Brother superfans
           </p>
           
-          <div className={`grid ${isMobile ? 'grid-cols-1 gap-8' : 'md:grid-cols-2 lg:grid-cols-4 gap-8'}`}>
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-8' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6'}`}>
             <Card className="text-center border-2 border-coral/20 hover:border-coral/40 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <Users className="h-12 w-12 mx-auto text-coral mb-4" />
@@ -144,11 +144,23 @@ const PoolsidePicks = () => {
             <Card className="text-center border-2 border-brand-teal/20 hover:border-brand-teal/40 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <Trophy className="h-12 w-12 mx-auto text-brand-teal mb-4" />
-                <CardTitle className="text-xl text-dark">Weekly Competitions</CardTitle>
+                <CardTitle className="text-xl text-dark">Competitive Pool Play</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-dark/70 text-base">
-                  Compete for prizes with weekly challenges, bonus questions, and season-long leaderboards.
+                  Put money on the line or play just for fun. The competition keeps you engaged all season long.
+                </CardDescription>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center border-2 border-purple-400/20 hover:border-purple-400/40 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <Target className="h-12 w-12 mx-auto text-purple-600 mb-4" />
+                <CardTitle className="text-xl text-dark">Fully Customizable</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-dark/70 text-base">
+                  Starting your own pool? Configure everything exactly how you want - from scoring to prizes to team sizes.
                 </CardDescription>
               </CardContent>
             </Card>

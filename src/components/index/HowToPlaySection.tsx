@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Target, Trophy, DollarSign } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
-import { PrizePoolSection } from './PrizePoolSection';
+import { EnhancedPrizePoolSection } from './EnhancedPrizePoolSection';
 import { DynamicPrizeDisplay } from './DynamicPrizeDisplay';
 import { useScoringRules } from '@/hooks/useScoringRules';
 
@@ -36,7 +36,7 @@ export const HowToPlaySection: React.FC<HowToPlaySectionProps> = ({
           {/* Dynamic Prize Pool Section - Only show if pool has buy-in and participants */}
           {activePool?.has_buy_in && (
             <div className="mb-8">
-              <PrizePoolSection />
+              <EnhancedPrizePoolSection />
             </div>
           )}
           

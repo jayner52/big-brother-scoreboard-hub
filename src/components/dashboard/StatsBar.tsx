@@ -156,10 +156,10 @@ export const StatsBar: React.FC = () => {
                     <Icon className={`h-5 w-5 ${stat.color}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-muted-foreground truncate">
+                    <p className="text-base font-medium text-muted-foreground truncate">
                       {stat.label}
                     </p>
-                    <div className={`text-lg font-bold ${stat.color} truncate`}>
+                    <div className={`text-xl font-bold ${stat.color} truncate`}>
                       {typeof stat.value === 'number' && stat.label !== 'Current Week' && stat.label !== 'Days to Finale' ? (
                         <AnimatedNumber 
                           value={stat.value} 

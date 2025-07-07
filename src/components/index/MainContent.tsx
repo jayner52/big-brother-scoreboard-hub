@@ -10,7 +10,7 @@ import { WinnerBanner } from '@/components/WinnerBanner';
 import { EnhancedTabSystem, TabConfig } from '@/components/dashboard/EnhancedTabSystem';
 import { DraftFormData } from '@/hooks/useDraftForm';
 import { usePool } from '@/contexts/PoolContext';
-import { Users, Trophy, Eye, BarChart2, DollarSign, ClipboardList } from 'lucide-react';
+import { Users, Trophy, Eye, BarChart2, User, ClipboardList } from 'lucide-react';
 
 interface MainContentProps {
   formData: DraftFormData;
@@ -71,8 +71,8 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
     {
       id: 'contestants',
       label: 'Houseguest Values',
-      shortLabel: 'Values',
-      icon: DollarSign,
+      shortLabel: 'Houseguests',
+      icon: User,
       component: <ContestantValues />
     },
     {

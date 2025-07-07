@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Send, Smile, Image } from 'lucide-react';
 import { BigBrotherEmojis } from '@/components/chat/BigBrotherEmojis';
-import { GifPicker } from '@/components/chat/GifPicker';
+import { EnhancedGifPicker } from '@/components/chat/EnhancedGifPicker';
 
 interface ChatInputProps {
   newMessage: string;
@@ -45,7 +45,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           isOpen={showEmojis}
           onEmojiSelect={handleEmojiSelect}
         />
-        <GifPicker
+        <EnhancedGifPicker
           isOpen={showGifs}
           onGifSelect={onGifSelect}
           onClose={() => onToggleGifs()}

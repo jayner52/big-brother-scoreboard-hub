@@ -23,6 +23,14 @@ interface WeeklyResult {
   is_triple_eviction: boolean | null;
   jury_phase_started: boolean | null;
   is_draft: boolean | null;
+  // Double eviction fields
+  second_hoh_winner: string | null;
+  second_pov_winner: string | null;
+  second_evicted_contestant: string | null;
+  second_nominees: string[] | null;
+  second_pov_used: boolean | null;
+  second_pov_used_on: string | null;
+  second_replacement_nominee: string | null;
 }
 
 interface SpecialEvent {
@@ -127,7 +135,14 @@ export const LiveResults: React.FC = () => {
           is_double_eviction: null,
           is_triple_eviction: null,
           jury_phase_started: null,
-          is_draft: true
+          is_draft: true,
+          second_hoh_winner: null,
+          second_pov_winner: null,
+          second_evicted_contestant: null,
+          second_nominees: null,
+          second_pov_used: null,
+          second_pov_used_on: null,
+          second_replacement_nominee: null
         });
       }
     } catch (error) {
@@ -183,6 +198,72 @@ export const LiveResults: React.FC = () => {
                 <Eye className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg font-semibold mb-2">Week {currentWeekData.week_number} In Progress</p>
                 <p>Click "Show Spoilers" to see current results</p>
+              </div>
+            ) : currentWeekData.is_double_eviction ? (
+              <div className="double-eviction-container space-y-4">
+                <div className="double-eviction-badge bg-gradient-to-r from-coral to-orange text-white py-2 px-4 rounded-lg text-center font-bold">
+                  ⚡ DOUBLE EVICTION NIGHT ⚡
+                </div>
+                
+                {/* First Eviction */}
+                <div className="eviction-block bg-card border-2 border-brand-teal rounded-lg p-4 shadow-sm">
+                  <h4 className="text-lg font-semibold mb-3 text-foreground">First Eviction</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
+                      <span className="text-sm font-medium text-yellow-800 block">HOH</span>
+                      <span className="font-bold text-yellow-900">{currentWeekData.hoh_winner || "TBD"}</span>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                      <BigBrotherIcon type="nominees" className="h-6 w-6 mx-auto mb-1" />
+                      <span className="text-sm font-medium text-orange-800 block">Nominees</span>
+                      <span className="text-sm font-bold text-orange-900">{currentWeekData.nominees?.join(' & ') || "TBD"}</span>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                      <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
+                      <span className="text-sm font-medium text-green-800 block">Veto Winner</span>
+                      <span className="font-bold text-green-900">{currentWeekData.pov_winner || "TBD"}</span>
+                      {currentWeekData.pov_used && (
+                        <p className="text-xs text-green-600 mt-1">Used on {currentWeekData.pov_used_on}</p>
+                      )}
+                    </div>
+                    <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                      <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
+                      <span className="text-sm font-medium text-red-800 block">Evicted</span>
+                      <span className="font-bold text-red-900">{currentWeekData.evicted_contestant || "TBD"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Second Eviction */}
+                <div className="eviction-block bg-card border-2 border-brand-teal rounded-lg p-4 shadow-sm">
+                  <h4 className="text-lg font-semibold mb-3 text-foreground">Second Eviction (Live HOH)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
+                      <span className="text-sm font-medium text-yellow-800 block">HOH</span>
+                      <span className="font-bold text-yellow-900">{currentWeekData.second_hoh_winner || "TBD"}</span>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                      <BigBrotherIcon type="nominees" className="h-6 w-6 mx-auto mb-1" />
+                      <span className="text-sm font-medium text-orange-800 block">Nominees</span>
+                      <span className="text-sm font-bold text-orange-900">{currentWeekData.second_nominees?.join(' & ') || "TBD"}</span>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                      <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
+                      <span className="text-sm font-medium text-green-800 block">Veto Winner</span>
+                      <span className="font-bold text-green-900">{currentWeekData.second_pov_winner || "TBD"}</span>
+                      {currentWeekData.second_pov_used && (
+                        <p className="text-xs text-green-600 mt-1">Used on {currentWeekData.second_pov_used_on}</p>
+                      )}
+                    </div>
+                    <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                      <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
+                      <span className="text-sm font-medium text-red-800 block">Evicted</span>
+                      <span className="font-bold text-red-900">{currentWeekData.second_evicted_contestant || "TBD"}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -279,30 +360,98 @@ export const LiveResults: React.FC = () => {
                   </div>
                   
                    {/* Week Summary */}
-                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                     <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                       <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
-                       <p className="text-sm font-medium text-yellow-800">HOH</p>
-                       <p className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</p>
+                   {week.is_double_eviction ? (
+                     <div className="double-eviction-container space-y-4">
+                       <div className="double-eviction-badge bg-gradient-to-r from-coral to-orange text-white py-2 px-4 rounded-lg text-center font-bold mb-4">
+                         ⚡ DOUBLE EVICTION NIGHT ⚡
+                       </div>
+                       
+                       {/* First Eviction */}
+                       <div className="eviction-block bg-card border-2 border-brand-teal rounded-lg p-4 shadow-sm">
+                         <h4 className="text-lg font-semibold mb-3 text-foreground">First Eviction</h4>
+                         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                           <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                             <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
+                             <span className="text-sm font-medium text-yellow-800 block">HOH</span>
+                             <span className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</span>
+                           </div>
+                           <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                             <BigBrotherIcon type="nominees" className="h-6 w-6 mx-auto mb-1" />
+                             <span className="text-sm font-medium text-orange-800 block">Nominees</span>
+                             <span className="text-sm font-bold text-orange-900">{week.nominees?.join(' & ') || "N/A"}</span>
+                           </div>
+                           <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                             <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
+                             <span className="text-sm font-medium text-green-800 block">Veto Winner</span>
+                             <span className="font-bold text-green-900">{week.pov_winner || "N/A"}</span>
+                             {week.pov_used && (
+                               <p className="text-xs text-green-600 mt-1">Used on {week.pov_used_on}</p>
+                             )}
+                           </div>
+                           <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                             <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
+                             <span className="text-sm font-medium text-red-800 block">Evicted</span>
+                             <span className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</span>
+                           </div>
+                         </div>
+                       </div>
+
+                       {/* Second Eviction */}
+                       <div className="eviction-block bg-card border-2 border-brand-teal rounded-lg p-4 shadow-sm">
+                         <h4 className="text-lg font-semibold mb-3 text-foreground">Second Eviction (Live HOH)</h4>
+                         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                           <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                             <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
+                             <span className="text-sm font-medium text-yellow-800 block">HOH</span>
+                             <span className="font-bold text-yellow-900">{week.second_hoh_winner || "N/A"}</span>
+                           </div>
+                           <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                             <BigBrotherIcon type="nominees" className="h-6 w-6 mx-auto mb-1" />
+                             <span className="text-sm font-medium text-orange-800 block">Nominees</span>
+                             <span className="text-sm font-bold text-orange-900">{week.second_nominees?.join(' & ') || "N/A"}</span>
+                           </div>
+                           <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                             <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
+                             <span className="text-sm font-medium text-green-800 block">Veto Winner</span>
+                             <span className="font-bold text-green-900">{week.second_pov_winner || "N/A"}</span>
+                             {week.second_pov_used && (
+                               <p className="text-xs text-green-600 mt-1">Used on {week.second_pov_used_on}</p>
+                             )}
+                           </div>
+                           <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                             <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
+                             <span className="text-sm font-medium text-red-800 block">Evicted</span>
+                             <span className="font-bold text-red-900">{week.second_evicted_contestant || "N/A"}</span>
+                           </div>
+                         </div>
+                       </div>
                      </div>
-                     <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-                       <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
-                       <p className="text-sm font-medium text-green-800">POV</p>
-                       <p className="font-bold text-green-900">{week.pov_winner || "N/A"}</p>
+                   ) : (
+                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                       <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                         <BigBrotherIcon type="hoh" className="h-6 w-6 mx-auto mb-1" />
+                         <p className="text-sm font-medium text-yellow-800">HOH</p>
+                         <p className="font-bold text-yellow-900">{week.hoh_winner || "N/A"}</p>
+                       </div>
+                       <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                         <BigBrotherIcon type="pov" className="h-6 w-6 mx-auto mb-1" />
+                         <p className="text-sm font-medium text-green-800">POV</p>
+                         <p className="font-bold text-green-900">{week.pov_winner || "N/A"}</p>
+                       </div>
+                       <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                         <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
+                         <p className="text-sm font-medium text-orange-800">POV Used</p>
+                         <p className="font-bold text-orange-900">
+                           {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
+                         </p>
+                       </div>
+                       <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                         <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
+                         <p className="text-sm font-medium text-red-800">Evicted</p>
+                         <p className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</p>
+                       </div>
                      </div>
-                     <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
-                       <Users className="h-6 w-6 text-orange-600 mx-auto mb-1" />
-                       <p className="text-sm font-medium text-orange-800">POV Used</p>
-                       <p className="font-bold text-orange-900">
-                         {week.pov_used ? `Yes (on ${week.pov_used_on})` : "No"}
-                       </p>
-                     </div>
-                     <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
-                       <BigBrotherIcon type="evicted" className="h-6 w-6 mx-auto mb-1" />
-                       <p className="text-sm font-medium text-red-800">Evicted</p>
-                       <p className="font-bold text-red-900">{week.evicted_contestant || "N/A"}</p>
-                     </div>
-                   </div>
+                   )}
 
                   {/* Nominees and Special Events */}
                   <div className="text-xs text-gray-500 space-y-2">

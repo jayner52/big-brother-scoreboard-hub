@@ -35,43 +35,81 @@ export const calculatePrizes = (
   const availablePool = totalPot - adminFee;
 
   console.log('💰 Prize Calculation - Total Pot:', totalPot, 'Admin Fee:', adminFee, 'Available:', availablePool);
-  console.log('⚙️ Prize Calculation - Mode:', prizeConfig?.mode);
+  console.log('🔧 Prize Config:', prizeConfig);
 
   let prizes: PrizeInfo[] = [];
   let mode: 'percentage' | 'custom' | 'none' = 'none';
 
-  if (prizeConfig?.mode === 'custom' && prizeConfig.custom_prizes) {
-    console.log('🎨 Prize Calculation - Using custom mode with prizes:', prizeConfig.custom_prizes);
+  if (!prizeConfig) {
+    console.log('❌ No prize configuration found');
+    return {
+      prizes: [],
+      totalPrizePool: totalPot,
+      availablePrizePool: availablePool,
+      mode: 'none'
+    };
+  }
+
+  // Check if custom amounts are configured (any *_amount field > 0)
+  const hasCustomAmounts = [
+    prizeConfig.first_place_amount,
+    prizeConfig.second_place_amount,
+    prizeConfig.third_place_amount,
+    prizeConfig.fourth_place_amount,
+    prizeConfig.fifth_place_amount
+  ].some(amount => amount && amount > 0);
+
+  // Check if percentages are configured (any *_percentage field > 0)
+  const hasPercentages = [
+    prizeConfig.first_place_percentage,
+    prizeConfig.second_place_percentage,
+    prizeConfig.third_place_percentage,
+    prizeConfig.fourth_place_percentage,
+    prizeConfig.fifth_place_percentage
+  ].some(percentage => percentage && percentage > 0);
+
+  if (hasCustomAmounts) {
+    console.log('🎨 Prize Calculation - Using custom amounts');
     mode = 'custom';
-    prizes = prizeConfig.custom_prizes
-      .filter(prize => prize.amount > 0) // Only show prizes with amount > 0
-      .sort((a, b) => a.place - b.place)
+    
+    // Build prizes from custom amounts
+    const customPrizes = [
+      { place: 1, amount: prizeConfig.first_place_amount },
+      { place: 2, amount: prizeConfig.second_place_amount },
+      { place: 3, amount: prizeConfig.third_place_amount },
+      { place: 4, amount: prizeConfig.fourth_place_amount },
+      { place: 5, amount: prizeConfig.fifth_place_amount }
+    ];
+
+    prizes = customPrizes
+      .filter(prize => prize.amount && prize.amount > 0)
       .map(prize => ({
         place: prize.place,
         amount: prize.amount,
-        description: prize.description || getPlaceText(prize.place)
+        description: getPlaceText(prize.place)
       }));
-  } else if (prizeConfig?.mode === 'percentage' && prizeConfig.percentage_distribution) {
-    console.log('📊 Prize Calculation - Using percentage mode');
+
+  } else if (hasPercentages) {
+    console.log('📊 Prize Calculation - Using percentage distribution');
     mode = 'percentage';
-    const percentages = prizeConfig.percentage_distribution;
-    prizes = [
-      {
-        place: 1,
-        amount: Math.round((availablePool * percentages.first_place_percentage) / 100),
-        description: '1st Place Winner'
-      },
-      {
-        place: 2,
-        amount: Math.round((availablePool * percentages.second_place_percentage) / 100),
-        description: '2nd Place Runner-up'
-      },
-      {
-        place: 3,
-        amount: Math.round((availablePool * percentages.third_place_percentage) / 100),
-        description: '3rd Place'
-      }
-    ].filter(prize => prize.amount > 0); // Only show prizes with amount > 0
+    
+    // Build prizes from percentages
+    const percentagePrizes = [
+      { place: 1, percentage: prizeConfig.first_place_percentage },
+      { place: 2, percentage: prizeConfig.second_place_percentage },
+      { place: 3, percentage: prizeConfig.third_place_percentage },
+      { place: 4, percentage: prizeConfig.fourth_place_percentage },
+      { place: 5, percentage: prizeConfig.fifth_place_percentage }
+    ];
+
+    prizes = percentagePrizes
+      .filter(prize => prize.percentage && prize.percentage > 0)
+      .map(prize => ({
+        place: prize.place,
+        amount: Math.round((availablePool * prize.percentage) / 100),
+        description: getPlaceText(prize.place)
+      }))
+      .filter(prize => prize.amount > 0);
   }
 
   console.log('✅ Prize Calculation - Final prizes:', prizes);
@@ -88,6 +126,9 @@ export const getPlaceText = (place: number): string => {
   if (place === 1) return '1st Place';
   if (place === 2) return '2nd Place';
   if (place === 3) return '3rd Place';
+  if (place === 4) return '4th Place';
+  if (place === 5) return '5th Place';
+  if (place <= 10) return `${place}th Place`;
   return `${place}th Place`;
 };
 

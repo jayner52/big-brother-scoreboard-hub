@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useDraftForm } from '@/hooks/useDraftForm';
-import { HeaderNavigation } from '@/components/index/HeaderNavigation';
+import { ProfessionalNavigation } from '@/components/navigation/ProfessionalNavigation';
 import { HeroSection } from '@/components/index/HeroSection';
 import { DynamicHowToPlay } from '@/components/index/DynamicHowToPlay';
 import { MainContent } from '@/components/index/MainContent';
@@ -206,14 +206,16 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple/5 via-background to-teal/5">
       <div className="container mx-auto px-4 py-8">
+        <ProfessionalNavigation
+          user={user}
+          userEntry={userEntry}
+          userRank={userRank}
+          onSignOut={handleSignOut}
+          onJoinPool={handleJoinPool}
+        />
+        
         <div className="flex items-center justify-between mb-8">
-          <HeaderNavigation
-            user={user}
-            userEntry={userEntry}
-            userRank={userRank}
-            onSignOut={handleSignOut}
-            onJoinPool={handleJoinPool}
-          />
+          <div></div>
           <div className="flex items-center gap-2">
             {user && <PoolSwitcher />}
             {user && activePool && <InviteFriendsButton />}

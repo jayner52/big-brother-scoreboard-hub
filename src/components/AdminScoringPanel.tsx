@@ -24,8 +24,26 @@ export const AdminScoringPanel: React.FC = () => {
   const isOwner = userRole === 'owner';
   const isAdmin = userRole === 'admin';
 
-  // Handle URL parameters for tab navigation
+  // Handle URL parameters and tab persistence
   useEffect(() => {
+    const { activePool } = usePool();
+    const poolId = activePool?.id;
+    
+    // Try to restore from localStorage first
+    if (poolId) {
+      const savedTab = localStorage.getItem(`admin_panel_active_tab_${poolId}`);
+      if (savedTab) {
+        const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants'];
+        if (canManageRoles()) validTabs.push('roles');
+        
+        if (validTabs.includes(savedTab)) {
+          setActiveTab(savedTab);
+          return;
+        }
+      }
+    }
+    
+    // Fall back to URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
     const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants'];
@@ -33,8 +51,21 @@ export const AdminScoringPanel: React.FC = () => {
     
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
+      // Save to localStorage
+      if (poolId) {
+        localStorage.setItem(`admin_panel_active_tab_${poolId}`, tab);
+      }
     }
   }, [canManageRoles]);
+
+  // Save tab changes to localStorage
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const { activePool } = usePool();
+    if (activePool?.id) {
+      localStorage.setItem(`admin_panel_active_tab_${activePool.id}`, tab);
+    }
+  };
 
   if (!canManagePool()) {
     return (
@@ -88,7 +119,7 @@ export const AdminScoringPanel: React.FC = () => {
 
       {/* Mobile-Friendly Tab System */}
       <div className="bg-background border rounded-lg shadow-sm">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           {/* Mobile Scrollable Tab List */}
           <div className="border-b bg-muted/30 rounded-t-lg">
             <div className="px-4 py-2">

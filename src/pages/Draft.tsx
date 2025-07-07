@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePool } from '@/contexts/PoolContext';
 import { LockOverlay } from '@/components/ui/lock-overlay';
-import { isDraftAccessible, getDraftLockReason } from '@/utils/draftUtils';
+import { useDraftAccess } from '@/hooks/useDraftAccess';
 
 const Draft = () => {
   const navigate = useNavigate();
@@ -20,9 +20,7 @@ const Draft = () => {
 
 const DraftContent = ({ navigate }: { navigate: any }) => {
   const { activePool } = usePool();
-  
-  const isAccessible = isDraftAccessible(activePool);
-  const lockReason = getDraftLockReason(activePool);
+  const { isAccessible, lockReason } = useDraftAccess();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50">

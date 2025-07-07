@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 interface DraftSettings {
   draft_open: boolean;
   draft_locked: boolean;
+  allow_new_participants: boolean;
   hide_picks_until_draft_closed: boolean;
   registration_deadline?: string;
 }
@@ -17,6 +18,7 @@ export const useDraftTogglePersistence = () => {
   const [settings, setSettings] = useState<DraftSettings>({
     draft_open: false,
     draft_locked: false,
+    allow_new_participants: true,
     hide_picks_until_draft_closed: false,
   });
 
@@ -26,6 +28,7 @@ export const useDraftTogglePersistence = () => {
       setSettings({
         draft_open: activePool.draft_open || false,
         draft_locked: activePool.draft_locked || false,
+        allow_new_participants: activePool.allow_new_participants !== false,
         hide_picks_until_draft_closed: activePool.hide_picks_until_draft_closed || false,
         registration_deadline: activePool.registration_deadline || undefined
       });
@@ -67,6 +70,7 @@ export const useDraftTogglePersistence = () => {
       const settingNames = {
         draft_open: 'Draft Access',
         draft_locked: 'Draft Lock',
+        allow_new_participants: 'New Participants',
         hide_picks_until_draft_closed: 'Pick Visibility',
         registration_deadline: 'Registration Deadline'
       };
@@ -114,6 +118,10 @@ export const useDraftTogglePersistence = () => {
     return await updateSetting('hide_picks_until_draft_closed', hidePicksUntilDraftClosed);
   };
 
+  const handleAllowNewParticipantsToggle = async (allowNewParticipants: boolean) => {
+    return await updateSetting('allow_new_participants', allowNewParticipants);
+  };
+
   const handleRegistrationDeadline = async (deadline: string | null) => {
     return await updateSetting('registration_deadline', deadline);
   };
@@ -123,6 +131,7 @@ export const useDraftTogglePersistence = () => {
     return {
       isDraftOpen: activePool?.draft_open || false,
       isDraftLocked: activePool?.draft_locked || false,
+      allowNewParticipants: activePool?.allow_new_participants !== false,
       arePicksHidden: activePool?.hide_picks_until_draft_closed || false,
       registrationDeadline: activePool?.registration_deadline || null,
       isSeasonLocked: activePool?.season_locked || false
@@ -134,6 +143,7 @@ export const useDraftTogglePersistence = () => {
     isUpdating,
     handleDraftToggle,
     handleDraftLockToggle,
+    handleAllowNewParticipantsToggle,
     handleVisibilityToggle,
     handleRegistrationDeadline,
     getCurrentStatus

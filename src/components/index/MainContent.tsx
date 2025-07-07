@@ -10,6 +10,7 @@ import { WinnerBanner } from '@/components/WinnerBanner';
 import { EnhancedTabSystem, TabConfig } from '@/components/dashboard/EnhancedTabSystem';
 import { DraftFormData } from '@/hooks/useDraftForm';
 import { usePool } from '@/contexts/PoolContext';
+import { useDraftAccess } from '@/hooks/useDraftAccess';
 import { Users, Trophy, Eye, BarChart2, User, ClipboardList } from 'lucide-react';
 
 interface MainContentProps {
@@ -19,6 +20,7 @@ interface MainContentProps {
 
 export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam = 5 }) => {
   const { activePool } = usePool();
+  const { isAccessible: isDraftAccessible } = useDraftAccess();
   
   // Check if user has any draft progress based on dynamic team size
   const hasAnyPlayers = Array.from({ length: picksPerTeam }, (_, i) => 

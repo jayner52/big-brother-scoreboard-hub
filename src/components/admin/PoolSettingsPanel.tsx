@@ -303,6 +303,35 @@ export const PoolSettingsPanel: React.FC = () => {
     }
   };
 
+  const handleAllowNewParticipantsToggle = async (allowNewParticipants: boolean) => {
+    if (!activePool) return;
+    setIsUpdating(true);
+    try {
+      const success = await updatePool(activePool.id, {
+        allow_new_participants: allowNewParticipants
+      });
+
+      if (success) {
+        toast({
+          title: allowNewParticipants ? "New Participants Allowed" : "New Participants Blocked",
+          description: allowNewParticipants 
+            ? "New participants can now join and create teams"
+            : "New participants are blocked from joining",
+        });
+      } else {
+        throw new Error('Failed to update new participants setting');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update new participants setting",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const handleDraftLockToggle = async (draftLocked: boolean) => {
     if (!activePool) return;
     setIsUpdating(true);
@@ -738,58 +767,86 @@ export const PoolSettingsPanel: React.FC = () => {
              <AccordionContent>
                <CardContent className="p-6 space-y-6">
                  
-                 {/* Current Status */}
-                 {activePool && (
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                     <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                       <div>
-                         <p className="text-sm font-medium">Draft Status</p>
-                         <p className="text-xs text-muted-foreground">Can participants join?</p>
-                       </div>
-                       <div className={`px-2 py-1 rounded text-xs font-medium ${activePool.draft_open ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                         {activePool.draft_open ? "Open" : "Closed"}
-                       </div>
-                     </div>
-                     
-                     <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                       <div>
-                         <p className="text-sm font-medium">Draft Lock</p>
-                         <p className="text-xs text-muted-foreground">Are teams locked?</p>
-                       </div>
-                       <div className={`px-2 py-1 rounded text-xs font-medium ${activePool.draft_locked ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
-                         {activePool.draft_locked ? "Locked" : "Editable"}
-                       </div>
-                     </div>
-                     
-                     <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                       <div>
-                         <p className="text-sm font-medium">Picks Visibility</p>
-                         <p className="text-xs text-muted-foreground">Can others see picks?</p>
-                       </div>
-                       <div className={`px-2 py-1 rounded text-xs font-medium ${activePool.hide_picks_until_draft_closed ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'}`}>
-                         {activePool.hide_picks_until_draft_closed ? "Hidden" : "Visible"}
-                       </div>
-                     </div>
-                   </div>
-                 )}
+                  {/* Current Status */}
+                  {activePool && (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium">Draft Open</p>
+                          <p className="text-xs text-muted-foreground">Admin control</p>
+                        </div>
+                        <div className={`px-2 py-1 rounded text-xs font-medium ${activePool.draft_open ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {activePool.draft_open ? "Open" : "Closed"}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium">New Participants</p>
+                          <p className="text-xs text-muted-foreground">Can join pool?</p>
+                        </div>
+                        <div className={`px-2 py-1 rounded text-xs font-medium ${activePool.allow_new_participants ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {activePool.allow_new_participants ? "Allowed" : "Blocked"}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium">Draft Lock</p>
+                          <p className="text-xs text-muted-foreground">Are teams locked?</p>
+                        </div>
+                        <div className={`px-2 py-1 rounded text-xs font-medium ${activePool.draft_locked ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                          {activePool.draft_locked ? "Locked" : "Editable"}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium">Picks Visibility</p>
+                          <p className="text-xs text-muted-foreground">Can others see picks?</p>
+                        </div>
+                        <div className={`px-2 py-1 rounded text-xs font-medium ${activePool.hide_picks_until_draft_closed ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'}`}>
+                          {activePool.hide_picks_until_draft_closed ? "Hidden" : "Visible"}
+                        </div>
+                      </div>
+                    </div>
+                  )}
  
-                 {/* Draft Open/Close Control */}
-                 <div className="flex items-center justify-between">
-                   <div className="space-y-1">
-                     <Label htmlFor="draft-open-toggle" className="text-base font-medium">
-                       Allow New Participants
-                     </Label>
-                     <p className="text-sm text-muted-foreground">
-                       When enabled, new participants can join and create teams
-                     </p>
-                   </div>
-                   <Switch
-                     id="draft-open-toggle"
-                     checked={activePool?.draft_open || false}
-                     onCheckedChange={handleDraftToggle}
-                     disabled={isUpdating || activePool?.season_locked}
-                   />
-                 </div>
+                  {/* Draft Open/Close Control */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="draft-open-toggle" className="text-base font-medium">
+                        Draft Open
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        When enabled, draft submissions and edits are allowed
+                      </p>
+                    </div>
+                    <Switch
+                      id="draft-open-toggle"
+                      checked={activePool?.draft_open || false}
+                      onCheckedChange={handleDraftToggle}
+                      disabled={isUpdating || activePool?.season_locked}
+                    />
+                  </div>
+
+                  {/* Allow New Participants Control */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="allow-new-participants-toggle" className="text-base font-medium">
+                        Allow New Participants
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        When enabled, new participants can join and create teams
+                      </p>
+                    </div>
+                    <Switch
+                      id="allow-new-participants-toggle"
+                      checked={activePool?.allow_new_participants || false}
+                      onCheckedChange={handleAllowNewParticipantsToggle}
+                      disabled={isUpdating || activePool?.season_locked}
+                    />
+                  </div>
  
                  {/* Draft Lock Control */}
                  <div className="flex items-center justify-between">

@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Users, Trophy, Target, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, Trophy, Target, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DraftFormData } from '@/hooks/useDraftForm';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { supabase } from '@/integrations/supabase/client';
+import { usePool } from '@/contexts/PoolContext';
+import { PoolEntry } from '@/types/pool';
 
 interface TeamSummaryBannerProps {
   formData: DraftFormData;
@@ -15,18 +19,62 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
   className = "",
   picksPerTeam = 5,
 }) => {
+  const [userEntries, setUserEntries] = useState<PoolEntry[]>([]);
+  const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
+  const { activePool } = usePool();
+  const { houseguestPoints } = useHouseguestPoints();
+
+  // Load user's entries when component mounts
+  useEffect(() => {
+    loadUserEntries();
+  }, [activePool]);
+
+  const loadUserEntries = async () => {
+    if (!activePool) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('pool_entries')
+        .select('*')
+        .eq('pool_id', activePool.id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mappedEntries = data?.map(entry => ({
+        ...entry,
+        bonus_answers: entry.bonus_answers as Record<string, any>,
+        created_at: new Date(entry.created_at),
+        updated_at: new Date(entry.updated_at)
+      })) || [];
+
+      setUserEntries(mappedEntries);
+    } catch (error) {
+      console.error('Error loading user entries:', error);
+    }
+  };
+
+  // Use current entry if multiple teams exist, otherwise use formData
+  const currentEntry = userEntries.length > 0 ? userEntries[currentEntryIndex] : null;
+  
   // Dynamic player selection based on picksPerTeam
   const selectedPlayers = [];
   for (let i = 1; i <= picksPerTeam; i++) {
-    const player = formData[`player_${i}` as keyof DraftFormData];
+    const player = currentEntry 
+      ? currentEntry[`player_${i}` as keyof PoolEntry] as string
+      : formData[`player_${i}` as keyof DraftFormData];
     if (typeof player === 'string' && player.trim()) {
       selectedPlayers.push(player.trim());
     }
   }
 
-  const teamName = formData.team_name || 'Your Team';
+  const teamName = currentEntry ? currentEntry.team_name : (formData.team_name || 'Your Team');
+  const participantName = currentEntry ? currentEntry.participant_name : formData.participant_name;
   const completionPercentage = (selectedPlayers.length / picksPerTeam) * 100;
-  const { houseguestPoints } = useHouseguestPoints();
   
   const getPlayerPoints = (playerName: string) => {
     return houseguestPoints[playerName] || 0;
@@ -35,6 +83,15 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
   const totalTeamPoints = selectedPlayers.reduce((sum, player) => {
     return sum + getPlayerPoints(player);
   }, 0);
+
+  // Navigation functions
+  const nextEntry = () => {
+    setCurrentEntryIndex((prev) => (prev + 1) % userEntries.length);
+  };
+
+  const prevEntry = () => {
+    setCurrentEntryIndex((prev) => (prev - 1 + userEntries.length) % userEntries.length);
+  };
 
   // Always render the banner, even if no data yet
   return (
@@ -45,14 +102,41 @@ export const TeamSummaryBanner: React.FC<TeamSummaryBannerProps> = ({
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <Trophy className="h-4 w-4 text-purple-600 flex-shrink-0" />
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-base text-foreground truncate">{teamName}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-base text-foreground truncate">{teamName}</h3>
+                
+                {/* Team Navigation - only show if multiple teams */}
+                {userEntries.length > 1 && (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={prevEntry}
+                      className="h-6 w-6 p-0"
+                    >
+                      <ChevronLeft className="h-3 w-3" />
+                    </Button>
+                    <span className="text-xs text-muted-foreground px-2">
+                      {currentEntryIndex + 1}/{userEntries.length}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={nextEntry}
+                      className="h-6 w-6 p-0"
+                    >
+                      <ChevronRight className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                {formData.participant_name && (
-                  <span className="truncate">Manager: {formData.participant_name}</span>
+                {participantName && (
+                  <span className="truncate">Manager: {participantName}</span>
                 )}
                 {selectedPlayers.length > 0 && (
                   <>
-                    {formData.participant_name && <span>•</span>}
+                    {participantName && <span>•</span>}
                     <span className="font-medium text-purple-600">{totalTeamPoints} pts</span>
                   </>
                 )}

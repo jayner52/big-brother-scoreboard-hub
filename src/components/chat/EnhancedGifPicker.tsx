@@ -37,18 +37,18 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
       name: 'Reactions',
       icon: Smile,
       gifs: [
-        { id: '1', url: 'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif', title: 'Excited', preview_url: 'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/200w.gif', category: 'reactions' },
-        { id: '6', url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif', title: 'Shocked', preview_url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/200w.gif', category: 'reactions' },
-        { id: '7', url: 'https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif', title: 'Mind Blown', preview_url: 'https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/200w.gif', category: 'reactions' },
-        { id: '8', url: 'https://media.giphy.com/media/3o7TKziIuXtAI2vtPa/giphy.gif', title: 'Eye Roll', preview_url: 'https://media.giphy.com/media/3o7TKziIuXtAI2vtPa/200w.gif', category: 'reactions' },
-        { id: '9', url: 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif', title: 'Thinking', preview_url: 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/200w.gif', category: 'reactions' },
-        { id: '14', url: 'https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif', title: 'Confused', preview_url: 'https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/200w.gif', category: 'reactions' },
-        { id: '15', url: 'https://media.giphy.com/media/l4FGGafcOHmrlQxG0/giphy.gif', title: 'Disappointed', preview_url: 'https://media.giphy.com/media/l4FGGafcOHmrlQxG0/200w.gif', category: 'reactions' },
-        { id: '16', url: 'https://media.giphy.com/media/l3q2XhfQ8oCkm1Ts4/giphy.gif', title: 'Laugh', preview_url: 'https://media.giphy.com/media/l3q2XhfQ8oCkm1Ts4/200w.gif', category: 'reactions' },
-        { id: '17', url: 'https://media.giphy.com/media/3ohzdIuqJoo8QdKlnW/giphy.gif', title: 'Laughing Hard', preview_url: 'https://media.giphy.com/media/3ohzdIuqJoo8QdKlnW/200w.gif', category: 'reactions' },
-        { id: '18', url: 'https://media.giphy.com/media/26ufcVAp3AiJJsrIs/giphy.gif', title: 'Crying', preview_url: 'https://media.giphy.com/media/26ufcVAp3AiJJsrIs/200w.gif', category: 'reactions' },
-        { id: '19', url: 'https://media.giphy.com/media/YJjvTqoRFgZaM/giphy.gif', title: 'Facepalm', preview_url: 'https://media.giphy.com/media/YJjvTqoRFgZaM/200w.gif', category: 'reactions' },
-        { id: '20', url: 'https://media.giphy.com/media/3oEjHAUOqG3lSS0f1C/giphy.gif', title: 'Surprised', preview_url: 'https://media.giphy.com/media/3oEjHAUOqG3lSS0f1C/200w.gif', category: 'reactions' }
+        { id: '1', url: 'https://media.giphy.com/media/l0MYGb8Ka6cjcDqbS/giphy.gif', title: 'Excited', preview_url: 'https://media.giphy.com/media/l0MYGb8Ka6cjcDqbS/200w.gif', category: 'reactions' },
+        { id: '6', url: 'https://media.giphy.com/media/3oKIPf3C7HqqYBVcCk/giphy.gif', title: 'Shocked', preview_url: 'https://media.giphy.com/media/3oKIPf3C7HqqYBVcCk/200w.gif', category: 'reactions' },
+        { id: '7', url: 'https://media.giphy.com/media/l0MYJlFoXdAzskM5G/giphy.gif', title: 'Mind Blown', preview_url: 'https://media.giphy.com/media/l0MYJlFoXdAzskM5G/200w.gif', category: 'reactions' },
+        { id: '8', url: 'https://media.giphy.com/media/3oKIPa2TdahY8LAAxy/giphy.gif', title: 'Eye Roll', preview_url: 'https://media.giphy.com/media/3oKIPa2TdahY8LAAxy/200w.gif', category: 'reactions' },
+        { id: '9', url: 'https://media.giphy.com/media/l0MYzTq4gvPdaWYZa/giphy.gif', title: 'Thinking', preview_url: 'https://media.giphy.com/media/l0MYzTq4gvPdaWYZa/200w.gif', category: 'reactions' },
+        { id: '14', url: 'https://media.giphy.com/media/l0MYP6WAFfaR7Q1jO/giphy.gif', title: 'Confused', preview_url: 'https://media.giphy.com/media/l0MYP6WAFfaR7Q1jO/200w.gif', category: 'reactions' },
+        { id: '15', url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif', title: 'Disappointed', preview_url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/200w.gif', category: 'reactions' },
+        { id: '16', url: 'https://media.giphy.com/media/l0MYrLY3ksRmTXTC0/giphy.gif', title: 'Laugh', preview_url: 'https://media.giphy.com/media/l0MYrLY3ksRmTXTC0/200w.gif', category: 'reactions' },
+        { id: '17', url: 'https://media.giphy.com/media/3oKIPtSxFEqwKH9rQA/giphy.gif', title: 'Laughing Hard', preview_url: 'https://media.giphy.com/media/3oKIPtSxFEqwKH9rQA/200w.gif', category: 'reactions' },
+        { id: '18', url: 'https://media.giphy.com/media/3o6UBlHJQT19wSgJQk/giphy.gif', title: 'Crying', preview_url: 'https://media.giphy.com/media/3o6UBlHJQT19wSgJQk/200w.gif', category: 'reactions' },
+        { id: '19', url: 'https://media.giphy.com/media/l0MYEqEzwMWFCg8rm/giphy.gif', title: 'Facepalm', preview_url: 'https://media.giphy.com/media/l0MYEqEzwMWFCg8rm/200w.gif', category: 'reactions' },
+        { id: '20', url: 'https://media.giphy.com/media/3o6fJgDKIa7hHppVjO/giphy.gif', title: 'Surprised', preview_url: 'https://media.giphy.com/media/3o6fJgDKIa7hHppVjO/200w.gif', category: 'reactions' }
       ]
     },
     {

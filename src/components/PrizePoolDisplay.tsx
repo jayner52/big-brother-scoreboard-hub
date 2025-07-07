@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, Trophy, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePool } from '@/contexts/PoolContext';
+import { calculatePrizes, formatPrize, getPlaceText } from '@/utils/prizeCalculation';
 
 interface PrizePool {
   id: string;
@@ -37,10 +38,8 @@ interface PrizeConfiguration {
 
 export const PrizePoolDisplay: React.FC = () => {
   const { activePool } = usePool();
-  const [prizePools, setPrizePools] = useState<PrizePool[]>([]);
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [config, setConfig] = useState<PrizeConfiguration | null>(null);
 
   useEffect(() => {
     if (activePool?.id) {
@@ -52,21 +51,12 @@ export const PrizePoolDisplay: React.FC = () => {
     if (!activePool?.id) return;
     
     try {
-      const [prizeResult, entriesResult] = await Promise.all([
-        supabase.from('prize_pools').select('*').eq('is_active', true).order('place_number'),
-        supabase.from('pool_entries').select('id').eq('pool_id', activePool.id)
-      ]);
+      const { data: entriesData } = await supabase
+        .from('pool_entries')
+        .select('id')
+        .eq('pool_id', activePool.id);
 
-      if (prizeResult.data) {
-        setPrizePools(prizeResult.data);
-      }
-
-      setTotalEntries(entriesResult.data?.length || 0);
-      
-      // Load prize configuration from pool
-      if (activePool.prize_distribution && activePool.prize_distribution.mode) {
-        setConfig(activePool.prize_distribution);
-      }
+      setTotalEntries(entriesData?.length || 0);
     } catch (error) {
       console.error('Error loading prize pool data:', error);
     } finally {
@@ -78,27 +68,10 @@ export const PrizePoolDisplay: React.FC = () => {
     return <div className="text-center py-8">Loading prize information...</div>;
   }
 
-  const totalExpected = activePool ? (totalEntries * activePool.entry_fee_amount) : 0;
-  const adminFee = config?.admin_fee || 0;  
-  const availablePool = totalExpected - adminFee;
-  
-  let totalPrizes = 0;
-  let isOverBudget = false;
-  
-  if (config?.mode === 'custom') {
-    totalPrizes = config.custom_prizes.reduce((sum, prize) => sum + prize.amount, 0);
-    isOverBudget = totalPrizes > availablePool;
-  } else {
-    totalPrizes = prizePools.reduce((sum, prize) => sum + prize.prize_amount, 0);
-  }
-  
+  const prizeCalculation = calculatePrizes(activePool, totalEntries);
   const currency = activePool?.entry_fee_currency || 'CAD';
-
-  const getOrdinalSuffix = (num: number) => {
-    const suffixes = ['th', 'st', 'nd', 'rd'];
-    const v = num % 100;
-    return suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0];
-  };
+  const totalPrizes = prizeCalculation.prizes.reduce((sum, prize) => sum + prize.amount, 0);
+  const isOverBudget = totalPrizes > prizeCalculation.availablePrizePool;
 
   return (
     <div className="space-y-6">
@@ -124,7 +97,7 @@ export const PrizePoolDisplay: React.FC = () => {
               <DollarSign className="h-6 w-6 mx-auto text-green-600 mb-2" />
               <h4 className="font-semibold text-green-800">Total Pool</h4>
               <p className="text-2xl font-bold text-green-900">
-                {currency} ${Math.round(totalExpected)}
+                {formatPrize(prizeCalculation.totalPrizePool, currency)}
               </p>
             </div>
             <div className={`text-center p-4 rounded-lg border ${isOverBudget ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-200'}`}>
@@ -133,11 +106,11 @@ export const PrizePoolDisplay: React.FC = () => {
                 Total Prizes {isOverBudget && '(Over Budget)'}
               </h4>
               <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-900' : 'text-purple-900'}`}>
-                {currency} ${Math.round(totalPrizes)}
+                {formatPrize(totalPrizes, currency)}
               </p>
               {isOverBudget && (
                 <p className="text-xs text-red-600 mt-1">
-                  Over by ${Math.round(totalPrizes - availablePool)}
+                  Over by {formatPrize(totalPrizes - prizeCalculation.availablePrizePool, currency)}
                 </p>
               )}
             </div>
@@ -157,21 +130,21 @@ export const PrizePoolDisplay: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {prizePools.length === 0 ? (
+          {prizeCalculation.prizes.length === 0 ? (
             <div className="text-center py-8">
               <Trophy className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <p className="text-gray-500">Prize structure will be announced soon!</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {prizePools.map((prize, index) => {
+              {prizeCalculation.prizes.map((prize, index) => {
                 const isFirst = index === 0;
                 const isSecond = index === 1;
                 const isThird = index === 2;
                 
                 return (
                   <div 
-                    key={prize.id} 
+                    key={prize.place} 
                     className={`flex items-center justify-between p-4 rounded-lg border-2 ${
                       isFirst ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300' :
                       isSecond ? 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-300' :
@@ -186,11 +159,11 @@ export const PrizePoolDisplay: React.FC = () => {
                         isThird ? 'bg-orange-500 text-white' :
                         'bg-blue-500 text-white'
                       }`}>
-                        {prize.place_number}
+                        {prize.place}
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg">
-                          {prize.place_number}{getOrdinalSuffix(prize.place_number)} Place
+                          {getPlaceText(prize.place)}
                         </h3>
                         {prize.description && (
                           <p className="text-sm text-gray-600">{prize.description}</p>
@@ -204,7 +177,7 @@ export const PrizePoolDisplay: React.FC = () => {
                         isThird ? 'text-orange-700' :
                         'text-blue-700'
                       }`}>
-                        {currency} ${Math.round(prize.prize_amount)}
+                        {formatPrize(prize.amount, currency)}
                       </p>
                     </div>
                   </div>
@@ -221,7 +194,7 @@ export const PrizePoolDisplay: React.FC = () => {
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Entry Fee</h3>
               <p className="text-3xl font-bold text-primary">
-                {currency} ${Math.round(activePool.entry_fee_amount)}
+                {formatPrize(activePool.entry_fee_amount, currency)}
               </p>
               <p className="text-sm text-gray-600 mt-2">
                 per participant

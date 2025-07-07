@@ -42,16 +42,7 @@ const Admin = () => {
             {user ? 'Back to Dashboard' : 'Back to Home'}
           </Button>
           
-          {activePool && (
-            <Button 
-              variant="outline" 
-              onClick={() => setShowSetupWizard(true)}
-              className="flex items-center gap-2"
-            >
-              <CheckSquare className="h-4 w-4" />
-              Show Setup Checklist
-            </Button>
-          )}
+          {/* Removed duplicate Setup Checklist button - it's shown in AdminSetupWizardSimplified */}
         </div>
 
         {/* Header */}

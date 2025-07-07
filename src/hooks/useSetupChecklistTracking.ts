@@ -95,15 +95,14 @@ export const useSetupChecklistTracking = () => {
           actionLabel: 'Add Contestants →'
         },
         {
-          id: 'photos-populated',
-          title: 'Contestant Photos',
-          description: `${photosCount}/${contestantCount} contestants have photos`,
-          completed: photosCount === contestantCount && contestantCount > 0,
-          count: photosCount,
-          warning: photosCount < contestantCount ? 'Some contestants missing photos' : undefined,
-          action: contestantCount > 0 && photosCount < contestantCount ? 
-            () => scrollToAdminSection('contestants') : undefined,
-          actionLabel: 'Add Photos →'
+          id: 'validate-contestants',
+          title: 'Validate Contestants',
+          description: `${contestantCount} contestants ready, ${photosCount} have photos`,
+          completed: contestantCount >= 16 && photosCount >= contestantCount * 0.8, // At least 80% have photos
+          count: contestantCount,
+          warning: contestantCount < 16 ? 'Need at least 16 contestants' : photosCount < contestantCount * 0.8 ? 'Most contestants should have photos' : undefined,
+          action: () => scrollToAdminSection('contestants'),
+          actionLabel: 'Manage →'
         },
         {
           id: 'draft-config',
@@ -148,15 +147,21 @@ export const useSetupChecklistTracking = () => {
         {
           id: 'invite-participants',
           title: 'Ready to Invite!',
-          description: `Share your invite code: ${activePool.invite_code}`,
+          description: `Share your invite code or link`,
           completed: entriesCount > 0,
           count: entriesCount,
           action: () => {
-            if (activePool?.invite_code) {
-              navigator.clipboard.writeText(activePool.invite_code);
-            }
+            const inviteLink = `${window.location.origin}/invite/${activePool?.invite_code}`;
+            navigator.clipboard.writeText(inviteLink).then(() => {
+              // Show success message could be added here
+            }).catch(() => {
+              // Fallback to copying just the code
+              if (activePool?.invite_code) {
+                navigator.clipboard.writeText(activePool.invite_code);
+              }
+            });
           },
-          actionLabel: entriesCount > 0 ? 'Copy Code' : 'Share Code'
+          actionLabel: 'Copy Link'
         }
       ];
 

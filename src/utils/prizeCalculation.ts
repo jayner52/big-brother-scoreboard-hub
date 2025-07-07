@@ -30,7 +30,9 @@ export const calculatePrizes = (
   }
 
   const totalPot = totalEntries * pool.entry_fee_amount;
-  const prizeConfig = pool.prize_distribution;
+  
+  // Check for new prize_configuration first, then fall back to old prize_distribution
+  const prizeConfig = pool.prize_configuration || pool.prize_distribution;
   const adminFee = prizeConfig?.admin_fee || 0;
   const availablePool = totalPot - adminFee;
 
@@ -50,8 +52,8 @@ export const calculatePrizes = (
     };
   }
 
-  // Use pool's prize_mode to determine which distribution to use
-  const poolPrizeMode = pool.prize_mode || 'percentage';
+  // Use prize configuration mode or fallback to pool's prize_mode
+  const poolPrizeMode = prizeConfig.mode || pool.prize_mode || 'percentage';
   console.log('🎯 Prize Calculation - Pool prize mode:', poolPrizeMode);
   
   if (poolPrizeMode === 'custom' && prizeConfig.custom_prizes && prizeConfig.custom_prizes.length > 0) {

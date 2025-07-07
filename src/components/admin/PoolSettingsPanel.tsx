@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Settings, DollarSign, UserCheck, HelpCircle, Clock, Eye, EyeOff, Users, Calculator } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
-import { EnhancedPrizePoolPanel } from '@/components/admin/EnhancedPrizePoolPanel';
+import { PrizePoolManagement } from '@/components/admin/PrizePoolManagement';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
 import { useGroupAutoGeneration } from '@/hooks/useGroupAutoGeneration';
 
@@ -881,7 +881,7 @@ export const PoolSettingsPanel: React.FC = () => {
             </AccordionTrigger>
             <AccordionContent>
               <CardContent className="p-0">
-                <EnhancedPrizePoolPanel />
+                <PrizePoolManagement />
               </CardContent>
             </AccordionContent>
           </Card>

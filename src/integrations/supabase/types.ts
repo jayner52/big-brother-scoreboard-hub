@@ -754,6 +754,7 @@ export type Database = {
           payment_method_1: string
           payment_method_2: string | null
           picks_per_team: number
+          prize_configuration: Json | null
           prize_distribution: Json | null
           prize_mode: string | null
           registration_deadline: string | null
@@ -791,6 +792,7 @@ export type Database = {
           payment_method_1?: string
           payment_method_2?: string | null
           picks_per_team?: number
+          prize_configuration?: Json | null
           prize_distribution?: Json | null
           prize_mode?: string | null
           registration_deadline?: string | null
@@ -828,6 +830,7 @@ export type Database = {
           payment_method_1?: string
           payment_method_2?: string | null
           picks_per_team?: number
+          prize_configuration?: Json | null
           prize_distribution?: Json | null
           prize_mode?: string | null
           registration_deadline?: string | null

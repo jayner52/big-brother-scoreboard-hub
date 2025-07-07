@@ -93,12 +93,12 @@ export const EnhancedPrizeDisplay: React.FC<EnhancedPrizeDisplayProps> = ({ isAd
     return null;
   }
 
-  // Calculate prizes using the corrected logic
+  // Calculate prizes from new prize_configuration or fallback to old structure
   const prizeCalculation = calculatePrizes(activePool, totalEntries);
   const currency = activePool?.entry_fee_currency || 'CAD';
   
   // Debug logging
-  console.log('🎯 Enhanced Prize Display - Active pool mode:', activePool.prize_mode);
+  console.log('🎯 Enhanced Prize Display - Active pool config:', activePool?.prize_configuration);
   console.log('📊 Prize Calculation result:', prizeCalculation);
 
   // Don't show if both toggles are off (unless admin)

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
 import { AdminSetupWizardSimplified } from '@/components/admin/AdminSetupWizardSimplified';
-import { PrizePoolEnhanced } from '@/components/admin/PrizePoolEnhanced';
+
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Settings, CheckSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -59,11 +59,6 @@ const Admin = () => {
 
         {/* Admin Setup Wizard */}
         <AdminSetupWizardSimplified forceShow={showSetupWizard} />
-
-        {/* Prize Pool Management */}
-        <div className="mb-8">
-          <PrizePoolEnhanced />
-        </div>
 
         {/* Admin Panels */}
         <div data-admin-panel>

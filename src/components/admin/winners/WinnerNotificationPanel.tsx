@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePool } from '@/contexts/PoolContext';
 import { 
   Trophy, 
   User, 
@@ -13,7 +14,8 @@ import {
   AlertCircle, 
   Copy,
   RefreshCw,
-  DollarSign
+  DollarSign,
+  Lock
 } from 'lucide-react';
 
 interface Winner {
@@ -37,12 +39,25 @@ interface WinnerNotificationPanelProps {
 
 export const WinnerNotificationPanel: React.FC<WinnerNotificationPanelProps> = ({ poolId }) => {
   const { toast } = useToast();
+  const { canViewFinancials } = usePool();
   const [winners, setWinners] = useState<Winner[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadWinnersData();
   }, [poolId]);
+
+  // Owner-only access check
+  if (!canViewFinancials()) {
+    return (
+      <Alert>
+        <Lock className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Owner Only:</strong> Payment information is only accessible to pool owners.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   const loadWinnersData = async () => {
     try {

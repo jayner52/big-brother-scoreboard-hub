@@ -13,20 +13,28 @@ const EnhancedBonusQuestionsPanel = React.lazy(() => import('@/components/admin/
 const PoolSettingsPanel = React.lazy(() => import('@/components/admin/PoolSettingsPanel').then(m => ({ default: m.PoolSettingsPanel })));
 const PoolEntriesManagement = React.lazy(() => import('@/components/PoolEntriesManagement').then(m => ({ default: m.PoolEntriesManagement })));
 const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEventsPanel').then(m => ({ default: m.WeeklyEventsPanel })));
+const RoleManagementPanel = React.lazy(() => import('@/components/admin/RoleManagementPanel').then(m => ({ default: m.RoleManagementPanel })));
 
 
 export const AdminScoringPanel: React.FC = () => {
-  const { canManagePool } = usePool();
+  const { canManagePool, canManageRoles, getUserRole } = usePool();
   const [activeTab, setActiveTab] = useState('events');
+  
+  const userRole = getUserRole();
+  const isOwner = userRole === 'owner';
+  const isAdmin = userRole === 'admin';
 
   // Handle URL parameters for tab navigation
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
-    if (tab && ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants'].includes(tab)) {
+    const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants'];
+    if (canManageRoles()) validTabs.push('roles');
+    
+    if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     }
-  }, []);
+  }, [canManageRoles]);
 
   if (!canManagePool()) {
     return (
@@ -49,19 +57,26 @@ export const AdminScoringPanel: React.FC = () => {
           Pool Management Dashboard
         </CardTitle>
         <CardDescription className="text-purple-100 text-lg mt-2 flex items-center justify-between">
-          <span>Manage competitions, settings, participants, and pool administration</span>
+          <span>
+            Manage competitions, settings, participants, and pool administration
+            {isOwner && <span className="ml-2 text-xs bg-yellow-500/20 px-2 py-1 rounded">OWNER</span>}
+            {isAdmin && <span className="ml-2 text-xs bg-blue-500/20 px-2 py-1 rounded">ADMIN</span>}
+          </span>
           <AdminInstructionsModal />
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 text-xs lg:text-sm">
+          <TabsList className={`grid w-full text-xs lg:text-sm ${canManageRoles() ? 'grid-cols-2 lg:grid-cols-7' : 'grid-cols-2 lg:grid-cols-6'}`}>
             <TabsTrigger value="events">Weekly Events</TabsTrigger>
             <TabsTrigger value="legacy">Week Overview</TabsTrigger>
             <TabsTrigger value="settings">Pool Settings</TabsTrigger>
             <TabsTrigger value="bonus">Bonus Questions</TabsTrigger>
             <TabsTrigger value="entries">Pool Entries</TabsTrigger>
             <TabsTrigger value="contestants">Houseguests</TabsTrigger>
+            {canManageRoles() && (
+              <TabsTrigger value="roles">Roles</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="events" className="space-y-4">
@@ -111,6 +126,16 @@ export const AdminScoringPanel: React.FC = () => {
               </Suspense>
             </ErrorBoundary>
           </TabsContent>
+
+          {canManageRoles() && (
+            <TabsContent value="roles" className="space-y-4">
+              <ErrorBoundary>
+                <Suspense fallback={<div className="text-center py-8">Loading role management...</div>}>
+                  <RoleManagementPanel />
+                </Suspense>
+              </ErrorBoundary>
+            </TabsContent>
+          )}
         </Tabs>
       </CardContent>
     </Card>

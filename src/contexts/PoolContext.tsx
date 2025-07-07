@@ -26,9 +26,14 @@ interface PoolContextType {
   deletePool: (poolId: string) => Promise<PoolOperationResult>;
   leavePool: (poolId: string) => Promise<PoolOperationResult>;
   
-  // Pool membership
+  // Pool membership & permissions
   getUserRole: (poolId?: string) => 'owner' | 'admin' | 'member' | null;
   canManagePool: (poolId?: string) => boolean;
+  isPoolOwner: (poolId?: string) => boolean;
+  canViewFinancials: (poolId?: string) => boolean;
+  canManageRoles: (poolId?: string) => boolean;
+  canManageWeeklyEvents: (poolId?: string) => boolean;
+  canManageBonusQuestions: (poolId?: string) => boolean;
   
   // Pool-specific data
   poolEntries: PoolEntry[];
@@ -525,6 +530,29 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return role === 'owner' || role === 'admin';
   }, [getUserRole]);
 
+  const isPoolOwner = useCallback((poolId?: string): boolean => {
+    const role = getUserRole(poolId);
+    return role === 'owner';
+  }, [getUserRole]);
+
+  const canViewFinancials = useCallback((poolId?: string): boolean => {
+    return isPoolOwner(poolId);
+  }, [isPoolOwner]);
+
+  const canManageRoles = useCallback((poolId?: string): boolean => {
+    return isPoolOwner(poolId);
+  }, [isPoolOwner]);
+
+  const canManageWeeklyEvents = useCallback((poolId?: string): boolean => {
+    const role = getUserRole(poolId);
+    return role === 'owner' || role === 'admin';
+  }, [getUserRole]);
+
+  const canManageBonusQuestions = useCallback((poolId?: string): boolean => {
+    const role = getUserRole(poolId);
+    return role === 'owner' || role === 'admin';
+  }, [getUserRole]);
+
   const refreshPools = useCallback(async () => {
     await loadUserPools();
   }, [loadUserPools]);
@@ -542,6 +570,11 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     leavePool,
     getUserRole,
     canManagePool,
+    isPoolOwner,
+    canViewFinancials,
+    canManageRoles,
+    canManageWeeklyEvents,
+    canManageBonusQuestions,
     poolEntries,
     loading,
     error,

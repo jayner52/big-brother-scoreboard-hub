@@ -120,15 +120,7 @@ export const SeasonCompletionSection: React.FC<SeasonCompletionSectionProps> = (
           third_place_percentage: 20
         };
 
-        // Calculate total prize pool - use fixed amounts for now
-        const distribution = activePool.prize_distribution || {
-          first_place_amount: 0,
-          second_place_amount: 0,
-          third_place_amount: 0,
-          first_place_percentage: 50,
-          second_place_percentage: 30,
-          third_place_percentage: 20
-        };
+        // Use the distribution already defined above
 
         const potentialWinners = finalStandings.slice(0, 3).map((entry, index) => {
           const amount = index === 0 ? distribution.first_place_amount :

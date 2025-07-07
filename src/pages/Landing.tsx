@@ -8,10 +8,12 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { PoolCreateModal } from '@/components/pools/PoolCreateModal';
 import { PoolJoinModal } from '@/components/pools/PoolJoinModal';
 import { usePool } from '@/contexts/PoolContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { activePool } = usePool();
+  const isMobile = useIsMobile();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -52,17 +54,17 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50">
-      <div className="container mx-auto px-4 py-16">
+      <div className={`container mx-auto ${isMobile ? 'px-4 py-8' : 'px-4 py-16'}`}>
         {/* Header with Auth State */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2">
+        <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'} mb-8`}>
+          <div className={`flex items-center gap-2 ${isMobile ? 'justify-center' : ''}`}>
             <Trophy className="h-8 w-8 text-red-600" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
+            <h1 className={`${isMobile ? 'responsive-text-xl' : 'text-2xl'} font-bold bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent`}>
               Big Brother Fantasy Pool
             </h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className={`flex items-center gap-4 ${isMobile ? 'justify-center' : ''}`}>
             {user ? (
               <>
                 <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
@@ -89,27 +91,27 @@ const Landing = () => {
         </div>
 
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-12 px-16 rounded-xl shadow-2xl mb-8">
-            <div className="flex items-center justify-center mb-6">
-              <Trophy className="h-16 w-16 text-white mr-4" />
-              <h1 className="text-6xl font-bold">
+        <div className={`text-center ${isMobile ? 'mb-8' : 'mb-16'}`}>
+          <div className={`bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white rounded-xl shadow-2xl mb-8 ${isMobile ? 'py-8 px-6' : 'py-12 px-16'}`}>
+            <div className={`flex ${isMobile ? 'flex-col' : 'items-center justify-center'} mb-6`}>
+              <Trophy className={`${isMobile ? 'h-12 w-12 mx-auto mb-4' : 'h-16 w-16 mr-4'} text-white`} />
+              <h1 className={`${isMobile ? 'responsive-text-3xl' : 'text-6xl'} font-bold`}>
                 Big Brother Fantasy Pool
               </h1>
             </div>
-            <p className="text-2xl text-red-100 mb-4">
+            <p className={`${isMobile ? 'responsive-text-lg' : 'text-2xl'} text-red-100 mb-4`}>
               Draft your dream team and compete with friends!
             </p>
-            <p className="text-lg text-red-200">
+            <p className={`${isMobile ? 'text-base' : 'text-lg'} text-red-200`}>
               Create private pools, draft houseguests, and see who can predict the season best
             </p>
           </div>
         </div>
 
         {/* How It Works Section */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+        <div className={`${isMobile ? 'mb-8' : 'mb-16'}`}>
+          <h2 className={`${isMobile ? 'responsive-text-2xl' : 'text-3xl'} font-bold text-center text-gray-800 mb-8`}>How It Works</h2>
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'md:grid-cols-3 gap-8'}`}>
             <Card className="text-center border-2 border-orange-200 hover:shadow-lg transition-shadow">
               <CardHeader>
                 <Target className="h-12 w-12 text-blue-600 mx-auto mb-4" />
@@ -143,14 +145,14 @@ const Landing = () => {
         </div>
 
         {/* Get Started Section */}
-        <div className="text-center mb-16">
-          <div className="max-w-2xl mx-auto">
+        <div className={`text-center ${isMobile ? 'mb-8' : 'mb-16'}`}>
+          <div className={`${isMobile ? 'mx-4' : 'max-w-2xl mx-auto'}`}>
             {!user ? (
               <>
                 <Button 
                   onClick={() => navigate('/auth')}
-                  size="lg"
-                  className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 hover:from-red-700 hover:via-orange-600 hover:to-yellow-600 text-white px-12 py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 mb-6"
+                  size={isMobile ? "default" : "lg"}
+                  className={`bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 hover:from-red-700 hover:via-orange-600 hover:to-yellow-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 mb-6 ${isMobile ? 'mobile-button w-full responsive-text-lg' : 'px-12 py-4 text-xl'}`}
                 >
                   Get Started - It's Free!
                 </Button>
@@ -160,19 +162,19 @@ const Landing = () => {
               </>
             ) : (
               <>
-                <h2 className="text-3xl font-bold text-gray-800 mb-6">Ready to Play?</h2>
+                <h2 className={`${isMobile ? 'responsive-text-2xl' : 'text-3xl'} font-bold text-gray-800 mb-6`}>Ready to Play?</h2>
                 {/* Pool Action Buttons - Only for authenticated users */}
-                <div className="grid md:grid-cols-2 gap-4 max-w-md mx-auto mb-6">
+                <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'md:grid-cols-2 gap-4'} ${isMobile ? 'w-full' : 'max-w-md'} mx-auto mb-6`}>
                   <Button 
                     onClick={() => setShowCreateModal(true)}
-                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-4 px-6 font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                    className={`bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${isMobile ? 'mobile-button' : 'py-4 px-6'}`}
                   >
                     <Plus className="h-5 w-5 mr-2" />
                     Create Pool
                   </Button>
                   <Button 
                     onClick={() => setShowJoinModal(true)}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 px-6 font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                    className={`bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${isMobile ? 'mobile-button' : 'py-4 px-6'}`}
                   >
                     <Users className="h-5 w-5 mr-2" />
                     Join Pool

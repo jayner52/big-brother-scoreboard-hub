@@ -15,11 +15,13 @@ import { useDynamicDraftForm } from '@/hooks/useDynamicDraftForm';
 import { useDynamicDraftValidation } from '@/hooks/useDynamicDraftValidation';
 import { useDynamicDraftSubmission } from '@/hooks/useDynamicDraftSubmission';
 import { useRandomPicks } from '@/hooks/useRandomPicks';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Shuffle, AlertCircle, Trash2 } from 'lucide-react';
 
 export const TeamDraftForm: React.FC = () => {
   const { activePool } = usePool();
   const { activePool: poolData, contestantGroups, bonusQuestions, loading } = usePoolData({ poolId: activePool?.id });
+  const isMobile = useIsMobile();
   
   // DEBUG: Log actual data flow
   console.log('🔍 TeamDraftForm - activePool:', activePool);
@@ -66,14 +68,16 @@ export const TeamDraftForm: React.FC = () => {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto mb-8">
+    <Card className={`w-full ${isMobile ? 'mx-2' : 'max-w-4xl mx-auto'} mb-8`}>
       <CardHeader className="bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-t-lg">
-        <CardTitle className="text-2xl">Join the {poolData?.name} Fantasy Pool</CardTitle>
+        <CardTitle className={`${isMobile ? 'responsive-text-xl' : 'text-2xl'}`}>
+          Join the {poolData?.name} Fantasy Pool
+        </CardTitle>
         <CardDescription className="text-red-100">
           Draft your team and make your predictions!
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
         {poolData && (() => {
           const poolSettings = {
             ...poolData,
@@ -86,10 +90,14 @@ export const TeamDraftForm: React.FC = () => {
         })()}
 
         {/* Clear Form Button */}
-        <div className="flex justify-end mb-4">
+        <div className={`flex ${isMobile ? 'justify-center' : 'justify-end'} mb-4`}>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-destructive hover:text-destructive flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size={isMobile ? "default" : "sm"} 
+                className={`text-destructive hover:text-destructive flex items-center gap-2 ${isMobile ? 'mobile-button' : ''}`}
+              >
                 <Trash2 className="h-4 w-4" />
                 Clear Form
               </Button>
@@ -111,7 +119,7 @@ export const TeamDraftForm: React.FC = () => {
           </AlertDialog>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
           {/* Validation Errors */}
           {validationErrors.length > 0 && (
             <Alert variant="destructive">
@@ -139,15 +147,15 @@ export const TeamDraftForm: React.FC = () => {
           <Separator />
 
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">
+            <div className={`flex ${isMobile ? 'flex-col gap-3' : 'justify-between items-center'} mb-4`}>
+              <h3 className={`${isMobile ? 'responsive-text-lg' : 'text-xl'} font-bold`}>
                 Draft Your Team ({poolData?.picks_per_team || 5} Players)
               </h3>
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleRandomizeTeam}
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${isMobile ? 'mobile-button w-full' : ''}`}
               >
                 <Shuffle className="h-4 w-4" />
                 Randomize Team
@@ -166,13 +174,13 @@ export const TeamDraftForm: React.FC = () => {
           {poolData?.enable_bonus_questions && bonusQuestions.length > 0 && (
             <>
               <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-bold text-purple-800">🎯 Bonus Predictions</h3>
+                <div className={`flex ${isMobile ? 'flex-col gap-3' : 'justify-between items-center'} mb-4`}>
+                  <h3 className={`${isMobile ? 'responsive-text-lg' : 'text-xl'} font-bold text-purple-800`}>🎯 Bonus Predictions</h3>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleRandomizeBonusAnswers}
-                    className="flex items-center gap-2"
+                    className={`flex items-center gap-2 ${isMobile ? 'mobile-button w-full' : ''}`}
                   >
                     <Shuffle className="h-4 w-4" />
                     Randomize Answers
@@ -196,7 +204,7 @@ export const TeamDraftForm: React.FC = () => {
 
           <Button 
             type="submit" 
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
+            className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold ${isMobile ? 'mobile-button text-base' : 'py-3 text-lg'}`}
             disabled={validationErrors.length > 0}
           >
             Submit My Team & Predictions

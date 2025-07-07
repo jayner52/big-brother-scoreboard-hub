@@ -9,6 +9,7 @@ import { ContestantBios } from '@/components/ContestantBios';
 import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
 import { DraftFormData } from '@/hooks/useDraftForm';
 import { usePool } from '@/contexts/PoolContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MainContentProps {
   formData: DraftFormData;
@@ -17,6 +18,7 @@ interface MainContentProps {
 
 export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam = 5 }) => {
   const { activePool } = usePool();
+  const isMobile = useIsMobile();
   
   // Check if user has any draft progress based on dynamic team size
   const hasAnyPlayers = Array.from({ length: picksPerTeam }, (_, i) => 
@@ -28,19 +30,49 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
   
   // Count how many tabs to show for grid layout
   const totalTabs = shouldHideEveronesPicks ? 5 : 6;
-  const gridCols = totalTabs === 5 ? 'grid-cols-5' : 'grid-cols-6';
+  const gridCols = isMobile ? 'grid-cols-2' : (totalTabs === 5 ? 'grid-cols-5' : 'grid-cols-6');
 
   return (
     <Tabs defaultValue="draft" className="w-full">
-      <TabsList className={`grid w-full ${gridCols} mb-8`}>
-        <TabsTrigger value="draft">Draft Team</TabsTrigger>
-        <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+      <TabsList className={`grid w-full ${gridCols} ${isMobile ? 'mb-4 gap-1' : 'mb-8'} ${isMobile ? 'h-auto' : ''}`}>
+        <TabsTrigger 
+          value="draft" 
+          className={`${isMobile ? 'text-xs p-2' : ''}`}
+        >
+          {isMobile ? 'Draft' : 'Draft Team'}
+        </TabsTrigger>
+        <TabsTrigger 
+          value="leaderboard"
+          className={`${isMobile ? 'text-xs p-2' : ''}`}
+        >
+          {isMobile ? 'Ranks' : 'Leaderboard'}
+        </TabsTrigger>
         {!shouldHideEveronesPicks && (
-          <TabsTrigger value="picks">Everyone's Picks</TabsTrigger>
+          <TabsTrigger 
+            value="picks"
+            className={`${isMobile ? 'text-xs p-2' : ''}`}
+          >
+            {isMobile ? 'Picks' : "Everyone's Picks"}
+          </TabsTrigger>
         )}
-        <TabsTrigger value="results">Live Results</TabsTrigger>
-        <TabsTrigger value="contestants">Houseguest Values</TabsTrigger>
-        <TabsTrigger value="bios">Houseguest Bios</TabsTrigger>
+        <TabsTrigger 
+          value="results"
+          className={`${isMobile ? 'text-xs p-2' : ''}`}
+        >
+          {isMobile ? 'Results' : 'Live Results'}
+        </TabsTrigger>
+        <TabsTrigger 
+          value="contestants"
+          className={`${isMobile ? 'text-xs p-2' : ''}`}
+        >
+          {isMobile ? 'Values' : 'Houseguest Values'}
+        </TabsTrigger>
+        <TabsTrigger 
+          value="bios"
+          className={`${isMobile ? 'text-xs p-2' : ''}`}
+        >
+          {isMobile ? 'Bios' : 'Houseguest Bios'}
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="draft">

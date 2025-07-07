@@ -114,4 +114,46 @@ All colors MUST be HSL.
   .text-shadow-lg {
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   }
+
+  /* Mobile touch targets - minimum 44px */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  /* Mobile-optimized spacing */
+  .mobile-padding {
+    @apply px-4 py-3;
+  }
+  
+  /* Mobile-friendly buttons */
+  .mobile-button {
+    @apply touch-target mobile-padding rounded-lg font-medium transition-all;
+  }
+  
+  /* Responsive text scaling */
+  .responsive-text-lg {
+    @apply text-base sm:text-lg;
+  }
+  
+  .responsive-text-xl {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .responsive-text-2xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .responsive-text-3xl {
+    @apply text-2xl sm:text-3xl;
+  }
+  
+  /* Mobile card layouts */
+  .mobile-card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm p-4;
+  }
+  
+  /* Touch-friendly interactive elements */
+  .touch-item {
+    @apply cursor-pointer select-none rounded-md p-3 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none;
+  }
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
 import { AdminSetupWizardSimplified } from '@/components/admin/AdminSetupWizardSimplified';
+import { EnhancedPrizeDisplay } from '@/components/EnhancedPrizeDisplay';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Settings, CheckSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -60,7 +61,11 @@ const Admin = () => {
         <AdminSetupWizardSimplified forceShow={showSetupWizard} />
 
         {/* Admin Panels */}
-        <div data-admin-panel>
+        <div data-admin-panel className="space-y-8">
+          {/* Prize Pool Management */}
+          <EnhancedPrizeDisplay isAdmin={true} />
+          
+          {/* Weekly Scoring Panel */}
           <AdminScoringPanel />
         </div>
 

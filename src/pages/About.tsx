@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { usePool } from '@/contexts/PoolContext';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { calculatePrizes, formatPrize, getPlaceText } from '@/utils/prizeCalculation';
+import { EnhancedPrizeDisplay } from '@/components/EnhancedPrizeDisplay';
+import { formatPrize } from '@/utils/prizeCalculation';
 import { Pool } from '@/types/pool';
 
 interface ScoringRule {
@@ -165,9 +166,8 @@ const About = () => {
   const specialRules = getRulesByCategory('special_events');
   const finalRules = getRulesByCategory('final_results');
 
-  // Calculate prize pool if applicable and admin allows it to be shown
-  const prizeCalculation = poolConfig?.has_buy_in && activePool ? calculatePrizes(poolConfig, totalEntries) : null;
-  const showPrizeSection = poolConfig?.has_buy_in && (poolConfig?.show_prize_amounts || isPoolAdmin);
+  // Show prize section if admin allows it and pool has buy-in
+  const showPrizeSection = poolConfig?.has_buy_in && poolConfig?.show_prize_amounts;
 
   if (loading) {
     return (
@@ -405,46 +405,10 @@ const About = () => {
         </Card>
 
         {/* Prize Pool Section - Only show if admin allows it */}
-        {showPrizeSection && prizeCalculation && prizeCalculation.prizes.length > 0 && totalEntries > 0 && (
-          <Card className="mb-12 border-yellow-200 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <Trophy className="h-6 w-6 text-yellow-600" />
-                Prize Pool
-              </CardTitle>
-              {/* Only show total prize pool to admins */}
-              {isPoolAdmin && (
-                <p className="text-sm text-muted-foreground">
-                  Total Prize Pool: {formatPrize(prizeCalculation.totalPrizePool, poolConfig.entry_fee_currency)} from {totalEntries} entries
-                </p>
-              )}
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {prizeCalculation.prizes.map((prize, index) => (
-                  <div 
-                    key={prize.place} 
-                    className={`text-center p-6 rounded-xl border-2 shadow-md ${
-                      index === 0 ? 'bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-300' :
-                      index === 1 ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-300' :
-                      index === 2 ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' :
-                      'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300'
-                    }`}
-                  >
-                    <div className="text-lg font-semibold mb-3">
-                      {getPlaceText(prize.place)}
-                    </div>
-                    <Badge variant="secondary" className="text-xl font-bold py-2 px-4">
-                      {formatPrize(prize.amount, poolConfig.entry_fee_currency)}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-              <div className="text-center mt-4 text-sm text-gray-600">
-                Winners will be determined based on final ranking at the end of the season
-              </div>
-            </CardContent>
-          </Card>
+        {showPrizeSection && (
+          <div className="mb-12">
+            <EnhancedPrizeDisplay isAdmin={isPoolAdmin} />
+          </div>
         )}
 
         {/* Call to Action */}

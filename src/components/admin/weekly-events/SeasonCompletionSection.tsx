@@ -109,25 +109,42 @@ export const SeasonCompletionSection: React.FC<SeasonCompletionSectionProps> = (
           'No team standings available'
       });
 
-      // Calculate potential winners if standings exist
+      // Calculate potential winners with proper prize allocation
       if (hasStandings && finalStandings) {
         const distribution = activePool.prize_distribution || {
           first_place_amount: 0,
           second_place_amount: 0,
-          third_place_amount: 0
+          third_place_amount: 0,
+          first_place_percentage: 50,
+          second_place_percentage: 30,
+          third_place_percentage: 20
         };
 
-        const potentialWinners = finalStandings.slice(0, 3).map((entry, index) => ({
-          place: index + 1,
-          team_id: entry.id,
-          user_id: entry.user_id,
-          team_name: entry.team_name,
-          participant_name: entry.participant_name,
-          total_points: entry.total_points,
-          amount: index === 0 ? distribution.first_place_amount :
-                 index === 1 ? distribution.second_place_amount :
-                 distribution.third_place_amount
-        }));
+        // Calculate total prize pool - use fixed amounts for now
+        const distribution = activePool.prize_distribution || {
+          first_place_amount: 0,
+          second_place_amount: 0,
+          third_place_amount: 0,
+          first_place_percentage: 50,
+          second_place_percentage: 30,
+          third_place_percentage: 20
+        };
+
+        const potentialWinners = finalStandings.slice(0, 3).map((entry, index) => {
+          const amount = index === 0 ? distribution.first_place_amount :
+                        index === 1 ? distribution.second_place_amount :
+                        distribution.third_place_amount;
+
+          return {
+            place: index + 1,
+            team_id: entry.id,
+            user_id: entry.user_id,
+            team_name: entry.team_name,
+            participant_name: entry.participant_name,
+            total_points: entry.total_points,
+            amount
+          };
+        }).filter(winner => winner.amount > 0); // Only include winners with prize money
 
         setWinners(potentialWinners);
       }
@@ -171,12 +188,13 @@ export const SeasonCompletionSection: React.FC<SeasonCompletionSectionProps> = (
         }
       }
 
-      // 2. Mark pool as complete
+      // 2. Mark pool as complete and close for new entries
       const success = await updatePool(activePool.id, {
         season_complete: true,
         finale_week_enabled: true,
         season_locked: true,
-        draft_locked: true
+        draft_locked: true,
+        draft_open: false // Close pool for new entries
       });
 
       if (!success) {

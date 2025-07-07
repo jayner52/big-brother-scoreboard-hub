@@ -7,6 +7,7 @@ import { LiveResults } from '@/components/LiveResults';
 import { ContestantValues } from '@/components/ContestantValues';
 import { ContestantBios } from '@/components/ContestantBios';
 import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
+import { WinnerBanner } from '@/components/WinnerBanner';
 import { DraftFormData } from '@/hooks/useDraftForm';
 import { usePool } from '@/contexts/PoolContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,8 +34,12 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
   const gridCols = isMobile ? 'grid-cols-2' : (totalTabs === 5 ? 'grid-cols-5' : 'grid-cols-6');
 
   return (
-    <Tabs defaultValue="draft" className="w-full">
-      <TabsList className={`grid w-full ${gridCols} ${isMobile ? 'mb-4 gap-1' : 'mb-8'} ${isMobile ? 'h-auto' : ''}`}>
+    <div className="w-full">
+      {/* Winner Banner - shown for winning participants */}
+      <WinnerBanner />
+      
+      <Tabs defaultValue="draft" className="w-full">
+        <TabsList className={`grid w-full ${gridCols} ${isMobile ? 'mb-4 gap-1' : 'mb-8'} ${isMobile ? 'h-auto' : ''}`}>
         <TabsTrigger 
           value="draft" 
           className={`${isMobile ? 'text-xs p-2' : ''}`}
@@ -106,6 +111,7 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       <TabsContent value="bios">
         <ContestantBios />
       </TabsContent>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 };

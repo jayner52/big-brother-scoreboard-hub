@@ -7,7 +7,6 @@ interface GifItem {
   id: string;
   url: string;
   title: string;
-  preview_url: string;
   category: string;
 }
 
@@ -24,421 +23,255 @@ interface EnhancedGifPickerProps {
   onClose: () => void;
 }
 
-// Curated library of verified working GIFs from reliable sources
+// Curated library of UNIQUE verified working GIFs - no duplicates across categories
 const VERIFIED_GIFS = {
   reactions: [
     { 
-      id: '1', 
+      id: 'react-1', 
       url: 'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif', 
-      title: 'Excited', 
-      preview_url: 'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif',
+      title: 'Excited',
       category: 'reactions' 
     },
     { 
-      id: '2', 
+      id: 'react-2', 
       url: 'https://media.giphy.com/media/3o72FcJmLzIdYJdmDe/giphy.gif', 
-      title: 'Shocked', 
-      preview_url: 'https://media.giphy.com/media/3o72FcJmLzIdYJdmDe/giphy.gif',
+      title: 'Shocked',
       category: 'reactions' 
     },
     { 
-      id: '5', 
+      id: 'react-3', 
       url: 'https://media.giphy.com/media/xTiTnGeUsWOEwsGoG4/giphy.gif', 
-      title: 'Thinking', 
-      preview_url: 'https://media.giphy.com/media/xTiTnGeUsWOEwsGoG4/giphy.gif',
+      title: 'Thinking',
       category: 'reactions' 
     },
     { 
-      id: '6', 
+      id: 'react-4', 
       url: 'https://media.giphy.com/media/10JhviFuU2gWD6/giphy.gif', 
-      title: 'Laughing', 
-      preview_url: 'https://media.giphy.com/media/10JhviFuU2gWD6/giphy.gif',
+      title: 'Laughing',
       category: 'reactions' 
     },
     { 
-      id: '7', 
+      id: 'react-5', 
       url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif', 
-      title: 'OMG', 
-      preview_url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif',
+      title: 'OMG',
       category: 'reactions' 
     },
     { 
-      id: '8', 
+      id: 'react-6', 
       url: 'https://media.giphy.com/media/3ohhwxmNcPvwyRBpm8/giphy.gif', 
-      title: 'Eye Roll', 
-      preview_url: 'https://media.giphy.com/media/3ohhwxmNcPvwyRBpm8/giphy.gif',
+      title: 'Eye Roll',
       category: 'reactions' 
     },
     { 
-      id: '40', 
+      id: 'react-7', 
       url: 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif', 
-      title: 'Confused', 
-      preview_url: 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif',
+      title: 'Confused',
       category: 'reactions' 
     },
     { 
-      id: '41', 
+      id: 'react-8', 
       url: 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif', 
-      title: 'Nervous', 
-      preview_url: 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '42', 
-      url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif', 
-      title: 'Facepalm', 
-      preview_url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '43', 
-      url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif', 
-      title: 'Mind Blown', 
-      preview_url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '44', 
-      url: 'https://media.giphy.com/media/3o7abkhi6F9EWdczXW/giphy.gif', 
-      title: 'Yikes', 
-      preview_url: 'https://media.giphy.com/media/3o7abkhi6F9EWdczXW/giphy.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '45', 
-      url: 'https://media.giphy.com/media/26n6Gx9moCgs1pUuk/giphy.gif', 
-      title: 'Surprise', 
-      preview_url: 'https://media.giphy.com/media/26n6Gx9moCgs1pUuk/giphy.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '46', 
-      url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif', 
-      title: 'Annoyed', 
-      preview_url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '47', 
-      url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif', 
-      title: 'Crying Laughing', 
-      preview_url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '48', 
-      url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif', 
-      title: 'Dead', 
-      preview_url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif',
+      title: 'Nervous',
       category: 'reactions' 
     }
   ],
   celebrations: [
     { 
-      id: '9', 
-      url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/giphy.gif', 
-      title: 'Clapping', 
-      preview_url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '10', 
-      url: 'https://media.giphy.com/media/Is1O1TWV0LEJi/giphy.gif', 
-      title: 'Victory Dance', 
-      preview_url: 'https://media.giphy.com/media/Is1O1TWV0LEJi/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '12', 
-      url: 'https://media.giphy.com/media/7rj2ZgttvgomY/giphy.gif', 
-      title: 'Applause', 
-      preview_url: 'https://media.giphy.com/media/7rj2ZgttvgomY/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '13', 
-      url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif', 
-      title: 'Happy Dance', 
-      preview_url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '14', 
-      url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif', 
-      title: 'Celebration', 
-      preview_url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '15', 
+      id: 'celeb-1', 
       url: 'https://media.giphy.com/media/artj92V8o75VPL7AeQ/giphy.gif', 
-      title: 'Party Time', 
-      preview_url: 'https://media.giphy.com/media/artj92V8o75VPL7AeQ/giphy.gif',
+      title: 'Party Time',
       category: 'celebrations' 
     },
     { 
-      id: '50', 
+      id: 'celeb-2', 
+      url: 'https://media.giphy.com/media/Is1O1TWV0LEJi/giphy.gif', 
+      title: 'Victory Dance',
+      category: 'celebrations' 
+    },
+    { 
+      id: 'celeb-3', 
+      url: 'https://media.giphy.com/media/7rj2ZgttvgomY/giphy.gif', 
+      title: 'Applause',
+      category: 'celebrations' 
+    },
+    { 
+      id: 'celeb-4', 
+      url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif', 
+      title: 'Happy Dance',
+      category: 'celebrations' 
+    },
+    { 
+      id: 'celeb-5', 
+      url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif', 
+      title: 'Celebration',
+      category: 'celebrations' 
+    },
+    { 
+      id: 'celeb-6', 
       url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif', 
-      title: 'Cheering', 
-      preview_url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif',
+      title: 'Cheering',
       category: 'celebrations' 
     },
     { 
-      id: '51', 
+      id: 'celeb-7', 
       url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif', 
-      title: 'Yes!', 
-      preview_url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif',
+      title: 'Yes!',
       category: 'celebrations' 
     },
     { 
-      id: '52', 
+      id: 'celeb-8', 
       url: 'https://media.giphy.com/media/3o6fJeAiIpk5EeoC8o/giphy.gif', 
-      title: 'Confetti', 
-      preview_url: 'https://media.giphy.com/media/3o6fJeAiIpk5EeoC8o/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '53', 
-      url: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif', 
-      title: 'Champagne', 
-      preview_url: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '54', 
-      url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif', 
-      title: 'Fireworks', 
-      preview_url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '55', 
-      url: 'https://media.giphy.com/media/26BROrSHlmyzzHf3i/giphy.gif', 
-      title: 'Air Punch', 
-      preview_url: 'https://media.giphy.com/media/26BROrSHlmyzzHf3i/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '56', 
-      url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif', 
-      title: 'Jump for Joy', 
-      preview_url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif',
-      category: 'celebrations' 
-    },
-    { 
-      id: '57', 
-      url: 'https://media.giphy.com/media/l1ughbsd9qXz2s9SE/giphy.gif', 
-      title: 'High Five', 
-      preview_url: 'https://media.giphy.com/media/l1ughbsd9qXz2s9SE/giphy.gif',
+      title: 'Confetti',
       category: 'celebrations' 
     }
   ],
   drama: [
     { 
-      id: '21', 
+      id: 'drama-1', 
       url: 'https://media.giphy.com/media/3o7absbD7PbTFQa0c8/giphy.gif', 
-      title: 'Game On', 
-      preview_url: 'https://media.giphy.com/media/3o7absbD7PbTFQa0c8/giphy.gif',
+      title: 'Game On',
       category: 'drama' 
     },
     { 
-      id: '22', 
+      id: 'drama-2', 
       url: 'https://media.giphy.com/media/BjHIjM2YFC3rEUaMrw/giphy.gif', 
-      title: 'Challenge Accepted', 
-      preview_url: 'https://media.giphy.com/media/BjHIjM2YFC3rEUaMrw/giphy.gif',
+      title: 'Challenge Accepted',
       category: 'drama' 
     },
     { 
-      id: '25', 
+      id: 'drama-3', 
       url: 'https://media.giphy.com/media/kyLYXonQYYfwYDIeZl/giphy.gif', 
-      title: 'Winning', 
-      preview_url: 'https://media.giphy.com/media/kyLYXonQYYfwYDIeZl/giphy.gif',
+      title: 'Winning',
       category: 'drama' 
     },
     { 
-      id: '60', 
+      id: 'drama-4', 
       url: 'https://media.giphy.com/media/13cptIwW9bgzk6UVyr/giphy.gif', 
-      title: 'Popcorn', 
-      preview_url: 'https://media.giphy.com/media/13cptIwW9bgzk6UVyr/giphy.gif',
+      title: 'Popcorn',
       category: 'drama' 
     },
     { 
-      id: '61', 
-      url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif', 
-      title: 'Tea Spill', 
-      preview_url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif',
-      category: 'drama' 
-    },
-    { 
-      id: '62', 
-      url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif', 
-      title: 'Gasping', 
-      preview_url: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif',
-      category: 'drama' 
-    },
-    { 
-      id: '63', 
-      url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif', 
-      title: 'Side Eye', 
-      preview_url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif',
-      category: 'drama' 
-    },
-    { 
-      id: '64', 
-      url: 'https://media.giphy.com/media/l0MYGb8173drMQx5S/giphy.gif', 
-      title: 'Oh No', 
-      preview_url: 'https://media.giphy.com/media/l0MYGb8173drMQx5S/giphy.gif',
-      category: 'drama' 
-    },
-    { 
-      id: '65', 
-      url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif', 
-      title: 'Messy', 
-      preview_url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif',
-      category: 'drama' 
-    },
-    { 
-      id: '66', 
+      id: 'drama-5', 
       url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif', 
-      title: 'Drama Alert', 
-      preview_url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif',
+      title: 'Facepalm',
       category: 'drama' 
     },
     { 
-      id: '67', 
-      url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif', 
-      title: 'Stirring Pot', 
-      preview_url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif',
+      id: 'drama-6', 
+      url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif', 
+      title: 'Mind Blown',
+      category: 'drama' 
+    },
+    { 
+      id: 'drama-7', 
+      url: 'https://media.giphy.com/media/3o7abrH8o4HMgEAV9e/giphy.gif', 
+      title: 'Side Eye',
+      category: 'drama' 
+    },
+    { 
+      id: 'drama-8', 
+      url: 'https://media.giphy.com/media/l0MYGb8173drMQx5S/giphy.gif', 
+      title: 'Oh No',
       category: 'drama' 
     }
   ],
   competition: [
     { 
-      id: '27', 
+      id: 'comp-1', 
       url: 'https://media.giphy.com/media/111ebonMs90YLu/giphy.gif', 
-      title: 'Thumbs Up', 
-      preview_url: 'https://media.giphy.com/media/111ebonMs90YLu/giphy.gif',
+      title: 'Thumbs Up',
       category: 'competition' 
     },
     { 
-      id: '29', 
+      id: 'comp-2', 
       url: 'https://media.giphy.com/media/dM2xuxnJCg4H6/giphy.gif', 
-      title: 'Amazing', 
-      preview_url: 'https://media.giphy.com/media/dM2xuxnJCg4H6/giphy.gif',
+      title: 'Amazing',
       category: 'competition' 
     },
     { 
-      id: '30', 
+      id: 'comp-3', 
       url: 'https://media.giphy.com/media/3o6fJ1BM7R2EBRDnxK/giphy.gif', 
-      title: 'Awesome', 
-      preview_url: 'https://media.giphy.com/media/3o6fJ1BM7R2EBRDnxK/giphy.gif',
+      title: 'Awesome',
       category: 'competition' 
     },
     { 
-      id: '70', 
+      id: 'comp-4', 
       url: 'https://media.giphy.com/media/26BROrSHlmyzzHf3i/giphy.gif', 
-      title: 'Winner', 
-      preview_url: 'https://media.giphy.com/media/26BROrSHlmyzzHf3i/giphy.gif',
+      title: 'Air Punch',
       category: 'competition' 
     },
     { 
-      id: '71', 
+      id: 'comp-5', 
       url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/giphy.gif', 
-      title: 'Strong', 
-      preview_url: 'https://media.giphy.com/media/l0MYxKqF6uKkHqmvC/giphy.gif',
+      title: 'Strong',
       category: 'competition' 
     },
     { 
-      id: '72', 
-      url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif', 
-      title: 'Beast Mode', 
-      preview_url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif',
-      category: 'competition' 
-    },
-    { 
-      id: '73', 
-      url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif', 
-      title: 'Thumbs Down', 
-      preview_url: 'https://media.giphy.com/media/3o6Zt4HU9uwXmXSAuI/giphy.gif',
-      category: 'competition' 
-    },
-    { 
-      id: '74', 
-      url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif', 
-      title: 'Victory', 
-      preview_url: 'https://media.giphy.com/media/xT5LMzIK1AdZJ4cYW4/giphy.gif',
-      category: 'competition' 
-    },
-    { 
-      id: '75', 
+      id: 'comp-6', 
       url: 'https://media.giphy.com/media/l1ughbsd9qXz2s9SE/giphy.gif', 
-      title: 'Challenge', 
-      preview_url: 'https://media.giphy.com/media/l1ughbsd9qXz2s9SE/giphy.gif',
+      title: 'High Five',
       category: 'competition' 
     },
     { 
-      id: '76', 
-      url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif', 
-      title: 'Dominating', 
-      preview_url: 'https://media.giphy.com/media/26BRBKqUiq586bRVm/giphy.gif',
+      id: 'comp-7', 
+      url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif', 
+      title: 'Jump for Joy',
+      category: 'competition' 
+    },
+    { 
+      id: 'comp-8', 
+      url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif', 
+      title: 'Fireworks',
       category: 'competition' 
     }
   ],
   positive: [
     { 
-      id: '31', 
+      id: 'pos-1', 
       url: 'https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif', 
-      title: 'Perfect', 
-      preview_url: 'https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif',
+      title: 'Perfect',
       category: 'positive' 
     },
     { 
-      id: '32', 
-      url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif', 
-      title: 'Love It', 
-      preview_url: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif',
-      category: 'positive' 
-    },
-    { 
-      id: '80', 
-      url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif', 
-      title: 'Good Vibes', 
-      preview_url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif',
-      category: 'positive' 
-    },
-    { 
-      id: '81', 
+      id: 'pos-2', 
       url: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif', 
-      title: 'Blessed', 
-      preview_url: 'https://media.giphy.com/media/26u4lOMA8JKSnL9Uk/giphy.gif',
+      title: 'Champagne',
       category: 'positive' 
     },
     { 
-      id: '82', 
-      url: 'https://media.giphy.com/media/3o6fJeAiIpk5EeoC8o/giphy.gif', 
-      title: 'So Good', 
-      preview_url: 'https://media.giphy.com/media/3o6fJeAiIpk5EeoC8o/giphy.gif',
-      category: 'positive' 
-    },
-    { 
-      id: '83', 
-      url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif', 
-      title: 'Fantastic', 
-      preview_url: 'https://media.giphy.com/media/l41lUJ1YoZB1lHVPG/giphy.gif',
-      category: 'positive' 
-    },
-    { 
-      id: '84', 
-      url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif', 
-      title: 'Amazing', 
-      preview_url: 'https://media.giphy.com/media/3o6fJgEOrF1lky8WFa/giphy.gif',
-      category: 'positive' 
-    },
-    { 
-      id: '85', 
+      id: 'pos-3', 
       url: 'https://media.giphy.com/media/26n6Gx9moCgs1pUuk/giphy.gif', 
-      title: 'Wonderful', 
-      preview_url: 'https://media.giphy.com/media/26n6Gx9moCgs1pUuk/giphy.gif',
+      title: 'Surprise',
+      category: 'positive' 
+    },
+    { 
+      id: 'pos-4', 
+      url: 'https://media.giphy.com/media/26n6WywJyh39n1pBu/giphy.gif', 
+      title: 'Crying Laughing',
+      category: 'positive' 
+    },
+    { 
+      id: 'pos-5', 
+      url: 'https://media.giphy.com/media/l41lGvinEgARjB2HC/giphy.gif', 
+      title: 'Dead',
+      category: 'positive' 
+    },
+    { 
+      id: 'pos-6', 
+      url: 'https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif', 
+      title: 'Love It',
+      category: 'positive' 
+    },
+    { 
+      id: 'pos-7', 
+      url: 'https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif', 
+      title: 'Good Vibes',
+      category: 'positive' 
+    },
+    { 
+      id: 'pos-8', 
+      url: 'https://media.giphy.com/media/3ohfFhG5VDtDTzQv2o/giphy.gif', 
+      title: 'Fantastic',
       category: 'positive' 
     }
   ]
@@ -451,6 +284,7 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState('reactions');
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [loadingGifs, setLoadingGifs] = useState<Set<string>>(new Set());
 
   const gifCategories: GifCategory[] = [
     {
@@ -486,17 +320,36 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
   ];
 
   const handleImageError = (gifId: string) => {
+    console.error('🚫 GIF Failed to Load:', gifId);
     setImageErrors(prev => new Set(prev).add(gifId));
+    setLoadingGifs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(gifId);
+      return newSet;
+    });
+  };
+
+  const handleImageLoad = (gifId: string) => {
+    console.log('✅ GIF Loaded Successfully:', gifId);
+    setLoadingGifs(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(gifId);
+      return newSet;
+    });
+  };
+
+  const handleImageLoadStart = (gifId: string) => {
+    setLoadingGifs(prev => new Set(prev).add(gifId));
   };
 
   const activeGifs = gifCategories
     .find(cat => cat.id === activeCategory)?.gifs
     .filter(gif => !imageErrors.has(gif.id)) || [];
 
-  // Debug logging for category switching
+  // Enhanced debugging for GIF selection
   console.log('🎯 GIF Picker - Active Category:', activeCategory);
-  console.log('🎯 GIF Picker - Available Categories:', Object.keys(VERIFIED_GIFS));
-  console.log('🎯 GIF Picker - Current Active GIFs:', activeGifs.length);
+  console.log('🎯 GIF Picker - Available GIFs:', activeGifs.length);
+  console.log('🎯 GIF Picker - Failed GIFs:', Array.from(imageErrors));
 
   if (!isOpen) return null;
 
@@ -569,23 +422,36 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
                 <button
                   key={gif.id}
                   onClick={() => {
-                    console.log('🎯 GIF Selected - Preview URL:', gif.preview_url);
-                    console.log('🎯 GIF Selected - Full URL:', gif.url);
-                    // Use the same URL that's shown in preview for consistency
+                    console.log('🎯 GIF CLICKED - ID:', gif.id, 'Title:', gif.title);
+                    console.log('🎯 GIF CLICKED - URL Being Sent:', gif.url);
+                    console.log('🎯 GIF CLICKED - Category:', gif.category);
+                    
+                    // Send exactly the same URL that's displayed
                     onGifSelect(gif.url);
                     onClose();
                   }}
-                  className="group aspect-square rounded-xl overflow-hidden hover:ring-2 hover:ring-coral/60 hover:scale-105 transition-all duration-300 bg-muted/30 hover:shadow-lg"
+                  className="group aspect-square rounded-xl overflow-hidden hover:ring-2 hover:ring-coral/60 hover:scale-105 transition-all duration-300 bg-muted/30 hover:shadow-lg relative"
                   title={gif.title}
+                  disabled={loadingGifs.has(gif.id)}
                 >
+                  {loadingGifs.has(gif.id) && (
+                    <div className="absolute inset-0 bg-muted/80 flex items-center justify-center z-10">
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-coral border-t-transparent"></div>
+                    </div>
+                  )}
                   <img
                     src={gif.url}
                     alt={gif.title}
                     className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-300"
                     loading="lazy"
+                    onLoadStart={() => handleImageLoadStart(gif.id)}
+                    onLoad={() => handleImageLoad(gif.id)}
                     onError={() => handleImageError(gif.id)}
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                  
+                  {/* Visual feedback for selection */}
+                  <div className="absolute inset-0 opacity-0 group-active:opacity-100 bg-coral/20 transition-opacity duration-150" />
                 </button>
               ))}
             </div>

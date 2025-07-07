@@ -121,6 +121,7 @@ export interface Pool {
   registration_deadline?: string;
   draft_open: boolean;
   draft_locked: boolean;
+  allow_new_participants: boolean;
   enable_bonus_questions: boolean;
   picks_per_team: number;
   jury_phase_started: boolean;

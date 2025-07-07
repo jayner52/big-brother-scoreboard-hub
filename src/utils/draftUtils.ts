@@ -6,6 +6,9 @@ export const isDraftAccessible = (pool: Pool | null): boolean => {
   // Check if draft is open
   if (!pool.draft_open) return false;
   
+  // Check if new participants are allowed
+  if (!pool.allow_new_participants) return false;
+  
   // Check if draft is locked by admin
   if (pool.draft_locked) return false;
   
@@ -31,6 +34,13 @@ export const getDraftLockReason = (pool: Pool | null): { title: string; message:
     return {
       title: "Draft Closed by Admin",
       message: "The draft has been closed by the pool administrator. No new team registrations are being accepted."
+    };
+  }
+
+  if (!pool.allow_new_participants) {
+    return {
+      title: "New Participants Not Allowed",
+      message: "The pool administrator has disabled new participant registrations. Only existing members can modify their teams."
     };
   }
   

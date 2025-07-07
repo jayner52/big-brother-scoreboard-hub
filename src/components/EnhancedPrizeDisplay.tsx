@@ -108,36 +108,6 @@ export const EnhancedPrizeDisplay: React.FC<EnhancedPrizeDisplayProps> = ({ isAd
 
   return (
     <div className="space-y-6">
-      {/* Admin Controls */}
-      {isAdmin && (
-        <Card className="bg-muted/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Prize Display Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Show Prize Information to Participants</label>
-              <Switch 
-                checked={showPrizeAmounts}
-                onCheckedChange={(checked) => updateVisibilitySetting('show_prize_amounts', checked)}
-              />
-            </div>
-            
-            <div className="pt-2 border-t">
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium">Currently using:</span> {' '}
-                <Badge variant={prizeCalculation.mode === 'percentage' ? 'default' : 'secondary'}>
-                  {prizeCalculation.mode === 'percentage' ? 'Percentage' : 'Custom'} distribution
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Prize Display */}
       <Card>
         <CardHeader className="bg-gradient-to-r from-coral to-orange text-white">

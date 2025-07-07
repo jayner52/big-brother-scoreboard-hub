@@ -42,20 +42,6 @@ const VERIFIED_GIFS = {
       category: 'reactions' 
     },
     { 
-      id: '3', 
-      url: 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif', 
-      title: 'Mind Blown', 
-      preview_url: 'https://media.giphy.com/media/26ufdipQqU2lhNA4g/200w.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '4', 
-      url: 'https://media.giphy.com/media/Fjr6v88OPk7U4/giphy.gif', 
-      title: 'Eye Roll', 
-      preview_url: 'https://media.giphy.com/media/Fjr6v88OPk7U4/200w.gif',
-      category: 'reactions' 
-    },
-    { 
       id: '5', 
       url: 'https://media.giphy.com/media/xTiTnGeUsWOEwsGoG4/giphy.gif', 
       title: 'Thinking', 
@@ -67,20 +53,6 @@ const VERIFIED_GIFS = {
       url: 'https://media.giphy.com/media/10JhviFuU2gWD6/giphy.gif', 
       title: 'Laughing', 
       preview_url: 'https://media.giphy.com/media/10JhviFuU2gWD6/200w.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '7', 
-      url: 'https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif', 
-      title: 'Crying', 
-      preview_url: 'https://media.giphy.com/media/OPU6wzx8JrHna/200w.gif',
-      category: 'reactions' 
-    },
-    { 
-      id: '8', 
-      url: 'https://media.giphy.com/media/XuBJvrKHutnkQ/giphy.gif', 
-      title: 'Facepalm', 
-      preview_url: 'https://media.giphy.com/media/XuBJvrKHutnkQ/200w.gif',
       category: 'reactions' 
     }
   ],
@@ -100,13 +72,6 @@ const VERIFIED_GIFS = {
       category: 'celebrations' 
     },
     { 
-      id: '11', 
-      url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif', 
-      title: 'Celebration', 
-      preview_url: 'https://media.giphy.com/media/26u4cqiYI30juCOGY/200w.gif',
-      category: 'celebrations' 
-    },
-    { 
       id: '12', 
       url: 'https://media.giphy.com/media/7rj2ZgttvgomY/giphy.gif', 
       title: 'Applause', 
@@ -119,132 +84,55 @@ const VERIFIED_GIFS = {
       title: 'Happy Dance', 
       preview_url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/200w.gif',
       category: 'celebrations' 
-    },
-    { 
-      id: '14', 
-      url: 'https://media.giphy.com/media/26BRrSvJUa0crqw4E/giphy.gif', 
-      title: 'Winner', 
-      preview_url: 'https://media.giphy.com/media/26BRrSvJUa0crqw4E/200w.gif',
-      category: 'celebrations' 
     }
   ],
-  bigbrother: [
-    { 
-      id: '15', 
-      url: 'https://media.giphy.com/media/26gsjCZpPolPr3sBy/giphy.gif', 
-      title: 'Eviction', 
-      preview_url: 'https://media.giphy.com/media/26gsjCZpPolPr3sBy/200w.gif',
-      category: 'bigbrother' 
-    },
-    { 
-      id: '16', 
-      url: 'https://media.giphy.com/media/3o6ZsVl2hv8ZnhSXUQ/giphy.gif', 
-      title: 'HOH Winner', 
-      preview_url: 'https://media.giphy.com/media/3o6ZsVl2hv8ZnhSXUQ/200w.gif',
-      category: 'bigbrother' 
-    },
-    { 
-      id: '17', 
-      url: 'https://media.giphy.com/media/xT1R9DPYQt60VHs4tW/giphy.gif', 
-      title: 'Power of Veto', 
-      preview_url: 'https://media.giphy.com/media/xT1R9DPYQt60VHs4tW/200w.gif',
-      category: 'bigbrother' 
-    },
-    { 
-      id: '18', 
-      url: 'https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif', 
-      title: 'Nomination', 
-      preview_url: 'https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/200w.gif',
-      category: 'bigbrother' 
-    },
-    { 
-      id: '19', 
-      url: 'https://media.giphy.com/media/l46Cy1rHbQ92uuLXa/giphy.gif', 
-      title: 'Alliance', 
-      preview_url: 'https://media.giphy.com/media/l46Cy1rHbQ92uuLXa/200w.gif',
-      category: 'bigbrother' 
-    },
-    { 
-      id: '20', 
-      url: 'https://media.giphy.com/media/26gsjCZpPolPr3sBy/giphy.gif', 
-      title: 'Drama', 
-      preview_url: 'https://media.giphy.com/media/26gsjCZpPolPr3sBy/200w.gif',
-      category: 'bigbrother' 
-    }
-  ],
-  competition: [
+  drama: [
     { 
       id: '21', 
       url: 'https://media.giphy.com/media/3o7absbD7PbTFQa0c8/giphy.gif', 
       title: 'Game On', 
       preview_url: 'https://media.giphy.com/media/3o7absbD7PbTFQa0c8/200w.gif',
-      category: 'competition' 
+      category: 'drama' 
     },
     { 
       id: '22', 
       url: 'https://media.giphy.com/media/BjHIjM2YFC3rEUaMrw/giphy.gif', 
       title: 'Challenge Accepted', 
       preview_url: 'https://media.giphy.com/media/BjHIjM2YFC3rEUaMrw/200w.gif',
-      category: 'competition' 
-    },
-    { 
-      id: '23', 
-      url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/giphy.gif', 
-      title: 'Bring It On', 
-      preview_url: 'https://media.giphy.com/media/3oKIPnAi1GG8kN7S96/200w.gif',
-      category: 'competition' 
-    },
-    { 
-      id: '24', 
-      url: 'https://media.giphy.com/media/xT1XGU1AHz9Fe8tmp2/giphy.gif', 
-      title: 'Focused', 
-      preview_url: 'https://media.giphy.com/media/xT1XGU1AHz9Fe8tmp2/200w.gif',
-      category: 'competition' 
+      category: 'drama' 
     },
     { 
       id: '25', 
       url: 'https://media.giphy.com/media/kyLYXonQYYfwYDIeZl/giphy.gif', 
       title: 'Winning', 
       preview_url: 'https://media.giphy.com/media/kyLYXonQYYfwYDIeZl/200w.gif',
-      category: 'competition' 
-    },
-    { 
-      id: '26', 
-      url: 'https://media.giphy.com/media/26ufcVAp3AiJJsrIs/giphy.gif', 
-      title: 'Defeated', 
-      preview_url: 'https://media.giphy.com/media/26ufcVAp3AiJJsrIs/200w.gif',
-      category: 'competition' 
+      category: 'drama' 
     }
   ],
-  positive: [
+  competition: [
     { 
       id: '27', 
       url: 'https://media.giphy.com/media/111ebonMs90YLu/giphy.gif', 
       title: 'Thumbs Up', 
       preview_url: 'https://media.giphy.com/media/111ebonMs90YLu/200w.gif',
-      category: 'positive' 
-    },
-    { 
-      id: '28', 
-      url: 'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif', 
-      title: 'Good Job', 
-      preview_url: 'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/200w.gif',
-      category: 'positive' 
+      category: 'competition' 
     },
     { 
       id: '29', 
       url: 'https://media.giphy.com/media/dM2xuxnJCg4H6/giphy.gif', 
       title: 'Amazing', 
       preview_url: 'https://media.giphy.com/media/dM2xuxnJCg4H6/200w.gif',
-      category: 'positive' 
+      category: 'competition' 
     },
     { 
       id: '30', 
       url: 'https://media.giphy.com/media/3o6fJ1BM7R2EBRDnxK/giphy.gif', 
       title: 'Awesome', 
       preview_url: 'https://media.giphy.com/media/3o6fJ1BM7R2EBRDnxK/200w.gif',
-      category: 'positive' 
-    },
+      category: 'competition' 
+    }
+  ],
+  positive: [
     { 
       id: '31', 
       url: 'https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif', 
@@ -284,15 +172,15 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
       gifs: VERIFIED_GIFS.celebrations
     },
     {
-      id: 'bigbrother',
-      name: 'Big Brother',
-      icon: Heart,
-      gifs: VERIFIED_GIFS.bigbrother
+      id: 'drama',
+      name: 'Drama',
+      icon: Zap,
+      gifs: VERIFIED_GIFS.drama
     },
     {
       id: 'competition',
       name: 'Competition',
-      icon: Zap,
+      icon: Heart,
       gifs: VERIFIED_GIFS.competition
     },
     {

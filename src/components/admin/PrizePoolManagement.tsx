@@ -237,6 +237,20 @@ export const PrizePoolManagement: React.FC = () => {
     return `${ordinals[place - 1] || `place_${place}`}_place_percentage`;
   };
 
+  const getPlaceFromKey = (key: string): number => {
+    if (key.startsWith('first_')) return 1;
+    if (key.startsWith('second_')) return 2;
+    if (key.startsWith('third_')) return 3;
+    if (key.startsWith('fourth_')) return 4;
+    if (key.startsWith('fifth_')) return 5;
+    if (key.startsWith('sixth_')) return 6;
+    if (key.startsWith('seventh_')) return 7;
+    if (key.startsWith('eighth_')) return 8;
+    if (key.startsWith('ninth_')) return 9;
+    if (key.startsWith('tenth_')) return 10;
+    return 1;
+  };
+
   const removeCustomPrize = (id: string) => {
     if (config.custom_prizes.length <= 1) {
       toast({
@@ -503,14 +517,16 @@ export const PrizePoolManagement: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {Object.entries(config.percentage_distribution).map(([key, percentage], index) => {
-                  const placeNumber = index + 1;
+                {Object.entries(config.percentage_distribution)
+                  .sort(([keyA], [keyB]) => getPlaceFromKey(keyA) - getPlaceFromKey(keyB))
+                  .map(([key, percentage]) => {
+                  const placeNumber = getPlaceFromKey(key);
                   const amount = Math.round((availablePool * percentage) / 100);
                   
                   return (
                     <div key={key} className="p-4 border rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">{getPlaceEmoji(index)}</span>
+                        <span className="text-2xl">{getPlaceEmoji(placeNumber - 1)}</span>
                         <span className="font-medium">{getPlaceText(placeNumber)}</span>
                         {Object.keys(config.percentage_distribution).length > 3 && (
                           <Button

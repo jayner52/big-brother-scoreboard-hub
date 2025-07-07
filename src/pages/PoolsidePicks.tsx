@@ -102,7 +102,7 @@ const PoolsidePicks = () => {
               }}
             >
               <Trophy className="mr-2 h-6 w-6" />
-              Join the Big Brother Pool
+              {user ? 'Go to Dashboard' : 'Join the Big Brother Pool'}
             </Button>
             
             <Button
@@ -115,6 +115,21 @@ const PoolsidePicks = () => {
               Learn How to Play
             </Button>
           </div>
+
+          {/* Sign In for Existing Users */}
+          {!user && (
+            <div className="bg-white/80 backdrop-blur-sm border-2 border-coral/30 rounded-2xl p-6 mb-8 max-w-md mx-auto">
+              <p className="text-dark font-semibold mb-3">Already have an account?</p>
+              <Button
+                onClick={() => navigate('/auth')}
+                variant="outline"
+                size={isMobile ? "default" : "lg"}
+                className="w-full border-2 border-coral text-coral hover:bg-coral hover:text-coral-foreground font-semibold rounded-full"
+              >
+                Sign In to Your Account
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 

@@ -117,12 +117,6 @@ export const PrizePoolSection: React.FC = () => {
         <div className="text-center mt-4 text-sm text-muted-foreground">
           Winners determined by final ranking at season end • Based on {totalEntries} current {totalEntries === 1 ? 'entry' : 'entries'}
         </div>
-        <div className="text-center mt-2 text-xs text-muted-foreground">
-          Total Prize Pool: {formatPrize(prizeCalculation.totalPrizePool, currency)}
-          {prizeCalculation.totalPrizePool !== prizeCalculation.availablePrizePool && (
-            <span> • Available: {formatPrize(prizeCalculation.availablePrizePool, currency)}</span>
-          )}
-        </div>
       </CardContent>
     </Card>
   );

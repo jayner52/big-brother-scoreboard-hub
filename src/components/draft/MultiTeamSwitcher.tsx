@@ -135,19 +135,22 @@ export const MultiTeamSwitcher: React.FC<MultiTeamSwitcherProps> = ({
             ))}
           </div>
           
-          {/* Navigation Dots */}
-          <div className="flex gap-1">
-            {teams.map((_, index) => (
+          {/* Enhanced Navigation Dots */}
+          <div className="flex gap-2">
+            {teams.map((team, index) => (
               <button
                 key={index}
                 onClick={() => onTeamChange(index)}
                 className={cn(
-                  "w-2 h-2 rounded-full transition-all duration-200",
+                  "w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-200 border-2",
                   index === currentTeamIndex 
-                    ? "bg-blue-600 scale-125" 
-                    : "bg-blue-200 hover:bg-blue-300"
+                    ? "bg-blue-600 text-white border-blue-600 scale-110" 
+                    : "bg-white text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
                 )}
-              />
+                title={`Switch to ${team.team_name}`}
+              >
+                {index + 1}
+              </button>
             ))}
           </div>
         </div>

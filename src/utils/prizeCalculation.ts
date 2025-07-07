@@ -73,18 +73,32 @@ export const calculatePrizes = (
     mode = 'percentage';
     
     const percentageConfig = prizeConfig.percentage_distribution;
+    console.log('🔍 Percentage Config Keys:', Object.keys(percentageConfig));
     
-    // Build prizes from percentage distribution
-    const percentagePrizes = [
-      { place: 1, percentage: percentageConfig.first_place_percentage },
-      { place: 2, percentage: percentageConfig.second_place_percentage },
-      { place: 3, percentage: percentageConfig.third_place_percentage },
-      { place: 4, percentage: percentageConfig.fourth_place_percentage },
-      { place: 5, percentage: percentageConfig.fifth_place_percentage }
-    ];
+    // Build prizes from ALL percentage distribution keys dynamically
+    const percentagePrizes: { place: number; percentage: number }[] = [];
+    
+    // Add all percentage keys dynamically
+    Object.entries(percentageConfig).forEach(([key, value]) => {
+      if (key.endsWith('_place_percentage') && typeof value === 'number' && value > 0) {
+        let place = 1;
+        if (key.startsWith('first_')) place = 1;
+        else if (key.startsWith('second_')) place = 2;
+        else if (key.startsWith('third_')) place = 3;
+        else if (key.startsWith('fourth_')) place = 4;
+        else if (key.startsWith('fifth_')) place = 5;
+        else if (key.startsWith('sixth_')) place = 6;
+        else if (key.startsWith('seventh_')) place = 7;
+        else if (key.startsWith('eighth_')) place = 8;
+        else if (key.startsWith('ninth_')) place = 9;
+        else if (key.startsWith('tenth_')) place = 10;
+        
+        percentagePrizes.push({ place, percentage: value });
+      }
+    });
 
     prizes = percentagePrizes
-      .filter(prize => prize.percentage && prize.percentage > 0)
+      .sort((a, b) => a.place - b.place)
       .map(prize => ({
         place: prize.place,
         amount: Math.round((availablePool * prize.percentage) / 100),

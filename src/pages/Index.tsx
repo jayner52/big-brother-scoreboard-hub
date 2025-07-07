@@ -12,7 +12,6 @@ import { Footer } from '@/components/index/Footer';
 import { StatsBar } from '@/components/dashboard/StatsBar';
 import { PoolSwitcher } from '@/components/pools/PoolSwitcher';
 import { InviteFriendsButton } from '@/components/pools/InviteFriendsButton';
-import { EnhancedPrizeDisplay } from '@/components/EnhancedPrizeDisplay';
 import { PoolCreateModal } from '@/components/pools/PoolCreateModal';
 import { PoolJoinModal } from '@/components/pools/PoolJoinModal';
 import { usePool } from '@/contexts/PoolContext';
@@ -226,13 +225,6 @@ const Index = () => {
         <HeroSection />
         
         <StatsBar />
-        
-        {/* Prize Pool Display for participants */}
-        {activePool?.has_buy_in && (
-          <div className="mb-8">
-            <EnhancedPrizeDisplay isAdmin={false} />
-          </div>
-        )}
         
         {activePool && (
           <DynamicHowToPlay 

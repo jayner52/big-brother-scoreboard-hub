@@ -30,6 +30,7 @@ const About = () => {
   const navigate = useNavigate();
   const { activePool } = usePool();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isPoolAdmin, setIsPoolAdmin] = useState(false);
   const [poolConfig, setPoolConfig] = useState<Pool | null>(null);
   const [scoringRules, setScoringRules] = useState<ScoringRule[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
@@ -46,11 +47,29 @@ const About = () => {
   useEffect(() => {
     if (activePool?.id) {
       fetchPoolConfiguration();
+      checkAdminStatus();
     } else {
       // For non-authenticated users, fetch default rules
       fetchDefaultConfiguration();
     }
-  }, [activePool?.id]);
+  }, [activePool?.id, user]);
+
+  const checkAdminStatus = async () => {
+    if (!activePool?.id || !user) return;
+    
+    try {
+      const { data: membership } = await supabase
+        .from('pool_memberships')
+        .select('role')
+        .eq('pool_id', activePool.id)
+        .eq('user_id', user.id)
+        .single();
+      
+      setIsPoolAdmin(membership?.role === 'owner' || membership?.role === 'admin');
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const fetchPoolConfiguration = async () => {
     if (!activePool?.id) return;
@@ -146,8 +165,9 @@ const About = () => {
   const specialRules = getRulesByCategory('special_events');
   const finalRules = getRulesByCategory('final_results');
 
-  // Calculate prize pool if applicable
+  // Calculate prize pool if applicable and admin allows it to be shown
   const prizeCalculation = poolConfig?.has_buy_in && activePool ? calculatePrizes(poolConfig, totalEntries) : null;
+  const showPrizeSection = poolConfig?.has_buy_in && (poolConfig?.show_prize_amounts || isPoolAdmin);
 
   if (loading) {
     return (
@@ -384,17 +404,20 @@ const About = () => {
           </CardContent>
         </Card>
 
-        {/* Prize Pool Section */}
-        {poolConfig.has_buy_in && prizeCalculation && prizeCalculation.prizes.length > 0 && totalEntries > 0 && (
+        {/* Prize Pool Section - Only show if admin allows it */}
+        {showPrizeSection && prizeCalculation && prizeCalculation.prizes.length > 0 && totalEntries > 0 && (
           <Card className="mb-12 border-yellow-200 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50">
+            <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
                 <Trophy className="h-6 w-6 text-yellow-600" />
                 Prize Pool
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Total Prize Pool: {formatPrize(prizeCalculation.totalPrizePool, poolConfig.entry_fee_currency)} from {totalEntries} entries
-              </p>
+              {/* Only show total prize pool to admins */}
+              {isPoolAdmin && (
+                <p className="text-sm text-muted-foreground">
+                  Total Prize Pool: {formatPrize(prizeCalculation.totalPrizePool, poolConfig.entry_fee_currency)} from {totalEntries} entries
+                </p>
+              )}
             </CardHeader>
             <CardContent className="pt-6">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

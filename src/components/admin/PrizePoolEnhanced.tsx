@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { DollarSign, Trophy, Save, AlertTriangle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { DollarSign, Trophy, Save, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usePool } from '@/contexts/PoolContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,6 +61,7 @@ export const PrizePoolEnhanced: React.FC = () => {
     second: 0,
     third: 0
   });
+  const [showPrizeAmounts, setShowPrizeAmounts] = useState(true);
 
   useEffect(() => {
     if (activePool?.id) {
@@ -92,7 +95,7 @@ export const PrizePoolEnhanced: React.FC = () => {
         third_place_amount: 0
       };
       
-      setPrizeMode(poolDistribution.mode || 'percentage');
+      setPrizeMode(activePool.prize_mode === 'custom' ? 'custom' : 'percentage');
       setPercentages({
         first: poolDistribution.first_place_percentage || 50,
         second: poolDistribution.second_place_percentage || 30,
@@ -103,6 +106,9 @@ export const PrizePoolEnhanced: React.FC = () => {
         second: poolDistribution.second_place_amount || 0,
         third: poolDistribution.third_place_amount || 0
       });
+      
+      // Load visibility setting
+      setShowPrizeAmounts(activePool.show_prize_amounts ?? true);
       
     } catch (error) {
       console.error('Error loading prize pool data:', error);
@@ -130,6 +136,31 @@ export const PrizePoolEnhanced: React.FC = () => {
 
   const updateCustomAmount = (key: string, value: number) => {
     setCustomAmounts(prev => ({ ...prev, [key]: value }));
+  };
+
+  const updateVisibilitySetting = async (show: boolean) => {
+    if (!activePool) return;
+    
+    try {
+      const success = await updatePool(activePool.id, {
+        show_prize_amounts: show
+      } as any);
+      
+      if (success) {
+        setShowPrizeAmounts(show);
+        toast({
+          title: "Success", 
+          description: `Prize section is now ${show ? 'visible' : 'hidden'} to participants`,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating visibility setting:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update visibility setting",
+        variant: "destructive",
+      });
+    }
   };
 
   const savePrizeConfiguration = async () => {
@@ -187,6 +218,36 @@ export const PrizePoolEnhanced: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Prize Section Visibility Control */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {showPrizeAmounts ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+            Prize Section Visibility
+          </CardTitle>
+          <CardDescription>
+            Control whether participants can see prize amounts on the About page
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
+            <div>
+              <div className="font-medium">Show Prize Section to Participants</div>
+              <div className="text-sm text-muted-foreground">
+                {showPrizeAmounts 
+                  ? 'Participants can see prize amounts on the About page' 
+                  : 'Prize section is hidden from participants'
+                }
+              </div>
+            </div>
+            <Switch 
+              checked={showPrizeAmounts}
+              onCheckedChange={updateVisibilitySetting}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-blue-50 border-blue-200">
@@ -410,65 +471,28 @@ export const PrizePoolEnhanced: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Prize Visibility Controls */}
+      {/* Information Section */}
       <Card className="bg-muted/30">
         <CardHeader>
-          <CardTitle className="text-lg">Prize Display Settings</CardTitle>
-          <CardDescription>Control what participants can see</CardDescription>
+          <CardTitle className="text-lg">Prize Distribution Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
-              <div>
-                <div className="font-medium">Show Total Prize Pool</div>
-                <div className="text-sm text-muted-foreground">Participants can see total collected amount</div>
-              </div>
-              <input 
-                type="checkbox"
-                defaultChecked={activePool?.show_prize_total ?? true}
-                onChange={async (e) => {
-                  if (activePool) {
-                    await updatePool(activePool.id, { show_prize_total: e.target.checked } as any);
-                  }
-                }}
-                className="h-4 w-4"
-              />
-            </label>
-            
-            <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
-              <div>
-                <div className="font-medium">Show Prize Amounts</div>
-                <div className="text-sm text-muted-foreground">Participants can see individual prize breakdowns</div>
-              </div>
-              <input 
-                type="checkbox"
-                defaultChecked={activePool?.show_prize_amounts ?? true}
-                onChange={async (e) => {
-                  if (activePool) {
-                    await updatePool(activePool.id, { show_prize_amounts: e.target.checked } as any);
-                  }
-                }}
-                className="h-4 w-4"
-              />
-            </label>
-          </div>
-          
-          <div className="pt-4 border-t">
-            <div className="text-sm text-muted-foreground space-y-2">
-              <div><strong>Current Mode:</strong> {prizeMode === 'percentage' ? 'Percentage' : 'Custom'} distribution</div>
-              {prizeMode === 'percentage' ? (
-                <>
-                  <p>• Prize amounts are calculated based on current number of entries ({totalEntries}) × entry fee (${activePool?.entry_fee_amount || 0})</p>
-                  <p>• Amounts will update automatically as more participants join</p>
-                </>
-              ) : (
-                <>
-                  <p>• Prize amounts are fixed regardless of entry count</p>
-                  <p>• Total prize pool: {currency} ${customTotal}</p>
-                  {isOverBudget && <p>• Admin must contribute {currency} ${overBudgetAmount} additional funds</p>}
-                </>
-              )}
-            </div>
+        <CardContent>
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <div><strong>Current Mode:</strong> {prizeMode === 'percentage' ? 'Percentage' : 'Custom'} distribution</div>
+            {prizeMode === 'percentage' ? (
+              <>
+                <p>• Prize amounts are calculated based on current number of entries ({totalEntries}) × entry fee (${activePool?.entry_fee_amount || 0})</p>
+                <p>• Amounts will update automatically as more participants join</p>
+              </>
+            ) : (
+              <>
+                <p>• Prize amounts are fixed regardless of entry count</p>
+                <p>• Total prize pool: {currency} ${customTotal}</p>
+                {isOverBudget && <p>• Admin must contribute {currency} ${overBudgetAmount} additional funds</p>}
+              </>
+            )}
+            <p>• Prize section visibility: {showPrizeAmounts ? 'Visible to participants' : 'Hidden from participants'}</p>
+            <p>• Total prize pool amount is always hidden from participants (admin/owner only)</p>
           </div>
         </CardContent>
       </Card>

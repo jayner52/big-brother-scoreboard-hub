@@ -9,8 +9,8 @@ import { usePoolMembers } from '@/hooks/usePoolMembers';
 import { useChatInput } from '@/hooks/useChatInput';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatHeader } from '@/components/chat/ChatHeader';
-import { ChatMessagesArea } from '@/components/chat/ChatMessagesArea';
-import { ChatInput } from '@/components/chat/ChatInput';
+import { BrandedChatContainer } from '@/components/chat/BrandedChatContainer';
+import { StickyInputBar } from '@/components/chat/StickyInputBar';
 import { UserMentionDropdown } from '@/components/chat/UserMentionDropdown';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -88,7 +88,7 @@ const Chat: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex">
+    <div className="min-h-screen bg-cream flex font-rounded">
       {/* Sidebar */}
       <ChatSidebar 
         poolId={activePool.id}
@@ -97,15 +97,15 @@ const Chat: React.FC = () => {
         onChatSelect={setActiveChat}
       />
       
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Chat Area - Poolside Picks Design */}
+      <div className="flex-1 flex flex-col h-screen">
         <ChatHeader 
           poolName={activePool.name}
           activeChat={activeChat}
           memberCount={poolMembers.length}
         />
 
-        <ChatMessagesArea 
+        <BrandedChatContainer 
           messages={messages}
           loading={loading}
           userId={userId}
@@ -118,7 +118,7 @@ const Chat: React.FC = () => {
           onUserSelect={insertMention}
         />
 
-        <ChatInput 
+        <StickyInputBar 
           newMessage={newMessage}
           onMessageChange={handleMessageInput}
           onSendMessage={handleSendMessage}

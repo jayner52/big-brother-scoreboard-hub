@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { Users, Trophy, Eye, BarChart2, DollarSign, ClipboardList } from 'lucide-react';
 
 export interface TabConfig {
   id: string;
   label: string;
   shortLabel: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   component: React.ReactNode;
   hidden?: boolean;
 }
@@ -39,7 +40,7 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
             <SelectTrigger className="w-full h-14 text-base font-medium bg-gradient-to-r from-purple/10 to-teal/10 border-2 border-purple/20 hover:border-purple/40 transition-all duration-300">
               <SelectValue>
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">{activeTabData?.icon}</span>
+                  {activeTabData?.icon && <activeTabData.icon className="h-5 w-5" />}
                   <span>{activeTabData?.label}</span>
                 </div>
               </SelectValue>
@@ -48,7 +49,7 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
               {visibleTabs.map((tab) => (
                 <SelectItem key={tab.id} value={tab.id} className="text-base py-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-lg">{tab.icon}</span>
+                    <tab.icon className="h-4 w-4" />
                     <span>{tab.label}</span>
                   </div>
                 </SelectItem>
@@ -77,14 +78,14 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
               variant={activeTab === tab.id ? "default" : "ghost"}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "relative h-14 flex flex-col items-center gap-1 text-sm font-medium transition-all duration-300 tab-hover",
+                "relative h-16 flex flex-col items-center gap-2 text-base font-medium transition-all duration-300 hover:scale-105",
                 activeTab === tab.id 
-                  ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg animate-glow tab-active" 
+                  ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg tab-active" 
                   : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple"
               )}
             >
-              <span className="text-lg">{tab.icon}</span>
-              <span className="text-xs leading-tight text-center">{tab.shortLabel}</span>
+              <tab.icon className="h-5 w-5" />
+              <span className="text-sm leading-tight text-center">{tab.shortLabel}</span>
             </Button>
           ))}
           {visibleTabs.length === 5 && <div></div>} {/* Spacer for 5 tabs */}

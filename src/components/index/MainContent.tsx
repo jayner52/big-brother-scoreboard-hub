@@ -10,6 +10,7 @@ import { WinnerBanner } from '@/components/WinnerBanner';
 import { EnhancedTabSystem, TabConfig } from '@/components/dashboard/EnhancedTabSystem';
 import { DraftFormData } from '@/hooks/useDraftForm';
 import { usePool } from '@/contexts/PoolContext';
+import { Users, Trophy, Eye, BarChart2, DollarSign, ClipboardList } from 'lucide-react';
 
 interface MainContentProps {
   formData: DraftFormData;
@@ -32,7 +33,7 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       id: 'draft',
       label: 'Draft Team',
       shortLabel: 'Draft',
-      icon: '👥',
+      icon: Users,
       component: (
         <div>
           {/* Team Summary Banner - Show when user has draft progress */}
@@ -49,14 +50,14 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       id: 'leaderboard',
       label: 'Leaderboard',
       shortLabel: 'Ranks',
-      icon: '🏆',
+      icon: Trophy,
       component: <EnhancedTeamLeaderboard />
     },
     {
       id: 'picks',
       label: "Everyone's Picks",
       shortLabel: 'Picks',
-      icon: '👁️',
+      icon: Eye,
       component: <EveryonesPicksMatrix />,
       hidden: shouldHideEveronesPicks
     },
@@ -64,21 +65,21 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       id: 'results',
       label: 'Live Results',
       shortLabel: 'Results',
-      icon: '📊',
+      icon: BarChart2,
       component: <LiveResults />
     },
     {
       id: 'contestants',
       label: 'Houseguest Values',
       shortLabel: 'Values',
-      icon: '💰',
+      icon: DollarSign,
       component: <ContestantValues />
     },
     {
       id: 'bios',
       label: 'Houseguest Bios',
       shortLabel: 'Bios',
-      icon: '📋',
+      icon: ClipboardList,
       component: <ContestantBios />
     }
   ];

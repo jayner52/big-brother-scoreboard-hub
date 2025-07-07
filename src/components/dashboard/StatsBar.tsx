@@ -101,7 +101,7 @@ export const StatsBar: React.FC = () => {
   const currency = activePool?.entry_fee_currency || 'CAD';
 
   const stats = [
-    {
+    ...(totalEntries >= 5 ? [{
       icon: Trophy,
       label: 'Prize Pool',
       value: totalPrizePool,
@@ -109,7 +109,7 @@ export const StatsBar: React.FC = () => {
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
       borderColor: 'border-yellow-200'
-    },
+    }] : []),
     {
       icon: Users,
       label: 'Participants',
@@ -141,7 +141,7 @@ export const StatsBar: React.FC = () => {
 
   return (
     <div className="mb-8 animate-fade-in">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid gap-4 ${stats.length === 4 ? 'grid-cols-2 lg:grid-cols-4' : stats.length === 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (

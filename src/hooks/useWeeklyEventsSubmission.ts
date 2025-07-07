@@ -229,6 +229,36 @@ export const useWeeklyEventsSubmission = (
         if (contestantError) throw contestantError;
       }
 
+      // Update final week contestant statuses
+      if (eventForm.isFinalWeek) {
+        // Update winner
+        if (eventForm.winner) {
+          await supabase
+            .from('contestants')
+            .update({ final_placement: 1 })
+            .eq('name', eventForm.winner)
+            .eq('pool_id', poolId);
+        }
+
+        // Update runner-up
+        if (eventForm.runnerUp) {
+          await supabase
+            .from('contestants')
+            .update({ final_placement: 2 })
+            .eq('name', eventForm.runnerUp)
+            .eq('pool_id', poolId);
+        }
+
+        // Update America's Favorite
+        if (eventForm.americasFavorite) {
+          await supabase
+            .from('contestants')
+            .update({ americas_favorite: true })
+            .eq('name', eventForm.americasFavorite)
+            .eq('pool_id', poolId);
+        }
+      }
+
       // Update or insert into weekly_results table
       const weekData = {
         week_number: eventForm.week,

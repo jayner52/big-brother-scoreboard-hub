@@ -178,7 +178,7 @@ const Auth = () => {
 
             <Card>
               <CardContent className="p-6">
-                <Tabs defaultValue="signup" className="w-full">
+                <Tabs defaultValue={action === 'signin' ? 'signin' : 'signup'} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 mb-6">
                     <TabsTrigger value="signup">Sign Up</TabsTrigger>
                     <TabsTrigger value="signin">Sign In</TabsTrigger>

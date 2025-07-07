@@ -182,7 +182,7 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
             )}
           </div>
 
-          {/* Prize Pool Section */}
+          {/* Prize Pool Section - Show ONLY individual prizes, NEVER the total */}
           {poolConfig.has_buy_in && prizeCalculation && prizeCalculation.prizes.length > 0 && totalEntries > 0 && (
             <Card className="mb-8 border-yellow-200 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50">
@@ -190,9 +190,6 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
                   <Trophy className="h-6 w-6 text-yellow-600" />
                   Prize Pool
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Total Prize Pool: {formatPrize(prizeCalculation.totalPrizePool, poolConfig.entry_fee_currency)} from {totalEntries} entries
-                </p>
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

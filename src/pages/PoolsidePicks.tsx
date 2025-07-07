@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, Trophy, BarChart3, MessageCircle, Play, Target, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { RetroTVLogo } from '@/components/brand/RetroTVLogo';
+import { BigBrotherLogo } from '@/components/brand/BigBrotherLogo';
 import { PoolFloat } from '@/components/brand/PoolFloat';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -74,7 +74,7 @@ const PoolsidePicks = () => {
         <div className="container mx-auto text-center">
           {/* Logo and Brand */}
           <div className="mb-8 flex justify-center">
-            <RetroTVLogo size="xl" className="animate-bounce" />
+            <BigBrotherLogo size="xl" className="animate-bounce" />
           </div>
           
           <h1 className={`${isMobile ? 'text-4xl' : 'text-7xl'} font-bold text-dark mb-4`}>
@@ -116,18 +116,24 @@ const PoolsidePicks = () => {
             </Button>
           </div>
 
-          {/* Sign In for Existing Users */}
+          {/* Sign In for Existing Users - Prominent Button */}
           {!user && (
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-coral/30 rounded-2xl p-6 mb-8 max-w-md mx-auto">
-              <p className="text-dark font-semibold mb-3">Already have an account?</p>
-              <Button
-                onClick={() => navigate('/auth')}
-                variant="outline"
-                size={isMobile ? "default" : "lg"}
-                className="w-full border-2 border-coral text-coral hover:bg-coral hover:text-coral-foreground font-semibold rounded-full"
-              >
-                Sign In to Your Account
-              </Button>
+            <div className="bg-gradient-to-r from-white via-white to-white/95 backdrop-blur-sm border-2 border-brand-teal/40 rounded-2xl p-8 mb-8 max-w-lg mx-auto shadow-xl">
+              <div className="text-center">
+                <h3 className="text-xl font-bold text-dark mb-2">Already have an account?</h3>
+                <p className="text-dark/70 mb-4">Sign in to access your teams and rankings</p>
+                <Button
+                  onClick={() => navigate('/auth?action=signin')}
+                  size={isMobile ? "default" : "lg"}
+                  className={`${isMobile ? 'w-full' : 'px-12 py-4'} text-xl font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
+                  style={{ 
+                    background: 'var(--gradient-teal)',
+                    color: 'white'
+                  }}
+                >
+                  Sign In to Your Account
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -280,7 +286,7 @@ const PoolsidePicks = () => {
       <footer className="py-12 px-4 bg-dark border-t border-cream/20">
         <div className="container mx-auto text-center">
           <div className="flex justify-center mb-6">
-            <RetroTVLogo size="sm" />
+            <BigBrotherLogo size="sm" />
           </div>
           <p className="text-cream/60 mb-4">
             © 2025 Poolside Picks | Where Big Brother Meets the Pool

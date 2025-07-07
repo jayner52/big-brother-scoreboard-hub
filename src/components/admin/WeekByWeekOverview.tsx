@@ -243,7 +243,6 @@ const loadWeekByWeekData = async () => {
 
         // Convert to ContestantScore format with cumulative totals
         const weekScores: ContestantScore[] = Object.entries(weekContestantScores)
-          .filter(([name, points]) => points !== 0) // Only include contestants who earned points
           .map(([name, weeklyTotal]) => {
             cumulativeScores[name] = (cumulativeScores[name] || 0) + weeklyTotal;
             return {

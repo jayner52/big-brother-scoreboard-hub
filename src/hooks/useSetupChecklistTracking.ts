@@ -260,6 +260,7 @@ export const useSetupChecklistTracking = () => {
     try {
       const newStatus = !currentlyCompleted;
       
+      // Use upsert with proper conflict resolution on the unique constraint
       const { error } = await supabase
         .from('pool_checklist_overrides')
         .upsert({
@@ -267,6 +268,8 @@ export const useSetupChecklistTracking = () => {
           task_id: taskId,
           manually_completed: newStatus,
           completed_by: (await supabase.auth.getUser()).data.user?.id,
+        }, {
+          onConflict: 'pool_id,task_id' // Specify the conflict columns
         });
 
       if (error) throw error;

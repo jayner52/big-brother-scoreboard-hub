@@ -203,23 +203,25 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
             Manage all bonus questions and create new ones
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
+        <CardContent className="p-3 md:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
+            <div className="flex items-center gap-3 md:gap-4">
               <div className="flex items-center space-x-2">
                 <Switch
                   checked={globalEnabled}
                   onCheckedChange={handleGlobalToggle}
                 />
-                <Label className="font-semibold">Enable All Bonus Questions</Label>
+                <Label className="font-semibold text-sm md:text-base">Enable All Bonus Questions</Label>
               </div>
             </div>
             <Button 
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-sm md:text-base w-full sm:w-auto"
+              size="sm"
             >
               <Plus className="h-4 w-4" />
-              Create New Question
+              <span className="hidden sm:inline">Create New Question</span>
+              <span className="sm:hidden">Create Question</span>
             </Button>
           </div>
 
@@ -229,25 +231,26 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
               <CardHeader>
                 <CardTitle>Create New Bonus Question</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-3 md:p-6 space-y-4">
                 <div>
-                  <Label htmlFor="question-text">Question Text</Label>
+                  <Label htmlFor="question-text" className="text-sm md:text-base">Question Text</Label>
                   <Textarea
                     id="question-text"
                     value={newQuestion.question_text}
                     onChange={(e) => setNewQuestion(prev => ({ ...prev, question_text: e.target.value }))}
                     placeholder="Enter your bonus question..."
+                    className="mt-1"
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="question-type">Question Type</Label>
+                    <Label htmlFor="question-type" className="text-sm md:text-base">Question Type</Label>
                     <Select 
                       value={newQuestion.question_type} 
                       onValueChange={(value) => setNewQuestion(prev => ({ ...prev, question_type: value }))}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -261,19 +264,20 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="points-value">Points Value</Label>
+                    <Label htmlFor="points-value" className="text-sm md:text-base">Points Value</Label>
                     <Input
                       id="points-value"
                       type="number"
                       value={newQuestion.points_value}
                       onChange={(e) => setNewQuestion(prev => ({ ...prev, points_value: parseInt(e.target.value) || 5 }))}
+                      className="mt-1"
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button onClick={handleCreateQuestion}>Create Question</Button>
-                  <Button variant="outline" onClick={() => setShowCreateForm(false)}>Cancel</Button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button onClick={handleCreateQuestion} className="w-full sm:w-auto">Create Question</Button>
+                  <Button variant="outline" onClick={() => setShowCreateForm(false)} className="w-full sm:w-auto">Cancel</Button>
                 </div>
               </CardContent>
             </Card>
@@ -284,16 +288,16 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
       {/* Individual Questions */}
       {bonusQuestions.map((question) => (
         <div key={question.id} className="space-y-2">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-2">
               <Switch
                 checked={question.is_active}
                 onCheckedChange={(checked) => handleIndividualToggle(question.id, checked)}
               />
-              <Label className="font-medium">Question {question.sort_order}</Label>
+              <Label className="font-medium text-sm md:text-base">Question {question.sort_order}</Label>
             </div>
-            <div className="text-sm text-gray-600">
-              {question.points_value} points
+            <div className="text-xs md:text-sm text-gray-600">
+              {question.points_value} pts
             </div>
           </div>
           <BonusQuestionCard

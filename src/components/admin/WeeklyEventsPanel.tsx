@@ -138,7 +138,7 @@ export const WeeklyEventsPanel: React.FC = () => {
           isLoadingWeek={isLoadingWeek}
         />
         
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="p-3 md:p-6 space-y-4 md:space-y-6">
           {/* Week Selector */}
           <WeekSelector
             currentWeek={eventForm.week}

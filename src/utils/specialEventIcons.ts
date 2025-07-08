@@ -1,10 +1,10 @@
 export const getSpecialEventIcon = (eventType: string): string => {
   const iconMap: Record<string, string> = {
     // BB Arena and Safety Events
-    'bb_arena_winner': '🏛️',
-    'won_bb_arena': '🏛️',
-    'won_safety': '🏆',
-    'won_safety_comp': '🏛️',
+    'bb_arena_winner': '🛡️',
+    'won_bb_arena': '🛡️',
+    'won_safety': '🛡️',
+    'won_safety_comp': '🛡️',
     
     // Showmance events
     'showmance': '💕',
@@ -73,7 +73,7 @@ export const getSpecialEventIcon = (eventType: string): string => {
 
 export const getSpecialEventLegend = () => ({
   // Competition & Achievement Events
-  '🏛️': 'Won BB Arena/Safety',
+  '🛡️': 'Won BB Arena/Safety',
   '🔮': 'Won Special Power',
   '⚡': 'Used Special Power', 
   '🎁': 'Won Prize',

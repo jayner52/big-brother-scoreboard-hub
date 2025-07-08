@@ -108,7 +108,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         const contestantData = activeContestants.find(c => c.name === value);
         if (contestantData?.isActive) {
           toast({
-            title: "Invalid Selection",
+            title: "Invalid Selection", 
             description: "Can only apply 'Came Back After Evicted' to contestants who were previously evicted",
             variant: "destructive"
           });

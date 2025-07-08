@@ -51,6 +51,7 @@ export const useUserProfile = (user: SupabaseUser | null) => {
   };
 
   const refreshProfile = () => {
+    console.log('Refreshing profile for user:', user?.id);
     fetchProfile();
   };
 

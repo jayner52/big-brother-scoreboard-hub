@@ -247,35 +247,38 @@ const Index = () => {
         />
         
         {/* Pool Controls Header */}
-        <div className="bg-gradient-to-r from-white to-brand-teal/5 border border-brand-teal/10 rounded-xl p-6 mb-8 shadow-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-white to-brand-teal/5 border border-brand-teal/10 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             {/* Pool Info Section */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {activePool ? (
                 <div className="space-y-1">
-                  <h1 className="text-2xl font-bold text-dark flex items-center gap-2">
-                    {activePool.name}
+                  <h1 className="text-xl sm:text-2xl font-bold text-dark flex items-center gap-2 flex-wrap">
+                    <span className="truncate">{activePool.name}</span>
                     {userRank && (
-                      <Badge variant="outline" className="bg-gradient-to-r from-coral/10 to-brand-teal/10 border-brand-teal/30">
+                      <Badge 
+                        variant="outline" 
+                        className="bg-gradient-to-r from-coral/10 to-brand-teal/10 border-brand-teal/30 text-xs sm:text-sm flex-shrink-0"
+                      >
                         Rank #{userRank}
                       </Badge>
                     )}
                   </h1>
-                  <p className="text-dark/70">
+                  <p className="text-sm sm:text-base text-dark/70 truncate">
                     {userEntry?.participant_name && `Playing as ${userEntry.participant_name}`}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <h1 className="text-2xl font-bold text-dark">Welcome to Poolside Picks</h1>
-                  <p className="text-dark/70">Join or create a pool to get started</p>
+                  <h1 className="text-xl sm:text-2xl font-bold text-dark">Welcome to Poolside Picks</h1>
+                  <p className="text-sm sm:text-base text-dark/70">Join or create a pool to get started</p>
                 </div>
               )}
             </div>
 
             {/* Action Controls */}
             {user && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <PoolSwitcher />
                 
                 {activePool && (
@@ -287,11 +290,11 @@ const Index = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate('/admin')}
-                        className="border-brand-teal/30 text-brand-teal hover:bg-brand-teal hover:text-white transition-all duration-200"
+                        className="border-brand-teal/30 text-brand-teal hover:bg-brand-teal hover:text-white transition-all duration-200 text-xs sm:text-sm"
                         title="Admin Panel"
                       >
-                        <Settings className="h-4 w-4 mr-2" />
-                        Admin
+                        <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Admin</span>
                       </Button>
                     )}
                   </div>

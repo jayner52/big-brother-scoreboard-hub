@@ -7,6 +7,7 @@ import { PoolEntry, BonusQuestion } from '@/types/pool';
 import { BonusAnswerCell } from './BonusAnswerCell';
 import { CorrectAnswerCell } from './CorrectAnswerCell';
 import { evaluateBonusAnswer } from '@/utils/bonusQuestionUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BonusQuestionsMatrixProps {
   poolEntries: PoolEntry[];
@@ -17,6 +18,8 @@ export const BonusQuestionsMatrix: React.FC<BonusQuestionsMatrixProps> = ({
   poolEntries,
   bonusQuestions,
 }) => {
+  const isMobile = useIsMobile();
+  
   // Calculate actual bonus points earned for each team from the questions shown
   const calculateTeamBonusPoints = (entry: PoolEntry): number => {
     return bonusQuestions.reduce((total, question) => {
@@ -29,34 +32,41 @@ export const BonusQuestionsMatrix: React.FC<BonusQuestionsMatrixProps> = ({
       return total + (isCorrect ? question.points_value : 0);
     }, 0);
   };
+
   return (
     <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Everyone's Bonus Predictions</CardTitle>
-          <div className="text-sm text-muted-foreground">
-            Total Bonus Points Awarded: {poolEntries.reduce((sum, entry) => sum + calculateTeamBonusPoints(entry), 0)} pts
+      <CardHeader className={isMobile ? "pb-3" : ""}>
+        <div className="flex justify-between items-center flex-wrap gap-2">
+          <CardTitle className="text-lg sm:text-xl">Everyone's Bonus Predictions</CardTitle>
+          <div className="text-xs sm:text-sm text-muted-foreground">
+            Total Bonus Points: {poolEntries.reduce((sum, entry) => sum + calculateTeamBonusPoints(entry), 0)} pts
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className={isMobile ? "p-2" : "p-0"}>
         <ScrollArea className="w-full overflow-x-auto">
-          <div className="min-w-[800px]">
+          <div className={isMobile ? "min-w-[600px]" : "min-w-[800px]"}>
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="sticky left-0 bg-muted/50 border-r min-w-[200px] font-bold z-10">
+                  <TableHead className={`sticky left-0 bg-muted/50 border-r font-bold z-10 ${
+                    isMobile ? 'min-w-[150px] text-xs' : 'min-w-[200px]'
+                  }`}>
                     Question
                   </TableHead>
-                  <TableHead className="sticky left-[200px] text-center font-bold min-w-[120px] bg-green-50 border-r z-10">
+                  <TableHead className={`sticky text-center font-bold bg-green-50 border-r z-10 ${
+                    isMobile ? 'left-[150px] min-w-[100px] text-xs' : 'left-[200px] min-w-[120px]'
+                  }`}>
                     Correct Answer
                   </TableHead>
                    {poolEntries.map((entry) => (
-                     <TableHead key={entry.id} className="text-center font-bold min-w-[120px] border-r">
+                     <TableHead key={entry.id} className={`text-center font-bold border-r ${
+                       isMobile ? 'min-w-[100px]' : 'min-w-[120px]'
+                     }`}>
                        <div className="space-y-1">
-                         <div className="font-semibold">{entry.team_name}</div>
-                         <div className="text-xs text-muted-foreground">{entry.participant_name}</div>
-                          <div className="text-xs font-semibold text-green-600">
+                         <div className={`font-semibold ${isMobile ? 'text-xs' : ''}`}>{entry.team_name}</div>
+                         <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>{entry.participant_name}</div>
+                          <div className={`font-semibold text-green-600 ${isMobile ? 'text-xs' : 'text-xs'}`}>
                             {calculateTeamBonusPoints(entry)} pts earned
                           </div>
                        </div>
@@ -67,15 +77,19 @@ export const BonusQuestionsMatrix: React.FC<BonusQuestionsMatrixProps> = ({
               <TableBody>
                 {bonusQuestions.map((question) => (
                   <TableRow key={question.id} className="hover:bg-muted/30">
-                    <TableCell className="sticky left-0 bg-background border-r font-medium max-w-[200px] z-10">
+                    <TableCell className={`sticky left-0 bg-background border-r font-medium z-10 ${
+                      isMobile ? 'max-w-[150px] text-xs' : 'max-w-[200px]'
+                    }`}>
                       <div className="space-y-1">
-                        <div className="text-sm">{question.question_text}</div>
+                        <div className={isMobile ? 'text-xs' : 'text-sm'}>{question.question_text}</div>
                         <Badge variant="outline" className="text-xs">
                           {question.points_value} pts
                         </Badge>
                       </div>
                     </TableCell>
-                    <TableCell className="sticky left-[200px] text-center bg-green-50 border-r z-10">
+                    <TableCell className={`sticky text-center bg-green-50 border-r z-10 ${
+                      isMobile ? 'left-[150px]' : 'left-[200px]'
+                    }`}>
                       <CorrectAnswerCell question={question} />
                     </TableCell>
                     {poolEntries.map((entry) => (

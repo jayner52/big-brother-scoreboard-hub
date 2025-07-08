@@ -97,11 +97,15 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
         >
           <Avatar className="w-8 h-8">
             {avatarUrl ? (
-              <div className="w-full h-full flex items-center justify-center text-lg bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full">
+              <div className={`w-full h-full flex items-center justify-center text-lg rounded-full ${
+                profile?.background_color ? `bg-gradient-to-br ${profile.background_color}` : 'bg-gradient-to-br from-brand-teal/20 to-coral/20'
+              }`}>
                 {avatarUrl}
               </div>
             ) : (
-              <AvatarFallback className="bg-gradient-to-br from-coral to-brand-teal text-white font-semibold text-sm">
+              <AvatarFallback className={`text-white font-semibold text-sm ${
+                profile?.background_color ? `bg-gradient-to-br ${profile.background_color}` : 'bg-gradient-to-br from-coral to-brand-teal'
+              }`}>
                 {initials}
               </AvatarFallback>
             )}

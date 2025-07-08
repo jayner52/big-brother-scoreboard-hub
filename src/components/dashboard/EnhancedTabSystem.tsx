@@ -42,7 +42,7 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
       <div className={cn('w-full', className)}>
         {/* Mobile Tiles */}
         <div className="mb-6">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {visibleTabs.map((tab) => (
               <Button
                 key={tab.id}
@@ -50,20 +50,21 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
                 onClick={() => handleTabClick(tab.id, tab)}
                 disabled={tab.locked}
                 className={cn(
-                  "h-20 flex flex-col items-center gap-2 text-sm font-medium transition-all duration-300",
+                  "h-24 flex flex-col items-center justify-center gap-2 text-sm font-medium transition-all duration-300 relative",
                   activeTab === tab.id 
-                    ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg" 
-                    : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple border-purple/20",
+                    ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg scale-105" 
+                    : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple border-purple/20 hover:scale-102",
                   tab.locked && "opacity-50 cursor-not-allowed"
                 )}
               >
-              <div className="flex items-center gap-2">
-                <tab.icon className="h-5 w-5" />
-                <span className="text-xs leading-tight text-center">
+                <tab.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="text-xs sm:text-sm leading-tight text-center font-medium">
                   {tab.shortLabel}
                 </span>
-                {tab.locked && <Lock className="h-3 w-3" />}
-              </div>
+                {tab.locked && <Lock className="h-3 w-3 absolute top-2 right-2" />}
+                {activeTab === tab.id && (
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+                )}
               </Button>
             ))}
           </div>

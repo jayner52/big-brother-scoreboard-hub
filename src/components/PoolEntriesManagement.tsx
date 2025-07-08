@@ -7,11 +7,12 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Trash2, Users, Lock, Unlock, Check, X, CreditCard } from 'lucide-react';
+import { Trash2, Users, Lock, Unlock, Check, X, CreditCard, DollarSign, Gift } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { UserPaymentButton } from '@/components/enhanced/UserPaymentButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { InstructionAccordion } from '@/components/admin/InstructionAccordion';
+import { calculatePrizes } from '@/utils/prizeCalculation';
 
 interface PoolEntry {
   id: string;
@@ -27,6 +28,9 @@ interface PoolEntry {
   created_at: string;
   email: string;
   user_id: string;
+  final_position?: number;
+  prize_amount?: number;
+  prize_status?: 'none' | 'pending_info' | 'info_submitted' | 'sent';
 }
 
 interface PoolSettings {
@@ -41,6 +45,8 @@ export const PoolEntriesManagement: React.FC = () => {
   const [settings, setSettings] = useState<PoolSettings>({ draft_open: true, draft_locked: false });
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [winners, setWinners] = useState<any[]>([]);
+  const [paymentDetails, setPaymentDetails] = useState<any[]>([]);
 
   useEffect(() => {
     if (activePool) {
@@ -58,13 +64,47 @@ export const PoolEntriesManagement: React.FC = () => {
     if (!activePool) return;
     
     try {
-      const [entriesResult] = await Promise.all([
-        supabase.from('pool_entries').select('id, participant_name, team_name, player_1, player_2, player_3, player_4, player_5, payment_confirmed, total_points, created_at, email, user_id').eq('pool_id', activePool.id).order('created_at', { ascending: false })
+      const [entriesResult, winnersResult, paymentDetailsResult] = await Promise.all([
+        supabase.from('pool_entries').select('*').eq('pool_id', activePool.id).order('total_points', { ascending: false }),
+        supabase.from('pool_winners').select('*').eq('pool_id', activePool.id),
+        supabase.from('winner_payment_details').select('*').eq('pool_id', activePool.id)
       ]);
 
       if (entriesResult.error) throw entriesResult.error;
 
-      setEntries(entriesResult.data || []);
+      setWinners(winnersResult.data || []);
+      setPaymentDetails(paymentDetailsResult.data || []);
+
+      // Calculate prize information for completed seasons
+      const prizeInfo = calculatePrizes(activePool, entriesResult.data?.length || 0);
+      
+      // Enhance entries with prize information
+      const enhancedEntries = (entriesResult.data || []).map((entry, index) => {
+        const finalPosition = index + 1;
+        const prizeForPosition = prizeInfo.prizes.find(p => p.place === finalPosition);
+        const winner = winnersResult.data?.find(w => w.user_id === entry.user_id);
+        const paymentDetail = paymentDetailsResult.data?.find(pd => pd.user_id === entry.user_id);
+        
+        let prizeStatus: 'none' | 'pending_info' | 'info_submitted' | 'sent' = 'none';
+        if (winner) {
+          if (winner.prize_sent) {
+            prizeStatus = 'sent';
+          } else if (paymentDetail) {
+            prizeStatus = 'info_submitted';
+          } else {
+            prizeStatus = 'pending_info';
+          }
+        }
+
+        return {
+          ...entry,
+          final_position: finalPosition,
+          prize_amount: winner ? winner.amount : (prizeForPosition?.amount || 0),
+          prize_status: prizeStatus
+        };
+      });
+
+      setEntries(enhancedEntries);
       setSettings({ 
         draft_open: activePool.draft_open, 
         draft_locked: activePool.draft_locked 
@@ -158,6 +198,47 @@ export const PoolEntriesManagement: React.FC = () => {
     }
   };
 
+  const markPrizeSent = async (entryId: string, userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('pool_winners')
+        .update({ 
+          prize_sent: true, 
+          prize_sent_at: new Date().toISOString() 
+        })
+        .eq('pool_id', activePool?.id)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      // Send notification to winner
+      await supabase
+        .from('winner_notifications')
+        .insert({
+          pool_id: activePool?.id,
+          user_id: userId,
+          place: entries.find(e => e.id === entryId)?.final_position || 1,
+          amount: entries.find(e => e.id === entryId)?.prize_amount || 0,
+          notification_type: 'prize_sent',
+          message: 'Your prize has been sent! You should receive it soon.'
+        });
+
+      toast({
+        title: "Prize Marked as Sent",
+        description: "The participant will be notified that their prize is on the way.",
+      });
+
+      await loadData(); // Refresh data
+    } catch (error) {
+      console.error('Error marking prize as sent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to mark prize as sent",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading pool entries...</div>;
   }
@@ -169,15 +250,32 @@ export const PoolEntriesManagement: React.FC = () => {
         tabKey="pool_entries"
       >
         <div className="space-y-2">
-          <p>Monitor participant status and payment confirmation. You can see who has drafted and who has paid their entry fee.</p>
-          <p><strong>Key functions:</strong></p>
-          <ul className="list-disc list-inside ml-4 space-y-1">
-            <li>Track payment status for participants with buy-ins</li>
-            <li>Confirm payments manually when received</li>
-            <li>Delete problematic or duplicate entries</li>
-            <li>Monitor who has submitted teams and when</li>
-            <li>Lock/unlock draft editing as needed</li>
-          </ul>
+          <p>Monitor participant status, payment confirmation, and prize distribution. Track who has drafted and who has paid their entry fee.</p>
+          
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <p><strong>🏆 During the Season:</strong></p>
+              <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+                <li>Track payment status for participants with buy-ins</li>
+                <li>Confirm payments manually when received</li>
+                <li>Delete problematic or duplicate entries</li>
+                <li>Monitor who has submitted teams and when</li>
+                <li>Lock/unlock draft editing as needed</li>
+              </ul>
+            </div>
+            
+            <div>
+              <p><strong>🎁 After Season Completion:</strong></p>
+              <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+                <li>Prize winners appear with amounts in this table</li>
+                <li>Wait for winners to submit payment information</li>
+                <li>You'll be notified when payment info is received</li>
+                <li>Send prizes via the requested method</li>
+                <li>Check "Prize Sent" to confirm delivery</li>
+                <li>Winner receives confirmation notification</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </InstructionAccordion>
       
@@ -220,6 +318,9 @@ export const PoolEntriesManagement: React.FC = () => {
                   <TableHead>Team</TableHead>
                   {activePool?.has_buy_in && <TableHead>Payment</TableHead>}
                   <TableHead>Points</TableHead>
+                  {activePool?.season_complete && <TableHead>Final Position</TableHead>}
+                  {activePool?.season_complete && <TableHead>Prize Won</TableHead>}
+                  {activePool?.season_complete && <TableHead>Prize Status</TableHead>}
                   <TableHead>Submitted</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -245,6 +346,63 @@ export const PoolEntriesManagement: React.FC = () => {
                     <TableCell className="text-center font-bold">
                       {entry.total_points}
                     </TableCell>
+                    
+                    {/* Final Position (only show if season is complete) */}
+                    {activePool?.season_complete && (
+                      <TableCell className="text-center">
+                        <Badge variant={entry.final_position && entry.final_position <= 3 ? "default" : "secondary"}>
+                          #{entry.final_position}
+                        </Badge>
+                      </TableCell>
+                    )}
+                    
+                    {/* Prize Won (only show if season is complete) */}
+                    {activePool?.season_complete && (
+                      <TableCell className="text-center">
+                        {entry.prize_amount && entry.prize_amount > 0 ? (
+                          <div className="flex items-center gap-1 justify-center text-green-600">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="font-semibold">${entry.prize_amount.toFixed(0)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                    )}
+                    
+                    {/* Prize Status (only show if season is complete) */}
+                    {activePool?.season_complete && (
+                      <TableCell className="text-center">
+                        {entry.prize_amount && entry.prize_amount > 0 ? (
+                          <div className="space-y-1">
+                            <Badge variant={
+                              entry.prize_status === 'sent' ? 'default' :
+                              entry.prize_status === 'info_submitted' ? 'secondary' :
+                              entry.prize_status === 'pending_info' ? 'destructive' : 'outline'
+                            }>
+                              {entry.prize_status === 'sent' ? '✓ Sent' :
+                               entry.prize_status === 'info_submitted' ? 'Info Received' :
+                               entry.prize_status === 'pending_info' ? 'Awaiting Info' : 'No Prize'}
+                            </Badge>
+                            
+                            {/* Payment details for admins */}
+                            {entry.prize_status === 'info_submitted' && paymentDetails.find(pd => pd.user_id === entry.user_id) && (
+                              <div className="text-xs">
+                                <div className="text-muted-foreground">
+                                  {paymentDetails.find(pd => pd.user_id === entry.user_id)?.preferred_method}
+                                </div>
+                                <div className="font-mono">
+                                  {paymentDetails.find(pd => pd.user_id === entry.user_id)?.payment_info}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                    )}
+                    
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(entry.created_at).toLocaleDateString()}
                     </TableCell>
@@ -285,6 +443,19 @@ export const PoolEntriesManagement: React.FC = () => {
                               </Button>
                             )}
                           </>
+                        )}
+
+                        {/* Prize management controls */}
+                        {activePool?.season_complete && entry.prize_amount && entry.prize_amount > 0 && entry.prize_status === 'info_submitted' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => markPrizeSent(entry.id, entry.user_id)}
+                            className="text-green-600 hover:bg-green-50 h-7"
+                          >
+                            <Gift className="h-3 w-3 mr-1" />
+                            Mark Sent
+                          </Button>
                         )}
                         
                         <AlertDialog>

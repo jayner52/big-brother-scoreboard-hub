@@ -99,7 +99,7 @@ export const WeeklyEventsPanel: React.FC = () => {
           </div>
 
           <div className="bg-purple-50 border border-purple-200 rounded p-3">
-            <p className="font-semibold text-purple-800 mb-2">🏆 Final Week Process:</p>
+            <p className="font-semibold text-purple-800 mb-2">🏆 Final Week & Prize Distribution Process:</p>
             <ol className="list-decimal list-inside ml-2 space-y-1 text-sm text-purple-700">
               <li>Enable "Final Week" toggle</li>
               <li>Set Final HoH winner (Part 3 competition)</li>
@@ -108,7 +108,10 @@ export const WeeklyEventsPanel: React.FC = () => {
               <li>Select America's Favorite Player (can be ANY contestant from the season)</li>
               <li><strong>Click "SUBMIT FINAL WEEK RESULTS" button - this does NOT advance to next week</strong></li>
               <li>After submission, scroll down to "Complete Season" section</li>
+              <li>System will validate all requirements are met</li>
               <li>Click "Complete Season & Assign Prizes" to finalize the pool</li>
+              <li><strong>Prize winners will be automatically notified to submit payment info</strong></li>
+              <li>Check Pool Entries tab to manage prize payouts</li>
             </ol>
           </div>
 

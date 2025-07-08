@@ -8,6 +8,7 @@ import { ContestantBios } from '@/components/ContestantBios';
 import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
 import { WinnerBanner } from '@/components/WinnerBanner';
 import { EnhancedTabSystem, TabConfig } from '@/components/dashboard/EnhancedTabSystem';
+import { WinnerNotificationsBanner } from '@/components/dashboard/WinnerNotificationsBanner';
 import { DraftFormData } from '@/hooks/useDraftForm';
 import { usePool } from '@/contexts/PoolContext';
 import { useDraftAccess } from '@/hooks/useDraftAccess';
@@ -88,9 +89,12 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
   ];
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
       {/* Winner Banner - shown for winning participants */}
       <WinnerBanner />
+      
+      {/* Winner Notifications - shown for prize winners */}
+      <WinnerNotificationsBanner />
       
       <EnhancedTabSystem tabs={tabs} defaultTab="draft" />
     </div>

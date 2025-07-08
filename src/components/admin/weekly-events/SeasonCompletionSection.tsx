@@ -178,22 +178,41 @@ export const SeasonCompletionSection: React.FC<SeasonCompletionSectionProps> = (
 
     setCompleting(true);
     try {
-      // 1. Create winner records
+      // 1. Create winner records and calculate proper prizes
       if (winners.length > 0) {
-        const winnerRecords = winners.map(winner => ({
-          pool_id: activePool.id,
-          user_id: winner.user_id,
-          team_id: winner.team_id,
-          place: winner.place,
-          amount: winner.amount
-        }));
+        // Use the proper prize calculation utility
+        const { data: allEntries } = await supabase
+          .from('pool_entries')
+          .select('*')
+          .eq('pool_id', activePool.id)
+          .order('total_points', { ascending: false });
 
-        const { error: winnersError } = await supabase
-          .from('pool_winners')
-          .insert(winnerRecords);
+        if (allEntries && allEntries.length > 0) {
+          const { prizes } = require('@/utils/prizeCalculation').calculatePrizes(activePool, allEntries.length);
+          
+          const winnerRecords = allEntries
+            .slice(0, Math.min(allEntries.length, prizes.length))
+            .map((entry, index) => {
+              const prize = prizes[index];
+              return prize ? {
+                pool_id: activePool.id,
+                user_id: entry.user_id,
+                team_id: entry.id,
+                place: prize.place,
+                amount: prize.amount
+              } : null;
+            })
+            .filter(Boolean);
 
-        if (winnersError) {
-          throw winnersError;
+          if (winnerRecords.length > 0) {
+            const { error: winnersError } = await supabase
+              .from('pool_winners')
+              .insert(winnerRecords);
+
+            if (winnersError) {
+              throw winnersError;
+            }
+          }
         }
       }
 

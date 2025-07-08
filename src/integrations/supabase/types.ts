@@ -723,9 +723,12 @@ export type Database = {
           amount: number
           created_at: string | null
           id: string
+          notes: string | null
           payment_submitted: boolean | null
           place: number
           pool_id: string
+          prize_sent: boolean | null
+          prize_sent_at: string | null
           team_id: string | null
           user_id: string
         }
@@ -733,9 +736,12 @@ export type Database = {
           amount: number
           created_at?: string | null
           id?: string
+          notes?: string | null
           payment_submitted?: boolean | null
           place: number
           pool_id: string
+          prize_sent?: boolean | null
+          prize_sent_at?: string | null
           team_id?: string | null
           user_id: string
         }
@@ -743,9 +749,12 @@ export type Database = {
           amount?: number
           created_at?: string | null
           id?: string
+          notes?: string | null
           payment_submitted?: boolean | null
           place?: number
           pool_id?: string
+          prize_sent?: boolean | null
+          prize_sent_at?: string | null
           team_id?: string | null
           user_id?: string
         }
@@ -1273,6 +1282,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      winner_notifications: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          message: string | null
+          notification_type: string
+          place: number
+          pool_id: string
+          read_at: string | null
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          notification_type: string
+          place: number
+          pool_id: string
+          read_at?: string | null
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          notification_type?: string
+          place?: number
+          pool_id?: string
+          read_at?: string | null
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       winner_payment_details: {
         Row: {

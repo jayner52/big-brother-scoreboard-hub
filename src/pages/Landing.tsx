@@ -97,40 +97,59 @@ const Landing = () => {
             </p>
           </div>
 
-          {/* Dual CTAs */}
-          <div className="hero-actions flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-            <Button 
-              onClick={() => setShowJoinModal(true)}
-              size="lg"
-              className="bg-coral hover:bg-coral/90 text-coral-foreground font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Users className="h-5 w-5 mr-2" />
-              Join a Pool
-            </Button>
-            <Button 
-              onClick={() => setShowCreateModal(true)}
-              variant="outline"
-              size="lg"
-              className="border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-brand-teal-foreground font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Create Your Pool
-            </Button>
-          </div>
+          {/* Authentication-aware CTAs */}
+          {user ? (
+            <div className="hero-actions flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+              <Button 
+                onClick={() => setShowJoinModal(true)}
+                size="lg"
+                className="bg-coral hover:bg-coral/90 text-coral-foreground font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Users className="h-5 w-5 mr-2" />
+                Join a Pool
+              </Button>
+              <Button 
+                onClick={() => setShowCreateModal(true)}
+                variant="outline"
+                size="lg"
+                className="border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-brand-teal-foreground font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Create Your Pool
+              </Button>
+            </div>
+          ) : (
+            <div className="hero-actions text-center mb-6">
+              <div className="bg-gradient-to-r from-coral/10 to-brand-teal/10 border border-coral/30 rounded-xl p-6 mb-4">
+                <p className="text-dark text-lg mb-4">
+                  Sign in to join or create a pool!
+                </p>
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  size="lg"
+                  className="bg-coral hover:bg-coral/90 text-coral-foreground font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  Get Started
+                </Button>
+              </div>
+            </div>
+          )}
 
-          <div className="bg-gradient-to-r from-brand-teal/10 to-coral/10 border border-brand-teal/30 rounded-xl p-6 mt-8">
-            <p className="text-dark/80 text-lg mb-4">
-              Already have an account?
-            </p>
-            <Button 
-              onClick={() => navigate('/auth')}
-              variant="outline"
-              size="lg"
-              className="border-2 border-coral text-coral hover:bg-coral hover:text-coral-foreground font-semibold px-8 py-3 text-lg rounded-xl"
-            >
-              Sign In to Your Account
-            </Button>
-          </div>
+          {user && (
+            <div className="bg-gradient-to-r from-brand-teal/10 to-coral/10 border border-brand-teal/30 rounded-xl p-6 mt-8">
+              <p className="text-dark/80 text-lg mb-4">
+                Ready to manage your pools?
+              </p>
+              <Button 
+                onClick={() => navigate('/dashboard')}
+                variant="outline"
+                size="lg"
+                className="border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-brand-teal-foreground font-semibold px-8 py-3 text-lg rounded-xl"
+              >
+                Go to Dashboard
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 

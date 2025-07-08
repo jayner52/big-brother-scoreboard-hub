@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Trophy, Calendar, Users, Settings, Gift } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 
-import { WeeklyResultsPanel } from '@/components/admin/WeeklyResultsPanel';
 import { BonusQuestionsPanel } from '@/components/admin/BonusQuestionsPanel';
 import { SeasonCompletionPanel } from '@/components/admin/SeasonCompletionPanel';
 import { WinnerNotificationPanel } from '@/components/admin/winners/WinnerNotificationPanel';
@@ -65,7 +64,11 @@ export const AdminScoringPanel: React.FC = () => {
 
           <div className="p-6">
             <TabsContent value="weekly" className="space-y-6 mt-0">
-              <WeeklyResultsPanel />
+              <div className="text-center p-8 text-muted-foreground">
+                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Weekly Results panel will be available here</p>
+                <p className="text-sm mt-2">Configure weekly competitions, evictions, and HOH winners</p>
+              </div>
             </TabsContent>
 
             <TabsContent value="bonus" className="space-y-6 mt-0">

@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       bonus_questions: {
         Row: {
           answer_revealed: boolean
@@ -430,6 +451,39 @@ export type Database = {
           is_active?: boolean | null
           points?: number
           subcategory?: string | null
+        }
+        Relationships: []
+      }
+      email_list: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          source: string | null
+          status: string | null
+          subscribed_at: string | null
+          unsubscribed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          source?: string | null
+          status?: string | null
+          subscribed_at?: string | null
+          unsubscribed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          source?: string | null
+          status?: string | null
+          subscribed_at?: string | null
+          unsubscribed_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1024,6 +1078,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string | null
+          email_opt_in: boolean | null
+          id: string
+          terms_accepted_at: string | null
+          terms_version: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_opt_in?: boolean | null
+          id?: string
+          terms_accepted_at?: string | null
+          terms_version?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_opt_in?: boolean | null
+          id?: string
+          terms_accepted_at?: string | null
+          terms_version?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       weekly_events: {
         Row: {

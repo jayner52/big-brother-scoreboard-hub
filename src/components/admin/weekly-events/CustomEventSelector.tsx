@@ -70,18 +70,16 @@ export const CustomEventSelector: React.FC<CustomEventSelectorProps> = ({
               <SelectValue>
                 <span className="flex items-center gap-2">
                   <span className="text-lg">{selectedEmoji}</span>
-                  <span>{selectedEmoji}</span>
                 </span>
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="max-h-48 z-[1000] bg-background border border-border shadow-lg">
               {CUSTOM_EVENT_EMOJIS.map(emoji => (
-                <SelectItem key={emoji} value={emoji} className="cursor-pointer hover:bg-accent">
-                  <span className="flex items-center gap-2">
-                    <span className="text-lg">{emoji}</span>
-                    <span>{emoji}</span>
-                  </span>
-                </SelectItem>
+                 <SelectItem key={emoji} value={emoji} className="cursor-pointer hover:bg-accent">
+                   <span className="flex items-center gap-2">
+                     <span className="text-lg">{emoji}</span>
+                   </span>
+                 </SelectItem>
               ))}
             </SelectContent>
           </Select>

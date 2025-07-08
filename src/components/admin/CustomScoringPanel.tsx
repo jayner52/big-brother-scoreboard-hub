@@ -175,7 +175,7 @@ export const CustomScoringPanel: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Scoring Configuration
+            Custom Scoring Rules
           </CardTitle>
           <CardDescription>
             Configure point values and enable/disable scoring rules for your pool. Special events can be enabled for weekly tracking.
@@ -269,14 +269,9 @@ export const CustomScoringPanel: React.FC = () => {
                       <div key={rule.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center gap-3 flex-1">
                           <span className="text-lg">{ruleEmoji}</span>
-                          <div className="flex-1">
-                            <Label className="font-medium">{rule.description}</Label>
-                            {rule.subcategory && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                ID: {rule.subcategory}
-                              </p>
-                            )}
-                          </div>
+                           <div className="flex-1">
+                             <Label className="font-medium">{rule.description}</Label>
+                           </div>
                         </div>
                         
                         <div className="flex items-center gap-4">

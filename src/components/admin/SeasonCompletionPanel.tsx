@@ -80,23 +80,26 @@ export const SeasonCompletionPanel: React.FC = () => {
         .not('winner', 'is', null)
         .not('runner_up', 'is', null)
         .eq('is_draft', false)
-        .order('week_number', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(1);
 
       const hasFinalWeekData = finalWeekData && finalWeekData.length > 0;
       const finalWeek = finalWeekData?.[0];
 
-      // Also check if there's been recent updates to final week
+      // Check if all required final week fields are present
+      const hasAllRequiredFields = finalWeek?.winner && finalWeek?.runner_up && finalWeek?.americas_favorite_player;
+
+      // Also check if there's been recent updates to final week (within last hour to catch immediate updates)
       const hasRecentFinalWeekUpdate = finalWeek?.created_at && 
-        new Date(finalWeek.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000); // within last 24 hours
+        new Date(finalWeek.created_at) > new Date(Date.now() - 60 * 60 * 1000); // within last hour
 
       completionChecks.push({
         id: 'season-concluded',
-        label: 'Final Week Complete with Winner & Runner-up',
-        completed: hasFinalWeekData,
+        label: 'Final Week Complete with Winner, Runner-up & AFP',
+        completed: Boolean(hasFinalWeekData && hasAllRequiredFields),
         description: hasFinalWeekData ? 
-          `Final week completed: ${finalWeek?.winner} won, ${finalWeek?.runner_up} runner-up${finalWeek?.americas_favorite_player ? `, AFP: ${finalWeek.americas_favorite_player}` : ''} (Week ${finalWeek?.week_number})${hasRecentFinalWeekUpdate ? ' ✅ Recently updated' : ''}` : 
-          'Final week with winner and runner-up not yet submitted'
+          `Final week completed: ${finalWeek?.winner} won, ${finalWeek?.runner_up} runner-up${finalWeek?.americas_favorite_player ? `, AFP: ${finalWeek.americas_favorite_player}` : ' (AFP missing)'} (Week ${finalWeek?.week_number})${hasRecentFinalWeekUpdate ? ' ✅ Recently updated' : ''}` : 
+          'Final week with winner, runner-up, and AFP not yet submitted'
       });
 
       // Check 3: Final standings calculated

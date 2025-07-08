@@ -96,7 +96,7 @@ const Landing = () => {
         <div className="container mx-auto text-center">
           <div className="mb-8">
             <div className="mb-6 flex justify-center">
-              <PoolsidePicksLogo size="lg" />
+              <PoolsidePicksLogo size="xxxl" showAnimation={false} />
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-dark mb-4">
               Big Brother Pool

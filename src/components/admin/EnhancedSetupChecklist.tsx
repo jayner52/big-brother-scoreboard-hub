@@ -189,18 +189,24 @@ export const EnhancedSetupChecklist: React.FC = () => {
   const progressPercent = (totalCompleted / setupSteps.length) * 100;
 
   const navigateToSettingsSection = (hash: string) => {
-    // First check if we're on the admin page
     const currentPath = window.location.pathname;
     if (currentPath !== '/admin') {
       // Navigate to admin page first, then set hash
       window.location.href = '/admin' + hash;
     } else {
-      // We're already on admin page, just scroll to section
-      window.location.hash = hash;
+      // We're already on admin page - need to activate Settings tab first
+      // Find and click the Settings tab
       setTimeout(() => {
-        const element = document.querySelector(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+        const settingsTab = document.querySelector('[data-value="settings"]') as HTMLElement;
+        if (settingsTab) {
+          settingsTab.click();
+          // Then scroll to the specific section after tab is active
+          setTimeout(() => {
+            const element = document.querySelector(hash);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          }, 200);
         }
       }, 100);
     }

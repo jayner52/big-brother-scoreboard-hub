@@ -101,8 +101,10 @@ export const SpecialEventsDropdown: React.FC<SpecialEventsDropdownProps> = ({
       if (existingEvents && existingEvents.length > 0) {
         const eventDetails = existingEvents.map(event => {
           const contestant = contestants.find(c => c.id === event.contestant_id);
+          // Find the matching event in availableEvents by type
+          const availableEvent = availableEvents.find(e => e.type === event.event_type);
           return {
-            eventId: event.id,
+            eventId: availableEvent?.id || `custom_${event.id}`,
             contestantId: event.contestant_id,
             contestantName: contestant?.name || 'Unknown',
             points: event.points_awarded || 0

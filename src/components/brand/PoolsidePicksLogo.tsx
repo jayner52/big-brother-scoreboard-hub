@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface PoolsidePicksLogoProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
   className?: string;
   showAnimation?: boolean;
 }
@@ -17,7 +17,8 @@ export const PoolsidePicksLogo: React.FC<PoolsidePicksLogoProps> = ({
     md: 'h-16',
     lg: 'h-24',
     xl: 'h-32',
-    xxl: 'h-48'
+    xxl: 'h-48',
+    xxxl: 'h-72'
   };
 
   return (
@@ -55,7 +56,8 @@ export const PoolsidePicksLogo: React.FC<PoolsidePicksLogoProps> = ({
           size === 'md' ? 'text-xl' :
           size === 'lg' ? 'text-2xl' :
           size === 'xl' ? 'text-4xl' :
-          'text-6xl'
+          size === 'xxl' ? 'text-6xl' :
+          'text-8xl'
         )}>
           🏊‍♀️ Poolside Picks
         </span>

@@ -118,10 +118,10 @@ export const PoolsideMessageBubble: React.FC<PoolsideMessageBubbleProps> = ({
     }
     
     if (isOwn) {
-      return 'bg-coral text-white shadow-md';
+      return 'bg-coral text-white shadow-lg border-2 border-coral/50';
     }
     
-    return 'bg-white text-dark shadow-sm border border-border/20';
+    return 'bg-gray-50 text-dark shadow-sm border border-gray-200';
   };
 
   const getAlignment = () => isOwn ? 'ml-auto' : 'mr-auto';

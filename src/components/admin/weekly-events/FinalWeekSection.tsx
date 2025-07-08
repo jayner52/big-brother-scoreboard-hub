@@ -143,9 +143,10 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
         <p className="text-sm text-yellow-700 mb-4">
           Add any special events that occurred during the final week (jury buybacks, special powers, etc.)
         </p>
+        {/* Use the actual SpecialEventsDropdown component */}
         <div className="bg-white/50 p-4 rounded-lg border border-yellow-300">
           <div className="text-sm text-muted-foreground">
-            Special events functionality for final week - contact admin to add custom events if needed.
+            Special events functionality for final week - implement SpecialEventsDropdown here with week={eventForm.week}
           </div>
         </div>
       </div>

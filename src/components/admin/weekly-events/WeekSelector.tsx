@@ -135,6 +135,31 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
       />
     );
 
+    // Final Week Awards - only show if this is a final week
+    const isFinalWeek = week.data.winner || week.data.runner_up || week.data.americas_favorite_player;
+    if (isFinalWeek) {
+      // Winner - Trophy (gold if filled)
+      if (week.data.winner) {
+        icons.push(
+          <span key="winner" className="text-xs" title="Winner">🏆</span>
+        );
+      }
+      
+      // Runner-up - Medal (silver if filled)  
+      if (week.data.runner_up) {
+        icons.push(
+          <span key="runner-up" className="text-xs" title="Runner-up">🥈</span>
+        );
+      }
+      
+      // America's Favorite - Heart (red if filled)
+      if (week.data.americas_favorite_player) {
+        icons.push(
+          <span key="afp" className="text-xs" title="America's Favorite Player">❤️</span>
+        );
+      }
+    }
+
     // Add double/triple eviction indicators
     if (isDoubleEviction || isTripleEviction) {
       // Add DE/TE indicator

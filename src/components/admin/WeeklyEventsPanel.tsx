@@ -8,6 +8,7 @@ import { WeeklyEventsHeader } from './weekly-events/WeeklyEventsHeader';
 import { WeeklyEventsToggles } from './weekly-events/WeeklyEventsToggles';
 import { WeeklyEventsContent } from './weekly-events/WeeklyEventsContent';
 import { WeekSelector } from './weekly-events/WeekSelector';
+import { FinalWeekBanner } from './weekly-events/FinalWeekBanner';
 import { usePool } from '@/contexts/PoolContext';
 import { InstructionAccordion } from './InstructionAccordion';
 
@@ -146,6 +147,15 @@ export const WeeklyEventsPanel: React.FC = () => {
           <WeekSelector
             currentWeek={eventForm.week}
             onWeekChange={handleWeekChange}
+          />
+
+          {/* Final Week Banner */}
+          <FinalWeekBanner
+            isFinalWeek={eventForm.isFinalWeek}
+            week={eventForm.week}
+            winner={eventForm.winner}
+            runnerUp={eventForm.runnerUp}
+            americasFavorite={eventForm.americasFavorite}
           />
 
           {/* Week Controls */}

@@ -72,22 +72,27 @@ export const SeasonCompletionPanel: React.FC = () => {
         description: 'All prediction questions must have correct answers set'
       });
 
-      // Check 2: Season has concluded (check for finale week)
-      const { data: weekResults } = await supabase
+      // Check 2: Season has concluded (check for finale week with winner/runner-up data)
+      const { data: finalWeekData } = await supabase
         .from('weekly_results')
-        .select('week_number')
+        .select('week_number, winner, runner_up, is_draft')
         .eq('pool_id', activePool.id)
+        .not('winner', 'is', null)
+        .not('runner_up', 'is', null)
+        .eq('is_draft', false)
         .order('week_number', { ascending: false })
         .limit(1);
 
-      const latestWeek = weekResults?.[0]?.week_number || 0;
-      const seasonConcluded = latestWeek >= 14; // Assuming 14+ weeks means season ended
+      const hasFinalWeekData = finalWeekData && finalWeekData.length > 0;
+      const finalWeek = finalWeekData?.[0];
 
       completionChecks.push({
         id: 'season-concluded',
-        label: 'Season Has Concluded',
-        completed: seasonConcluded,
-        description: `Season appears to be ${seasonConcluded ? 'complete' : 'ongoing'} (Week ${latestWeek})`
+        label: 'Final Week Complete with Winner & Runner-up',
+        completed: hasFinalWeekData,
+        description: hasFinalWeekData ? 
+          `Final week completed: ${finalWeek?.winner} won, ${finalWeek?.runner_up} runner-up (Week ${finalWeek?.week_number})` : 
+          'Final week with winner and runner-up not yet submitted'
       });
 
       // Check 3: Final standings calculated

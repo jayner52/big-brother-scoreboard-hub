@@ -25,6 +25,7 @@ export const useWeeklyEvents = () => {
   // Load week data when editingWeek changes or on initial load
   useEffect(() => {
     if (!loading && contestants.length > 0 && editingWeek) {
+      console.log('🔄 Loading week data for week:', editingWeek);
       // Import the loadWeekData function
       const loadWeekData = async () => {
         try {
@@ -78,6 +79,16 @@ export const useWeeklyEvents = () => {
 
           console.log('🔍 Loading week data for week', editingWeek, 'weekData:', weekData);
           
+          // Determine if this is a final week based on final week data
+          const isFinalWeek = !!(weekData?.winner || weekData?.runner_up || weekData?.americas_favorite_player);
+          console.log('🏁 Week data analysis:', { 
+            week: editingWeek, 
+            hasWinner: !!weekData?.winner,
+            hasRunnerUp: !!weekData?.runner_up,
+            hasAfp: !!weekData?.americas_favorite_player,
+            isFinalWeek 
+          });
+
           const formData: WeeklyEventForm = {
             week: editingWeek,
             nominees: weekData?.nominees || ['', ''],
@@ -89,7 +100,7 @@ export const useWeeklyEvents = () => {
             evicted: weekData?.evicted_contestant || '',
             isDoubleEviction: weekData?.is_double_eviction || false,
             isTripleEviction: weekData?.is_triple_eviction || false,
-            isFinalWeek: weekData?.winner ? true : false, // Check if final week data exists
+            isFinalWeek: isFinalWeek, // Use calculated final week status
             isJuryPhase: weekData?.jury_phase_started || false,
             aiArenaEnabled: weekData?.ai_arena_enabled || false,
             aiArenaWinner: weekData?.ai_arena_winner || '',
@@ -160,8 +171,19 @@ export const useWeeklyEvents = () => {
 
   const submitWeek = async () => {
     if (!eventForm) return;
+    
+    console.log('🚀 Submitting week:', eventForm.week, 'isFinalWeek:', eventForm.isFinalWeek);
+    
     await handleSubmitWeek(eventForm, async () => {
-      // Find next sequential week to edit
+      // Only handle post-submission logic for NON-final weeks
+      if (eventForm.isFinalWeek) {
+        console.log('🏁 Final week submitted - staying on current week for season completion');
+        // For final week, just reload data but don't reset form or advance week
+        loadData();
+        return;
+      }
+      
+      // For regular weeks, find next sequential week to edit
       const { data: completedWeeks } = await supabase
         .from('weekly_results')
         .select('week_number')
@@ -171,6 +193,8 @@ export const useWeeklyEvents = () => {
       
       const highestCompletedWeek = completedWeeks?.[0]?.week_number || 0;
       const nextWeek = highestCompletedWeek + 1;
+      
+      console.log('📈 Regular week completed - advancing to week', nextWeek);
       
       // Reset form for next sequential week
       setEventForm({

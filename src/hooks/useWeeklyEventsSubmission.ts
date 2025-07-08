@@ -326,8 +326,16 @@ export const useWeeklyEventsSubmission = (
         if (insertError) throw insertError;
       }
 
+      console.log('🏁 Final Week Check:', { 
+        isFinalWeek: eventForm.isFinalWeek, 
+        week: eventForm.week,
+        winner: eventForm.winner,
+        runnerUp: eventForm.runnerUp 
+      });
+
       // Show different success messages for final week vs regular week
       if (eventForm.isFinalWeek) {
+        console.log('🏁 Processing FINAL WEEK - NO WEEK ADVANCEMENT');
         toast({
           title: "🏆 Final Week Submitted!",
           description: `Season finale results recorded successfully. Ready for season completion.`,
@@ -336,7 +344,9 @@ export const useWeeklyEventsSubmission = (
         // For final week, reload data and trigger recalculation but don't advance
         loadData();
         await triggerRecalculation(`Final week ${eventForm.week} events submitted`);
-        return; // Exit early to prevent week advancement
+        
+        console.log('🏁 Final Week submission complete - staying on same week');
+        return; // CRITICAL: Exit early to prevent ANY week advancement for final week
       } else {
         toast({
           title: "Success!",

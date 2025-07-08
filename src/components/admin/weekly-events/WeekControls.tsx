@@ -128,7 +128,7 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
             {isFinalWeek && isDraft ? (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
-                SUBMIT FINAL WEEK RESULTS
+                🏆 SUBMIT FINAL WEEK RESULTS
               </>
             ) : (
               <>

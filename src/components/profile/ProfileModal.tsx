@@ -32,6 +32,10 @@ const backgroundColors = [
   { name: 'Coral Reef', value: 'from-coral to-brand-teal' },
   { name: 'Golden Hour', value: 'from-yellow-400 to-orange-400' },
   { name: 'Night Sky', value: 'from-slate-800 to-slate-600' },
+  { name: 'Custom Pink', value: 'from-pink-400 to-rose-300' },
+  { name: 'Custom Purple', value: 'from-purple-400 to-indigo-300' },
+  { name: 'Custom Green', value: 'from-emerald-400 to-teal-300' },
+  { name: 'Custom Orange', value: 'from-orange-400 to-amber-300' },
 ];
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -81,45 +85,22 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         background_color: backgroundColor || null,
       });
 
-      // First check if profile exists
-      const { data: existingProfile, error: fetchError } = await supabase
+      // Use upsert to handle both insert and update cases
+      const { error } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+        .upsert({
+          user_id: user.id,
+          display_name: displayName || null,
+          avatar_url: avatarUrl || null,
+          background_color: backgroundColor || null,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'
+        });
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error checking existing profile:', fetchError);
-        throw fetchError;
-      }
-
-      let result;
-      if (existingProfile) {
-        // Update existing profile
-        result = await supabase
-          .from('profiles')
-          .update({
-            display_name: displayName || null,
-            avatar_url: avatarUrl || null,
-            background_color: backgroundColor || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', user.id);
-      } else {
-        // Insert new profile
-        result = await supabase
-          .from('profiles')
-          .insert({
-            user_id: user.id,
-            display_name: displayName || null,
-            avatar_url: avatarUrl || null,
-            background_color: backgroundColor || null,
-          });
-      }
-
-      if (result.error) {
-        console.error('Error saving profile:', result.error);
-        throw result.error;
+      if (error) {
+        console.error('Error saving profile:', error);
+        throw error;
       }
 
       console.log('Profile saved successfully');
@@ -161,7 +142,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <div className="relative">
               <Avatar className="w-24 h-24">
                 {avatarUrl ? (
-                  <div className={`w-full h-full flex items-center justify-center text-4xl rounded-full ${
+                  <div className={`w-full h-full flex items-center justify-center text-5xl rounded-full ${
                     backgroundColor ? `bg-gradient-to-br ${backgroundColor}` : 'bg-gradient-to-br from-brand-teal/20 to-coral/20'
                   }`}>
                     {avatarUrl}

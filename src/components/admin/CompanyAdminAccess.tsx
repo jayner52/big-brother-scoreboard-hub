@@ -124,14 +124,14 @@ export const CompanyAdminAccess: React.FC = () => {
 
   return (
     <div className="mt-12 pt-8 border-t border-border">
-      <Card className="max-w-md mx-auto">
-        <CardHeader className="text-center">
-          <div className="bg-slate-100 p-3 rounded-lg w-fit mx-auto mb-3">
-            <Building2 className="h-6 w-6 text-slate-600" />
+      <Card className="max-w-sm mx-auto">
+        <CardHeader className="text-center pb-4">
+          <div className="bg-slate-100 p-2 rounded-lg w-fit mx-auto mb-2">
+            <Building2 className="h-5 w-5 text-slate-600" />
           </div>
-          <CardTitle className="text-lg">Company Admin Access</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Enter password to access email management
+          <CardTitle className="text-base">Company Admin Access</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Enter password to access restricted area
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

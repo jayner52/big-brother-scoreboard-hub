@@ -89,9 +89,9 @@ export const SeasonCompletionPanel: React.FC = () => {
       // Check if all required final week fields are present
       const hasAllRequiredFields = finalWeek?.winner && finalWeek?.runner_up && finalWeek?.americas_favorite_player;
 
-      // Also check if there's been recent updates to final week (within last hour to catch immediate updates)
+      // Also check if there's been recent updates to final week (within last 10 minutes for immediate detection)
       const hasRecentFinalWeekUpdate = finalWeek?.created_at && 
-        new Date(finalWeek.created_at) > new Date(Date.now() - 60 * 60 * 1000); // within last hour
+        new Date(finalWeek.created_at) > new Date(Date.now() - 10 * 60 * 1000); // within last 10 minutes
 
       completionChecks.push({
         id: 'season-concluded',

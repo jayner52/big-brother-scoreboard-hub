@@ -40,9 +40,15 @@ export const SpecialEventsDropdown: React.FC<SpecialEventsDropdownProps> = ({
   useEffect(() => {
     if (activePool?.id) {
       loadAvailableEvents();
-      loadExistingSpecialEvents();
     }
   }, [activePool?.id, week]);
+
+  // Load existing events after available events are loaded
+  useEffect(() => {
+    if (activePool?.id && availableEvents.length > 0) {
+      loadExistingSpecialEvents();
+    }
+  }, [activePool?.id, week, availableEvents]);
 
   const loadAvailableEvents = async () => {
     if (!activePool?.id) return;

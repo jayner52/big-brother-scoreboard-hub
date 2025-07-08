@@ -195,9 +195,12 @@ export const EnhancedSetupChecklist: React.FC = () => {
       window.location.href = '/admin' + hash;
     } else {
       // We're already on admin page - need to activate Settings tab first
-      // Find and click the Settings tab
       setTimeout(() => {
-        const settingsTab = document.querySelector('[data-value="settings"]') as HTMLElement;
+        // Try multiple selectors for the Settings tab
+        const settingsTab = document.querySelector('[data-value="settings"]') as HTMLElement ||
+                           document.querySelector('button[role="tab"]:has-text("Settings")') as HTMLElement ||
+                           document.querySelector('button:contains("Settings")') as HTMLElement;
+        
         if (settingsTab) {
           settingsTab.click();
           // Then scroll to the specific section after tab is active
@@ -206,7 +209,13 @@ export const EnhancedSetupChecklist: React.FC = () => {
             if (element) {
               element.scrollIntoView({ behavior: 'smooth' });
             }
-          }, 200);
+          }, 300);
+        } else {
+          // Fallback: just scroll to the section if tab not found
+          const element = document.querySelector(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
         }
       }, 100);
     }

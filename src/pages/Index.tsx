@@ -27,6 +27,10 @@ const Index = () => {
   const [userEntry, setUserEntry] = useState<any>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  
   const { formData } = useDraftForm();
   const { 
     activePool, 
@@ -34,6 +38,13 @@ const Index = () => {
     loading: poolsLoading, 
     poolEntries // Use pool-scoped entries from context
   } = usePool();
+
+  // Auto-open create pool modal for new users
+  useEffect(() => {
+    if (!authLoading && !poolsLoading && user && userPools.length === 0) {
+      setShowCreateModal(true);
+    }
+  }, [authLoading, poolsLoading, user, userPools.length]);
 
   useEffect(() => {
     // Check for existing session
@@ -107,25 +118,36 @@ const Index = () => {
     navigate('/draft');
   };
 
-  if (authLoading || poolsLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!user) {
-    return <div className="min-h-screen flex items-center justify-center">Redirecting to landing...</div>;
-  }
-
-  // Auto-open create pool modal for new users
-  const [showCreateModal, setShowCreateModal] = useState(userPools.length === 0);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-
   const handlePoolSuccess = () => {
     setShowCreateModal(false);
     setShowJoinModal(false);
   };
 
-  // Show pool selection if user has no pools but keep it minimal
-  if (userPools.length === 0) {
+  const handleError = () => {
+    setHasError(true);
+  };
+
+  if (authLoading || poolsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse text-muted-foreground">Loading your pools...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-muted-foreground">Redirecting to landing...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple/5 via-background to-teal/5">
         <div className="container mx-auto px-4 py-16">
@@ -135,9 +157,63 @@ const Index = () => {
               Sign Out
             </Button>
           </div>
-
           <div className="text-center">
-            <p className="text-lg mb-4">Getting your pool set up...</p>
+            <p className="text-lg mb-4">Something went wrong loading your pools.</p>
+            <div className="flex gap-4 justify-center">
+              <Button onClick={() => setShowCreateModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Pool
+              </Button>
+              <Button variant="outline" onClick={() => setShowJoinModal(true)}>
+                <Users className="h-4 w-4 mr-2" />
+                Join Pool
+              </Button>
+            </div>
+          </div>
+          <PoolCreateModal 
+            open={showCreateModal} 
+            onOpenChange={setShowCreateModal}
+            onSuccess={handlePoolSuccess}
+          />
+          <PoolJoinModal 
+            open={showJoinModal} 
+            onOpenChange={setShowJoinModal}
+            onSuccess={handlePoolSuccess}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Show pool selection if user has no pools
+  if (userPools.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple/5 via-background to-teal/5">
+        <div className="container mx-auto px-4 py-16">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-bold">Welcome to Poolside Picks!</h1>
+            <Button variant="outline" onClick={handleSignOut}>
+              Sign Out
+            </Button>
+          </div>
+
+          <div className="text-center space-y-6">
+            <div>
+              <Trophy className="h-16 w-16 mx-auto text-primary mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Ready to start your Big Brother pool?</h2>
+              <p className="text-muted-foreground">Create your own pool or join an existing one to get started!</p>
+            </div>
+            
+            <div className="flex gap-4 justify-center">
+              <Button size="lg" onClick={() => setShowCreateModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Pool
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => setShowJoinModal(true)}>
+                <Users className="h-4 w-4 mr-2" />
+                Join Pool
+              </Button>
+            </div>
           </div>
 
           <PoolCreateModal 

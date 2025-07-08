@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Trash2, Plus, Zap } from 'lucide-react';
-import { SPECIAL_EVENTS_CONFIG, getDefaultPointsForEvent } from '@/constants/specialEvents';
+import { useScoringRules } from '@/hooks/useScoringRules';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
@@ -35,12 +35,14 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
 }) => {
   const { activePool } = usePool();
   const { toast } = useToast();
+  const { scoringRules } = useScoringRules();
   const [showCustomEventForm, setShowCustomEventForm] = useState(false);
 
-  // Get enabled special events from pool settings
-  const enabledEvents = activePool?.enabled_special_events || [];
-  const availableEvents = SPECIAL_EVENTS_CONFIG.toggleable.filter(event => 
-    enabledEvents.includes(event.id)
+  // Get available special events from active scoring rules
+  const availableEvents = scoringRules.filter(rule => 
+    rule.category === 'special_events' && 
+    rule.is_active &&
+    rule.subcategory !== 'won_bb_arena' // Exclude automatic events
   );
 
   // Get all contestants for events like "came back after evicted"
@@ -83,7 +85,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
 
     // Set default points when event type changes
     if (field === 'eventType' && value !== 'custom_event') {
-      newEvents[index].customPoints = undefined; // Use default from config
+      newEvents[index].customPoints = undefined; // Use default from scoring rules
     }
 
     // Validate contestant selection for specific events
@@ -161,15 +163,19 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     if (event.eventType === 'custom_event' && event.customDescription) {
       return `${event.customEmoji} ${event.customDescription}`;
     }
-    const eventConfig = availableEvents.find(e => e.id === event.eventType);
-    return eventConfig ? `${eventConfig.emoji} ${eventConfig.label}` : event.eventType;
+    const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType);
+    return eventRule ? eventRule.description : event.eventType;
   };
 
   const getEventPoints = (event: SpecialEventFormData) => {
     if (event.eventType === 'custom_event') {
       return event.customPoints || 1;
     }
-    return event.customPoints !== undefined ? event.customPoints : getDefaultPointsForEvent(event.eventType);
+    if (event.customPoints !== undefined) {
+      return event.customPoints;
+    }
+    const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType);
+    return eventRule?.points || 1;
   };
 
   if (availableEvents.length === 0) {
@@ -183,8 +189,8 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">
-            No special events are enabled in this pool's settings. 
-            Go to Admin → Pool Settings → Custom Scoring Rules to enable events.
+            No special events are available. 
+            Go to Admin → Pool Settings → Custom Scoring Rules to activate special events.
           </p>
         </CardContent>
       </Card>
@@ -227,13 +233,12 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                     <SelectValue placeholder="Select event type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableEvents.map(eventType => (
-                      <SelectItem key={eventType.id} value={eventType.id}>
+                    {availableEvents.map(eventRule => (
+                      <SelectItem key={eventRule.subcategory} value={eventRule.subcategory}>
                         <span className="flex items-center gap-2">
-                          <span>{eventType.emoji}</span>
-                          <span>{eventType.label}</span>
+                          <span>{eventRule.description}</span>
                           <Badge variant="secondary" className="text-xs ml-2">
-                            {eventType.points !== undefined ? `${eventType.points > 0 ? '+' : ''}${eventType.points}` : '±'}
+                            {eventRule.points > 0 ? '+' : ''}{eventRule.points} pts
                           </Badge>
                         </span>
                       </SelectItem>
@@ -315,7 +320,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                 <Label>Custom Points (optional)</Label>
                 <Input
                   type="number"
-                  placeholder={`Default: ${getDefaultPointsForEvent(event.eventType)}`}
+                  placeholder={`Default: ${availableEvents.find(rule => rule.subcategory === event.eventType)?.points || 1}`}
                   value={event.customPoints || ''}
                   onChange={(e) => updateSpecialEvent(index, 'customPoints', parseInt(e.target.value) || undefined)}
                 />

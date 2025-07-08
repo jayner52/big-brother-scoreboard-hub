@@ -786,7 +786,6 @@ export type Database = {
           draft_locked: boolean
           draft_open: boolean
           enable_bonus_questions: boolean
-          enabled_special_events: string[] | null
           entry_fee_amount: number
           entry_fee_currency: string
           finale_week_enabled: boolean | null
@@ -825,7 +824,6 @@ export type Database = {
           draft_locked?: boolean
           draft_open?: boolean
           enable_bonus_questions?: boolean
-          enabled_special_events?: string[] | null
           entry_fee_amount?: number
           entry_fee_currency?: string
           finale_week_enabled?: boolean | null
@@ -864,7 +862,6 @@ export type Database = {
           draft_locked?: boolean
           draft_open?: boolean
           enable_bonus_questions?: boolean
-          enabled_special_events?: string[] | null
           entry_fee_amount?: number
           entry_fee_currency?: string
           finale_week_enabled?: boolean | null

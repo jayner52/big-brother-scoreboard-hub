@@ -8,26 +8,14 @@ export interface SpecialEventConfig {
   points?: number;
 }
 
+// Special Events Configuration - SIMPLIFIED
+// Now using database scoring rules as single source of truth for configurable events
+// Only automatic events that don't need admin configuration are stored here
+
 export const SPECIAL_EVENTS_CONFIG: {
-  toggleable: SpecialEventConfig[];
   automatic: SpecialEventConfig[];
 } = {
-  // Events that can be toggled in pool settings and appear in weekly tracking
-  toggleable: [
-    { id: 'won_special_power', label: 'Won Special Power/Advantage', emoji: '🔮', points: 2 },
-    { id: 'used_special_power', label: 'Used Special Power', emoji: '⚡', points: 1 },
-    { id: 'won_prize', label: 'Won Prize/Reward', emoji: '🎁', points: 2 },
-    { id: 'in_showmance', label: 'In a Showmance', emoji: '💕', points: 1 },
-    { id: 'received_penalty', label: 'Received Penalty/Punishment', emoji: '⚠️', points: -2 },
-    { id: 'costume_punishment', label: 'Costume Punishment', emoji: '🤡', points: -1 },
-    { id: 'came_back_evicted', label: 'Came Back After Evicted', emoji: '🔄', points: 5 },
-    { id: 'self_evicted', label: 'Self-Evicted/Quit', emoji: '🚪', points: -5 },
-    { id: 'removed_production', label: 'Removed by Production', emoji: '❌', points: -5 },
-    { id: 'won_safety_comp', label: 'Won Safety Competition', emoji: '🛡️', points: 1 },
-    { id: 'custom_event', label: 'Custom Event', emoji: '✨', points: 1 }
-  ],
-  
-  // Automatic events (shown in legend but not in settings/weekly)
+  // Automatic events (calculated automatically, shown in legend but not in weekly admin)
   automatic: [
     { id: 'won_bb_arena', label: 'Won BB Arena/AI Arena', emoji: '🛡️', points: 2 },
     { id: 'survived_block_2x', label: '2+ Week Block Survival Bonus', emoji: '💪', points: 2 },
@@ -40,9 +28,8 @@ export const SPECIAL_EVENTS_CONFIG: {
   ]
 };
 
-// Get all events combined
+// Get all automatic events
 export const getAllSpecialEvents = (): SpecialEventConfig[] => [
-  ...SPECIAL_EVENTS_CONFIG.toggleable,
   ...SPECIAL_EVENTS_CONFIG.automatic
 ];
 

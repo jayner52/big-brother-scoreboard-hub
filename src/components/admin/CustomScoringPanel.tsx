@@ -21,14 +21,13 @@ export const CustomScoringPanel: React.FC = () => {
   const { toast } = useToast();
   const { activePool, updatePool } = usePool();
   const [scoringRules, setScoringRules] = useState<ScoringRule[]>([]);
-  const [enabledEvents, setEnabledEvents] = useState<string[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showCustomEventForm, setShowCustomEventForm] = useState(false);
 
   useEffect(() => {
     loadScoringRules();
-    loadEnabledEvents();
   }, [activePool]);
 
   const loadScoringRules = async () => {
@@ -53,11 +52,6 @@ export const CustomScoringPanel: React.FC = () => {
     }
   };
 
-  const loadEnabledEvents = () => {
-    if (activePool?.enabled_special_events) {
-      setEnabledEvents(activePool.enabled_special_events);
-    }
-  };
 
   const updateRule = (id: string, field: keyof ScoringRule, value: any) => {
     setScoringRules(prev => prev.map(rule => 
@@ -65,13 +59,6 @@ export const CustomScoringPanel: React.FC = () => {
     ));
   };
 
-  const toggleSpecialEvent = (eventId: string) => {
-    setEnabledEvents(prev => 
-      prev.includes(eventId)
-        ? prev.filter(id => id !== eventId)
-        : [...prev, eventId]
-    );
-  };
 
   const handleCustomEventAdd = async (eventData: { description: string; emoji: string; points: number }) => {
     try {
@@ -125,18 +112,10 @@ export const CustomScoringPanel: React.FC = () => {
         if (error) throw error;
       }
 
-      // Save enabled special events
-      const result = await updatePool(activePool.id, {
-        enabled_special_events: enabledEvents
-      });
-
-      if (!result.success) {
-        throw new Error('Failed to update enabled events');
-      }
 
       toast({
         title: "Configuration Saved",
-        description: "Scoring rules and special events updated successfully",
+        description: "Scoring rules updated successfully",
       });
     } catch (error) {
       console.error('Error saving configuration:', error);
@@ -179,9 +158,7 @@ export const CustomScoringPanel: React.FC = () => {
       {/* Scoring Rules */}
       <ScoringRulesSection
         groupedRules={groupedRules}
-        enabledEvents={enabledEvents}
         onUpdateRule={updateRule}
-        onToggleSpecialEvent={toggleSpecialEvent}
         onShowCustomEventForm={() => setShowCustomEventForm(true)}
       />
 

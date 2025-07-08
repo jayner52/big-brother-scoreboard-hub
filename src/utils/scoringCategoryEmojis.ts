@@ -57,7 +57,7 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
     { category: 'special_events', subcategory: 'came_back_evicted', emoji: '🔄', description: 'Came Back After Evicted' },
     { category: 'special_events', subcategory: 'self_evicted', emoji: '🚪', description: 'Self-Evicted/Quit' },
     { category: 'special_events', subcategory: 'removed_production', emoji: '❌', description: 'Removed by Production' },
-    { category: 'special_events', subcategory: 'won_safety_comp', emoji: '🛡️', description: 'Won Safety Competition' },
+    { category: 'special_events', subcategory: 'won_safety_comp', emoji: '🔒', description: 'Won Safety Competition' },
     { category: 'special_events', subcategory: 'custom_event', emoji: '✨', description: 'Custom Event' },
   ]
 };

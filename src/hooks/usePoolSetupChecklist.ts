@@ -158,8 +158,10 @@ export const usePoolSetupChecklist = () => {
               }, 600);
             }, 400);
           }
+        } else {
+          console.warn(`Could not find tab with data-value="${navigation.tab}"`);
         }
-      }, 100);
+      }, 500);
     } else if (navigation.modal === 'invite-copy') {
       // Handle invite copy action
       if (activePool?.invite_code) {

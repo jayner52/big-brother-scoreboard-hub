@@ -207,11 +207,11 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
       <TableCell className="text-center font-bold text-lg bg-yellow-100">
         {actualTotalPoints}
       </TableCell>
-      <TableCell className={`text-center font-medium ${getPointsChangeColor(actualTotalPoints - (entry.total_points || 0))}`}>
+      <TableCell className={`text-center font-medium ${getPointsChangeColor(pointsChange)}`}>
         <div className="flex items-center justify-center gap-1">
-          {(actualTotalPoints - (entry.total_points || 0)) > 0 && <TrendingUp className="h-3 w-3" />}
-          {(actualTotalPoints - (entry.total_points || 0)) < 0 && <TrendingDown className="h-3 w-3" />}
-          <span>{(actualTotalPoints - (entry.total_points || 0)) > 0 ? '+' : ''}{actualTotalPoints - (entry.total_points || 0)}</span>
+          {pointsChange > 0 && <TrendingUp className="h-3 w-3" />}
+          {pointsChange < 0 && <TrendingDown className="h-3 w-3" />}
+          <span>{pointsChange > 0 ? '+' : ''}{pointsChange}</span>
         </div>
       </TableCell>
       <TableCell className="text-center">

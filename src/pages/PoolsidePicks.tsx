@@ -98,7 +98,7 @@ const PoolsidePicks = () => {
         <div className="container mx-auto text-center">
           {/* Giant Logo */}
            <div className="mb-12 flex justify-center">
-             <PoolsidePicksLogo size="xxl" showAnimation={true} />
+             <PoolsidePicksLogo size="xxxl" showAnimation={false} />
            </div>
           
           <h1 className={`${isMobile ? 'text-5xl' : 'text-8xl'} font-bold text-dark mb-6 relative`}>

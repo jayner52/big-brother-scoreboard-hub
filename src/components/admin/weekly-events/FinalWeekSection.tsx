@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Trophy, Heart, Zap } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useScoringRules } from '@/hooks/useScoringRules';
+import { SpecialEventsDropdown } from '../special-events/SpecialEventsDropdown';
 
 interface FinalWeekSectionProps {
   eventForm: WeeklyEventForm;
@@ -143,10 +144,13 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
         <p className="text-sm text-yellow-700 mb-4">
           Add any special events that occurred during the final week (jury buybacks, special powers, etc.)
         </p>
-        {/* Import and use SpecialEventsDropdown - add import at top of file */}
-        <div className="text-sm text-yellow-700 mb-4">
-          Special events for final week will be added in next update. For now, add special events through the regular Weekly Events panel.
-        </div>
+        {/* Import and use SpecialEventsDropdown */}
+        <SpecialEventsDropdown
+          week={16}
+          selectedEvents={[]}
+          onEventsChange={() => {}}
+          contestants={activeContestants}
+        />
       </div>
     </div>
   );

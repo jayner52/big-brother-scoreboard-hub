@@ -97,9 +97,9 @@ const PoolsidePicks = () => {
       <section className="relative py-20 px-4">
         <div className="container mx-auto text-center">
           {/* Giant Logo */}
-          <div className="mb-12 flex justify-center">
-            <PoolsidePicksLogo size="xl" showAnimation={true} />
-          </div>
+           <div className="mb-12 flex justify-center">
+             <PoolsidePicksLogo size="xxl" showAnimation={true} />
+           </div>
           
           <h1 className={`${isMobile ? 'text-5xl' : 'text-8xl'} font-bold text-dark mb-6 relative`}>
             Poolside Picks

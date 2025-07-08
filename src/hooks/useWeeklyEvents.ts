@@ -149,7 +149,11 @@ export const useWeeklyEvents = () => {
     if (eventForm.isFinalWeek) {
       const winnerPoints = scoringRules.find(rule => rule.category === 'final_placement' && rule.subcategory === 'winner')?.points || 50;
       const runnerUpPoints = scoringRules.find(rule => rule.category === 'final_placement' && rule.subcategory === 'runner_up')?.points || 25;
-      const afpPoints = scoringRules.find(rule => rule.category === 'special_achievements' && rule.subcategory === 'americas_favorite')?.points || 15;
+      const afpPoints = scoringRules.find(rule => 
+        (rule.category === 'special_achievements' && rule.subcategory === 'americas_favorite') ||
+        (rule.category === 'final_placement' && rule.subcategory === 'americas_favorite') ||
+        (rule.category === 'bonus_achievements' && rule.subcategory === 'americas_favorite')
+      )?.points || 15;
       
       if (eventForm.winner) {
         pointsPreview[eventForm.winner] = (pointsPreview[eventForm.winner] || 0) + winnerPoints;

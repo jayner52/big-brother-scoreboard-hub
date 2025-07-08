@@ -75,7 +75,7 @@ export const SeasonCompletionPanel: React.FC = () => {
       // Check 2: Season has concluded (check for finale week with winner/runner-up data)
       const { data: finalWeekData } = await supabase
         .from('weekly_results')
-        .select('week_number, winner, runner_up, is_draft')
+        .select('week_number, winner, runner_up, americas_favorite_player, is_draft, created_at')
         .eq('pool_id', activePool.id)
         .not('winner', 'is', null)
         .not('runner_up', 'is', null)
@@ -86,12 +86,16 @@ export const SeasonCompletionPanel: React.FC = () => {
       const hasFinalWeekData = finalWeekData && finalWeekData.length > 0;
       const finalWeek = finalWeekData?.[0];
 
+      // Also check if there's been recent updates to final week
+      const hasRecentFinalWeekUpdate = finalWeek?.created_at && 
+        new Date(finalWeek.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000); // within last 24 hours
+
       completionChecks.push({
         id: 'season-concluded',
         label: 'Final Week Complete with Winner & Runner-up',
         completed: hasFinalWeekData,
         description: hasFinalWeekData ? 
-          `Final week completed: ${finalWeek?.winner} won, ${finalWeek?.runner_up} runner-up (Week ${finalWeek?.week_number})` : 
+          `Final week completed: ${finalWeek?.winner} won, ${finalWeek?.runner_up} runner-up${finalWeek?.americas_favorite_player ? `, AFP: ${finalWeek.americas_favorite_player}` : ''} (Week ${finalWeek?.week_number})${hasRecentFinalWeekUpdate ? ' ✅ Recently updated' : ''}` : 
           'Final week with winner and runner-up not yet submitted'
       });
 

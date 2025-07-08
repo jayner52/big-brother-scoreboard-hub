@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChatMessage as ChatMessageType } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { DeleteConfirmDialog } from '@/components/chat/DeleteConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PoolsideMessageBubbleProps {
   message: ChatMessageType;
@@ -23,7 +25,30 @@ export const PoolsideMessageBubble: React.FC<PoolsideMessageBubbleProps> = ({
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [userProfile, setUserProfile] = useState<{
+    display_name?: string;
+    avatar_url?: string;
+    background_color?: string;
+  } | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name, avatar_url, background_color')
+          .eq('user_id', message.user_id)
+          .maybeSingle();
+        
+        setUserProfile(profile);
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    };
+
+    loadUserProfile();
+  }, [message.user_id]);
 
   const formatTime = (dateString: string) => {
     try {
@@ -118,6 +143,25 @@ export const PoolsideMessageBubble: React.FC<PoolsideMessageBubbleProps> = ({
       )}
       
       <div className="flex items-start gap-3">
+        {/* User Avatar */}
+        <div className="flex-shrink-0">
+          <Avatar className="w-8 h-8">
+            {userProfile?.avatar_url ? (
+              <div className={`w-full h-full flex items-center justify-center text-lg rounded-full ${
+                userProfile.background_color ? `bg-gradient-to-br ${userProfile.background_color}` : 'bg-gradient-to-br from-brand-teal/20 to-coral/20'
+              }`}>
+                {userProfile.avatar_url}
+              </div>
+            ) : (
+              <AvatarFallback className={`text-xs text-white ${
+                userProfile?.background_color ? `bg-gradient-to-br ${userProfile.background_color}` : 'bg-gradient-to-br from-coral to-brand-teal'
+              }`}>
+                {(userProfile?.display_name || message.user_name || 'U').charAt(0).toUpperCase()}
+              </AvatarFallback>
+            )}
+          </Avatar>
+        </div>
+
         <div className="flex-1 min-w-0">
           {/* Header with username and timestamp */}
           <div className="flex items-center gap-2 mb-2">
@@ -125,7 +169,7 @@ export const PoolsideMessageBubble: React.FC<PoolsideMessageBubbleProps> = ({
               font-bold text-sm font-rounded
               ${isOwn ? 'text-white/90' : 'text-dark'}
             `}>
-              {message.user_name}
+              {userProfile?.display_name || message.user_name}
             </span>
             <span className={`
               text-xs opacity-70 

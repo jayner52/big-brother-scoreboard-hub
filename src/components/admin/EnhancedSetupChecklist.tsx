@@ -86,21 +86,21 @@ export const EnhancedSetupChecklist: React.FC = () => {
           id: 'contestants',
           title: 'Add Contestants (minimum 16)',
           completed: originalSteps.find(s => s.id.includes('contestants'))?.completed || false,
-          action: () => window.location.hash = '#contestants',
+          action: () => navigateToSettingsSection('#contestants'),
           actionLabel: 'Add Contestants'
         },
         {
           id: 'scoring',
           title: 'Configure Scoring Rules',
           completed: originalSteps.find(s => s.id.includes('scoring'))?.completed || false,
-          action: () => window.location.hash = '#scoring',
+          action: () => navigateToSettingsSection('#scoring'),
           actionLabel: 'Configure'
         },
         {
           id: 'prizes',
           title: 'Set Prize Distribution',
           completed: activePool.has_buy_in ? originalSteps.find(s => s.id.includes('prize'))?.completed || false : true,
-          action: () => window.location.hash = '#prizes',
+          action: () => navigateToSettingsSection('#prizes'),
           actionLabel: 'Set Prizes'
         }
       ]
@@ -141,14 +141,14 @@ export const EnhancedSetupChecklist: React.FC = () => {
           id: 'bonus_questions',
           title: 'Create Bonus Questions',
           completed: originalSteps.find(s => s.id.includes('bonus'))?.completed || false,
-          action: () => window.location.hash = '#bonus',
+          action: () => navigateToSettingsSection('#bonus'),
           actionLabel: 'Add Questions'
         },
         {
           id: 'special_events',
           title: 'Configure Special Events',
           completed: (activePool.enabled_special_events?.length || 0) > 0,
-          action: () => window.location.hash = '#events',  
+          action: () => navigateToSettingsSection('#events'),  
           actionLabel: 'Configure'
         }
       ]
@@ -187,6 +187,24 @@ export const EnhancedSetupChecklist: React.FC = () => {
 
   const totalCompleted = setupSteps.filter(s => s.completed).length;
   const progressPercent = (totalCompleted / setupSteps.length) * 100;
+
+  const navigateToSettingsSection = (hash: string) => {
+    // First check if we're on the admin page
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/admin') {
+      // Navigate to admin page first, then set hash
+      window.location.href = '/admin' + hash;
+    } else {
+      // We're already on admin page, just scroll to section
+      window.location.hash = hash;
+      setTimeout(() => {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  };
 
   const copyInviteCode = () => {
     if (activePool?.invite_code) {

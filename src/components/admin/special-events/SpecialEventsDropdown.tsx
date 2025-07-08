@@ -40,8 +40,9 @@ export const SpecialEventsDropdown: React.FC<SpecialEventsDropdownProps> = ({
   useEffect(() => {
     if (activePool?.id) {
       loadAvailableEvents();
+      loadExistingSpecialEvents();
     }
-  }, [activePool?.id]);
+  }, [activePool?.id, week]);
 
   const loadAvailableEvents = async () => {
     if (!activePool?.id) return;
@@ -82,6 +83,37 @@ export const SpecialEventsDropdown: React.FC<SpecialEventsDropdownProps> = ({
       setAvailableEvents(events);
     } catch (error) {
       console.error('❌ Special Events - Error loading events:', error);
+    }
+  };
+
+  const loadExistingSpecialEvents = async () => {
+    if (!activePool?.id) return;
+
+    try {
+      const { data: existingEvents, error } = await supabase
+        .from('special_events')
+        .select('*')
+        .eq('pool_id', activePool.id)
+        .eq('week_number', week);
+
+      if (error) throw error;
+
+      if (existingEvents && existingEvents.length > 0) {
+        const eventDetails = existingEvents.map(event => {
+          const contestant = contestants.find(c => c.id === event.contestant_id);
+          return {
+            eventId: event.id,
+            contestantId: event.contestant_id,
+            contestantName: contestant?.name || 'Unknown',
+            points: event.points_awarded || 0
+          };
+        });
+
+        setSelectedEventDetails(eventDetails);
+        onEventsChange(eventDetails.map(d => d.eventId));
+      }
+    } catch (error) {
+      console.error('❌ Special Events - Error loading existing events:', error);
     }
   };
 

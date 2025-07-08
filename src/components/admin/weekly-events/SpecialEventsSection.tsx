@@ -184,7 +184,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         <CardContent>
           <p className="text-muted-foreground text-sm">
             No special events are enabled in this pool's settings. 
-            Go to Admin → Pool Settings → Special Events to enable events.
+            Go to Admin → Pool Settings → Custom Scoring Rules to enable events.
           </p>
         </CardContent>
       </Card>

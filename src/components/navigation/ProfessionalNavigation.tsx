@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu, User } from 'lucide-react';
+import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu, User, TrendingUp } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { EnhancedChatIcon } from '@/components/chat/EnhancedChatIcon';
 import { ProfileModal } from '@/components/profile/ProfileModal';
@@ -257,7 +258,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
 
       {/* CENTER SECTION - Core Actions (Hidden on mobile) */}
       {!isMobile && (
-        <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-full border border-border/50">
+        <div className="flex items-center gap-2 bg-muted/30 p-1 rounded-full border border-border/50">
           <NavButton
             to="/about"
             icon={Info}
@@ -273,6 +274,15 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
           <div className="relative">
             <EnhancedChatIcon />
           </div>
+
+          {/* Trade Coming Soon Pill */}
+          <button
+            disabled
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground/60 bg-muted/20 border border-border/30 cursor-not-allowed opacity-75"
+          >
+            <TrendingUp className="h-4 w-4" />
+            <span>Trade (coming soon)</span>
+          </button>
         </div>
       )}
 

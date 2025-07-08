@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,14 +115,14 @@ export const CustomScoringPanel: React.FC = () => {
 
 
       toast({
-        title: "Configuration Saved",
+        title: "Settings Saved",
         description: "Scoring rules updated successfully",
       });
     } catch (error) {
       console.error('Error saving configuration:', error);
       toast({
         title: "Error",
-        description: "Failed to save configuration",
+        description: "Failed to save settings",
         variant: "destructive",
       });
     } finally {
@@ -137,7 +138,7 @@ export const CustomScoringPanel: React.FC = () => {
   }, {} as Record<string, ScoringRule[]>);
 
   if (loading) {
-    return <div className="text-center py-8">Loading scoring configuration...</div>;
+    return <div className="text-center py-8">Loading scoring rules...</div>;
   }
 
   return (
@@ -147,7 +148,7 @@ export const CustomScoringPanel: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Scoring Configuration
+            Pool Scoring Rules
           </CardTitle>
           <CardDescription>
             Configure point values and enable/disable scoring rules for your pool. Special events can be enabled for weekly tracking.
@@ -170,7 +171,7 @@ export const CustomScoringPanel: React.FC = () => {
         size="lg"
       >
         <Settings className="h-4 w-4 mr-2" />
-        {saving ? 'Saving Configuration...' : 'Save All Configuration'}
+        {saving ? 'Saving Settings...' : 'Save All Settings'}
       </Button>
 
       {/* Custom Event Modal */}

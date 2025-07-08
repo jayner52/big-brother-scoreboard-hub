@@ -1,3 +1,4 @@
+
 import { SCORING_CATEGORY_EMOJIS, getCategoryHeaderEmoji } from './scoringCategoryEmojis';
 
 // Validation function to ensure no emoji duplicates

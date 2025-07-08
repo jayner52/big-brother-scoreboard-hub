@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,16 @@ export const CustomEventSelector: React.FC<CustomEventSelectorProps> = ({
     setDescription('');
     setSelectedEmoji('✨');
     setPoints(1);
+  };
+
+  const handlePointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '' || value === '-') {
+      setPoints(0);
+      return;
+    }
+    const numValue = parseInt(value);
+    setPoints(isNaN(numValue) ? 0 : numValue);
   };
 
   return (
@@ -87,12 +98,12 @@ export const CustomEventSelector: React.FC<CustomEventSelectorProps> = ({
             id="points"
             type="number"
             value={points}
-            onChange={(e) => setPoints(parseInt(e.target.value) || 1)}
+            onChange={handlePointsChange}
             className="mt-1"
-            placeholder="1"
+            placeholder="Enter points (can be negative)"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Can be positive or negative
+            Enter positive or negative number (e.g., -5 for penalty)
           </p>
         </div>
 

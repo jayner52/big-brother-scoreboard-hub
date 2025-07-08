@@ -1,3 +1,4 @@
+
 // Scoring Category Emoji Mappings
 // Maps scoring rule categories and subcategories to appropriate emojis
 
@@ -8,7 +9,7 @@ export interface ScoringCategoryMapping {
   description: string;
 }
 
-// Define emoji mappings for all scoring categories
+// Define emoji mappings for all scoring categories - ALL UNIQUE EMOJIS
 export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> = {
   // Competition Events
   competition: [
@@ -21,9 +22,9 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
   // Weekly Events
   weekly: [
     { category: 'weekly', subcategory: 'nominee', emoji: '🎯', description: 'Nominated for Eviction' },
-    { category: 'weekly', subcategory: 'replacement_nominee', emoji: '🔃', description: 'Replacement Nominee' },
-    { category: 'weekly', subcategory: 'saved_by_veto', emoji: '🔓', description: 'Saved by Veto' },
-    { category: 'weekly', subcategory: 'survival', emoji: '✅', description: 'Survived the Week' },
+    { category: 'weekly', subcategory: 'replacement_nominee', emoji: '🔄', description: 'Replacement Nominee' },
+    { category: 'weekly', subcategory: 'saved_by_veto', emoji: '🗝️', description: 'Saved by Veto' },
+    { category: 'weekly', subcategory: 'survival', emoji: '💚', description: 'Survived the Week' },
     { category: 'weekly', subcategory: 'evicted', emoji: '👋', description: 'Evicted from House' },
   ],
 
@@ -31,7 +32,7 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
   special_achievements: [
     { category: 'special_achievements', subcategory: 'block_survival_2_weeks', emoji: '🛟', description: '2+ Week Block Survival Bonus' },
     { category: 'special_achievements', subcategory: 'block_survival_4_weeks', emoji: '💪', description: '4+ Week Block Survival Bonus (Consecutive)' },
-    { category: 'special_achievements', subcategory: 'floater_achievement', emoji: '🏰', description: 'Floater Achievement (4+ Consecutive Weeks No Comp Wins)' },
+    { category: 'special_achievements', subcategory: 'floater_achievement', emoji: '🌊', description: 'Floater Achievement (4+ Consecutive Weeks No Comp Wins)' },
   ],
 
   // Jury Phase
@@ -77,15 +78,15 @@ export const getScoringRuleEmoji = (category: string, subcategory?: string): str
   return categoryMappings[0]?.emoji || '📝';
 };
 
-// Get category emoji for display in headers
+// Get category emoji for display in headers - ALL UNIQUE
 export const getCategoryHeaderEmoji = (category: string): string => {
   const emojiMap: Record<string, string> = {
-    competition: '🏆',
+    competition: '🏁',      // Changed from 🏆 to avoid duplicate
     weekly: '📅',
-    special_achievements: '🌟',
-    jury: '⚖️',
-    final_placement: '👑',
-    special_events: '⚡'
+    special_achievements: '🎖️',  // Changed from 🌟 to avoid duplicate  
+    jury: '👨‍⚖️',             // Changed from ⚖️ to avoid duplicate
+    final_placement: '🥇',   // Changed from 👑 to avoid duplicate
+    special_events: '🎪'     // Changed from ⚡ to avoid duplicate
   };
 
   return emojiMap[category] || '📝';

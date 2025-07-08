@@ -31,6 +31,7 @@ export const CustomEventSelector: React.FC<CustomEventSelectorProps> = ({
   const handleSubmit = () => {
     if (!description.trim()) return;
     
+    // Don't include emoji in description - it will be handled separately
     onAddCustomEvent({
       description: description.trim(),
       emoji: selectedEmoji,
@@ -66,12 +67,15 @@ export const CustomEventSelector: React.FC<CustomEventSelectorProps> = ({
           <Label htmlFor="description">Event Description</Label>
           <Textarea
             id="description"
-            placeholder="Describe the special event..."
+            placeholder="Describe the special event (don't include emoji here)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="mt-1"
             rows={2}
           />
+          <p className="text-xs text-muted-foreground mt-1">
+            Just describe the event - the emoji will be added automatically
+          </p>
         </div>
 
         <div>
@@ -106,6 +110,20 @@ export const CustomEventSelector: React.FC<CustomEventSelectorProps> = ({
             Enter positive or negative number (e.g., -5 for penalty)
           </p>
         </div>
+
+        {/* Preview */}
+        {description.trim() && (
+          <div className="p-3 bg-muted/20 rounded border">
+            <p className="text-sm font-medium text-muted-foreground mb-1">Preview:</p>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{selectedEmoji}</span>
+              <span className="text-sm">{description.trim()}</span>
+              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                {points > 0 ? '+' : ''}{points} pts
+              </span>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-2 pt-2">
           <Button 

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
 import { CustomEventSelector } from './CustomEventSelector';
 import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
+import { supabase } from '@/integrations/supabase/client';
 
 type SpecialEventFormData = {
   id?: string;
@@ -38,13 +40,39 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   const { toast } = useToast();
   const { scoringRules } = useScoringRules();
   const [showCustomEventForm, setShowCustomEventForm] = useState(false);
+  const [customScoringRules, setCustomScoringRules] = useState<any[]>([]);
 
-  // Get available special events from active scoring rules
-  const availableEvents = scoringRules.filter(rule => 
-    rule.category === 'special_events' && 
-    rule.is_active &&
-    rule.subcategory !== 'won_bb_arena' // Exclude automatic events
-  );
+  // Load custom scoring rules on component mount
+  React.useEffect(() => {
+    loadCustomScoringRules();
+  }, []);
+
+  const loadCustomScoringRules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('detailed_scoring_rules')
+        .select('*')
+        .eq('category', 'special_events')
+        .eq('subcategory', 'custom_permanent')
+        .eq('is_active', true);
+
+      if (error) throw error;
+      setCustomScoringRules(data || []);
+    } catch (error) {
+      console.error('Error loading custom scoring rules:', error);
+    }
+  };
+
+  // Get available special events from active scoring rules plus custom ones
+  const availableEvents = [
+    ...scoringRules.filter(rule => 
+      rule.category === 'special_events' && 
+      rule.is_active &&
+      rule.subcategory !== 'won_bb_arena' && // Exclude automatic events
+      rule.subcategory !== 'custom_permanent' // We'll show these separately
+    ),
+    ...customScoringRules
+  ];
 
   // Get all contestants for events like "came back after evicted"
   const evictedContestants = activeContestants.filter(c => !c.isActive);
@@ -126,25 +154,82 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     });
   };
 
-  const handleCustomEventAdd = (eventData: { description: string; emoji: string; points: number }) => {
-    const newEvents = [...eventForm.specialEvents];
-    const targetEventIndex = newEvents.findIndex(e => e.eventType === 'custom_event' && !e.contestant);
-    
-    if (targetEventIndex >= 0) {
-      newEvents[targetEventIndex] = {
-        ...newEvents[targetEventIndex],
-        customDescription: eventData.description,
-        customEmoji: eventData.emoji,
-        customPoints: eventData.points
-      };
+  const handleCustomEventAdd = async (eventData: { description: string; emoji: string; points: number }) => {
+    try {
+      // Add to permanent scoring rules
+      const { error } = await supabase
+        .from('detailed_scoring_rules')
+        .insert({
+          category: 'special_events',
+          subcategory: 'custom_permanent',
+          description: eventData.description, // Don't include emoji in description anymore
+          points: eventData.points,
+          is_active: true
+        });
+
+      if (error) throw error;
+
+      // Reload custom scoring rules
+      await loadCustomScoringRules();
+
+      // Find the incomplete custom event in the form and complete it
+      const newEvents = [...eventForm.specialEvents];
+      const targetEventIndex = newEvents.findIndex(e => e.eventType === 'custom_event' && !e.contestant);
       
-      setEventForm({
-        ...eventForm,
-        specialEvents: newEvents
+      if (targetEventIndex >= 0) {
+        newEvents[targetEventIndex] = {
+          ...newEvents[targetEventIndex],
+          customDescription: eventData.description,
+          customEmoji: eventData.emoji,
+          customPoints: eventData.points
+        };
+        
+        setEventForm({
+          ...eventForm,
+          specialEvents: newEvents
+        });
+      }
+      
+      setShowCustomEventForm(false);
+      
+      toast({
+        title: "Success!",
+        description: "Custom special event created and added to your library",
+      });
+    } catch (error) {
+      console.error('Error adding custom event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add custom event",
+        variant: "destructive",
       });
     }
-    
-    setShowCustomEventForm(false);
+  };
+
+  const deleteCustomScoringRule = async (ruleId: string) => {
+    try {
+      const { error } = await supabase
+        .from('detailed_scoring_rules')
+        .update({ is_active: false })
+        .eq('id', ruleId);
+
+      if (error) throw error;
+
+      // Reload custom scoring rules
+      await loadCustomScoringRules();
+      
+      toast({
+        title: "Success!",
+        description: "Custom special event deleted",
+      });
+    } catch (error) {
+      console.error('Error deleting custom event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete custom event",
+        variant: "destructive",
+      });
+    }
   };
 
   // Get available contestants for each event type
@@ -164,8 +249,15 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     if (event.eventType === 'custom_event' && event.customDescription) {
       return `${event.customEmoji} ${event.customDescription}`;
     }
-    const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType);
-    return eventRule ? eventRule.description : event.eventType;
+    const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType || rule.id === event.eventType);
+    if (eventRule) {
+      // For custom permanent rules, show emoji + description
+      if (eventRule.subcategory === 'custom_permanent') {
+        return eventRule.description;
+      }
+      return eventRule.description;
+    }
+    return event.eventType;
   };
 
   const getEventPoints = (event: SpecialEventFormData) => {
@@ -175,11 +267,11 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     if (event.customPoints !== undefined) {
       return event.customPoints;
     }
-    const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType);
+    const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType || rule.id === event.eventType);
     return eventRule?.points || 1;
   };
 
-  if (availableEvents.length === 0) {
+  if (availableEvents.length === 0 && customScoringRules.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -207,6 +299,34 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Custom Events Library */}
+        {customScoringRules.length > 0 && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+            <h4 className="font-medium text-blue-800 mb-2">Your Custom Events Library</h4>
+            <div className="space-y-2">
+              {customScoringRules.map(rule => (
+                <div key={rule.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">{rule.description}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {rule.points > 0 ? '+' : ''}{rule.points} pts
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteCustomScoringRule(rule.id)}
+                    className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Special Events for this week */}
         {eventForm.specialEvents.map((event, index) => (
           <div key={event.id} className="flex flex-col gap-3 p-4 border rounded-lg">
             <div className="flex items-center justify-between">
@@ -237,7 +357,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                     {availableEvents.map(eventRule => {
                       const emoji = getScoringRuleEmoji(eventRule.category, eventRule.subcategory);
                       return (
-                        <SelectItem key={eventRule.subcategory} value={eventRule.subcategory}>
+                        <SelectItem key={eventRule.subcategory || eventRule.id} value={eventRule.subcategory || eventRule.id}>
                           <span className="flex items-center gap-2">
                             <span className="text-sm">{emoji}</span>
                             <span>{eventRule.description}</span>
@@ -248,6 +368,12 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                         </SelectItem>
                       );
                     })}
+                    <SelectItem value="custom_event">
+                      <span className="flex items-center gap-2">
+                        <span className="text-sm">✨</span>
+                        <span>Create Custom Event</span>
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -318,7 +444,6 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                 )}
               </div>
             )}
-
 
             {/* Event Summary */}
             {event.contestant && event.eventType && (

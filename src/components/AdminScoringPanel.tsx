@@ -177,9 +177,9 @@ export const AdminScoringPanel: React.FC = () => {
             </div>
           </div>
 
-          {/* Tab Content with Consistent Padding */}
-          <div className="p-4 md:p-6">
-            <TabsContent value="events" className="space-y-4 mt-0">
+      {/* Tab Content with Consistent Padding */}
+      <div className="p-4 md:p-6" data-admin-panel>
+        <TabsContent value="events" className="space-y-4 mt-0">
               <ErrorBoundary>
                 <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading weekly events...</div>}>
                   <WeeklyEventsPanel />

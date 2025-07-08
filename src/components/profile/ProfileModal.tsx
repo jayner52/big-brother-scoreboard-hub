@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,9 +18,21 @@ interface ProfileModalProps {
   userProfile?: {
     display_name?: string;
     avatar_url?: string;
+    background_color?: string;
   };
   onProfileUpdate?: () => void;
 }
+
+const backgroundColors = [
+  { name: 'Default', value: '' },
+  { name: 'Ocean Blue', value: 'from-blue-500 to-cyan-400' },
+  { name: 'Sunset', value: 'from-orange-500 to-pink-500' },
+  { name: 'Forest', value: 'from-green-500 to-emerald-400' },
+  { name: 'Purple Dream', value: 'from-purple-500 to-violet-400' },
+  { name: 'Coral Reef', value: 'from-coral to-brand-teal' },
+  { name: 'Golden Hour', value: 'from-yellow-400 to-orange-400' },
+  { name: 'Night Sky', value: 'from-slate-800 to-slate-600' },
+];
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
   isOpen,
@@ -31,11 +44,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState(userProfile?.display_name || '');
   const [avatarUrl, setAvatarUrl] = useState(userProfile?.avatar_url || '');
+  const [backgroundColor, setBackgroundColor] = useState(userProfile?.background_color || '');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setDisplayName(userProfile?.display_name || '');
     setAvatarUrl(userProfile?.avatar_url || '');
+    setBackgroundColor(userProfile?.background_color || '');
   }, [userProfile]);
 
   const handleIconSelect = (icon: string) => {
@@ -48,17 +63,66 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   };
 
   const handleSave = async () => {
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "User not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          display_name: displayName || null,
-          avatar_url: avatarUrl || null,
-        });
+      console.log('Saving profile for user:', user.id);
+      console.log('Profile data:', {
+        display_name: displayName || null,
+        avatar_url: avatarUrl || null,
+        background_color: backgroundColor || null,
+      });
 
-      if (error) throw error;
+      // First check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error checking existing profile:', fetchError);
+        throw fetchError;
+      }
+
+      let result;
+      if (existingProfile) {
+        // Update existing profile
+        result = await supabase
+          .from('profiles')
+          .update({
+            display_name: displayName || null,
+            avatar_url: avatarUrl || null,
+            background_color: backgroundColor || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id);
+      } else {
+        // Insert new profile
+        result = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            display_name: displayName || null,
+            avatar_url: avatarUrl || null,
+            background_color: backgroundColor || null,
+          });
+      }
+
+      if (result.error) {
+        console.error('Error saving profile:', result.error);
+        throw result.error;
+      }
+
+      console.log('Profile saved successfully');
 
       toast({
         title: "Profile updated",
@@ -71,7 +135,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       console.error('Error updating profile:', error);
       toast({
         title: "Update failed",
-        description: "Failed to update profile",
+        description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -87,7 +151,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
-            Update your display name and choose a fun pool icon
+            Update your display name, choose a fun pool icon, and customize your background
           </DialogDescription>
         </DialogHeader>
 
@@ -97,11 +161,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <div className="relative">
               <Avatar className="w-24 h-24">
                 {avatarUrl ? (
-                  <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-brand-teal/20 to-coral/20 rounded-full">
+                  <div className={`w-full h-full flex items-center justify-center text-4xl rounded-full ${
+                    backgroundColor ? `bg-gradient-to-br ${backgroundColor}` : 'bg-gradient-to-br from-brand-teal/20 to-coral/20'
+                  }`}>
                     {avatarUrl}
                   </div>
                 ) : (
-                  <AvatarFallback className="text-2xl bg-gradient-to-br from-coral to-brand-teal text-white">
+                  <AvatarFallback className={`text-2xl text-white ${
+                    backgroundColor ? `bg-gradient-to-br ${backgroundColor}` : 'bg-gradient-to-br from-coral to-brand-teal'
+                  }`}>
                     {initials}
                   </AvatarFallback>
                 )}
@@ -124,6 +192,30 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your display name"
             />
+          </div>
+
+          {/* Background Color */}
+          <div className="space-y-2">
+            <Label>Background Color</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {backgroundColors.map((color) => (
+                <button
+                  key={color.name}
+                  type="button"
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    backgroundColor === color.value
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setBackgroundColor(color.value)}
+                >
+                  <div className={`w-full h-8 rounded ${
+                    color.value ? `bg-gradient-to-br ${color.value}` : 'bg-gradient-to-br from-brand-teal/20 to-coral/20'
+                  }`} />
+                  <div className="text-xs mt-1 text-center">{color.name}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Actions */}

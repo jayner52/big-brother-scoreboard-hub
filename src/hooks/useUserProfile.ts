@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -7,6 +8,7 @@ interface UserProfile {
   user_id: string;
   display_name?: string;
   avatar_url?: string;
+  background_color?: string;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +28,7 @@ export const useUserProfile = (user: SupabaseUser | null) => {
     setError(null);
 
     try {
+      console.log('Fetching profile for user:', user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -33,9 +36,11 @@ export const useUserProfile = (user: SupabaseUser | null) => {
         .single();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error fetching profile:', error);
         throw error;
       }
 
+      console.log('Profile fetched:', data);
       setProfile(data);
     } catch (err) {
       console.error('Error fetching profile:', err);

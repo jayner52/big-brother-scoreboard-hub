@@ -275,6 +275,20 @@ export const PrizePoolManagement: React.FC = () => {
     });
   };
 
+  const handleAdminFeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setConfig({ ...config, admin_fee: 0 });
+    } else {
+      setConfig({ ...config, admin_fee: Number(value) || 0 });
+    }
+  };
+
+  const handleCustomPrizeAmountChange = (id: string, value: string) => {
+    const numericValue = value === '' ? 0 : (Number(value) || 0);
+    updateCustomPrize(id, 'amount', numericValue);
+  };
+
   const getPlaceText = (place: number): string => {
     if (place === 1) return '1st Place';
     if (place === 2) return '2nd Place';
@@ -450,8 +464,8 @@ export const PrizePoolManagement: React.FC = () => {
             <Input
               id="admin_fee"
               type="number"
-              value={config.admin_fee}
-              onChange={(e) => setConfig({ ...config, admin_fee: Number(e.target.value) || 0 })}
+              value={config.admin_fee === 0 ? '' : config.admin_fee.toString()}
+              onChange={handleAdminFeeChange}
               placeholder="0"
               className="w-32"
               min="0"
@@ -596,8 +610,8 @@ export const PrizePoolManagement: React.FC = () => {
                         <Label>Amount ({currency})</Label>
                         <Input
                           type="number"
-                          value={prize.amount}
-                          onChange={(e) => updateCustomPrize(prize.id, 'amount', Number(e.target.value) || 0)}
+                          value={prize.amount === 0 ? '' : prize.amount.toString()}
+                          onChange={(e) => handleCustomPrizeAmountChange(prize.id, e.target.value)}
                           placeholder="0"
                           min="0"
                         />

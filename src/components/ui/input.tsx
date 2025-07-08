@@ -1,9 +1,51 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
+    // Handle number input clearing and default values
+    const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (type === "number") {
+        const value = e.target.value;
+        // Allow empty string during editing
+        if (value === "") {
+          e.target.value = "";
+        }
+        // Call original onChange if provided
+        if (props.onChange) {
+          props.onChange(e);
+        }
+      } else if (props.onChange) {
+        props.onChange(e);
+      }
+    };
+
+    const handleNumberBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      if (type === "number") {
+        const value = e.target.value;
+        // Set to 0 if empty when losing focus
+        if (value === "" || isNaN(Number(value))) {
+          e.target.value = "0";
+          // Trigger onChange to update the form state
+          if (props.onChange) {
+            const syntheticEvent = {
+              ...e,
+              target: { ...e.target, value: "0" }
+            } as React.ChangeEvent<HTMLInputElement>;
+            props.onChange(syntheticEvent);
+          }
+        }
+        // Call original onBlur if provided
+        if (props.onBlur) {
+          props.onBlur(e);
+        }
+      } else if (props.onBlur) {
+        props.onBlur(e);
+      }
+    };
+
     return (
       <input
         type={type}
@@ -12,6 +54,8 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        onChange={handleNumberInput}
+        onBlur={handleNumberBlur}
         {...props}
       />
     )

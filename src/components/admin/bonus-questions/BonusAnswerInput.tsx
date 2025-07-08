@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -180,12 +181,22 @@ export const BonusAnswerInput: React.FC<BonusAnswerInputProps> = ({
   }
 
   if (question.question_type === 'number') {
+    const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value === '') {
+        onAnswerChange(0);
+      } else {
+        onAnswerChange(parseInt(value) || 0);
+      }
+    };
+
     return (
       <Input
         type="number"
-        value={currentAnswer || ''}
-        onChange={(e) => onAnswerChange(parseInt(e.target.value) || 0)}
+        value={currentAnswer === 0 ? '' : (currentAnswer || '').toString()}
+        onChange={handleNumberChange}
         placeholder="Enter correct number"
+        min="0"
       />
     );
   }

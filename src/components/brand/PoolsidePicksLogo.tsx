@@ -18,13 +18,13 @@ export const PoolsidePicksLogo: React.FC<PoolsidePicksLogoProps> = ({
     lg: 'h-24',
     xl: 'h-32',
     xxl: 'h-48',
-    xxxl: 'h-96'
+    xxxl: 'h-[400px]'
   };
 
   return (
     <div className={cn(
       'flex items-center justify-center',
-      showAnimation ? 'animate-bounce' : 'animate-none',
+      showAnimation && 'animate-bounce',
       className
     )}>
       {/* Placeholder - replace with your actual logo */}
@@ -33,8 +33,7 @@ export const PoolsidePicksLogo: React.FC<PoolsidePicksLogoProps> = ({
         alt="Poolside Picks Logo"
         className={cn(
           'object-contain filter drop-shadow-lg transition-transform duration-300 hover:scale-105',
-          sizeClasses[size],
-          showAnimation ? 'animate-bounce' : 'animate-none'
+          sizeClasses[size]
         )}
         style={{
           filter: 'drop-shadow(0 4px 8px rgba(255, 127, 80, 0.3))'

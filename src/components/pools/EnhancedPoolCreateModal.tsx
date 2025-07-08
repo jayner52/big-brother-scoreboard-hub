@@ -30,16 +30,18 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const currentYear = new Date().getFullYear();
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    has_buy_in: false,
-    entry_fee_amount: 25,
-    entry_fee_currency: 'CAD',
-    payment_method_1: 'E-transfer',
+    description: `Big Brother ${currentYear}`,
+    has_buy_in: true, // Default to paid pool
+    entry_fee_amount: 15, // Default $15 entry fee
+    entry_fee_currency: '', // Require user selection
+    payment_method_1: '', // Require user selection
     payment_details_1: '',
     buy_in_description: '',
   });
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,14 +55,32 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
       return;
     }
 
+    // Validate required fields
+    const newErrors: {[key: string]: string} = {};
+    
+    if (formData.has_buy_in && !formData.entry_fee_currency) {
+      newErrors.currency = "Please select a currency";
+    }
+    
+    if (formData.has_buy_in && !formData.payment_method_1) {
+      newErrors.payment_method = "Please select a payment method";
+    }
+
     if (formData.has_buy_in && !formData.payment_details_1.trim()) {
+      newErrors.payment_details = "Payment details are required when buy-in is enabled";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       toast({
-        title: "Error",
-        description: "Payment details are required when buy-in is enabled",
+        title: "Required Fields Missing",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
     }
+
+    setErrors({});
 
     setLoading(true);
     try {
@@ -83,16 +103,18 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
         onSuccess?.();
         
         // Reset form
+        const currentYear = new Date().getFullYear();
         setFormData({
           name: '',
-          description: '',
-          has_buy_in: false,
-          entry_fee_amount: 25,
-          entry_fee_currency: 'CAD',
-          payment_method_1: 'E-transfer',
+          description: `Big Brother ${currentYear}`,
+          has_buy_in: true,
+          entry_fee_amount: 15,
+          entry_fee_currency: '',
+          payment_method_1: '',
           payment_details_1: '',
           buy_in_description: '',
         });
+        setErrors({});
       } else {
         toast({
           title: "Error",
@@ -138,13 +160,12 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
+              <Label htmlFor="description">Season Name</Label>
+              <Input
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Optional description for your pool"
-                rows={2}
+                placeholder="e.g., Big Brother 2024"
               />
             </div>
           </div>
@@ -184,32 +205,41 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="currency">Currency</Label>
+                      <Label htmlFor="currency">Currency *</Label>
                       <Select
                         value={formData.entry_fee_currency}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, entry_fee_currency: value }))}
+                        onValueChange={(value) => {
+                          setFormData(prev => ({ ...prev, entry_fee_currency: value }));
+                          setErrors(prev => ({ ...prev, currency: '' }));
+                        }}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
+                        <SelectTrigger className={errors.currency ? 'border-red-500' : ''}>
+                          <SelectValue placeholder="Select Currency" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="CAD">CAD</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                          <SelectItem value="GBP">GBP</SelectItem>
+                          <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                          <SelectItem value="USD">USD - US Dollar</SelectItem>
+                          <SelectItem value="EUR">EUR - Euro</SelectItem>
+                          <SelectItem value="GBP">GBP - British Pound</SelectItem>
                         </SelectContent>
                       </Select>
+                      {errors.currency && (
+                        <p className="text-xs text-red-600">{errors.currency}</p>
+                      )}
                     </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="payment-method">Payment Method</Label>
+                    <Label htmlFor="payment-method">Payment Method *</Label>
                     <Select
                       value={formData.payment_method_1}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method_1: value }))}
+                      onValueChange={(value) => {
+                        setFormData(prev => ({ ...prev, payment_method_1: value }));
+                        setErrors(prev => ({ ...prev, payment_method: '' }));
+                      }}
                     >
-                      <SelectTrigger>
-                        <SelectValue />
+                      <SelectTrigger className={errors.payment_method ? 'border-red-500' : ''}>
+                        <SelectValue placeholder="Select Payment Method" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="E-transfer">E-Transfer</SelectItem>
@@ -221,6 +251,9 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
                         <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.payment_method && (
+                      <p className="text-xs text-red-600">{errors.payment_method}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -228,10 +261,17 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
                     <Input
                       id="payment-details"
                       value={formData.payment_details_1}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payment_details_1: e.target.value }))}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, payment_details_1: e.target.value }));
+                        setErrors(prev => ({ ...prev, payment_details: '' }));
+                      }}
                       placeholder="e.g., email@example.com, @username, phone number"
                       required={formData.has_buy_in}
+                      className={errors.payment_details ? 'border-red-500' : ''}
                     />
+                    {errors.payment_details && (
+                      <p className="text-xs text-red-600">{errors.payment_details}</p>
+                    )}
                     <p className="text-xs text-muted-foreground">
                       Enter the email, username, or phone number where participants should send payment
                     </p>
@@ -264,11 +304,13 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
           </Card>
 
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-800 mb-2">Next steps:</h4>
+            <h4 className="font-semibold text-green-800 mb-2">Smart Defaults Applied:</h4>
             <ul className="text-sm text-green-700 space-y-1">
-              <li>• Your pool will be invite-only for security</li>
-              <li>• You can fine-tune all settings in the admin panel</li>
-              <li>• Share your invite code with friends to get started</li>
+              <li>• 🏆 Pre-configured scoring rules for all BB events</li>
+              <li>• 📊 Prize distribution: 50% / 30% / 20%</li>
+              <li>• 👥 4 draft groups + 1 free pick (5 selections per team)</li>
+              <li>• 🏠 Season 26 houseguests will be loaded automatically</li>
+              <li>• 🔒 Invite-only for security</li>
             </ul>
           </div>
         </form>

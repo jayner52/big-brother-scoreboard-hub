@@ -29,6 +29,12 @@ export const WinnerBanner: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !activePool?.id) return;
 
+      // Only show winner banner if season is complete
+      if (!activePool.season_complete) {
+        setLoading(false);
+        return;
+      }
+
       // Check if user is a winner in this pool
       const { data: winnerData } = await supabase
         .from('pool_winners')

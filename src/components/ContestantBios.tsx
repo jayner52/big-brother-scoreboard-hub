@@ -8,7 +8,7 @@ import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
 import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
 import { ContestantProfileModal } from '@/components/admin/contestants/ContestantProfileModal';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
 
 interface ContestantWithGroup extends ContestantWithBio {
   group_name?: string;
@@ -19,7 +19,7 @@ export const ContestantBios: React.FC = () => {
   const [selectedContestant, setSelectedContestant] = useState<ContestantWithGroup | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { activePool } = usePool();
+  const activePool = useActivePool();
   const { evictedContestants } = useEvictedContestants();
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
   const { evictionWeeks } = useEvictionWeeks();

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Trophy, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
 import { calculatePrizes, formatPrize, getPlaceText } from '@/utils/prizeCalculation';
 
 interface PrizePool {
@@ -37,7 +37,7 @@ interface PrizeConfiguration {
 }
 
 export const PrizePoolDisplay: React.FC = () => {
-  const { activePool } = usePool();
+  const activePool = useActivePool();
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading, setLoading] = useState(true);
 

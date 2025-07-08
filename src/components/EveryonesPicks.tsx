@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, EyeOff } from 'lucide-react';
@@ -13,7 +13,7 @@ import { evaluateBonusAnswer, formatBonusAnswer, formatCorrectAnswers } from '@/
 import { LockOverlay } from '@/components/ui/lock-overlay';
 
 export const EveryonesPicks: React.FC = () => {
-  const { activePool } = usePool();
+  const activePool = useActivePool();
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);

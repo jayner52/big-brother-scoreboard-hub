@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Trash2, Users, Lock, Unlock, Check, X, CreditCard, DollarSign, Gift } from 'lucide-react';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
+import { usePoolOperations } from '@/hooks/usePoolOperations';
 import { UserPaymentButton } from '@/components/enhanced/UserPaymentButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { InstructionAccordion } from '@/components/admin/InstructionAccordion';
@@ -40,7 +41,8 @@ interface PoolSettings {
 
 export const PoolEntriesManagement: React.FC = () => {
   const { toast } = useToast();
-  const { activePool, updatePool } = usePool();
+  const activePool = useActivePool();
+  const { updatePool } = usePoolOperations();
   const [entries, setEntries] = useState<PoolEntry[]>([]);
   const [settings, setSettings] = useState<PoolSettings>({ draft_open: true, draft_locked: false });
   const [loading, setLoading] = useState(true);

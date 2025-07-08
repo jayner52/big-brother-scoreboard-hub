@@ -4,7 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Settings } from 'lucide-react';
 import { AdminInstructionsModal } from './admin/AdminInstructionsModal';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
+import { usePoolPermissions } from '@/hooks/usePoolPermissions';
 
 // Lazy load components for better performance
 const ContestantManagement = React.lazy(() => import('@/components/admin/ContestantManagement').then(m => ({ default: m.ContestantManagement })));
@@ -17,7 +18,8 @@ const RoleManagementPanel = React.lazy(() => import('@/components/admin/RoleMana
 
 
 export const AdminScoringPanel: React.FC = () => {
-  const { canManagePool, canManageRoles, getUserRole, activePool } = usePool();
+  const { canManagePool, canManageRoles, getUserRole } = usePoolPermissions();
+  const activePool = useActivePool();
   const [activeTab, setActiveTab] = useState('events');
   
   const userRole = getUserRole();

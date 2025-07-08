@@ -815,6 +815,10 @@ export type Database = {
           season_locked: boolean | null
           show_prize_amounts: boolean | null
           show_prize_total: boolean | null
+          tip_jar_paid: boolean | null
+          tip_jar_paid_at: string | null
+          tip_jar_payment_id: string | null
+          tip_jar_percentage: number | null
           updated_at: string
         }
         Insert: {
@@ -853,6 +857,10 @@ export type Database = {
           season_locked?: boolean | null
           show_prize_amounts?: boolean | null
           show_prize_total?: boolean | null
+          tip_jar_paid?: boolean | null
+          tip_jar_paid_at?: string | null
+          tip_jar_payment_id?: string | null
+          tip_jar_percentage?: number | null
           updated_at?: string
         }
         Update: {
@@ -891,6 +899,10 @@ export type Database = {
           season_locked?: boolean | null
           show_prize_amounts?: boolean | null
           show_prize_total?: boolean | null
+          tip_jar_paid?: boolean | null
+          tip_jar_paid_at?: string | null
+          tip_jar_payment_id?: string | null
+          tip_jar_percentage?: number | null
           updated_at?: string
         }
         Relationships: []

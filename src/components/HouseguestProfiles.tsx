@@ -9,7 +9,7 @@ import { useEvictedContestants } from '@/hooks/useEvictedContestants';
 import { useUserPaymentUpdate } from '@/hooks/useUserPaymentUpdate';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
 
 interface UserTeamsProps {
   userId?: string;
@@ -20,7 +20,7 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [draftLocked, setDraftLocked] = useState(true);
-  const { activePool } = usePool();
+  const activePool = useActivePool();
   const { houseguestPoints } = useHouseguestPoints();
   const { evictedContestants } = useEvictedContestants();
   const { updatePaymentStatus, updating } = useUserPaymentUpdate();

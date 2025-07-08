@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { useSimpleLeaderboard } from '@/hooks/useSimpleLeaderboard';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
 
 
 export const TeamLeaderboard: React.FC = () => {
-  const { activePool } = usePool();
+  const activePool = useActivePool();
   const { poolEntries, loading, error, reload } = useSimpleLeaderboard();
   const { houseguestPoints } = useHouseguestPoints();
 

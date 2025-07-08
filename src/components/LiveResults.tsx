@@ -8,7 +8,7 @@ import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { formatEventType, getEventDisplayText } from '@/utils/eventFormatters';
 import { useCurrentWeek } from '@/contexts/CurrentWeekContext';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
 
 interface WeeklyResult {
   week_number: number;
@@ -47,7 +47,7 @@ export const LiveResults: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showSpoilers, setShowSpoilers] = useState(false);
   const { currentWeek } = useCurrentWeek();
-  const { activePool } = usePool();
+  const activePool = useActivePool();
   const [currentWeekData, setCurrentWeekData] = useState<WeeklyResult | null>(null);
 
   useEffect(() => {

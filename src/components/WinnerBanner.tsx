@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
 import { WinnerPaymentModal } from '@/components/admin/winners/WinnerPaymentModal';
 import { Trophy, CreditCard } from 'lucide-react';
 
@@ -13,7 +13,7 @@ interface WinnerInfo {
 }
 
 export const WinnerBanner: React.FC = () => {
-  const { activePool } = usePool();
+  const activePool = useActivePool();
   const [winnerInfo, setWinnerInfo] = useState<WinnerInfo | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(true);

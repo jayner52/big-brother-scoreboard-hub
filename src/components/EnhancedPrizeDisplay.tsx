@@ -4,7 +4,8 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Trophy, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
+import { usePoolOperations } from '@/hooks/usePoolOperations';
 import { calculatePrizes, formatPrize, getPlaceText } from '@/utils/prizeCalculation';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,7 +14,8 @@ interface EnhancedPrizeDisplayProps {
 }
 
 export const EnhancedPrizeDisplay: React.FC<EnhancedPrizeDisplayProps> = ({ isAdmin = false }) => {
-  const { activePool, updatePool } = usePool();
+  const activePool = useActivePool();
+  const { updatePool } = usePoolOperations();
   const { toast } = useToast();
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading, setLoading] = useState(true);

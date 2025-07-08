@@ -10,7 +10,7 @@ import { PaymentValidationSection } from '@/components/draft/PaymentValidationSe
 import { DynamicTeamDraftSection } from '@/components/draft/DynamicTeamDraftSection';
 import { BonusQuestionsSection } from '@/components/draft/BonusQuestionsSection';
 import { MultiTeamSwitcher } from '@/components/draft/MultiTeamSwitcher';
-import { usePool } from '@/contexts/PoolContext';
+import { useActivePool } from '@/hooks/useActivePool';
 import { usePoolData } from '@/hooks/usePoolData';
 import { useDynamicDraftForm } from '@/hooks/useDynamicDraftForm';
 import { useDynamicDraftValidation } from '@/hooks/useDynamicDraftValidation';
@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Shuffle, AlertCircle, Trash2, Plus } from 'lucide-react';
 
 export const TeamDraftFormFixed: React.FC = () => {
-  const { activePool } = usePool();
+  const activePool = useActivePool();
   const { activePool: poolData, contestantGroups, bonusQuestions, loading } = usePoolData({ poolId: activePool?.id });
   const { toast } = useToast();
   

@@ -40,6 +40,45 @@ export const useDynamicDraftSubmission = () => {
       activePool: activePool?.id
     });
 
+    // CRITICAL: Check if draft is locked before allowing submission
+    if (!activePool) {
+      console.error('🚀 No active pool - submission blocked');
+      toast({
+        title: "Error",
+        description: "No active pool selected",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Check draft lock conditions
+    const lockReasons = [];
+    
+    if (activePool.draft_open === false) {
+      lockReasons.push("Draft has been closed by administrator");
+    }
+    
+    if (activePool.allow_new_participants === false) {
+      lockReasons.push("New participants are not currently allowed");
+    }
+    
+    if (activePool.registration_deadline) {
+      const deadline = new Date(activePool.registration_deadline);
+      if (new Date() > deadline) {
+        lockReasons.push("Registration deadline has passed");
+      }
+    }
+
+    if (lockReasons.length > 0) {
+      console.error('🚀 Draft locked - submission blocked:', lockReasons);
+      toast({
+        title: "Draft Locked",
+        description: lockReasons.join('. '),
+        variant: "destructive",
+      });
+      return false;
+    }
+
     const validationError = validateForm(formData, picksPerTeam);
     if (validationError) {
       console.error('🚀 Validation failed:', validationError);

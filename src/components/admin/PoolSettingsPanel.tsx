@@ -568,13 +568,7 @@ export const PoolSettingsPanel: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={settings.draft_open}
-                      onCheckedChange={(checked) => setSettings({ ...settings, draft_open: checked })}
-                    />
-                    <Label>Draft Open</Label>
-                  </div>
+                  {/* Draft Open toggle removed - managed in Draft Timing & Visibility section */}
                   <div className="flex items-center space-x-2">
                     <Switch
                       checked={settings.season_active}

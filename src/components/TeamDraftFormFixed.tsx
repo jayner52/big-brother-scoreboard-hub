@@ -120,6 +120,43 @@ export const TeamDraftFormFixed: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // CRITICAL: Prevent submission if draft is locked
+    if (!activePool) {
+      toast({
+        title: "Error",
+        description: "No active pool selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check draft lock conditions before submission
+    const lockReasons = [];
+    
+    if (activePool.draft_open === false) {
+      lockReasons.push("Draft has been closed by administrator");
+    }
+    
+    if (activePool.allow_new_participants === false) {
+      lockReasons.push("New participants are not currently allowed");
+    }
+    
+    if (activePool.registration_deadline) {
+      const deadline = new Date(activePool.registration_deadline);
+      if (new Date() > deadline) {
+        lockReasons.push("Registration deadline has passed");
+      }
+    }
+
+    if (lockReasons.length > 0) {
+      toast({
+        title: "Draft Locked",
+        description: lockReasons.join('. '),
+        variant: "destructive",
+      });
+      return;
+    }
+    
     console.log('🔧 FORM SUBMISSION - DETAILED DEBUG:', { 
       formData, 
       picksPerTeam,
@@ -196,8 +233,15 @@ export const TeamDraftFormFixed: React.FC = () => {
           </div>
         )}
 
-        {/* Show form only when editing existing team or creating new team */}
-        {(!userTeams.length || isEditingExisting || !editingTeamId) && (
+        {/* Calculate if draft is locked */}
+        {(() => {
+          if (!activePool) return null;
+          
+          const isDraftLocked = activePool.draft_open === false || 
+                               activePool.allow_new_participants === false ||
+                               (activePool.registration_deadline && new Date() > new Date(activePool.registration_deadline));
+          
+          return (!userTeams.length || isEditingExisting || !editingTeamId) && (
           <>
             {/* CRITICAL FIX: Only show payment info if pool has buy-in */}
             {poolData?.has_buy_in && (
@@ -243,7 +287,14 @@ export const TeamDraftFormFixed: React.FC = () => {
               </AlertDialog>
             </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" 
+                style={{
+                  pointerEvents: !activePool || 
+                                activePool.draft_open === false || 
+                                activePool.allow_new_participants === false ||
+                                (activePool.registration_deadline && new Date() > new Date(activePool.registration_deadline)) 
+                                ? 'none' : 'auto'
+                }}>
           {/* Validation Errors */}
           {validationErrors.length > 0 && (
             <Alert variant="destructive">
@@ -332,16 +383,26 @@ export const TeamDraftFormFixed: React.FC = () => {
             </>
           )}
 
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
-              disabled={validationErrors.length > 0}
-            >
-              {editingTeamId ? 'Update Team & Predictions' : 'Submit My Team & Predictions'}
-            </Button>
+            {(() => {
+              const isDraftLocked = !activePool || 
+                                   activePool.draft_open === false || 
+                                   activePool.allow_new_participants === false ||
+                                   (activePool.registration_deadline && new Date() > new Date(activePool.registration_deadline));
+              
+              return !isDraftLocked && (
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
+                  disabled={validationErrors.length > 0}
+                >
+                  {editingTeamId ? 'Update Team & Predictions' : 'Submit My Team & Predictions'}
+                </Button>
+              );
+            })()}
           </form>
         </>
-      )}
+          );
+        })()}
       </CardContent>
     </Card>
   );

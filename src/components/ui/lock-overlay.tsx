@@ -19,16 +19,18 @@ export const LockOverlay: React.FC<LockOverlayProps> = ({
 }) => {
   return (
     <div className={cn("relative", className)}>
-      {children}
+      <div className={isLocked ? "pointer-events-none" : ""}>
+        {children}
+      </div>
       
       {isLocked && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
-          <div className="text-center p-6 bg-card/90 rounded-lg border shadow-lg max-w-sm mx-4">
-            <div className="bg-muted rounded-full p-3 mx-auto mb-4 w-fit">
-              <Lock className="h-6 w-6 text-muted-foreground" />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg flex items-center justify-center z-50 pointer-events-auto">
+          <div className="text-center p-8 bg-white rounded-xl border shadow-2xl max-w-md mx-4">
+            <div className="bg-gray-100 rounded-full p-4 mx-auto mb-6 w-fit">
+              <Lock className="h-8 w-8 text-gray-600" />
             </div>
-            <h3 className="font-semibold text-lg mb-2 text-foreground">{title}</h3>
-            <p className="text-muted-foreground text-sm">{message}</p>
+            <h3 className="font-bold text-xl mb-4 text-gray-900">{title}</h3>
+            <p className="text-gray-600 text-base leading-relaxed">{message}</p>
           </div>
         </div>
       )}

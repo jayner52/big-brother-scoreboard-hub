@@ -63,7 +63,10 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
 };
 
 // Get emoji for a specific scoring rule
-export const getScoringRuleEmoji = (category: string, subcategory?: string): string => {
+export const getScoringRuleEmoji = (category: string, subcategory?: string, customEmoji?: string): string => {
+  // If custom emoji is provided (for custom events), use it
+  if (customEmoji) return customEmoji;
+  
   const categoryMappings = SCORING_CATEGORY_EMOJIS[category];
   if (!categoryMappings) return '📝';
 

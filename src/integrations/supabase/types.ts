@@ -403,6 +403,7 @@ export type Database = {
           config_params: Json | null
           created_at: string
           description: string | null
+          emoji: string | null
           id: string
           is_active: boolean | null
           points: number
@@ -413,6 +414,7 @@ export type Database = {
           config_params?: Json | null
           created_at?: string
           description?: string | null
+          emoji?: string | null
           id?: string
           is_active?: boolean | null
           points: number
@@ -423,6 +425,7 @@ export type Database = {
           config_params?: Json | null
           created_at?: string
           description?: string | null
+          emoji?: string | null
           id?: string
           is_active?: boolean | null
           points?: number

@@ -2,17 +2,15 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Zap } from 'lucide-react';
+import { Plus, Zap } from 'lucide-react';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
 import { CustomEventSelector } from './CustomEventSelector';
-import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
+import { CustomEventsLibrary } from './special-events/CustomEventsLibrary';
+import { SpecialEventCard } from './special-events/SpecialEventCard';
+import { StatusChangeInfo } from './special-events/StatusChangeInfo';
 import { supabase } from '@/integrations/supabase/client';
 
 type SpecialEventFormData = {
@@ -156,13 +154,14 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
 
   const handleCustomEventAdd = async (eventData: { description: string; emoji: string; points: number }) => {
     try {
-      // Add to permanent scoring rules
+      // Add to permanent scoring rules with emoji
       const { error } = await supabase
         .from('detailed_scoring_rules')
         .insert({
           category: 'special_events',
           subcategory: 'custom_permanent',
-          description: eventData.description, // Don't include emoji in description anymore
+          description: eventData.description,
+          emoji: eventData.emoji,
           points: eventData.points,
           is_active: true
         });
@@ -252,8 +251,8 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType || rule.id === event.eventType);
     if (eventRule) {
       // For custom permanent rules, show emoji + description
-      if (eventRule.subcategory === 'custom_permanent') {
-        return eventRule.description;
+      if (eventRule.subcategory === 'custom_permanent' && eventRule.emoji) {
+        return `${eventRule.emoji} ${eventRule.description}`;
       }
       return eventRule.description;
     }
@@ -300,163 +299,26 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Custom Events Library */}
-        {customScoringRules.length > 0 && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded">
-            <h4 className="font-medium text-blue-800 mb-2">Your Custom Events Library</h4>
-            <div className="space-y-2">
-              {customScoringRules.map(rule => (
-                <div key={rule.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">{rule.description}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {rule.points > 0 ? '+' : ''}{rule.points} pts
-                    </Badge>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteCustomScoringRule(rule.id)}
-                    className="text-destructive hover:text-destructive h-8 w-8 p-0"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <CustomEventsLibrary 
+          customEvents={customScoringRules}
+          onDeleteEvent={deleteCustomScoringRule}
+        />
 
         {/* Special Events for this week */}
         {eventForm.specialEvents.map((event, index) => (
-          <div key={event.id} className="flex flex-col gap-3 p-4 border rounded-lg">
-            <div className="flex items-center justify-between">
-              <Badge variant="outline" className="text-xs">
-                Event #{index + 1}
-              </Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeSpecialEvent(index)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <Label>Event Type</Label>
-                <Select
-                  value={event.eventType}
-                  onValueChange={(value) => updateSpecialEvent(index, 'eventType', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select event type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableEvents.map(eventRule => {
-                      const emoji = getScoringRuleEmoji(eventRule.category, eventRule.subcategory);
-                      return (
-                        <SelectItem key={eventRule.subcategory || eventRule.id} value={eventRule.subcategory || eventRule.id}>
-                          <span className="flex items-center gap-2">
-                            <span className="text-sm">{emoji}</span>
-                            <span>{eventRule.description}</span>
-                            <Badge variant="secondary" className="text-xs ml-2">
-                              {eventRule.points > 0 ? '+' : ''}{eventRule.points} pts
-                            </Badge>
-                          </span>
-                        </SelectItem>
-                      );
-                    })}
-                    <SelectItem value="custom_event">
-                      <span className="flex items-center gap-2">
-                        <span className="text-sm">✨</span>
-                        <span>Create Custom Event</span>
-                      </span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Contestant</Label>
-                <Select
-                  value={event.contestant}
-                  onValueChange={(value) => updateSpecialEvent(index, 'contestant', value)}
-                  disabled={!event.eventType}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select contestant" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getAvailableContestants(event.eventType).map(contestant => (
-                      <SelectItem key={contestant.name} value={contestant.name}>
-                        <span className="flex items-center justify-between w-full">
-                          <span>{contestant.name}</span>
-                          {!contestant.isActive && (
-                            <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
-                          )}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Custom Event Fields */}
-            {event.eventType === 'custom_event' && (
-              <div className="space-y-3 p-3 bg-muted/30 rounded">
-                {!event.customDescription ? (
-                  <div className="text-center">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowCustomEventForm(true)}
-                      className="w-full"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Configure Custom Event
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">
-                        {event.customEmoji} {event.customDescription}
-                      </Badge>
-                      <Badge variant={event.customPoints && event.customPoints > 0 ? "default" : "destructive"}>
-                        {event.customPoints && event.customPoints > 0 ? '+' : ''}{event.customPoints || 0} pts
-                      </Badge>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        updateSpecialEvent(index, 'customDescription', '');
-                        updateSpecialEvent(index, 'customEmoji', '✨');
-                        updateSpecialEvent(index, 'customPoints', 1);
-                      }}
-                      className="text-xs"
-                    >
-                      Reconfigure
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Event Summary */}
-            {event.contestant && event.eventType && (
-              <div className="flex items-center justify-between p-2 bg-muted/20 rounded text-sm">
-                <span>
-                  <strong>{event.contestant}</strong> → {getEventDisplayName(event)}
-                </span>
-                <Badge variant={getEventPoints(event) > 0 ? "default" : getEventPoints(event) < 0 ? "destructive" : "secondary"}>
-                  {getEventPoints(event) > 0 ? '+' : ''}{getEventPoints(event)} pts
-                </Badge>
-              </div>
-            )}
-          </div>
+          <SpecialEventCard
+            key={event.id}
+            event={event}
+            index={index}
+            availableEvents={availableEvents}
+            activeContestants={activeContestants}
+            getAvailableContestants={getAvailableContestants}
+            updateSpecialEvent={updateSpecialEvent}
+            removeSpecialEvent={removeSpecialEvent}
+            getEventDisplayName={getEventDisplayName}
+            getEventPoints={getEventPoints}
+            onShowCustomEventForm={() => setShowCustomEventForm(true)}
+          />
         ))}
 
         {/* Add Event Button */}
@@ -471,19 +333,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         </Button>
 
         {/* Status Change Info */}
-        {eventForm.specialEvents.some(e => ['self_evicted', 'removed_production', 'came_back_evicted'].includes(e.eventType)) && (
-          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
-            <p className="font-medium text-yellow-800 mb-1">⚠️ Status Change Events</p>
-            <ul className="text-yellow-700 space-y-1">
-              {eventForm.specialEvents.filter(e => e.eventType === 'self_evicted' || e.eventType === 'removed_production').length > 0 && (
-                <li>• Self-evicted/Removed contestants will have their status changed to evicted and lose survival points for this week</li>
-              )}
-              {eventForm.specialEvents.filter(e => e.eventType === 'came_back_evicted').length > 0 && (
-                <li>• Contestants who came back will have their status reactivated</li>
-              )}
-            </ul>
-          </div>
-        )}
+        <StatusChangeInfo specialEvents={eventForm.specialEvents} />
 
         {/* Custom Event Modal */}
         {showCustomEventForm && (

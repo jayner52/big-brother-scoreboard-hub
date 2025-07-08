@@ -147,7 +147,7 @@ export const CustomScoringPanel: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Custom Scoring Rules
+            Scoring Configuration
           </CardTitle>
           <CardDescription>
             Configure point values and enable/disable scoring rules for your pool. Special events can be enabled for weekly tracking.

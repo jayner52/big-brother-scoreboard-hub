@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { DollarSign, Trophy, Save, Plus, Trash2, AlertTriangle, Eye, EyeOff, X } from 'lucide-react';
+import { DollarSign, Trophy, Save, Plus, Trash2, AlertTriangle, Eye, EyeOff, X, CreditCard, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usePool } from '@/contexts/PoolContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,6 +39,7 @@ export const PrizePoolManagement: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [showPrizeTotal, setShowPrizeTotal] = useState(true);
   const [showPrizeAmounts, setShowPrizeAmounts] = useState(true);
+  const [tipJarProcessing, setTipJarProcessing] = useState(false);
   
   const [config, setConfig] = useState<PrizeConfiguration>({
     mode: 'percentage',
@@ -362,6 +363,70 @@ export const PrizePoolManagement: React.FC = () => {
     }
   };
 
+  const calculateTipJarAmount = () => {
+    const totalPot = getTotalPot();
+    const tipPercentage = (activePool as any)?.tip_jar_percentage || 10;
+    return Math.round((totalPot * tipPercentage) / 100);
+  };
+
+  const handleTipJarPayment = async () => {
+    if (!activePool) return;
+
+    setTipJarProcessing(true);
+    try {
+      const tipAmount = calculateTipJarAmount();
+      const tipPercentage = (activePool as any).tip_jar_percentage || 10;
+
+      const { data, error } = await supabase.functions.invoke('create-tip-payment', {
+        body: {
+          poolId: activePool.id,
+          tipPercentage,
+          tipAmount
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating tip payment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create tip payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setTipJarProcessing(false);
+    }
+  };
+
+  const handleTipJarPercentageChange = async (newPercentage: number) => {
+    if (!activePool) return;
+
+    try {
+      const success = await updatePool(activePool.id, {
+        tip_jar_percentage: newPercentage
+      } as any);
+
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Tip jar percentage updated",
+        });
+      }
+    } catch (error) {
+      console.error('Error updating tip jar percentage:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update tip jar percentage",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading prize pool management...</div>;
   }
@@ -374,6 +439,9 @@ export const PrizePoolManagement: React.FC = () => {
   const totalPercentage = getTotalPercentage();
   const isOverBudget = config.mode === 'custom' && totalCustom > availablePool;
   const overBudgetAmount = isOverBudget ? totalCustom - availablePool : 0;
+  const tipJarAmount = calculateTipJarAmount();
+  const tipJarPercentage = (activePool as any)?.tip_jar_percentage || 10;
+  const tipJarPaid = (activePool as any)?.tip_jar_paid || false;
 
   return (
     <div className="space-y-6">
@@ -403,6 +471,95 @@ export const PrizePoolManagement: React.FC = () => {
               checked={showPrizeAmounts}
               onCheckedChange={(checked) => updateVisibilitySetting('show_prize_amounts', checked)}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tip Jar Management */}
+      <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-purple-600" />
+            Tip Jar Management
+          </CardTitle>
+          <CardDescription>
+            Manage your tip jar contribution - a percentage of the total pot that goes to the platform
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Tip Jar Configuration */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="tip_percentage">Tip Jar Percentage</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="tip_percentage"
+                    type="number"
+                    value={tipJarPercentage}
+                    onChange={(e) => handleTipJarPercentageChange(Number(e.target.value) || 10)}
+                    min="0"
+                    max="50"
+                    className="w-24"
+                  />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Tip Jar Amount</Label>
+                <div className="text-2xl font-bold text-purple-600">
+                  {currency} ${tipJarAmount}
+                </div>
+              </div>
+            </div>
+
+            {/* Tip Jar Status */}
+            <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
+              <div className="flex items-center gap-3">
+                {tipJarPaid ? (
+                  <CheckCircle2 className="h-6 w-6 text-green-500" />
+                ) : (
+                  <CreditCard className="h-6 w-6 text-purple-500" />
+                )}
+                <div>
+                  <div className="font-medium">
+                    {tipJarPaid ? 'Tip Jar Paid' : 'Tip Jar Payment Pending'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {tipJarPaid 
+                      ? `Paid on ${(activePool as any)?.tip_jar_paid_at ? new Date((activePool as any).tip_jar_paid_at).toLocaleDateString() : 'Unknown date'}`
+                      : `${tipJarPercentage}% of total pool (${currency} $${tipJarAmount})`
+                    }
+                  </div>
+                </div>
+              </div>
+              
+              {!tipJarPaid && (
+                <Button
+                  onClick={handleTipJarPayment}
+                  disabled={tipJarProcessing || totalEntries === 0}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {tipJarProcessing ? (
+                    <>Processing...</>
+                  ) : (
+                    <>
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Pay Tip Jar
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {totalEntries === 0 && (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Tip jar payment will be available once participants join the pool.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         </CardContent>
       </Card>

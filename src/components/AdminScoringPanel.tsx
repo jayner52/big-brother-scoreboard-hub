@@ -15,6 +15,7 @@ const PoolSettingsPanel = React.lazy(() => import('@/components/admin/PoolSettin
 const PoolEntriesManagement = React.lazy(() => import('@/components/PoolEntriesManagement').then(m => ({ default: m.PoolEntriesManagement })));
 const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEventsPanel').then(m => ({ default: m.WeeklyEventsPanel })));
 const RoleManagementPanel = React.lazy(() => import('@/components/admin/RoleManagementPanel').then(m => ({ default: m.RoleManagementPanel })));
+const PrizePoolManagement = React.lazy(() => import('@/components/admin/PrizePoolManagement').then(m => ({ default: m.PrizePoolManagement })));
 
 
 export const AdminScoringPanel: React.FC = () => {
@@ -34,7 +35,7 @@ export const AdminScoringPanel: React.FC = () => {
     if (poolId) {
       const savedTab = localStorage.getItem(`admin_panel_active_tab_${poolId}`);
       if (savedTab) {
-        const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants'];
+        const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants', 'prizepool'];
         if (canManageRoles()) validTabs.push('roles');
         
         if (validTabs.includes(savedTab)) {
@@ -47,7 +48,7 @@ export const AdminScoringPanel: React.FC = () => {
     // Fall back to URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
-    const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants'];
+    const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants', 'prizepool'];
     if (canManageRoles()) validTabs.push('roles');
     
     if (tab && validTabs.includes(tab)) {
@@ -166,6 +167,13 @@ export const AdminScoringPanel: React.FC = () => {
                 >
                   Houseguests
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="prizepool" 
+                  data-value="prizepool"
+                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
+                  Prize Pool
+                </TabsTrigger>
                 {canManageRoles() && (
                   <TabsTrigger 
                     value="roles" 
@@ -225,6 +233,14 @@ export const AdminScoringPanel: React.FC = () => {
               <ErrorBoundary>
                 <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading houseguest management...</div>}>
                   <ContestantManagement />
+                </Suspense>
+              </ErrorBoundary>
+            </TabsContent>
+
+            <TabsContent value="prizepool" className="space-y-4 mt-0">
+              <ErrorBoundary>
+                <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading prize pool management...</div>}>
+                  <PrizePoolManagement />
                 </Suspense>
               </ErrorBoundary>
             </TabsContent>

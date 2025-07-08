@@ -10,12 +10,14 @@ interface FinalWeekSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   activeContestants: ContestantWithBio[];
+  contestants: ContestantWithBio[];
 }
 
 export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
   eventForm,
   setEventForm,
   activeContestants,
+  contestants,
 }) => {
   const { getWinnerPoints, getRunnerUpPoints, getHohPoints, getPointsForEvent } = useScoringRules();
   
@@ -117,10 +119,10 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
               <SelectValue placeholder="Select AFP" />
             </SelectTrigger>
             <SelectContent>
-              {/* AFP can be any contestant from the entire season */}
-              {activeContestants.map(contestant => (
+              {/* AFP can be any contestant from the entire season - include all contestants */}
+              {contestants.map(contestant => (
                 <SelectItem key={contestant.id} value={contestant.name}>
-                  {contestant.name}
+                  {contestant.name} {!contestant.isActive && '(Evicted)'}
                 </SelectItem>
               ))}
             </SelectContent>

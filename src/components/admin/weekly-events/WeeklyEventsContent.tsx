@@ -32,6 +32,7 @@ export const WeeklyEventsContent: React.FC<WeeklyEventsContentProps> = ({
           eventForm={eventForm}
           setEventForm={setEventForm}
           activeContestants={activeContestants}
+          contestants={contestants}
         />
       ) : (
         <RegularWeekContent

@@ -105,9 +105,10 @@ export const WeeklyEventsPanel: React.FC = () => {
               <li>Set Final HoH winner (Part 3 competition)</li>
               <li>Select season winner (1st place)</li>
               <li>Select runner-up (2nd place)</li>
-              <li>Select America's Favorite Player</li>
-              <li><strong>Submit the week to save results</strong></li>
-              <li>Complete season in the completion section below</li>
+              <li>Select America's Favorite Player (can be ANY contestant from the season)</li>
+              <li><strong>Click "SUBMIT FINAL WEEK RESULTS" button - this does NOT advance to next week</strong></li>
+              <li>After submission, scroll down to "Complete Season" section</li>
+              <li>Click "Complete Season & Assign Prizes" to finalize the pool</li>
             </ol>
           </div>
 
@@ -117,8 +118,9 @@ export const WeeklyEventsPanel: React.FC = () => {
             <li>Forgetting to mark PoV usage when someone uses it</li>
             <li>Not setting replacement nominees when PoV is used</li>
             <li>Missing special events like AI Arena wins</li>
-            <li><strong>Final Week: Forgetting to submit the week after setting winner/runner-up</strong></li>
+            <li><strong>Final Week: Not clicking "SUBMIT FINAL WEEK RESULTS" after setting winner/runner-up</strong></li>
             <li><strong>Trying to complete season before final week is submitted</strong></li>
+            <li><strong>Selecting AFP from only active contestants (AFP can be ANY contestant)</strong></li>
           </ul>
 
           <p className="text-sm text-gray-600 mt-3">

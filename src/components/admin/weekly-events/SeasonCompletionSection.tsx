@@ -86,13 +86,16 @@ export const SeasonCompletionSection: React.FC<SeasonCompletionSectionProps> = (
       // Also check if final week has been submitted to the database (not in draft mode)
       const { data: finalWeekSubmitted } = await supabase
         .from('weekly_results')
-        .select('winner, runner_up, is_draft')
+        .select('winner, runner_up, is_draft, week_number')
         .eq('pool_id', activePool.id)
         .not('winner', 'is', null)
         .not('runner_up', 'is', null)
         .eq('is_draft', false)
+        .order('week_number', { ascending: false })
+        .limit(1)
         .maybeSingle();
       
+      console.log('🔍 Final week validation:', { finalWeekSubmitted, finalWeekComplete });
       const finalWeekInDB = !!finalWeekSubmitted;
       const overallFinalWeekComplete = finalWeekComplete && finalWeekInDB;
       
@@ -218,8 +221,10 @@ export const SeasonCompletionSection: React.FC<SeasonCompletionSectionProps> = (
         description: `Pool finalized with ${winners.length} winners. Prize distribution has been recorded.`,
       });
 
-      // Refresh validation
-      await validateCompletion();
+      // Add a small delay to ensure database changes are committed, then refresh validation
+      setTimeout(() => {
+        validateCompletion();
+      }, 1000);
 
     } catch (error) {
       console.error('Error completing season:', error);

@@ -322,74 +322,82 @@ export const useWeeklyEventsSubmission = (
         if (insertError) throw insertError;
       }
 
-      toast({
-        title: "Success!",
-        description: `Week ${eventForm.week} events recorded successfully`,
-      });
+      // Show different success messages for final week vs regular week
+      if (eventForm.isFinalWeek) {
+        toast({
+          title: "🏆 Final Week Submitted!",
+          description: `Season finale results recorded successfully. Ready for season completion.`,
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: `Week ${eventForm.week} events recorded successfully`,
+        });
 
-      // Calculate next week and advance with retry logic
-      const completedWeek = eventForm.week;
-      
-      try {
-        // Get all completed weeks to calculate the proper next week
-        const { data: allWeeklyResults } = await supabase
-          .from('weekly_results')
-          .select('week_number, is_draft')
-          .eq('is_draft', false)
-          .eq('pool_id', poolId)
-          .order('week_number', { ascending: true });
+        // Only advance week for non-final weeks
+        const completedWeek = eventForm.week;
         
-        const completedWeeks = allWeeklyResults?.map(w => w.week_number) || [];
-        const nextWeek = Math.max(...completedWeeks, completedWeek) + 1;
-        
-        console.log(`Advancing from Week ${completedWeek} to Week ${nextWeek}`);
-        
-        // Try to update current game week with retry
-        let retryCount = 0;
-        const maxRetries = 3;
-        let weekUpdateError = null;
-        
-        while (retryCount < maxRetries) {
-          const { error } = await supabase.rpc('update_current_game_week', { 
-            new_week_number: nextWeek 
-          });
+        try {
+          // Get all completed weeks to calculate the proper next week
+          const { data: allWeeklyResults } = await supabase
+            .from('weekly_results')
+            .select('week_number, is_draft')
+            .eq('is_draft', false)
+            .eq('pool_id', poolId)
+            .order('week_number', { ascending: true });
           
-          if (!error) {
-            weekUpdateError = null;
-            break;
+          const completedWeeks = allWeeklyResults?.map(w => w.week_number) || [];
+          const nextWeek = Math.max(...completedWeeks, completedWeek) + 1;
+          
+          console.log(`Advancing from Week ${completedWeek} to Week ${nextWeek}`);
+          
+          // Try to update current game week with retry
+          let retryCount = 0;
+          const maxRetries = 3;
+          let weekUpdateError = null;
+          
+          while (retryCount < maxRetries) {
+            const { error } = await supabase.rpc('update_current_game_week', { 
+              new_week_number: nextWeek 
+            });
+            
+            if (!error) {
+              weekUpdateError = null;
+              break;
+            }
+            
+            weekUpdateError = error;
+            retryCount++;
+            console.warn(`Week advancement attempt ${retryCount} failed:`, error);
+            
+            if (retryCount < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+            }
           }
           
-          weekUpdateError = error;
-          retryCount++;
-          console.warn(`Week advancement attempt ${retryCount} failed:`, error);
-          
-          if (retryCount < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          if (weekUpdateError) {
+            console.error('Failed to update current game week after retries:', weekUpdateError);
+            toast({
+              title: "Week Advancement Failed",
+              description: `Week ${completedWeek} submitted successfully, but failed to advance to Week ${nextWeek}. Please refresh and check current week.`,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Week Completed!",
+              description: `Week ${completedWeek} completed! Advanced to Week ${nextWeek}`,
+            });
+            console.log(`✅ Successfully advanced: Week ${completedWeek} → Week ${nextWeek}`);
           }
-        }
-        
-        if (weekUpdateError) {
-          console.error('Failed to update current game week after retries:', weekUpdateError);
+          
+        } catch (error) {
+          console.error('Unexpected error during week advancement:', error);
           toast({
-            title: "Week Advancement Failed",
-            description: `Week ${completedWeek} submitted successfully, but failed to advance to Week ${nextWeek}. Please refresh and check current week.`,
+            title: "Week Advancement Error",
+            description: `Week ${completedWeek} submitted but week advancement failed. Please refresh the page.`,
             variant: "destructive",
           });
-        } else {
-          toast({
-            title: "Week Completed!",
-            description: `Week ${completedWeek} completed! Advanced to Week ${nextWeek}`,
-          });
-          console.log(`✅ Successfully advanced: Week ${completedWeek} → Week ${nextWeek}`);
         }
-        
-      } catch (error) {
-        console.error('Unexpected error during week advancement:', error);
-        toast({
-          title: "Week Advancement Error",
-          description: `Week ${completedWeek} submitted but week advancement failed. Please refresh the page.`,
-          variant: "destructive",
-        });
       }
 
       // Reload data and trigger automatic recalculation

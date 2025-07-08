@@ -364,11 +364,13 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
 
         {/* Custom Event Modal */}
         {showCustomEventForm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <CustomEventSelector
-              onAddCustomEvent={handleCustomEventAdd}
-              onCancel={() => setShowCustomEventForm(false)}
-            />
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="max-w-lg w-full">
+              <CustomEventSelector
+                onAddCustomEvent={handleCustomEventAdd}
+                onCancel={() => setShowCustomEventForm(false)}
+              />
+            </div>
           </div>
         )}
       </CardContent>

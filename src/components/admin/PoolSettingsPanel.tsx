@@ -9,10 +9,11 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Settings, DollarSign, UserCheck, HelpCircle, Clock, Eye, EyeOff, Users, Calculator } from 'lucide-react';
+import { Settings, DollarSign, UserCheck, HelpCircle, Clock, Eye, EyeOff, Users, Calculator, Zap } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { PrizePoolManagement } from '@/components/admin/PrizePoolManagement';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
+import { SpecialEventsSettings } from '@/components/admin/settings/SpecialEventsSettings';
 import { useGroupAutoGeneration } from '@/hooks/useGroupAutoGeneration';
 import { InstructionAccordion } from './InstructionAccordion';
 
@@ -1064,6 +1065,28 @@ export const PoolSettingsPanel: React.FC = () => {
             <AccordionContent>
               <CardContent className="p-0">
                 <CustomScoringPanel />
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+
+        {/* Special Events Settings */}
+        <AccordionItem value="special-events" className="border-0" data-accordion-section="special-events">
+          <Card>
+            <AccordionTrigger className="hover:no-underline p-0" data-accordion-section="special-events">
+              <CardHeader className="bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-t-lg w-full">
+                <CardTitle className="flex items-center gap-2 text-left">
+                  <Zap className="h-5 w-5" />
+                  Special Events
+                </CardTitle>
+                <CardDescription className="text-purple-100 text-left">
+                  Configure which special events can be tracked
+                </CardDescription>
+              </CardHeader>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="p-0">
+                <SpecialEventsSettings />
               </CardContent>
             </AccordionContent>
           </Card>

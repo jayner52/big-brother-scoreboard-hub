@@ -53,7 +53,7 @@ const Landing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream" key={`landing-${Date.now()}`}>
       {/* Navigation Header */}
       <nav className="bg-cream border-b border-brand-teal/20 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center">
@@ -156,7 +156,7 @@ const Landing = () => {
                 <CardTitle className="text-xl text-dark">Build Your Dream Team</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-dark/70">Choose your champions! Draft 7 houseguests and put your Big Brother knowledge to the test.</p>
+                <p className="text-dark/70">Choose your champions! Draft 5 houseguests and put your Big Brother knowledge to the test.</p>
               </CardContent>
             </Card>
             

@@ -77,7 +77,11 @@ const loadWeekByWeekData = async () => {
           second_nominees,
           second_replacement_nominee,
           second_pov_used,
-          second_pov_used_on
+          second_pov_used_on,
+          ai_arena_winner,
+          third_evicted_contestant,
+          is_triple_eviction,
+          jury_phase_started
         `)
         .eq('pool_id', activePool.id)
         .eq('is_draft', false)
@@ -86,7 +90,7 @@ const loadWeekByWeekData = async () => {
       // Load contestants
       const { data: contestants, error: contestantsError } = await supabase
         .from('contestants')
-        .select('id, name')
+        .select('id, name, is_active')
         .eq('pool_id', activePool.id)
         .eq('is_active', true);
 
@@ -145,7 +149,7 @@ const loadWeekByWeekData = async () => {
       ];
 
       // Import the points calculation logic from weeklyEventsUtils
-      const { calculatePoints } = await import('@/utils/weeklyEventsUtils');
+      const { getPointsPreview, calculatePoints } = await import('@/utils/weeklyEventsUtils');
 
       // Calculate scores by week using the same logic as Weekly Events Preview
       const scoresByWeek: Record<number, ContestantScore[]> = {};
@@ -154,92 +158,64 @@ const loadWeekByWeekData = async () => {
       // Process each completed week
       (completedWeeks || []).forEach(weekResult => {
         const weekNumber = weekResult.week_number;
-        const weekContestantScores: Record<string, number> = {};
+        
+        // Convert weekly_results to WeeklyEventForm format
+        const eventForm = {
+          hohWinner: weekResult.hoh_winner || '',
+          povWinner: weekResult.pov_winner || '',
+          povUsed: weekResult.pov_used || false,
+          povUsedOn: weekResult.pov_used_on || '',
+          nominees: weekResult.nominees || [],
+          replacementNominee: weekResult.replacement_nominee || '',
+          evicted: weekResult.evicted_contestant || '',
+          aiArenaWinner: weekResult.ai_arena_winner || '',
+          isDoubleEviction: weekResult.is_double_eviction || false,
+          secondHohWinner: weekResult.second_hoh_winner || '',
+          secondPovWinner: weekResult.second_pov_winner || '',
+          secondPovUsed: weekResult.second_pov_used || false,
+          secondPovUsedOn: weekResult.second_pov_used_on || '',
+          secondNominees: weekResult.second_nominees || [],
+          secondReplacementNominee: weekResult.second_replacement_nominee || '',
+          secondEvicted: weekResult.second_evicted_contestant || '',
+          thirdEvicted: weekResult.third_evicted_contestant || '',
+          isTripleEviction: weekResult.is_triple_eviction || false,
+          isJuryPhase: weekResult.jury_phase_started || false,
+          specialEvents: []
+        };
 
-        // Initialize all contestants with 0 points for this week
-        (contestants || []).forEach(contestant => {
-          weekContestantScores[contestant.name] = 0;
-        });
-
-        // Calculate points using the same logic as Weekly Events Preview
-        
-        // HOH points
-        if (weekResult.hoh_winner) {
-          weekContestantScores[weekResult.hoh_winner] += calculatePoints('hoh_winner', undefined, scoringRules);
-        }
-        
-        // POV points
-        if (weekResult.pov_winner) {
-          weekContestantScores[weekResult.pov_winner] += calculatePoints('pov_winner', undefined, scoringRules);
-        }
-        
-        // POV used on someone points
-        if (weekResult.pov_used && weekResult.pov_used_on) {
-          weekContestantScores[weekResult.pov_used_on] += calculatePoints('pov_used_on', undefined, scoringRules);
-        }
-        
-        // Nominee points
-        if (weekResult.nominees) {
-          weekResult.nominees.forEach(nominee => {
-            if (nominee && weekContestantScores[nominee] !== undefined) {
-              weekContestantScores[nominee] += calculatePoints('nominee', undefined, scoringRules);
-            }
-          });
-        }
-        
-        // Replacement nominee points
-        if (weekResult.replacement_nominee) {
-          weekContestantScores[weekResult.replacement_nominee] += calculatePoints('replacement_nominee', undefined, scoringRules);
-        }
-
-        // Double eviction second round points
-        if (weekResult.is_double_eviction) {
-          if (weekResult.second_hoh_winner) {
-            weekContestantScores[weekResult.second_hoh_winner] += calculatePoints('hoh_winner', undefined, scoringRules);
-          }
-          if (weekResult.second_pov_winner) {
-            weekContestantScores[weekResult.second_pov_winner] += calculatePoints('pov_winner', undefined, scoringRules);
-          }
-          if (weekResult.second_pov_used && weekResult.second_pov_used_on) {
-            weekContestantScores[weekResult.second_pov_used_on] += calculatePoints('pov_used_on', undefined, scoringRules);
-          }
-          if (weekResult.second_nominees) {
-            weekResult.second_nominees.forEach(nominee => {
-              if (nominee && weekContestantScores[nominee] !== undefined) {
-                weekContestantScores[nominee] += calculatePoints('nominee', undefined, scoringRules);
-              }
-            });
-          }
-          if (weekResult.second_replacement_nominee) {
-            weekContestantScores[weekResult.second_replacement_nominee] += calculatePoints('replacement_nominee', undefined, scoringRules);
-          }
-        }
-
-        // Get evicted contestants up to this week for survival calculation
-        const evictedUpToThisWeek = (completedWeeks || [])
-          .filter(wr => wr.week_number <= weekNumber)
-          .flatMap(wr => [wr.evicted_contestant, wr.second_evicted_contestant])
+        // Get evicted contestants up to the previous week (not including this week)
+        const evictedUpToPreviousWeek = (completedWeeks || [])
+          .filter(wr => wr.week_number < weekNumber)
+          .flatMap(wr => [wr.evicted_contestant, wr.second_evicted_contestant, wr.third_evicted_contestant])
           .filter(Boolean);
 
-        // Calculate current week evictions
-        const evictedThisWeek = [weekResult.evicted_contestant, weekResult.second_evicted_contestant].filter(Boolean);
+        // Add special events to the form
+        const weekSpecialEvents = allSpecialEvents?.filter(event => event.week_number === weekNumber) || [];
+        eventForm.specialEvents = weekSpecialEvents.map(event => ({
+          contestant: (event.contestants as any)?.name || '',
+          eventType: event.event_type,
+          customPoints: event.points_awarded
+        }));
 
-        // Survival points for non-evicted contestants
-        (contestants || []).forEach(contestant => {
-          if (!evictedThisWeek.includes(contestant.name) && !evictedUpToThisWeek.includes(contestant.name)) {
-            weekContestantScores[contestant.name] += calculatePoints('survival', undefined, scoringRules);
-          }
+        // Transform contestants to match ContestantWithBio interface
+        const transformedContestants = (contestants || []).map(c => ({
+          ...c,
+          isActive: c.is_active
+        }));
+
+        // Use the exact same calculation as Weekly Events Preview
+        const weekContestantScores = getPointsPreview(
+          eventForm as any,
+          transformedContestants as any,
+          evictedUpToPreviousWeek,
+          scoringRules
+        );
+
+        console.log(`Week ${weekNumber} points calculation:`, {
+          eventForm,
+          evictedUpToPreviousWeek,
+          weekContestantScores
         });
-
-        // Special events points for this week
-        allSpecialEvents
-          ?.filter(event => event.week_number === weekNumber)
-          .forEach(event => {
-            const contestantName = (event.contestants as any)?.name;
-            if (contestantName && weekContestantScores[contestantName] !== undefined) {
-              weekContestantScores[contestantName] += calculatePoints(event.event_type, event.points_awarded, scoringRules);
-            }
-          });
 
         // Convert to ContestantScore format with cumulative totals
         const weekScores: ContestantScore[] = Object.entries(weekContestantScores)

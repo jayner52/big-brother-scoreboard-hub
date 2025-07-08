@@ -425,9 +425,14 @@ export const TeamDraftFormFixed: React.FC = () => {
               </form>
             </div>
 
-            {/* Lock Overlay */}
+            {/* Lock Overlay with stronger blocking */}
             {isDraftLocked && (
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg flex items-center justify-center z-50 pointer-events-auto">
+              <div 
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg flex items-center justify-center z-50"
+                style={{ pointerEvents: 'auto' }}
+                onKeyDown={(e) => e.preventDefault()}
+                tabIndex={0}
+              >
                 <div className="text-center p-8 bg-white rounded-xl border shadow-2xl max-w-md mx-4">
                   <div className="bg-gray-100 rounded-full p-4 mx-auto mb-6 w-fit">
                     <AlertCircle className="h-8 w-8 text-gray-600" />

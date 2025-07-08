@@ -35,6 +35,7 @@ export const PrizePoolManagement: React.FC = () => {
   const { activePool, updatePool } = usePool();
   const { toast } = useToast();
   const [totalEntries, setTotalEntries] = useState(0);
+  const [confirmedEntries, setConfirmedEntries] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPrizeTotal, setShowPrizeTotal] = useState(true);
@@ -70,14 +71,17 @@ export const PrizePoolManagement: React.FC = () => {
     try {
       console.log('PrizePoolManagement: Loading data for pool', activePool.id);
       
-      // Get number of entries
+      // Get number of entries and confirmed payments
       const { data: entriesData } = await supabase
         .from('pool_entries')
-        .select('id')
+        .select('id, payment_confirmed')
         .eq('pool_id', activePool.id);
       
       const entryCount = entriesData?.length || 0;
+      const confirmedCount = entriesData?.filter(entry => entry.payment_confirmed).length || 0;
+      
       setTotalEntries(entryCount);
+      setConfirmedEntries(confirmedCount);
       
       // Load visibility settings
       setShowPrizeTotal(activePool.show_prize_total ?? true);
@@ -142,13 +146,17 @@ export const PrizePoolManagement: React.FC = () => {
     }
   };
 
-  const getTotalPot = () => {
+  const getTotalExpected = () => {
     return totalEntries * (activePool?.entry_fee_amount || 0);
+  };
+
+  const getTotalCollected = () => {
+    return confirmedEntries * (activePool?.entry_fee_amount || 0);
   };
 
   const getAvailablePrizePool = () => {
     const tipJarAmount = calculateTipJarAmount();
-    return getTotalPot() - config.admin_fee - tipJarAmount;
+    return getTotalExpected() - config.admin_fee - tipJarAmount;
   };
 
   const calculatePercentageAmounts = () => {
@@ -365,9 +373,9 @@ export const PrizePoolManagement: React.FC = () => {
   };
 
   const calculateTipJarAmount = () => {
-    const totalPot = getTotalPot();
+    const totalExpected = getTotalExpected();
     const tipPercentage = (activePool as any)?.tip_jar_percentage || 10;
-    return Math.round((totalPot * tipPercentage) / 100);
+    return Math.round((totalExpected * tipPercentage) / 100);
   };
 
   const handleTipJarPayment = async () => {
@@ -432,7 +440,8 @@ export const PrizePoolManagement: React.FC = () => {
     return <div className="text-center py-8">Loading prize pool management...</div>;
   }
 
-  const totalPot = getTotalPot();
+  const totalExpected = getTotalExpected();
+  const totalCollected = getTotalCollected();
   const availablePool = getAvailablePrizePool();
   const currency = activePool?.entry_fee_currency || 'CAD';
   const percentageAmounts = calculatePercentageAmounts();
@@ -443,6 +452,11 @@ export const PrizePoolManagement: React.FC = () => {
   const tipJarAmount = calculateTipJarAmount();
   const tipJarPercentage = (activePool as any)?.tip_jar_percentage || 10;
   const tipJarPaid = (activePool as any)?.tip_jar_paid || false;
+
+  // Check if all entry fees are collected and draft is closed
+  const allFeesCollected = totalExpected > 0 && totalExpected === totalCollected;
+  const draftClosed = !activePool?.draft_open;
+  const showPayNowNotification = allFeesCollected && draftClosed && tipJarPercentage > 0 && !tipJarPaid;
 
   return (
     <div className="space-y-6">
@@ -489,6 +503,15 @@ export const PrizePoolManagement: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Show glowing notification when ready to pay */}
+            {showPayNowNotification && (
+              <div className="p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-lg animate-pulse shadow-lg">
+                <div className="flex items-center gap-2 text-yellow-800 font-medium">
+                  ✨ All entry fees collected - pay support now!
+                </div>
+              </div>
+            )}
+
             {/* Friendly Support Configuration */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -504,10 +527,10 @@ export const PrizePoolManagement: React.FC = () => {
                     className="w-24"
                     placeholder="0"
                   />
-                  <span className="text-sm text-muted-foreground">% of total collected</span>
+                  <span className="text-sm text-muted-foreground">% of total expected</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Choose any percentage you're comfortable with. Even 1% helps! 💚
+                  Choose any percentage you're comfortable with. Every bit helps! 💚
                 </p>
               </div>
               <div className="space-y-2">
@@ -539,7 +562,7 @@ export const PrizePoolManagement: React.FC = () => {
                     {tipJarPaid 
                       ? `Paid ${currency} $${tipJarAmount} on ${(activePool as any)?.tip_jar_paid_at ? new Date((activePool as any).tip_jar_paid_at).toLocaleDateString() : 'Unknown date'}`
                       : tipJarPercentage > 0 
-                        ? `${tipJarPercentage}% of total collected (${currency} $${tipJarAmount}) - Pay after collecting entries`
+                        ? `${tipJarPercentage}% of total expected (${currency} $${tipJarAmount}) - Pay after collecting entries`
                         : 'Set a percentage above to contribute to platform development'
                     }
                   </div>
@@ -578,7 +601,7 @@ export const PrizePoolManagement: React.FC = () => {
               <Alert className="border-blue-200 bg-blue-50">
                 <AlertDescription className="text-blue-800">
                   💡 <strong>Supporting the platform is completely optional!</strong> Any amount helps us maintain and improve Poolside Picks for everyone. 
-                  Even 1-2% makes a difference and is greatly appreciated!
+                  Even a small percentage makes a difference and is greatly appreciated!
                 </AlertDescription>
               </Alert>
             )}
@@ -596,8 +619,11 @@ export const PrizePoolManagement: React.FC = () => {
         </Card>
         <Card className="bg-green-50 border-green-200">
           <CardContent className="p-4 text-center">
-            <p className="text-sm text-green-600 font-medium">Total Collected</p>
-            <p className="text-2xl font-bold text-green-900">{currency} ${totalPot}</p>
+            <p className="text-sm text-green-600 font-medium">Entry Fees</p>
+            <div className="text-lg font-bold text-green-900">
+              <div>Expected: {currency} ${totalExpected}</div>
+              <div className="text-sm">Collected: {currency} ${totalCollected}</div>
+            </div>
           </CardContent>
         </Card>
         <Card className="bg-orange-50 border-orange-200">
@@ -624,19 +650,12 @@ export const PrizePoolManagement: React.FC = () => {
         </Card>
       </div>
 
-      {/* Formula Explanation */}
-      <div className="text-center text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg">
-        <strong>Formula:</strong> Total Collected = Prize Pool + Admin Fee + Platform Support
-        <br />
-        {currency} ${totalPot} = {currency} ${availablePool} + {currency} ${config.admin_fee} + {currency} ${tipJarAmount}
-      </div>
-
       {/* Over Budget Warning */}
       {isOverBudget && (
         <Alert className="border-amber-200 bg-amber-50">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-800">
-            <strong>Over Budget:</strong> Prize pool exceeds collected amount by {currency} ${overBudgetAmount}. 
+            <strong>Over Budget:</strong> Prize pool exceeds available amount by {currency} ${overBudgetAmount}. 
             Admin will need to contribute the difference.
           </AlertDescription>
         </Alert>

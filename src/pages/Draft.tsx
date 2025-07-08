@@ -4,9 +4,6 @@ import { TeamDraftFormFixed } from '@/components/TeamDraftFormFixed';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { usePool } from '@/contexts/PoolContext';
-import { LockOverlay } from '@/components/ui/lock-overlay';
-import { useDraftAccess } from '@/hooks/useDraftAccess';
 
 const Draft = () => {
   const navigate = useNavigate();
@@ -19,9 +16,6 @@ const Draft = () => {
 };
 
 const DraftContent = ({ navigate }: { navigate: any }) => {
-  const { activePool } = usePool();
-  const { isAccessible, lockReason } = useDraftAccess();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50">
       <div className="container mx-auto px-4 py-8">
@@ -37,14 +31,8 @@ const DraftContent = ({ navigate }: { navigate: any }) => {
           </Button>
         </div>
 
-        {/* Fixed Draft Form with all improvements */}
-        <LockOverlay
-          isLocked={!isAccessible}
-          title={lockReason.title}
-          message={lockReason.message}
-        >
-          <TeamDraftFormFixed />
-        </LockOverlay>
+        {/* TeamDraftFormFixed handles all locking internally */}
+        <TeamDraftFormFixed />
 
         {/* Footer */}
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">

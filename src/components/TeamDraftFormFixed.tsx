@@ -237,170 +237,211 @@ export const TeamDraftFormFixed: React.FC = () => {
         {(() => {
           if (!activePool) return null;
           
-          const isDraftLocked = activePool.draft_open === false || 
-                               activePool.allow_new_participants === false ||
-                               (activePool.registration_deadline && new Date() > new Date(activePool.registration_deadline));
+          const lockReasons = [];
+          
+          if (activePool.draft_open === false) {
+            lockReasons.push("Draft has been closed by administrator");
+          }
+          
+          if (activePool.allow_new_participants === false) {
+            lockReasons.push("New participants are not currently allowed");
+          }
+          
+          if (activePool.registration_deadline) {
+            const deadline = new Date(activePool.registration_deadline);
+            if (new Date() > deadline) {
+              lockReasons.push("Registration deadline has passed");
+            }
+          }
+
+          const isDraftLocked = lockReasons.length > 0;
           
           return (!userTeams.length || isEditingExisting || !editingTeamId) && (
-          <>
-            {/* CRITICAL FIX: Only show payment info if pool has buy-in */}
-            {poolData?.has_buy_in && (
-              <>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-green-800 mb-2">💰 Entry Fee Required</h3>
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Amount:</strong> ${poolData.entry_fee_amount} {poolData.entry_fee_currency}</p>
-                    <p><strong>Payment Method:</strong> {poolData.payment_method_1}</p>
-                    <p><strong>Details:</strong> {poolData.payment_details_1}</p>
-                    {poolData.buy_in_description && (
-                      <p><strong>Instructions:</strong> {poolData.buy_in_description}</p>
-                    )}
+          <div className="relative">
+            {/* Draft Form Content */}
+            <div className={isDraftLocked ? "pointer-events-none blur-sm" : ""}>
+              {/* CRITICAL FIX: Only show payment info if pool has buy-in */}
+              {poolData?.has_buy_in && (
+                <>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                    <h3 className="font-semibold text-green-800 mb-2">💰 Entry Fee Required</h3>
+                    <div className="space-y-2 text-sm">
+                      <p><strong>Amount:</strong> ${poolData.entry_fee_amount} {poolData.entry_fee_currency}</p>
+                      <p><strong>Payment Method:</strong> {poolData.payment_method_1}</p>
+                      <p><strong>Details:</strong> {poolData.payment_details_1}</p>
+                      {poolData.buy_in_description && (
+                        <p><strong>Instructions:</strong> {poolData.buy_in_description}</p>
+                      )}
+                    </div>
+                  </div>
+                  <Separator className="my-6" />
+                </>
+              )}
+
+              {/* Clear Form Button */}
+              <div className="flex justify-end mb-4">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-destructive hover:text-destructive flex items-center gap-2"
+                      disabled={isDraftLocked}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Clear Form
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Clear Draft Form</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to clear your draft and bonus predictions? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={resetForm} className="bg-destructive hover:bg-destructive/90">
+                        Clear Form
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+
+              <form 
+                onSubmit={(e) => {
+                  if (isDraftLocked) {
+                    e.preventDefault();
+                    return;
+                  }
+                  handleSubmit(e);
+                }} 
+                className="space-y-6"
+              >
+                {/* Validation Errors */}
+                {validationErrors.length > 0 && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      <div className="font-semibold mb-2">Please complete the following:</div>
+                      <ul className="list-disc list-inside space-y-1">
+                        {validationErrors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className={isDraftLocked ? "pointer-events-none" : ""}>
+                  <BasicInfoForm
+                    formData={{
+                      participant_name: formData.participant_name,
+                      team_name: formData.team_name,
+                      email: formData.email,
+                    }}
+                    onFormDataChange={updateFormData}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className={isDraftLocked ? "pointer-events-none" : ""}>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold">
+                      Draft Your Team ({poolData?.picks_per_team || 5} Players)
+                    </h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleRandomizeTeam}
+                      className="flex items-center gap-2"
+                      disabled={isDraftLocked}
+                    >
+                      <Shuffle className="h-4 w-4" />
+                      Randomize Team
+                    </Button>
+                  </div>
+                  <DynamicTeamDraftSection
+                    contestantGroups={contestantGroups}
+                    poolData={poolData}
+                    formData={formData}
+                    onFormDataChange={updateFormData}
+                  />
+                </div>
+
+                <Separator />
+
+                {poolData?.enable_bonus_questions && bonusQuestions.length > 0 && (
+                  <>
+                    <div className={isDraftLocked ? "pointer-events-none" : ""}>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-bold text-purple-800">🎯 Bonus Predictions</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleRandomizeBonusAnswers}
+                          className="flex items-center gap-2"
+                          disabled={isDraftLocked}
+                        >
+                          <Shuffle className="h-4 w-4" />
+                          Randomize Answers
+                        </Button>
+                      </div>
+                      <BonusQuestionsSection
+                        bonusQuestions={bonusQuestions}
+                        contestantGroups={contestantGroups}
+                        bonusAnswers={formData.bonus_answers}
+                        onBonusAnswerChange={updateBonusAnswer}
+                      />
+                    </div>
+                    <Separator />
+                  </>
+                )}
+
+                {/* CRITICAL FIX: Only show payment validation if pool has buy-in */}
+                {poolData?.has_buy_in && (
+                  <>
+                    <div className={isDraftLocked ? "pointer-events-none" : ""}>
+                      <PaymentValidationSection
+                        paymentConfirmed={formData.payment_confirmed}
+                        onPaymentConfirmedChange={(confirmed) => updateFormData({ payment_confirmed: confirmed })}
+                      />
+                    </div>
+                    <Separator />
+                  </>
+                )}
+
+                {!isDraftLocked && (
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
+                    disabled={validationErrors.length > 0}
+                  >
+                    {editingTeamId ? 'Update Team & Predictions' : 'Submit My Team & Predictions'}
+                  </Button>
+                )}
+              </form>
+            </div>
+
+            {/* Lock Overlay */}
+            {isDraftLocked && (
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg flex items-center justify-center z-50 pointer-events-auto">
+                <div className="text-center p-8 bg-white rounded-xl border shadow-2xl max-w-md mx-4">
+                  <div className="bg-gray-100 rounded-full p-4 mx-auto mb-6 w-fit">
+                    <AlertCircle className="h-8 w-8 text-gray-600" />
+                  </div>
+                  <h3 className="font-bold text-xl mb-4 text-gray-900">Draft Locked</h3>
+                  <div className="text-gray-600 text-base leading-relaxed space-y-2">
+                    {lockReasons.map((reason, index) => (
+                      <p key={index}>{reason}</p>
+                    ))}
                   </div>
                 </div>
-                <Separator className="my-6" />
-              </>
-            )}
-
-            {/* Clear Form Button */}
-            <div className="flex justify-end mb-4">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-destructive hover:text-destructive flex items-center gap-2">
-                    <Trash2 className="h-4 w-4" />
-                    Clear Form
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Clear Draft Form</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to clear your draft and bonus predictions? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={resetForm} className="bg-destructive hover:bg-destructive/90">
-                      Clear Form
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6" 
-                style={{
-                  pointerEvents: !activePool || 
-                                activePool.draft_open === false || 
-                                activePool.allow_new_participants === false ||
-                                (activePool.registration_deadline && new Date() > new Date(activePool.registration_deadline)) 
-                                ? 'none' : 'auto'
-                }}>
-          {/* Validation Errors */}
-          {validationErrors.length > 0 && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <div className="font-semibold mb-2">Please complete the following:</div>
-                <ul className="list-disc list-inside space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <BasicInfoForm
-            formData={{
-              participant_name: formData.participant_name,
-              team_name: formData.team_name,
-              email: formData.email,
-            }}
-            onFormDataChange={updateFormData}
-          />
-
-          <Separator />
-
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">
-                Draft Your Team ({poolData?.picks_per_team || 5} Players)
-              </h3>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRandomizeTeam}
-                className="flex items-center gap-2"
-              >
-                <Shuffle className="h-4 w-4" />
-                Randomize Team
-              </Button>
-            </div>
-            <DynamicTeamDraftSection
-              contestantGroups={contestantGroups}
-              poolData={poolData}
-              formData={formData}
-              onFormDataChange={updateFormData}
-            />
-          </div>
-
-          <Separator />
-
-          {poolData?.enable_bonus_questions && bonusQuestions.length > 0 && (
-            <>
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-bold text-purple-800">🎯 Bonus Predictions</h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleRandomizeBonusAnswers}
-                    className="flex items-center gap-2"
-                  >
-                    <Shuffle className="h-4 w-4" />
-                    Randomize Answers
-                  </Button>
-                </div>
-                <BonusQuestionsSection
-                  bonusQuestions={bonusQuestions}
-                  contestantGroups={contestantGroups}
-                  bonusAnswers={formData.bonus_answers}
-                  onBonusAnswerChange={updateBonusAnswer}
-                />
               </div>
-              <Separator />
-            </>
-          )}
-
-          {/* CRITICAL FIX: Only show payment validation if pool has buy-in */}
-          {poolData?.has_buy_in && (
-            <>
-              <PaymentValidationSection
-                paymentConfirmed={formData.payment_confirmed}
-                onPaymentConfirmedChange={(confirmed) => updateFormData({ payment_confirmed: confirmed })}
-              />
-              <Separator />
-            </>
-          )}
-
-            {(() => {
-              const isDraftLocked = !activePool || 
-                                   activePool.draft_open === false || 
-                                   activePool.allow_new_participants === false ||
-                                   (activePool.registration_deadline && new Date() > new Date(activePool.registration_deadline));
-              
-              return !isDraftLocked && (
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
-                  disabled={validationErrors.length > 0}
-                >
-                  {editingTeamId ? 'Update Team & Predictions' : 'Submit My Team & Predictions'}
-                </Button>
-              );
-            })()}
-          </form>
-        </>
+            )}
+          </div>
           );
         })()}
       </CardContent>

@@ -4,13 +4,10 @@ export const isDraftAccessible = (pool: Pool | null): boolean => {
   if (!pool) return false;
   
   // Check if draft is open
-  if (!pool.draft_open) return false;
+  if (pool.draft_open === false) return false;
   
   // Check if new participants are allowed
-  if (!pool.allow_new_participants) return false;
-  
-  // Check if draft is locked by admin
-  if (pool.draft_locked) return false;
+  if (pool.allow_new_participants === false) return false;
   
   // Check if registration deadline has passed
   if (pool.registration_deadline) {
@@ -30,24 +27,17 @@ export const getDraftLockReason = (pool: Pool | null): { title: string; message:
     };
   }
   
-  if (!pool.draft_open) {
+  if (pool.draft_open === false) {
     return {
       title: "Draft Closed by Admin",
       message: "The draft has been closed by the pool administrator. No new team registrations are being accepted."
     };
   }
 
-  if (!pool.allow_new_participants) {
+  if (pool.allow_new_participants === false) {
     return {
       title: "New Participants Not Allowed",
       message: "The pool administrator has disabled new participant registrations. Only existing members can modify their teams."
-    };
-  }
-  
-  if (pool.draft_locked) {
-    return {
-      title: "Draft Locked",
-      message: "All teams have been locked by the administrator. No changes can be made to team selections."
     };
   }
   

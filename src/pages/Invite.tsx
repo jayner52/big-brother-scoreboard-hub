@@ -75,6 +75,10 @@ const Invite = () => {
   };
 
   const handleSignIn = () => {
+    // Store invite code in localStorage before navigating to auth
+    if (code) {
+      localStorage.setItem('pendingInviteCode', code);
+    }
     navigate('/auth');
   };
 

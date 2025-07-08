@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { usePool } from '@/contexts/PoolContext';
 import { Mail, Lock, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ForgotPassword } from '@/components/auth/ForgotPassword';
@@ -26,6 +27,38 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const action = searchParams.get('action');
+  const { joinPoolByCode, setActivePool } = usePool();
+
+  const handlePostAuthJoin = async (user: any) => {
+    const pendingInviteCode = localStorage.getItem('pendingInviteCode');
+    if (pendingInviteCode) {
+      try {
+        localStorage.removeItem('pendingInviteCode');
+        const result = await joinPoolByCode(pendingInviteCode);
+        
+        if (result.success && result.data) {
+          setActivePool(result.data);
+          toast({
+            title: "Welcome!",
+            description: `Successfully joined the pool: ${result.data.name}`,
+          });
+        } else {
+          toast({
+            title: "Pool Join Failed",
+            description: result.error || "Could not join the pool with the invite code",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Pool Join Error",
+          description: "Failed to join pool after authentication",
+          variant: "destructive",
+        });
+      }
+    }
+    navigate('/dashboard');
+  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -33,7 +66,10 @@ const Auth = () => {
       (event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          navigate('/dashboard');
+          // Use setTimeout to defer the async operation
+          setTimeout(() => {
+            handlePostAuthJoin(session.user);
+          }, 0);
         }
       }
     );
@@ -42,13 +78,14 @@ const Auth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        navigate('/dashboard');
+        handlePostAuthJoin(session.user);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, joinPoolByCode, setActivePool, toast]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

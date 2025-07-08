@@ -76,7 +76,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
         {/* BB Arena Section - Green Theme */}
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-4 text-green-800 flex items-center gap-2">
-            <span className="text-xl">🛡️</span>
+            <span className="text-xl">🏟️</span>
             Arena Competition
           </h3>
           <AIArenaSection

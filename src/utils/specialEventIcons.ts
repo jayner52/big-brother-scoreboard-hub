@@ -1,10 +1,10 @@
 export const getSpecialEventIcon = (eventType: string): string => {
   const iconMap: Record<string, string> = {
     // BB Arena and Safety Events
-    'bb_arena_winner': '🛡️',
-    'won_bb_arena': '🛡️',
-    'won_safety': '🛡️',
-    'won_safety_comp': '🛡️',
+    'bb_arena_winner': '🏟️',
+    'won_bb_arena': '🏟️',
+    'won_safety': '🔒',
+    'won_safety_comp': '🔒',
     
     // Showmance events
     'showmance': '💕',
@@ -28,17 +28,17 @@ export const getSpecialEventIcon = (eventType: string): string => {
     'special_power': '🔮',
     'power_from_hg': '🔮',
     'given_power': '🔮',
-    'granted_safety': '🛡️',
-    'safety': '🛡️',
+    'granted_safety': '🔒',
+    'safety': '🔒',
     
     // Survival Events
-    'survived_block_2x': '💪',
-    'survived_block_4x': '🏰',
-    'no_comp_wins_4weeks': '🛟',
-    'block_survival_2_weeks': '💪',
-    'block_survival_4_weeks': '🏰',
-    'no_comp_4_weeks': '🛟',
-    'floater_achievement': '🛟',
+    'survived_block_2x': '🛟',
+    'survived_block_4x': '💪',
+    'no_comp_wins_4weeks': '🏰',
+    'block_survival_2_weeks': '🛟',
+    'block_survival_4_weeks': '💪',
+    'no_comp_4_weeks': '🏰',
+    'floater_achievement': '🏰',
     
     // Social/Game Events
     'came_back_after_evicted': '🔄',
@@ -73,15 +73,15 @@ export const getSpecialEventIcon = (eventType: string): string => {
 
 export const getSpecialEventLegend = () => ({
   // Competition & Achievement Events
-  '🛡️': 'Won BB Arena/Safety',
+  '🏟️': 'Won BB Arena/Safety',
   '🔮': 'Won Special Power',
   '⚡': 'Used Special Power', 
   '🎁': 'Won Prize',
   
   // Survival Events
-  '💪': '2+ Times Block Survival',
-  '🏰': '4+ Times Block Survival',
-  '🛟': '4+ Consecutive Weeks No Comp Wins (Floater)',
+  '🛟': '2+ Times Block Survival',
+  '💪': '4+ Times Block Survival',
+  '🏰': '4+ Consecutive Weeks No Comp Wins (Floater)',
   
   // Social/Game Events
   '💕': 'In Showmance',

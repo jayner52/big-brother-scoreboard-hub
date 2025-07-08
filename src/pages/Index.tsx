@@ -17,8 +17,9 @@ import { PoolJoinModal } from '@/components/pools/PoolJoinModal';
 import { usePool } from '@/contexts/PoolContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Plus, Trophy } from 'lucide-react';
+import { Users, Plus, Trophy, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserPoolRole } from '@/hooks/useUserPoolRole';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -38,6 +39,8 @@ const Index = () => {
     loading: poolsLoading, 
     poolEntries // Use pool-scoped entries from context
   } = usePool();
+
+  const { isAdmin } = useUserPoolRole(activePool?.id, user?.id);
 
   // Auto-open create pool modal for new users
   useEffect(() => {
@@ -245,7 +248,22 @@ const Index = () => {
         <div className="flex items-center justify-between mb-8">
           <div></div>
           <div className="flex items-center gap-2">
-            {user && <PoolSwitcher />}
+            {user && (
+              <div className="flex items-center gap-2">
+                <PoolSwitcher />
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/admin')}
+                    className="p-2 h-8 w-8 text-muted-foreground hover:text-foreground"
+                    title="Admin Panel"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
             {user && activePool && <InviteFriendsButton />}
           </div>
         </div>

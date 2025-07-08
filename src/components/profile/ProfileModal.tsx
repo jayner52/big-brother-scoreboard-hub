@@ -39,6 +39,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   }, [userProfile]);
 
   const handleIconSelect = (icon: string) => {
+    console.log('Icon selected:', icon);
     setAvatarUrl(icon);
   };
 

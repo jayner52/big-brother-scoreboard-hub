@@ -35,7 +35,7 @@ export const ScoringBadges: React.FC = () => {
     } else if (rule.subcategory === 'bb_arena_winner') {
       badges.push(
         <Badge key={rule.id} variant="secondary" className="bg-white/80 backdrop-blur-sm text-purple-800 border border-purple-200">
-          🛡️ BB Arena: {rule.points} pts
+          🏟️ BB Arena: {rule.points} pts
         </Badge>
       );
     }

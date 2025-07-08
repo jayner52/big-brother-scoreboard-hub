@@ -31,8 +31,8 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
     
     const weekData: WeekData[] = [];
     
-    // Load up to 20 weeks or until we have enough data
-    for (let i = 1; i <= 20; i++) {
+    // Load up to 14 weeks (expected season length)
+    for (let i = 1; i <= 14; i++) {
       const { data } = await supabase
         .from('weekly_results')
         .select('*')
@@ -46,10 +46,7 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
         status: getWeekStatus(data)
       });
       
-      // Stop loading if we've gone several weeks without data
-      if (i > 5 && !data && weekData.slice(-3).every(w => !w.data)) {
-        break;
-      }
+      // Continue loading all 14 weeks regardless of data presence
     }
     
     setWeeks(weekData);

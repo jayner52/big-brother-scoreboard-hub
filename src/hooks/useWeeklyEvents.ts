@@ -76,6 +76,8 @@ export const useWeeklyEvents = () => {
           // Combine both sources, prioritizing draft events for draft weeks
           const specialEvents = weekData?.is_draft ? draftSpecialEvents : dbSpecialEvents;
 
+          console.log('🔍 Loading week data for week', editingWeek, 'weekData:', weekData);
+          
           const formData: WeeklyEventForm = {
             week: editingWeek,
             nominees: weekData?.nominees || ['', ''],
@@ -112,6 +114,7 @@ export const useWeeklyEvents = () => {
             americasFavorite: weekData?.americas_favorite_player || ''
           };
 
+          console.log('🔍 Setting form data:', formData);
           setEventForm(formData);
         } catch (error) {
           console.error('Error loading week data:', error);

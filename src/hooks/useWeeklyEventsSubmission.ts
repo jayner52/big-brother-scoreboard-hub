@@ -176,6 +176,9 @@ export const useWeeklyEventsSubmission = (
       // Filter out events with missing contestant_id
       const validEvents = events.filter(e => e.contestant_id);
       
+      console.log('🔍 All events created:', events);
+      console.log('🔍 Valid events for insertion:', validEvents);
+      
       if (validEvents.length > 0) {
         const { error: eventsError } = await supabase
           .from('weekly_events')
@@ -261,6 +264,7 @@ export const useWeeklyEventsSubmission = (
       }
 
       // Update or insert into weekly_results table
+      console.log('🔍 Creating week data record for week', eventForm.week, 'with form data:', eventForm);
       const weekData = {
         week_number: eventForm.week,
         pool_id: poolId,
@@ -328,6 +332,11 @@ export const useWeeklyEventsSubmission = (
           title: "🏆 Final Week Submitted!",
           description: `Season finale results recorded successfully. Ready for season completion.`,
         });
+        
+        // For final week, reload data and trigger recalculation but don't advance
+        loadData();
+        await triggerRecalculation(`Final week ${eventForm.week} events submitted`);
+        return; // Exit early to prevent week advancement
       } else {
         toast({
           title: "Success!",

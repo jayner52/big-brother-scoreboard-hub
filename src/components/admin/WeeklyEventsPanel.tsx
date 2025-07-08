@@ -152,6 +152,8 @@ export const WeeklyEventsPanel: React.FC = () => {
             onSaveProgress={saveCurrentWeekDraft}
             onSubmitWeek={handleSubmitWeek}
             isAutoSaving={isAutoSaving}
+            isFinalWeek={eventForm.isFinalWeek}
+            isDraft={!isWeekComplete}
           />
 
           {/* Special Week Toggles */}

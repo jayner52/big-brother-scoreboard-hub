@@ -14,6 +14,8 @@ interface WeekControlsProps {
   onSaveProgress: () => void;
   onSubmitWeek: () => void;
   isAutoSaving: boolean;
+  isFinalWeek?: boolean;
+  isDraft?: boolean;
 }
 
 export const WeekControls: React.FC<WeekControlsProps> = ({
@@ -23,7 +25,9 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
   onClearWeek,
   onSaveProgress,
   onSubmitWeek,
-  isAutoSaving
+  isAutoSaving,
+  isFinalWeek = false,
+  isDraft = true
 }) => {
   return (
     <div className="space-y-4">
@@ -114,11 +118,24 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
                 }, 1000);
               }
             }} 
-            className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md"
+            className={`flex-1 shadow-md ${
+              isFinalWeek && isDraft
+                ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white animate-pulse'
+                : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white'
+            }`}
             size="lg"
           >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            {isComplete ? 'Finalize & Advance' : `Complete Week ${weekNumber}`}
+            {isFinalWeek && isDraft ? (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                SUBMIT FINAL WEEK RESULTS
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {isComplete ? 'Finalize & Advance' : `Complete Week ${weekNumber}`}
+              </>
+            )}
           </Button>
         </div>
       </div>

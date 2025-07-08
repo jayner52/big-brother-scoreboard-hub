@@ -2,6 +2,7 @@ import React from 'react';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Award } from 'lucide-react';
 import { WeekNavigator } from './WeekNavigator';
+import { ResetAllWeeksButton } from './ResetAllWeeksButton';
 import { useWeekStatus } from '@/hooks/useWeekStatus';
 
 interface WeeklyEventsHeaderProps {
@@ -40,11 +41,14 @@ export const WeeklyEventsHeader: React.FC<WeeklyEventsHeaderProps> = ({
           {getWeekStatus()}
           Week {week} Events
         </div>
-        <WeekNavigator
-          currentWeek={week}
-          onWeekChange={onWeekChange}
-          isLoading={isLoadingWeek}
-        />
+        <div className="flex items-center gap-3">
+          <ResetAllWeeksButton />
+          <WeekNavigator
+            currentWeek={week}
+            onWeekChange={onWeekChange}
+            isLoading={isLoadingWeek}
+          />
+        </div>
       </CardTitle>
       <CardDescription className="text-purple-100">
         Record all events for the week and automatically calculate points

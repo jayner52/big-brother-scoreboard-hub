@@ -4,30 +4,45 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePool } from '@/contexts/PoolContext';
-import { Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ForgotPassword } from '@/components/auth/ForgotPassword';
+import { TermsModal } from '@/components/auth/TermsModal';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Form state
   const [signUpEmail, setSignUpEmail] = useState('');
   const [signUpPassword, setSignUpPassword] = useState('');
+  const [signUpConfirmPassword, setSignUpConfirmPassword] = useState('');
   const [signUpName, setSignUpName] = useState('');
   const [signInEmail, setSignInEmail] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
+  const [emailOptIn, setEmailOptIn] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const action = searchParams.get('action');
   const { joinPoolByCode, setActivePool } = usePool();
+  const { savePreferences } = useUserPreferences();
 
   const handlePostAuthJoin = async (user: any) => {
     const pendingInviteCode = localStorage.getItem('pendingInviteCode');
@@ -87,12 +102,51 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, joinPoolByCode, setActivePool, toast]);
 
+  const validateSignUpForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!signUpEmail.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(signUpEmail)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    if (!signUpName.trim()) {
+      newErrors.name = 'Display name is required';
+    }
+    
+    if (!signUpPassword) {
+      newErrors.password = 'Password is required';
+    } else if (signUpPassword.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (!signUpConfirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (signUpPassword !== signUpConfirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    if (!termsAccepted) {
+      newErrors.terms = 'You must accept the Terms & Conditions to continue';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateSignUpForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
+    setErrors({});
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: signUpEmail,
         password: signUpPassword,
         options: {
@@ -105,26 +159,25 @@ const Auth = () => {
 
       if (error) {
         if (error.message.includes('already registered')) {
-          toast({
-            title: "Account already exists",
-            description: "This email is already registered. Please sign in instead.",
-            variant: "destructive",
-          });
+          setErrors({ email: 'This email is already registered. Please sign in instead.' });
         } else {
           throw error;
         }
-      } else {
+      } else if (data.user) {
+        // Save user preferences
+        await savePreferences({
+          email_opt_in: emailOptIn,
+          terms_accepted_at: new Date().toISOString(),
+          terms_version: '1.0'
+        });
+
         toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your signup.",
+          title: "Account created successfully!",
+          description: "Welcome to Poolside Picks. You can now start drafting your team.",
         });
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create account",
-        variant: "destructive",
-      });
+      setErrors({ submit: error.message || "Failed to create account" });
     } finally {
       setIsSubmitting(false);
     }
@@ -231,40 +284,126 @@ const Auth = () => {
                           placeholder="Enter your name"
                           value={signUpName}
                           onChange={(e) => setSignUpName(e.target.value)}
-                          required
+                          className={errors.name ? 'border-destructive' : ''}
                         />
+                        {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
                       </div>
+                      
                       <div>
-                        <Label htmlFor="signup-email">Email</Label>
+                        <Label htmlFor="signup-email">Email Address</Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                           <Input
                             id="signup-email"
                             type="email"
                             placeholder="Enter your email"
                             value={signUpEmail}
                             onChange={(e) => setSignUpEmail(e.target.value)}
-                            className="pl-10"
-                            required
+                            className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
                           />
                         </div>
+                        {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
                       </div>
+                      
                       <div>
                         <Label htmlFor="signup-password">Password</Label>
                         <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                           <Input
                             id="signup-password"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Create a password (min 6 characters)"
                             value={signUpPassword}
                             onChange={(e) => setSignUpPassword(e.target.value)}
-                            className="pl-10"
-                            minLength={6}
-                            required
+                            className={`pl-10 pr-10 ${errors.password ? 'border-destructive' : ''}`}
                           />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                        {errors.password && <p className="text-xs text-destructive mt-1">{errors.password}</p>}
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="signup-confirm-password"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm your password"
+                            value={signUpConfirmPassword}
+                            onChange={(e) => setSignUpConfirmPassword(e.target.value)}
+                            className={`pl-10 pr-10 ${errors.confirmPassword ? 'border-destructive' : ''}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
+                          >
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                        {errors.confirmPassword && <p className="text-xs text-destructive mt-1">{errors.confirmPassword}</p>}
+                      </div>
+                      
+                      {/* Email Opt-In (Optional) */}
+                      <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-start space-x-3">
+                          <Checkbox
+                            id="email-opt-in"
+                            checked={emailOptIn}
+                            onCheckedChange={(checked) => setEmailOptIn(checked as boolean)}
+                            className="mt-1"
+                          />
+                          <div className="space-y-1">
+                            <Label htmlFor="email-opt-in" className="text-sm font-medium cursor-pointer">
+                              Subscribe to Poolside Picks Updates
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                              Get notified about new features, pool invites, and Big Brother updates. 
+                              You can unsubscribe anytime.
+                            </p>
+                          </div>
                         </div>
                       </div>
+                      
+                      {/* Terms & Conditions (Required) */}
+                      <div className={`p-4 rounded-lg border ${errors.terms ? 'border-destructive bg-destructive/5' : 'border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800'}`}>
+                        <div className="flex items-start space-x-3">
+                          <Checkbox
+                            id="terms-accepted"
+                            checked={termsAccepted}
+                            onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                            className="mt-1"
+                          />
+                          <div className="space-y-1">
+                            <Label htmlFor="terms-accepted" className="text-sm font-medium cursor-pointer">
+                              I agree to the{' '}
+                              <button
+                                type="button"
+                                onClick={() => setShowTerms(true)}
+                                className="text-primary hover:underline"
+                              >
+                                Terms & Conditions
+                              </button>
+                              {' '}*
+                            </Label>
+                            {errors.terms && (
+                              <p className="text-xs text-destructive">{errors.terms}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {errors.submit && (
+                        <div className="text-xs text-destructive text-center">{errors.submit}</div>
+                      )}
+                      
                       <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {isSubmitting ? 'Creating account...' : 'Create Account'}
                       </Button>
@@ -358,6 +497,9 @@ const Auth = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Terms Modal */}
+            <TermsModal open={showTerms} onClose={() => setShowTerms(false)} />
           </>
         )}
       </div>

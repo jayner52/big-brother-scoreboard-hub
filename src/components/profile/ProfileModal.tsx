@@ -4,10 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Upload, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { PoolIconSelector } from './PoolIconSelector';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -31,57 +32,18 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [displayName, setDisplayName] = useState(userProfile?.display_name || '');
   const [avatarUrl, setAvatarUrl] = useState(userProfile?.avatar_url || '');
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     setDisplayName(userProfile?.display_name || '');
     setAvatarUrl(userProfile?.avatar_url || '');
   }, [userProfile]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleIconSelect = (icon: string) => {
+    setAvatarUrl(icon);
+  };
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select an image file",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file size (2MB limit)
-    if (file.size > 2 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please select an image smaller than 2MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setUploading(true);
-    try {
-      // For now, use a placeholder URL service or convert to base64
-      // In a real app, you'd upload to Supabase Storage
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        setAvatarUrl(dataUrl);
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload image",
-        variant: "destructive",
-      });
-      setUploading(false);
-    }
+  const handleClearIcon = () => {
+    setAvatarUrl('');
   };
 
   const handleSave = async () => {
@@ -124,7 +86,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
-            Update your display name and profile picture
+            Update your display name and choose a fun pool icon
           </DialogDescription>
         </DialogHeader>
 
@@ -133,53 +95,23 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={avatarUrl} />
-                <AvatarFallback className="text-2xl bg-gradient-to-br from-coral to-brand-teal text-white">
-                  {initials}
-                </AvatarFallback>
+                {avatarUrl ? (
+                  <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-blue-100 to-cyan-100">
+                    {avatarUrl}
+                  </div>
+                ) : (
+                  <AvatarFallback className="text-2xl bg-gradient-to-br from-coral to-brand-teal text-white">
+                    {initials}
+                  </AvatarFallback>
+                )}
               </Avatar>
-              
-              {avatarUrl && (
-                <button
-                  onClick={() => setAvatarUrl('')}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-white rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
             </div>
 
-            <div className="flex gap-2">
-              <Label htmlFor="avatar-upload" className="cursor-pointer">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                  disabled={uploading}
-                >
-                  {uploading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-4 h-4" />
-                      Change Photo
-                    </>
-                  )}
-                </Button>
-              </Label>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileUpload}
-                disabled={uploading}
-              />
-            </div>
+            <PoolIconSelector
+              selectedIcon={avatarUrl}
+              onIconSelect={handleIconSelect}
+              onClear={handleClearIcon}
+            />
           </div>
 
           {/* Display Name */}

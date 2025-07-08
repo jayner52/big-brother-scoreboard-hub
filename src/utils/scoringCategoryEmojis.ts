@@ -22,8 +22,8 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
   // Weekly Events
   weekly: [
     { category: 'weekly', subcategory: 'nominee', emoji: '🎯', description: 'Nominated for Eviction' },
-    { category: 'weekly', subcategory: 'replacement_nominee', emoji: '🔄', description: 'Replacement Nominee' },
-    { category: 'weekly', subcategory: 'saved_by_veto', emoji: '🗝️', description: 'Saved by Veto' },
+    { category: 'weekly', subcategory: 'replacement_nominee', emoji: '🔃', description: 'Replacement Nominee' },
+    { category: 'weekly', subcategory: 'saved_by_veto', emoji: '🔓', description: 'Saved by Veto' },
     { category: 'weekly', subcategory: 'survival', emoji: '💚', description: 'Survived the Week' },
     { category: 'weekly', subcategory: 'evicted', emoji: '👋', description: 'Evicted from House' },
   ],
@@ -32,7 +32,7 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
   special_achievements: [
     { category: 'special_achievements', subcategory: 'block_survival_2_weeks', emoji: '🛟', description: '2+ Week Block Survival Bonus' },
     { category: 'special_achievements', subcategory: 'block_survival_4_weeks', emoji: '💪', description: '4+ Week Block Survival Bonus (Consecutive)' },
-    { category: 'special_achievements', subcategory: 'floater_achievement', emoji: '🌊', description: 'Floater Achievement (4+ Consecutive Weeks No Comp Wins)' },
+    { category: 'special_achievements', subcategory: 'floater_achievement', emoji: '🏰', description: 'Floater Achievement (4+ Consecutive Weeks No Comp Wins)' },
   ],
 
   // Jury Phase

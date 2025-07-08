@@ -75,3 +75,6 @@ export const logEmojiValidation = () => {
   
   return validation;
 };
+
+// Auto-run validation
+logEmojiValidation();

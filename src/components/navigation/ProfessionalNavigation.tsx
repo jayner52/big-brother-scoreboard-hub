@@ -95,10 +95,15 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
           className="flex items-center gap-2 px-3 py-2 h-10 rounded-full hover:bg-muted/50 transition-all duration-200"
         >
           <Avatar className="w-8 h-8">
-            <AvatarImage src={avatarUrl} />
-            <AvatarFallback className="bg-gradient-to-br from-coral to-brand-teal text-white font-semibold text-sm">
-              {initials}
-            </AvatarFallback>
+            {avatarUrl ? (
+              <div className="w-full h-full flex items-center justify-center text-lg bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full">
+                {avatarUrl}
+              </div>
+            ) : (
+              <AvatarFallback className="bg-gradient-to-br from-coral to-brand-teal text-white font-semibold text-sm">
+                {initials}
+              </AvatarFallback>
+            )}
           </Avatar>
           {!isMobile && (
             <>

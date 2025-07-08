@@ -1,7 +1,9 @@
-import React, { useRef, useEffect } from 'react';
-import { MessageCircle, Waves } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { MessageCircle, Waves, ArrowDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ChatMessage as ChatMessageType } from '@/hooks/useChat';
 import { PoolsideMessageBubble } from './PoolsideMessageBubble';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BrandedChatContainerProps {
   messages: ChatMessageType[];
@@ -17,6 +19,9 @@ export const BrandedChatContainer: React.FC<BrandedChatContainerProps> = ({
   onDeleteMessage
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const isMobile = useIsMobile();
 
   // Smooth auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -25,6 +30,30 @@ export const BrandedChatContainer: React.FC<BrandedChatContainerProps> = ({
       block: 'end'
     });
   }, [messages]);
+
+  // Show/hide scroll to bottom button on mobile
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShowScrollButton(!isAtBottom && messages.length > 0);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [isMobile, messages.length]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'end'
+    });
+  };
 
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center h-full text-center py-12">
@@ -79,14 +108,16 @@ export const BrandedChatContainer: React.FC<BrandedChatContainerProps> = ({
       </div>
 
       {/* Messages Container */}
-      <div className="
-        h-full chat-container
-        overflow-y-auto 
-        px-4 py-6
-        space-y-4
-        pb-6
-        scroll-smooth
-      ">
+      <div 
+        ref={containerRef}
+        className={`
+          h-full chat-container
+          overflow-y-auto 
+          space-y-4
+          scroll-smooth
+          ${isMobile ? 'px-3 py-4 pb-safe-4' : 'px-4 py-6 pb-6'}
+        `}
+      >
         {loading ? (
           <LoadingState />
         ) : messages.length === 0 ? (
@@ -129,6 +160,24 @@ export const BrandedChatContainer: React.FC<BrandedChatContainerProps> = ({
           </>
         )}
       </div>
+
+      {/* Mobile Scroll to Bottom Button */}
+      {isMobile && showScrollButton && (
+        <Button
+          onClick={scrollToBottom}
+          size="icon"
+          className="
+            fixed bottom-24 right-4 z-30
+            h-12 w-12 rounded-full
+            bg-brand-teal hover:bg-brand-teal/90
+            shadow-lg border-2 border-white
+            transition-all duration-200
+            hover:scale-105 active:scale-95
+          "
+        >
+          <ArrowDown className="h-5 w-5 text-white" />
+        </Button>
+      )}
     </div>
   );
 };

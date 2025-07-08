@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Send, Smile, Image } from 'lucide-react';
 import { BigBrotherEmojis } from '@/components/chat/BigBrotherEmojis';
 import { EnhancedGifPicker } from '@/components/chat/EnhancedGifPicker';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface StickyInputBarProps {
   newMessage: string;
@@ -31,6 +32,7 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
   onGifSelect
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   const handleEmojiSelect = (emoji: string) => {
     onEmojiSelect(emoji);
@@ -38,14 +40,14 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
   };
 
   return (
-    <div className="
+    <div className={`
       sticky bottom-0 
       bg-cream/95 backdrop-blur-md 
       border-t-2 border-brand-teal 
-      p-4 
       shadow-[0_-2px_10px_rgba(0,0,0,0.1)]
       z-20
-    ">
+      ${isMobile ? 'p-3 pb-safe' : 'p-4'}
+    `}>
       {/* Emoji and GIF Pickers */}
       <div className="relative">
         <BigBrotherEmojis 
@@ -60,21 +62,22 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
       </div>
 
       {/* Input Controls */}
-      <div className="flex items-center gap-3 chat-input-container">
+      <div className={`flex items-center chat-input-container ${isMobile ? 'gap-2' : 'gap-3'}`}>
         {/* Emoji Button */}
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggleEmojis}
-          className="
-            shrink-0 h-10 w-10
+          className={`
+            shrink-0 text-brand-teal
             hover:bg-brand-teal/10 
-            text-brand-teal 
             transition-all duration-200
             hover:scale-105
-          "
+            active:scale-95
+            ${isMobile ? 'h-12 w-12' : 'h-10 w-10'}
+          `}
         >
-          <Smile className="h-5 w-5" />
+          <Smile className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
         </Button>
 
         {/* GIF Button */}
@@ -82,15 +85,16 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
           variant="ghost"
           size="icon"
           onClick={onToggleGifs}
-          className="
-            shrink-0 h-10 w-10
+          className={`
+            shrink-0 text-brand-teal
             hover:bg-brand-teal/10 
-            text-brand-teal 
             transition-all duration-200
             hover:scale-105
-          "
+            active:scale-95
+            ${isMobile ? 'h-12 w-12' : 'h-10 w-10'}
+          `}
         >
-          <Image className="h-5 w-5" />
+          <Image className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
         </Button>
 
         {/* Message Input */}
@@ -100,9 +104,9 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
           value={newMessage}
           onChange={onMessageChange}
           onKeyPress={onKeyPress}
-          placeholder="Type a message... Use @ to mention someone 🏊"
-          className="
-            flex-1 h-12 chat-input
+          placeholder={isMobile ? "Type a message... 🏊" : "Type a message... Use @ to mention someone 🏊"}
+          className={`
+            flex-1 chat-input
             border-2 border-brand-teal/20 
             focus:border-brand-teal 
             rounded-full
@@ -113,9 +117,9 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
             transition-all duration-200
             focus:ring-2 focus:ring-brand-teal/20
             focus:shadow-md
-            text-base
-          "
-          style={{ fontSize: '16px' }} // Prevent iOS zoom
+            ${isMobile ? 'h-14 text-lg px-5' : 'h-12 text-base px-4'}
+          `}
+          style={{ fontSize: isMobile ? '18px' : '16px' }} // Prevent iOS zoom, better mobile UX
           maxLength={1000}
         />
 
@@ -124,8 +128,8 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
           onClick={onSendMessage}
           disabled={!newMessage.trim()}
           size="icon"
-          className="
-            h-12 w-12 rounded-full
+          className={`
+            rounded-full
             bg-gradient-to-r from-coral to-coral/80 
             hover:from-coral/90 hover:to-coral/70 
             shadow-lg
@@ -133,16 +137,19 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
             transition-all duration-200
             hover:scale-105
             active:scale-95
-          "
+            ${isMobile ? 'h-14 w-14' : 'h-12 w-12'}
+          `}
         >
-          <Send className="h-5 w-5 text-white" />
+          <Send className={`text-white ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`} />
         </Button>
       </div>
 
-      {/* Helper Text */}
-      <div className="text-xs text-muted-foreground mt-2 text-center font-rounded">
-        Press <kbd className="bg-white/50 px-1 rounded text-dark">Enter</kbd> to send • <kbd className="bg-white/50 px-1 rounded text-dark">Shift+Enter</kbd> for new line
-      </div>
+      {/* Helper Text - Hide on mobile to save space */}
+      {!isMobile && (
+        <div className="text-xs text-muted-foreground mt-2 text-center font-rounded">
+          Press <kbd className="bg-white/50 px-1 rounded text-dark">Enter</kbd> to send • <kbd className="bg-white/50 px-1 rounded text-dark">Shift+Enter</kbd> for new line
+        </div>
+      )}
     </div>
   );
 };

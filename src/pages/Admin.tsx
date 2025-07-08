@@ -4,13 +4,14 @@ import { AdminSetupWizardSimplified } from '@/components/admin/AdminSetupWizardS
 
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Settings, CheckSquare } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { usePool } from '@/contexts/PoolContext';
 
 const Admin = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [showSetupWizard, setShowSetupWizard] = useState(false);
   const { activePool } = usePool();
@@ -20,6 +21,16 @@ const Admin = () => {
       setUser(user);
     });
   }, []);
+
+  // Check for new pool creation and show setup wizard
+  useEffect(() => {
+    const newPool = searchParams.get('newPool');
+    if (newPool === 'true') {
+      setShowSetupWizard(true);
+      // Clear the URL parameter
+      navigate('/admin', { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   // Reset showSetupWizard after it's been shown
   useEffect(() => {

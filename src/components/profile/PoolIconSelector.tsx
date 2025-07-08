@@ -42,8 +42,11 @@ export const PoolIconSelector: React.FC<PoolIconSelectorProps> = ({
             key={icon}
             variant={selectedIcon === icon ? "default" : "outline"}
             size="sm"
-            className="h-10 w-10 p-0 text-lg"
-            onClick={() => onIconSelect(icon)}
+            className="h-10 w-10 p-0 text-lg hover:scale-105 transition-transform"
+            onClick={() => {
+              console.log('Icon button clicked:', icon);
+              onIconSelect(icon);
+            }}
           >
             {icon}
           </Button>

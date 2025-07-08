@@ -22,7 +22,7 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
   weekly: [
     { category: 'weekly', subcategory: 'nominee', emoji: '🎯', description: 'Nominated for Eviction' },
     { category: 'weekly', subcategory: 'replacement_nominee', emoji: '🔃', description: 'Replacement Nominee' },
-    { category: 'weekly', subcategory: 'saved_by_veto', emoji: '🔓', description: 'Saved by Power of Veto' },
+    { category: 'weekly', subcategory: 'saved_by_veto', emoji: '🆓', description: 'Saved by Power of Veto' },
     { category: 'weekly', subcategory: 'survival', emoji: '💚', description: 'Survived Eviction' },
     { category: 'weekly', subcategory: 'bb_arena_winner', emoji: '🏟️', description: 'Won BB Arena (Safety from Eviction)' },
   ],

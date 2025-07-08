@@ -16,6 +16,7 @@ import { PoolCreateModal } from '@/components/pools/PoolCreateModal';
 import { PoolJoinModal } from '@/components/pools/PoolJoinModal';
 import { usePool } from '@/contexts/PoolContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, Plus, Trophy, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -245,26 +246,58 @@ const Index = () => {
           onJoinPool={handleJoinPool}
         />
         
-        <div className="flex items-center justify-between mb-8">
-          <div></div>
-          <div className="flex items-center gap-2">
+        {/* Pool Controls Header */}
+        <div className="bg-gradient-to-r from-white to-brand-teal/5 border border-brand-teal/10 rounded-xl p-6 mb-8 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            {/* Pool Info Section */}
+            <div className="flex-1">
+              {activePool ? (
+                <div className="space-y-1">
+                  <h1 className="text-2xl font-bold text-dark flex items-center gap-2">
+                    {activePool.name}
+                    {userRank && (
+                      <Badge variant="outline" className="bg-gradient-to-r from-coral/10 to-brand-teal/10 border-brand-teal/30">
+                        Rank #{userRank}
+                      </Badge>
+                    )}
+                  </h1>
+                  <p className="text-dark/70">
+                    {userEntry?.participant_name && `Playing as ${userEntry.participant_name}`}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <h1 className="text-2xl font-bold text-dark">Welcome to Poolside Picks</h1>
+                  <p className="text-dark/70">Join or create a pool to get started</p>
+                </div>
+              )}
+            </div>
+
+            {/* Action Controls */}
             {user && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <PoolSwitcher />
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate('/admin')}
-                    className="p-2 h-8 w-8 text-muted-foreground hover:text-foreground"
-                    title="Admin Panel"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
+                
+                {activePool && (
+                  <div className="flex items-center gap-2">
+                    <InviteFriendsButton />
+                    
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate('/admin')}
+                        className="border-brand-teal/30 text-brand-teal hover:bg-brand-teal hover:text-white transition-all duration-200"
+                        title="Admin Panel"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Admin
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             )}
-            {user && activePool && <InviteFriendsButton />}
           </div>
         </div>
         

@@ -42,11 +42,25 @@ export const usePoolSetupChecklist = () => {
       navigation: { tab: 'contestants' }
     },
     {
+      key: 'paymentInfoAdded',
+      title: 'Add Basic Settings',
+      description: 'Configure payment methods and special events',
+      actionText: 'Basic Settings',
+      navigation: { tab: 'settings', section: 'basic-settings' }
+    },
+    {
       key: 'scoringConfigured',
       title: 'Configure Scoring Rules',
       description: 'Set point values for competitions and events',
       actionText: 'Set Points',
       navigation: { tab: 'settings', section: 'custom-scoring' }
+    },
+    {
+      key: 'draftSettingsConfigured',
+      title: 'Set Draft Timing',
+      description: 'Configure draft deadline and timing',
+      actionText: 'Draft Timing',
+      navigation: { tab: 'settings', section: 'draft-timing' }
     },
     {
       key: 'prizesConfigured',
@@ -56,32 +70,11 @@ export const usePoolSetupChecklist = () => {
       navigation: { tab: 'settings', section: 'prize-pool' }
     },
     {
-      key: 'draftSettingsConfigured',
-      title: 'Set Draft Rules',
-      description: 'Configure draft deadline, team size, and order',
-      actionText: 'Draft Settings',
-      navigation: { tab: 'settings', section: 'draft-timing' }
-    },
-    {
-      key: 'paymentInfoAdded',
-      title: 'Add Payment Instructions',
-      description: 'Tell participants how to pay entry fees',
-      actionText: 'Payment Setup',
-      navigation: { tab: 'settings', section: 'basic-settings' }
-    },
-    {
       key: 'bonusQuestionsCreated',
       title: 'Create Bonus Questions (Optional)',
       description: 'Add prediction questions for extra points',
       actionText: 'Add Questions',
       navigation: { tab: 'bonus' }
-    },
-    {
-      key: 'specialEventsConfigured',
-      title: 'Review Special Events (Optional)',
-      description: 'Configure which special achievements to track',
-      actionText: 'Special Events',
-      navigation: { tab: 'settings', section: 'basic-settings' }
     },
     {
       key: 'validationCheck',

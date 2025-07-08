@@ -46,7 +46,7 @@ export const usePoolSetupChecklist = () => {
       title: 'Configure Scoring Rules',
       description: 'Set point values for competitions and events',
       actionText: 'Set Points',
-      navigation: { tab: 'settings', section: 'scoring-rules' }
+      navigation: { tab: 'settings', section: 'custom-scoring' }
     },
     {
       key: 'prizesConfigured',
@@ -60,14 +60,14 @@ export const usePoolSetupChecklist = () => {
       title: 'Set Draft Rules',
       description: 'Configure draft deadline, team size, and order',
       actionText: 'Draft Settings',
-      navigation: { tab: 'settings', section: 'draft-configuration' }
+      navigation: { tab: 'settings', section: 'draft-timing' }
     },
     {
       key: 'paymentInfoAdded',
       title: 'Add Payment Instructions',
       description: 'Tell participants how to pay entry fees',
       actionText: 'Payment Setup',
-      navigation: { tab: 'settings', section: 'payment-methods' }
+      navigation: { tab: 'settings', section: 'basic-settings' }
     },
     {
       key: 'bonusQuestionsCreated',
@@ -132,7 +132,7 @@ export const usePoolSetupChecklist = () => {
     saveChecklistState(newState);
   };
 
-  // Navigate to admin section
+  // Navigate to admin section with enhanced accordion management
   const handleNavigation = (navigation: ChecklistItem['navigation']) => {
     if (navigation.tab) {
       // First scroll to admin panel
@@ -147,15 +147,23 @@ export const usePoolSetupChecklist = () => {
         if (tabTrigger) {
           tabTrigger.click();
           
-          // If section specified, scroll to it
+          // If section specified, manage accordions
           if (navigation.section) {
             setTimeout(() => {
-              const sectionElement = document.querySelector(`[data-accordion-section="${navigation.section}"]`) as HTMLElement;
-              if (sectionElement) {
-                sectionElement.click();
-                sectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }, 300);
+              // Send event to PoolSettingsPanel to control accordions
+              const event = new CustomEvent('navigateToAccordion', {
+                detail: { section: navigation.section }
+              });
+              document.dispatchEvent(event);
+              
+              // Scroll to the specific section
+              setTimeout(() => {
+                const targetAccordion = document.querySelector(`[data-accordion-section="${navigation.section}"]`) as HTMLElement;
+                if (targetAccordion) {
+                  targetAccordion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }, 600);
+            }, 400);
           }
         }
       }, 100);

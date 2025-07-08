@@ -63,6 +63,20 @@ export const PoolSettingsPanel: React.FC = () => {
         console.error('Error loading expanded sections:', error);
       }
     }
+
+    // Add event listener for checklist navigation
+    const handleAccordionControl = (event: CustomEvent) => {
+      const { section } = event.detail;
+      if (section) {
+        setExpandedSections([section]);
+      }
+    };
+
+    document.addEventListener('navigateToAccordion', handleAccordionControl as EventListener);
+    
+    return () => {
+      document.removeEventListener('navigateToAccordion', handleAccordionControl as EventListener);
+    };
   }, [activePool]);
 
   const checkExistingEntries = async () => {

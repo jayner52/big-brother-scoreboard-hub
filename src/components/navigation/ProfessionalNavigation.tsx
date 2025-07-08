@@ -14,6 +14,7 @@ import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu, User }
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { EnhancedChatIcon } from '@/components/chat/EnhancedChatIcon';
 import { ProfileModal } from '@/components/profile/ProfileModal';
+import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
 import { usePool } from '@/contexts/PoolContext';
 import { useUserPoolRole } from '@/hooks/useUserPoolRole';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -238,7 +239,8 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
   return (
     <nav className="sticky top-0 z-40 flex items-center justify-between py-3 px-6 bg-background/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
       {/* LEFT SECTION - Pool Identity */}
-      <div className="flex items-center min-w-0">
+      <div className="flex items-center gap-2 min-w-0">
+        <PoolsidePicksLogo size="sm" />
         <h3 className="text-lg font-semibold text-foreground truncate">
           {activePool?.name || 'Poolside Picks'}
         </h3>

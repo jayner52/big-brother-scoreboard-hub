@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { PoolCreateModal } from '@/components/pools/PoolCreateModal';
 import { PoolJoinModal } from '@/components/pools/PoolJoinModal';
+import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
 import { usePool } from '@/contexts/PoolContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -58,8 +59,7 @@ const Landing = () => {
       <nav className="bg-cream border-b border-brand-teal/20 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Trophy className="h-8 w-8 text-coral" />
-            <span className="text-xl font-bold text-dark">Poolside Picks</span>
+            <PoolsidePicksLogo size="sm" />
           </div>
           
           {user ? (

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, Trophy, BarChart3, MessageCircle, Play, Target, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { BigBrotherLogo } from '@/components/brand/BigBrotherLogo';
+import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
 import { PoolFloat } from '@/components/brand/PoolFloat';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -74,7 +74,7 @@ const PoolsidePicks = () => {
         <div className="container mx-auto text-center">
           {/* Logo and Brand */}
           <div className="mb-8 flex justify-center">
-            <BigBrotherLogo size="xl" className="animate-bounce" />
+            <PoolsidePicksLogo size="xl" showAnimation={true} />
           </div>
           
           <h1 className={`${isMobile ? 'text-4xl' : 'text-7xl'} font-bold text-dark mb-4`}>
@@ -286,7 +286,7 @@ const PoolsidePicks = () => {
       <footer className="py-12 px-4 bg-dark border-t border-cream/20">
         <div className="container mx-auto text-center">
           <div className="flex justify-center mb-6">
-            <BigBrotherLogo size="sm" />
+            <PoolsidePicksLogo size="sm" />
           </div>
           <p className="text-cream/60 mb-4">
             © 2025 Poolside Picks | Where Big Brother Meets the Pool

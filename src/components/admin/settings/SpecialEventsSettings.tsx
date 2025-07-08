@@ -13,10 +13,10 @@ export const SpecialEventsSettings: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if ((activePool as any)?.enabled_special_events) {
-      setEnabledEvents((activePool as any).enabled_special_events);
+    if (activePool?.enabled_special_events) {
+      setEnabledEvents(activePool.enabled_special_events);
     }
-  }, [(activePool as any)?.enabled_special_events]);
+  }, [activePool?.enabled_special_events]);
 
   const toggleEvent = (eventId: string) => {
     setEnabledEvents(prev => 
@@ -31,9 +31,11 @@ export const SpecialEventsSettings: React.FC = () => {
 
     setSaving(true);
     try {
-      const success = await updatePool(activePool.id, {
+      const result = await updatePool(activePool.id, {
         enabled_special_events: enabledEvents
-      } as any);
+      });
+      
+      const success = result.success;
 
       if (success) {
         toast({

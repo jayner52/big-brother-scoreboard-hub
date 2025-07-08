@@ -14,18 +14,17 @@ export const SPECIAL_EVENTS_CONFIG: {
 } = {
   // Events that can be toggled in pool settings and appear in weekly tracking
   toggleable: [
-    { id: 'won_secret_power', label: 'Won Secret Power/Advantage', emoji: '🔮', points: 3 },
+    { id: 'won_special_power', label: 'Won Special Power/Advantage', emoji: '🔮', points: 2 },
     { id: 'used_special_power', label: 'Used Special Power', emoji: '⚡', points: 1 },
-    { id: 'won_prize', label: 'Won Prize/Reward', emoji: '🎁', points: 1 },
+    { id: 'won_prize', label: 'Won Prize/Reward', emoji: '🎁', points: 2 },
+    { id: 'in_showmance', label: 'In a Showmance', emoji: '💕', points: 1 },
     { id: 'received_penalty', label: 'Received Penalty/Punishment', emoji: '⚠️', points: -2 },
     { id: 'costume_punishment', label: 'Costume Punishment', emoji: '🤡', points: -1 },
     { id: 'came_back_evicted', label: 'Came Back After Evicted', emoji: '🔄', points: 5 },
     { id: 'self_evicted', label: 'Self-Evicted/Quit', emoji: '🚪', points: -5 },
     { id: 'removed_production', label: 'Removed by Production', emoji: '❌', points: -5 },
-    { id: 'won_safety_comp', label: 'Won Safety Competition', emoji: '🛡️', points: 2 },
-    { id: 'luxury_comp_win', label: 'Won Luxury Competition', emoji: '🏆', points: 2 },
-    { id: 'luxury_comp_lose', label: 'Lost Luxury Competition', emoji: '😞', points: -1 },
-    { id: 'custom_event', label: 'Custom Event', emoji: '✨' }
+    { id: 'won_safety_comp', label: 'Won Safety Competition', emoji: '🛡️', points: 1 },
+    { id: 'custom_event', label: 'Custom Event', emoji: '✨', points: 1 }
   ],
   
   // Automatic events (shown in legend but not in settings/weekly)

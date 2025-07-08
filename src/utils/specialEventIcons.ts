@@ -4,6 +4,7 @@ export const getSpecialEventIcon = (eventType: string): string => {
     'bb_arena_winner': '🛡️',
     'won_bb_arena': '🛡️',
     'won_safety': '🏆',
+    'won_safety_comp': '🛡️',
     
     // Showmance events
     'showmance': '💕',
@@ -13,11 +14,14 @@ export const getSpecialEventIcon = (eventType: string): string => {
     'prize_won': '🎁',
     'wins_prize': '🎁',
     'given_prize': '🎁',
+    'won_prize': '🎁',
     'wins_cash': '💰',
     'punishment': '⚠️',
     'receives_punishment': '⚠️',
+    'received_penalty': '⚠️',
     'costume_punishment': '🤡',
     'won_secret_power': '🔮',
+    'won_special_power': '🔮',
     'used_special_power': '⚡',
     
     // Power and safety events
@@ -30,20 +34,22 @@ export const getSpecialEventIcon = (eventType: string): string => {
     // Survival Events
     'survived_block_2x': '💪',
     'survived_block_4x': '🔥',
-    'no_comp_wins_4weeks': '🥷',
+    'no_comp_wins_4weeks': '🛟',
     'block_survival_2_weeks': '💪',
     'block_survival_4_weeks': '🔥',
-    'no_comp_4_weeks': '🥷',
+    'no_comp_4_weeks': '🛟',
+    'floater_achievement': '🛟',
     
     // Social/Game Events
-    'received_penalty': '⚠️',
     'came_back_after_evicted': '🔄',
+    'came_back_evicted': '🔄',
     'comeback': '🔄',
     'comes_back': '🔄',
     
     // Exit Events
     'self_evicted': '🚪',
     'removed_from_game': '❌',
+    'removed_production': '❌',
     'left_not_eviction': '👋',
     'leaves_not_eviction': '👋',
     'leaves_early': '👋',
@@ -58,7 +64,8 @@ export const getSpecialEventIcon = (eventType: string): string => {
     'runner_up': '🥈',
     
     // Default
-    'custom': '✨'
+    'custom': '✨',
+    'custom_event': '✨'
   };
 
   return iconMap[eventType] || '📝';
@@ -67,15 +74,14 @@ export const getSpecialEventIcon = (eventType: string): string => {
 export const getSpecialEventLegend = () => ({
   // Competition & Achievement Events
   '🛡️': 'Won BB Arena/Safety',
-  '🔮': 'Won Secret Power',
+  '🔮': 'Won Special Power',
   '⚡': 'Used Special Power', 
-  '🏆': 'Won Safety Competition',
   '🎁': 'Won Prize',
   
   // Survival Events
   '💪': '2+ Times Block Survival',
   '🔥': '4+ Times Block Survival',
-  '🥷': '4+ Weeks No Comp Wins',
+  '🛟': '4+ Weeks No Comp Wins (Floater)',
   
   // Social/Game Events
   '💕': 'In Showmance',
@@ -86,7 +92,6 @@ export const getSpecialEventLegend = () => ({
   // Exit Events
   '🚪': 'Self-Evicted',
   '❌': 'Removed by Production',
-  '👋': 'Left Outside Eviction',
   
   // Finale Events
   '🌟': "America's Favorite Player",

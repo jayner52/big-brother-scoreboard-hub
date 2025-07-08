@@ -116,21 +116,6 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
         </div>
       )}
 
-      {/* Special Events Summary for this week */}
-      {specialEvents.filter(event => event.week_number === weekNumber).length > 0 && (
-        <div className="mt-3 p-2 bg-purple-50 rounded border border-purple-200">
-          <div className="text-xs font-medium text-purple-800 mb-1">Special Events:</div>
-          <div className="flex flex-wrap gap-1">
-            {specialEvents
-              .filter(event => event.week_number === weekNumber)
-              .map((event, index) => (
-                <Badge key={index} variant="outline" className="text-xs border-purple-300 text-purple-700">
-                  {event.contestant_name}: {event.points_awarded > 0 ? '+' : ''}{event.points_awarded}
-                </Badge>
-              ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -319,18 +319,6 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
               </div>
             )}
 
-            {/* Custom Points Override */}
-            {event.eventType && event.eventType !== 'custom_event' && (
-              <div>
-                <Label>Custom Points (optional)</Label>
-                <Input
-                  type="number"
-                  placeholder={`Default: ${availableEvents.find(rule => rule.subcategory === event.eventType)?.points || 1}`}
-                  value={event.customPoints || ''}
-                  onChange={(e) => updateSpecialEvent(index, 'customPoints', parseInt(e.target.value) || undefined)}
-                />
-              </div>
-            )}
 
             {/* Event Summary */}
             {event.contestant && event.eventType && (
@@ -338,7 +326,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                 <span>
                   <strong>{event.contestant}</strong> → {getEventDisplayName(event)}
                 </span>
-                <Badge variant={getEventPoints(event) > 0 ? "default" : "destructive"}>
+                <Badge variant={getEventPoints(event) > 0 ? "default" : getEventPoints(event) < 0 ? "destructive" : "secondary"}>
                   {getEventPoints(event) > 0 ? '+' : ''}{getEventPoints(event)} pts
                 </Badge>
               </div>

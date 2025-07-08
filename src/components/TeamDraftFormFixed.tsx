@@ -209,31 +209,39 @@ export const TeamDraftFormFixed: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        {/* Multi-Team Switcher - Only show if user has multiple teams */}
-        {userTeams.length > 0 && (
-          <MultiTeamSwitcher
-            teams={userTeams}
-            currentTeamIndex={currentTeamIndex}
-            onTeamChange={handleTeamSwitch}
-            onEditTeam={handleEditTeam}
-            picksPerTeam={picksPerTeam}
-          />
-        )}
+        {/* Multi-Team Switcher - Only show if user has multiple teams AND draft is not locked */}
+        {(() => {
+          const lockReasons = [];
+          
+          if (activePool?.draft_open === false) {
+            lockReasons.push("Draft has been closed by administrator");
+          }
+          
+          if (activePool?.allow_new_participants === false) {
+            lockReasons.push("New participants are not currently allowed");
+          }
+          
+          if (activePool?.registration_deadline) {
+            const deadline = new Date(activePool.registration_deadline);
+            if (new Date() > deadline) {
+              lockReasons.push("Registration deadline has passed");
+            }
+          }
 
-        {/* Create New Team Button - Show if user has existing teams */}
-        {userTeams.length > 0 && !isEditingExisting && (
-          <div className="mb-6 text-center">
-            <Button
-              onClick={handleCreateNewTeam}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Create New Team
-            </Button>
-          </div>
-        )}
+          const isDraftLocked = lockReasons.length > 0;
+          
+          return userTeams.length > 0 && !isDraftLocked && (
+            <MultiTeamSwitcher
+              teams={userTeams}
+              currentTeamIndex={currentTeamIndex}
+              onTeamChange={handleTeamSwitch}
+              onEditTeam={handleEditTeam}
+              picksPerTeam={picksPerTeam}
+            />
+          );
+        })()}
 
-        {/* Calculate if draft is locked */}
+        {/* Calculate if draft is locked - ALWAYS CHECK REGARDLESS OF USER TEAMS */}
         {(() => {
           if (!activePool) return null;
           
@@ -256,7 +264,16 @@ export const TeamDraftFormFixed: React.FC = () => {
 
           const isDraftLocked = lockReasons.length > 0;
           
-          return (!userTeams.length || isEditingExisting || !editingTeamId) && (
+          console.log('🔒 DRAFT LOCK CHECK:', {
+            activePool: activePool.name,
+            draft_open: activePool.draft_open,
+            allow_new_participants: activePool.allow_new_participants,
+            deadline: activePool.registration_deadline,
+            lockReasons,
+            isDraftLocked
+          });
+
+          return (
           <div className="relative">
             {/* Draft Form Content */}
             <div className={isDraftLocked ? "pointer-events-none blur-sm" : ""}>
@@ -449,6 +466,19 @@ export const TeamDraftFormFixed: React.FC = () => {
           </div>
           );
         })()}
+
+        {/* Always show Multi-Team Switcher outside of lock logic */}
+        {userTeams.length > 0 && !isEditingExisting && (
+          <div className="mt-6 text-center">
+            <Button
+              onClick={handleCreateNewTeam}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create New Team
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

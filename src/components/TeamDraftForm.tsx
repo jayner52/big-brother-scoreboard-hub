@@ -32,15 +32,33 @@ export const TeamDraftForm: React.FC = () => {
   const { randomizeTeam, randomizeBonusAnswers } = useRandomPicks();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
+  // Enhanced form data change handler that clears validation errors
+  const handleFormDataChange = (updates: any) => {
+    updateFormData(updates);
+    // Clear validation errors when user makes changes
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+  };
+
+  // Enhanced bonus answer change handler that clears validation errors
+  const handleBonusAnswerChange = (questionId: string, answer: any) => {
+    updateBonusAnswer(questionId, answer);
+    // Clear validation errors when user makes changes
+    if (validationErrors.length > 0) {
+      setValidationErrors([]);
+    }
+  };
+
   const handleRandomizeTeam = () => {
     const randomPicks = randomizeTeam(contestantGroups, picksPerTeam);
-    updateFormData(randomPicks);
+    handleFormDataChange(randomPicks);
   };
 
   const handleRandomizeBonusAnswers = () => {
     const randomAnswers = randomizeBonusAnswers(bonusQuestions, contestantGroups);
     Object.entries(randomAnswers).forEach(([questionId, answer]) => {
-      updateBonusAnswer(questionId, answer);
+      handleBonusAnswerChange(questionId, answer);
     });
   };
 
@@ -141,7 +159,7 @@ export const TeamDraftForm: React.FC = () => {
               team_name: formData.team_name,
               email: formData.email,
             }}
-            onFormDataChange={updateFormData}
+            onFormDataChange={handleFormDataChange}
           />
 
           <Separator />
@@ -165,7 +183,7 @@ export const TeamDraftForm: React.FC = () => {
               contestantGroups={contestantGroups}
               poolData={poolData}
               formData={formData}
-              onFormDataChange={updateFormData}
+              onFormDataChange={handleFormDataChange}
             />
           </div>
 
@@ -190,7 +208,7 @@ export const TeamDraftForm: React.FC = () => {
                   bonusQuestions={bonusQuestions}
                   contestantGroups={contestantGroups}
                   bonusAnswers={formData.bonus_answers}
-                  onBonusAnswerChange={updateBonusAnswer}
+                  onBonusAnswerChange={handleBonusAnswerChange}
                 />
               </div>
               <Separator />
@@ -199,13 +217,12 @@ export const TeamDraftForm: React.FC = () => {
 
           <PaymentValidationSection
             paymentConfirmed={formData.payment_confirmed}
-            onPaymentConfirmedChange={(confirmed) => updateFormData({ payment_confirmed: confirmed })}
+            onPaymentConfirmedChange={(confirmed) => handleFormDataChange({ payment_confirmed: confirmed })}
           />
 
           <Button 
             type="submit" 
             className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold ${isMobile ? 'mobile-button text-base' : 'py-3 text-lg'}`}
-            disabled={validationErrors.length > 0}
           >
             Submit My Team & Predictions
           </Button>

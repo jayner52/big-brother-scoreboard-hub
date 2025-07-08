@@ -57,6 +57,29 @@ export const useSetupChecklistTracking = () => {
     }
   };
 
+  // Copy invite code function
+  const copyInviteCode = () => {
+    if (activePool?.invite_code) {
+      navigator.clipboard.writeText(activePool.invite_code);
+      toast({
+        title: "Invite code copied!",
+        description: "Share this code with participants to join your pool.",
+      });
+    }
+  };
+
+  // Copy invite link function
+  const copyInviteLink = () => {
+    if (activePool?.invite_code) {
+      const inviteLink = `${window.location.origin}/invite/${activePool.invite_code}`;
+      navigator.clipboard.writeText(inviteLink);
+      toast({
+        title: "Invite link copied!",
+        description: "Share this link with participants.",
+      });
+    }
+  };
+
   // Load manual completion overrides
   const loadOverrides = async () => {
     if (!activePool?.id) return;
@@ -71,42 +94,7 @@ export const useSetupChecklistTracking = () => {
     }
   };
 
-  // Toggle manual completion
-  const toggleManualCompletion = useCallback(async (taskId: string, currentlyCompleted: boolean) => {
-    if (!activePool?.id) return;
-
-    try {
-      const newStatus = !currentlyCompleted;
-      
-      const { error } = await supabase
-        .from('pool_checklist_overrides')
-        .upsert({
-          pool_id: activePool.id,
-          task_id: taskId,
-          manually_completed: newStatus,
-          completed_by: (await supabase.auth.getUser()).data.user?.id,
-        });
-
-      if (error) throw error;
-
-      await loadOverrides();
-      await checkSetupStatus();
-      
-      toast({
-        title: newStatus ? "Task marked complete" : "Task marked incomplete",
-        description: `You manually ${newStatus ? 'completed' : 'reset'} this task.`,
-      });
-    } catch (error) {
-      console.error('Error toggling task completion:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update task completion status.",
-        variant: "destructive",
-      });
-    }
-  }, [activePool?.id, toast]);
-
-  const checkSetupStatus = async () => {
+  const checkSetupStatus = useCallback(async () => {
     if (!activePool?.id) {
       setLoading(false);
       return;
@@ -160,7 +148,7 @@ export const useSetupChecklistTracking = () => {
         };
       };
 
-      // Define updated steps with new flow
+      // Define updated steps with simpler manual control flow
       const updatedSteps: SetupStep[] = [
         {
           id: 'pool-created',
@@ -171,9 +159,9 @@ export const useSetupChecklistTracking = () => {
         },
         {
           id: 'review-contestants',
-          title: 'Review Preloaded Contestants',
-          description: `${contestantCount} contestant${contestantCount !== 1 ? 's' : ''} available, ${photosCount} have photos`,
-          ...getCompletionStatus('review-contestants', contestantCount >= 16),
+          title: 'Review Contestants',
+          description: `${contestantCount} contestant${contestantCount !== 1 ? 's' : ''} loaded${photosCount > 0 ? `, ${photosCount} with photos` : ''}`,
+          ...getCompletionStatus('review-contestants', false), // Always manual
           count: contestantCount,
           warning: contestantCount < 16 ? 'Need at least 16 contestants for full season' : undefined,
           action: () => navigateToSection('contestants'),
@@ -184,30 +172,29 @@ export const useSetupChecklistTracking = () => {
           id: 'draft-config',
           title: 'Configure Draft Settings',
           description: 'Set team size, groups, and draft rules.',
-          ...getCompletionStatus('draft-config', activePool.draft_configuration_locked || false),
+          ...getCompletionStatus('draft-config', false), // Always manual
           warning: !activePool.draft_configuration_locked ? 
-            'This cannot be changed after the first person drafts!' : undefined,
-          action: () => navigateToSection('settings'),
+            'Lock configuration after setting it up!' : undefined,
+          action: () => navigateToSection('settings', 'draft-configuration'),
           actionLabel: 'Configure →',
           canToggle: true,
         },
         {
           id: 'payment-setup',
-          title: 'Payment Information',
+          title: 'Setup Payment Methods',
           description: activePool.has_buy_in ? 
-            'Configure how participants will pay the entry fee.' : 
+            'Configure how participants will pay entry fees.' : 
             'No buy-in required for this pool.',
-          ...getCompletionStatus('payment-setup', !activePool.has_buy_in || !!activePool.payment_method_1),
-          action: activePool.has_buy_in && !activePool.payment_method_1 ? 
-            () => navigateToSection('settings') : undefined,
-          actionLabel: 'Set up →',
+          ...getCompletionStatus('payment-setup', false), // Always manual
+          action: () => navigateToSection('settings', 'prize-pool'),
+          actionLabel: 'Setup →',
           canToggle: true,
         },
         {
           id: 'bonus-questions',
           title: 'Review Bonus Questions',
           description: `${bonusCount} bonus questions configured`,
-          ...getCompletionStatus('bonus-questions', bonusCount >= 5),
+          ...getCompletionStatus('bonus-questions', false), // Always manual
           count: bonusCount,
           warning: bonusCount < 5 ? 'Consider adding more bonus questions' : undefined,
           action: () => navigateToSection('bonus'),
@@ -217,47 +204,32 @@ export const useSetupChecklistTracking = () => {
         {
           id: 'special-events',
           title: 'Configure Special Events',
-          description: 'Choose which special events can be tracked.',
-          ...getCompletionStatus('special-events', (activePool.enabled_special_events?.length || 0) > 0),
+          description: `${activePool.enabled_special_events?.length || 0} special events enabled`,
+          ...getCompletionStatus('special-events', false), // Always manual
           count: activePool.enabled_special_events?.length || 0,
-          action: () => navigateToSection('settings'),
+          action: () => navigateToSection('settings', 'basic-settings'),
           actionLabel: 'Configure →',
           canToggle: true,
         },
         {
           id: 'pool-timeline',
-          title: 'Set Pool Timeline',
-          description: 'Configure registration deadline and draft timing.',
-          ...getCompletionStatus('pool-timeline', !!activePool.registration_deadline),
-          action: () => navigateToSection('settings'),
-          actionLabel: 'Set Timeline →',
+          title: 'Set Registration Deadline',
+          description: activePool.registration_deadline ? 
+            `Deadline: ${new Date(activePool.registration_deadline).toLocaleDateString()}` :
+            'Set when registration closes.',
+          ...getCompletionStatus('pool-timeline', false), // Always manual
+          action: () => navigateToSection('settings', 'draft-timing'),
+          actionLabel: 'Set Deadline →',
           canToggle: true,
         },
         {
-          id: 'ready-to-invite',
-          title: 'Ready to Invite Participants',
-          description: `Share your invite code: ${activePool.invite_code}`,
-          ...getCompletionStatus('ready-to-invite', entriesCount > 0),
+          id: 'invite-participants',
+          title: 'Copy Invite Code',
+          description: `Code: ${activePool.invite_code} (${entriesCount} participant${entriesCount !== 1 ? 's' : ''} joined)`,
+          ...getCompletionStatus('invite-participants', false), // Always manual
           count: entriesCount,
-          action: () => {
-            const inviteLink = `${window.location.origin}/invite/${activePool?.invite_code}`;
-            navigator.clipboard.writeText(inviteLink).then(() => {
-              toast({
-                title: "Invite link copied!",
-                description: "Share this link with your participants.",
-              });
-            }).catch(() => {
-              // Fallback to copying just the code
-              if (activePool?.invite_code) {
-                navigator.clipboard.writeText(activePool.invite_code);
-                toast({
-                  title: "Invite code copied!",
-                  description: `Share code: ${activePool.invite_code}`,
-                });
-              }
-            });
-          },
-          actionLabel: 'Copy Link',
+          action: copyInviteCode,
+          actionLabel: 'Copy Code',
           canToggle: true,
         }
       ];
@@ -270,11 +242,46 @@ export const useSetupChecklistTracking = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activePool?.id, overrides]);
 
   useEffect(() => {
     checkSetupStatus();
-  }, [activePool?.id]);
+  }, [checkSetupStatus]);
+
+  // Toggle manual completion
+  const toggleManualCompletion = useCallback(async (taskId: string, currentlyCompleted: boolean) => {
+    if (!activePool?.id) return;
+
+    try {
+      const newStatus = !currentlyCompleted;
+      
+      const { error } = await supabase
+        .from('pool_checklist_overrides')
+        .upsert({
+          pool_id: activePool.id,
+          task_id: taskId,
+          manually_completed: newStatus,
+          completed_by: (await supabase.auth.getUser()).data.user?.id,
+        });
+
+      if (error) throw error;
+
+      await loadOverrides();
+      await checkSetupStatus();
+      
+      toast({
+        title: newStatus ? "Task marked complete" : "Task marked incomplete",
+        description: `You manually ${newStatus ? 'completed' : 'reset'} this task.`,
+      });
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update task completion status.",
+        variant: "destructive",
+      });
+    }
+  }, [activePool?.id, toast, checkSetupStatus]);
 
   // Refresh setup status
   const refreshStatus = () => {

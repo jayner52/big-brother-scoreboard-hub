@@ -3,108 +3,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  CheckCircle, 
-  AlertCircle, 
-  Users, 
-  UserCheck, 
-  DollarSign, 
-  Share2,
-  X,
   CheckSquare,
-  Loader2
+  Loader2,
+  Users,
+  Settings,
+  DollarSign,
+  HelpCircle,
+  Calendar,
+  Share2,
+  Target,
+  X,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
 import { useSetupChecklistTracking } from '@/hooks/useSetupChecklistTracking';
-
-interface ChecklistItemProps {
-  completed: boolean;
-  autoCompleted: boolean;
-  manuallyCompleted: boolean;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  warning?: string;
-  action?: () => void;
-  actionLabel?: string;
-  canToggle?: boolean;
-  onToggle?: () => void;
-}
-
-const ChecklistItem: React.FC<ChecklistItemProps> = ({
-  completed,
-  autoCompleted,
-  manuallyCompleted,
-  icon,
-  title,
-  description,
-  warning,
-  action,
-  actionLabel,
-  canToggle,
-  onToggle
-}) => (
-  <div className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
-    completed 
-      ? 'bg-green-50 border-green-200' 
-      : 'bg-blue-50 border-blue-200'
-  }`}>
-    <div className="flex-shrink-0 mt-0.5">
-      {icon}
-    </div>
-    <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-2 mb-1">
-        <h4 className="font-medium text-sm">
-          {title}
-        </h4>
-        {manuallyCompleted && (
-          <Badge variant="outline" className="text-xs px-1 py-0">
-            Manual
-          </Badge>
-        )}
-        {autoCompleted && !manuallyCompleted && (
-          <Badge variant="outline" className="text-xs px-1 py-0 bg-green-100">
-            Auto
-          </Badge>
-        )}
-      </div>
-      <p className="text-xs text-muted-foreground mt-1">
-        {description}
-      </p>
-      {warning && (
-        <div className="flex items-center gap-1 mt-2">
-          <AlertCircle className="h-3 w-3 text-amber-600" />
-          <p className="text-xs text-amber-700">
-            {warning}
-          </p>
-        </div>
-      )}
-    </div>
-    <div className="flex items-center gap-2">
-      {canToggle && onToggle && (
-        <Button
-          onClick={onToggle}
-          size="sm"
-          variant="ghost"
-          className="text-xs h-6 w-6 p-0"
-          title={completed ? "Mark as incomplete" : "Mark as complete"}
-        >
-          {completed ? <X className="h-3 w-3" /> : <CheckSquare className="h-3 w-3" />}
-        </Button>
-      )}
-      {action && !completed && (
-        <Button
-          onClick={action}
-          size="sm"
-          variant="outline"
-          className="text-xs"
-        >
-          {actionLabel}
-        </Button>
-      )}
-    </div>
-  </div>
-);
+import { ChecklistTile } from './checklist/ChecklistTile';
 
 interface AdminSetupWizardSimplifiedProps {
   forceShow?: boolean;
@@ -184,16 +99,19 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
             <h3 className="text-lg font-semibold text-primary mb-2">
               Pool Setup Checklist
             </h3>
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="secondary">
-                {completedCount}/{totalSteps} Complete
+            <div className="flex items-center gap-3 mb-2">
+              <Badge variant="secondary" className="text-sm px-3 py-1">
+                {completedCount} of {totalSteps} tasks complete
               </Badge>
-              <div className="w-32 bg-muted rounded-full h-2">
+              <div className="flex-1 bg-muted rounded-full h-3">
                 <div 
-                  className="bg-primary h-2 rounded-full transition-all"
+                  className="bg-primary h-3 rounded-full transition-all duration-500"
                   style={{ width: `${(completedCount / totalSteps) * 100}%` }}
                 />
               </div>
+              <span className="text-sm text-muted-foreground font-medium">
+                {Math.round((completedCount / totalSteps) * 100)}%
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -217,26 +135,48 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
           </div>
         </div>
 
-        <div className="space-y-3">
-          {steps.map((step) => (
-            <ChecklistItem 
-              key={step.id} 
-              completed={step.completed}
-              autoCompleted={step.autoCompleted}
-              manuallyCompleted={step.manuallyCompleted}
-              icon={step.completed ? 
-                <CheckCircle className="h-5 w-5 text-green-600" /> : 
-                <UserCheck className="h-5 w-5 text-blue-600" />
+        <div className="space-y-4">
+          {steps.map((step) => {
+            const getStepIcon = (stepId: string) => {
+              switch (stepId) {
+                case 'pool-created':
+                  return <CheckCircle className="h-6 w-6 text-green-600" />;
+                case 'review-contestants':
+                  return <Users className="h-6 w-6 text-blue-600" />;
+                case 'draft-config':
+                  return <Settings className="h-6 w-6 text-purple-600" />;
+                case 'payment-setup':
+                  return <DollarSign className="h-6 w-6 text-emerald-600" />;
+                case 'bonus-questions':
+                  return <HelpCircle className="h-6 w-6 text-orange-600" />;
+                case 'special-events':
+                  return <Target className="h-6 w-6 text-red-600" />;
+                case 'pool-timeline':
+                  return <Calendar className="h-6 w-6 text-indigo-600" />;
+                case 'invite-participants':
+                  return <Share2 className="h-6 w-6 text-pink-600" />;
+                default:
+                  return <CheckSquare className="h-6 w-6 text-gray-600" />;
               }
-              title={step.title}
-              description={step.description}
-              warning={step.warning}
-              action={step.action}
-              actionLabel={step.actionLabel}
-              canToggle={step.canToggle}
-              onToggle={() => toggleManualCompletion(step.id, step.completed)}
-            />
-          ))}
+            };
+
+            return (
+              <ChecklistTile
+                key={step.id}
+                completed={step.completed}
+                manuallyCompleted={step.manuallyCompleted}
+                icon={getStepIcon(step.id)}
+                title={step.title}
+                description={step.description}
+                warning={step.warning}
+                count={step.count}
+                actionLabel={step.actionLabel}
+                canToggle={step.canToggle}
+                onClick={step.action}
+                onToggle={() => toggleManualCompletion(step.id, step.completed)}
+              />
+            );
+          })}
         </div>
 
         {isComplete && (

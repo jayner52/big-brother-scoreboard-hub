@@ -124,36 +124,42 @@ export const AdminScoringPanel: React.FC = () => {
               <TabsList className="grid w-full h-auto gap-1 bg-transparent p-0 md:flex md:flex-wrap">
                 <TabsTrigger 
                   value="events" 
+                  data-value="events"
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Weekly Events
                 </TabsTrigger>
                 <TabsTrigger 
                   value="legacy" 
+                  data-value="legacy"
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Week Overview
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings" 
+                  data-value="settings"
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Pool Settings
                 </TabsTrigger>
                 <TabsTrigger 
                   value="bonus" 
+                  data-value="bonus"
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Bonus Questions
                 </TabsTrigger>
                 <TabsTrigger 
                   value="entries" 
+                  data-value="entries"
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Pool Entries
                 </TabsTrigger>
                 <TabsTrigger 
                   value="contestants" 
+                  data-value="contestants"
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Houseguests
@@ -161,6 +167,7 @@ export const AdminScoringPanel: React.FC = () => {
                 {canManageRoles() && (
                   <TabsTrigger 
                     value="roles" 
+                    data-value="roles"
                     className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                   >
                     Roles

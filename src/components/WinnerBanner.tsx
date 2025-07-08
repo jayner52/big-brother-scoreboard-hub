@@ -18,15 +18,11 @@ export const WinnerBanner: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Only show winner banner if the season is complete
   useEffect(() => {
-    if (activePool?.id && activePool?.season_complete) {
+    if (activePool?.id) {
       checkWinnerStatus();
-    } else {
-      setLoading(false);
-      setWinnerInfo(null);
     }
-  }, [activePool?.id, activePool?.season_complete]);
+  }, [activePool?.id]);
 
   const checkWinnerStatus = async () => {
     try {
@@ -82,7 +78,7 @@ export const WinnerBanner: React.FC = () => {
     }
   };
 
-  if (loading || !winnerInfo || !activePool || !activePool.season_complete) return null;
+  if (loading || !winnerInfo || !activePool) return null;
 
   return (
     <>

@@ -386,6 +386,12 @@ export const PrizePoolManagement: React.FC = () => {
       const tipAmount = calculateTipJarAmount();
       const tipPercentage = (activePool as any).tip_jar_percentage || 10;
 
+      console.log('Invoking create-tip-payment function with:', { 
+        poolId: activePool.id, 
+        tipPercentage, 
+        tipAmount 
+      });
+
       const { data, error } = await supabase.functions.invoke('create-tip-payment', {
         body: {
           poolId: activePool.id,
@@ -394,17 +400,32 @@ export const PrizePoolManagement: React.FC = () => {
         }
       });
 
-      if (error) throw error;
+      console.log('Function response:', { data, error });
+
+      if (error) {
+        console.error('Function error details:', error);
+        throw new Error(`Function error: ${error.message || JSON.stringify(error)}`);
+      }
+
+      if (data?.error) {
+        console.error('Function returned error:', data);
+        throw new Error(`Payment error: ${data.error} (${data.errorType || 'Unknown'})`);
+      }
 
       if (data?.url) {
+        console.log('Opening Stripe checkout URL:', data.url);
         // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
+      } else {
+        throw new Error('No checkout URL received from payment service');
       }
     } catch (error) {
       console.error('Error creating tip payment:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       toast({
-        title: "Error",
-        description: "Failed to create tip payment. Please try again.",
+        title: "Payment Error",
+        description: `Failed to create tip payment: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {

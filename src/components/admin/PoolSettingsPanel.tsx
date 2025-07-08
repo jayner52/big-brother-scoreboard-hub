@@ -415,15 +415,58 @@ export const PoolSettingsPanel: React.FC = () => {
         title="Pool Settings Configuration" 
         tabKey="pool_settings"
       >
-        <div className="space-y-2">
+        <div className="space-y-3">
           <p>Configure basic pool settings. Changes here affect the entire pool. Be careful when modifying settings mid-season.</p>
-          <p><strong>Important considerations:</strong></p>
-          <ul className="list-disc list-inside ml-4 space-y-1">
-            <li>Changing buy-in amounts after people have paid can cause confusion</li>
-            <li>Modifying group counts will redistribute all houseguests</li>
-            <li>Draft timing affects when participants can submit teams</li>
-            <li>Hiding picks prevents participants from seeing others' selections until draft closes</li>
-          </ul>
+          
+          <div>
+            <p><strong>🕒 Draft Timing Strategy:</strong></p>
+            <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+              <li>Open draft early to give participants time to research</li>
+              <li>Set deadline 1-2 hours before season premiere</li>
+              <li>Lock draft once all teams are submitted to prevent changes</li>
+              <li>Use "Hide Picks" to prevent strategy copying until deadline</li>
+            </ul>
+          </div>
+
+          <div>
+            <p><strong>💰 Payment Method Best Practices:</strong></p>
+            <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+              <li>Provide 2 payment options for participant convenience</li>
+              <li>Use clear, specific details (email for e-transfer, @username for Venmo)</li>
+              <li>Include reference format in description (e.g., "Pool Name - Your Name")</li>
+              <li>Confirm payments manually in Pool Entries tab</li>
+            </ul>
+          </div>
+
+          <div>
+            <p><strong>👥 Group Configuration Impact:</strong></p>
+            <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+              <li>Each group becomes a draft category (teams pick 1 from each)</li>
+              <li>Changing group count redistributes ALL houseguests automatically</li>
+              <li>Balanced groups ensure fair competition and strategy</li>
+              <li>Consider gender, age, or experience-based groupings</li>
+            </ul>
+          </div>
+
+          <div>
+            <p><strong>⚠️ Mid-Season Change Warnings:</strong></p>
+            <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+              <li>Buy-in changes after payment confuse participants</li>
+              <li>Group modifications reset participant drafts</li>
+              <li>Prize settings affect participant expectations</li>
+              <li>Communicate all changes clearly to pool members</li>
+            </ul>
+          </div>
+
+          <div>
+            <p><strong>🏆 Prize Pool Tips:</strong></p>
+            <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+              <li>Set percentage-based distribution for automatic calculation</li>
+              <li>Consider admin fee for management effort (typically 5-10%)</li>
+              <li>Show prize amounts to motivate participation</li>
+              <li>Plan for ties in final standings</li>
+            </ul>
+          </div>
         </div>
       </InstructionAccordion>
       

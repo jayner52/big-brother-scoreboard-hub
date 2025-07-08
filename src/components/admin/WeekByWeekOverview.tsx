@@ -39,6 +39,7 @@ export const WeekByWeekOverview: React.FC = () => {
   const [weeklyResults, setWeeklyResults] = useState<WeekSummary[]>([]);
   const [contestantScores, setContestantScores] = useState<Record<number, ContestantScore[]>>({});
   const [specialEvents, setSpecialEvents] = useState<any[]>([]);
+  const [contestants, setContestants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,12 +90,11 @@ const loadWeekByWeekData = async () => {
         .eq('pool_id', activePool.id)
         .order('week_number', { ascending: true });
 
-      // Load contestants
+      // Load ALL contestants (not just active ones)
       const { data: contestants, error: contestantsError } = await supabase
         .from('contestants')
         .select('id, name, is_active')
-        .eq('pool_id', activePool.id)
-        .eq('is_active', true);
+        .eq('pool_id', activePool.id);
 
       // Load scoring rules
       const { data: rawScoringRules, error: scoringRulesError } = await supabase
@@ -235,7 +235,8 @@ const loadWeekByWeekData = async () => {
 
       setContestantScores(scoresByWeek);
 
-      // Store special events for use in component
+      // Store contestants and special events for use in component
+      setContestants(contestants || []);
       setSpecialEvents(allSpecialEvents || []);
 
     } catch (error) {
@@ -343,6 +344,8 @@ const loadWeekByWeekData = async () => {
                         povUsed={week.pov_used}
                         povUsedOn={week.pov_used_on}
                         specialEvents={specialEvents}
+                        allContestants={contestants?.map(c => ({ name: c.name, is_active: c.is_active })) || []}
+                        evictedThisWeek={[week.evicted_contestant, week.second_evicted_contestant].filter(Boolean)}
                       />
                     </div>
                   )}

@@ -147,7 +147,8 @@ export const PrizePoolManagement: React.FC = () => {
   };
 
   const getAvailablePrizePool = () => {
-    return getTotalPot() - config.admin_fee;
+    const tipJarAmount = calculateTipJarAmount();
+    return getTotalPot() - config.admin_fee - tipJarAmount;
   };
 
   const calculatePercentageAmounts = () => {
@@ -475,45 +476,54 @@ export const PrizePoolManagement: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Tip Jar Management */}
+      {/* Support the Platform (Tip Jar) */}
       <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-purple-600" />
-            Tip Jar Management
+            💝 Support the Platform (Optional)
           </CardTitle>
           <CardDescription>
-            Manage your tip jar contribution - a percentage of the total pot that goes to the platform
+            Thank you for considering supporting Poolside Picks! This is completely optional and helps us maintain and improve the platform. 
+            Any amount you choose makes a difference! 🙏
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Tip Jar Configuration */}
+            {/* Friendly Support Configuration */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="tip_percentage">Tip Jar Percentage</Label>
+                <Label htmlFor="tip_percentage">Support Percentage (Pay What You Want)</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id="tip_percentage"
                     type="number"
                     value={tipJarPercentage}
-                    onChange={(e) => handleTipJarPercentageChange(Number(e.target.value) || 10)}
+                    onChange={(e) => handleTipJarPercentageChange(Number(e.target.value) || 0)}
                     min="0"
                     max="50"
                     className="w-24"
+                    placeholder="0"
                   />
-                  <span className="text-sm text-muted-foreground">%</span>
+                  <span className="text-sm text-muted-foreground">% of total collected</span>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Choose any percentage you're comfortable with. Even 1% helps! 💚
+                </p>
               </div>
               <div className="space-y-2">
-                <Label>Tip Jar Amount</Label>
+                <Label>Support Amount</Label>
                 <div className="text-2xl font-bold text-purple-600">
                   {currency} ${tipJarAmount}
                 </div>
+                {tipJarPercentage > 0 && (
+                  <p className="text-sm text-green-600 font-medium">
+                    🎉 Thank you for supporting the platform!
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Tip Jar Status */}
+            {/* Payment Status and Action */}
             <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
               <div className="flex items-center gap-3">
                 {tipJarPaid ? (
@@ -523,18 +533,20 @@ export const PrizePoolManagement: React.FC = () => {
                 )}
                 <div>
                   <div className="font-medium">
-                    {tipJarPaid ? 'Tip Jar Paid' : 'Tip Jar Payment Pending'}
+                    {tipJarPaid ? '✨ Platform Support Paid - Thank You!' : 'Platform Support Payment'}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {tipJarPaid 
-                      ? `Paid on ${(activePool as any)?.tip_jar_paid_at ? new Date((activePool as any).tip_jar_paid_at).toLocaleDateString() : 'Unknown date'}`
-                      : `${tipJarPercentage}% of total pool (${currency} $${tipJarAmount})`
+                      ? `Paid ${currency} $${tipJarAmount} on ${(activePool as any)?.tip_jar_paid_at ? new Date((activePool as any).tip_jar_paid_at).toLocaleDateString() : 'Unknown date'}`
+                      : tipJarPercentage > 0 
+                        ? `${tipJarPercentage}% of total collected (${currency} $${tipJarAmount}) - Pay after collecting entries`
+                        : 'Set a percentage above to contribute to platform development'
                     }
                   </div>
                 </div>
               </div>
               
-              {!tipJarPaid && (
+              {!tipJarPaid && tipJarPercentage > 0 && (
                 <Button
                   onClick={handleTipJarPayment}
                   disabled={tipJarProcessing || totalEntries === 0}
@@ -545,18 +557,28 @@ export const PrizePoolManagement: React.FC = () => {
                   ) : (
                     <>
                       <CreditCard className="h-4 w-4 mr-2" />
-                      Pay Tip Jar
+                      Pay Support ({currency} ${tipJarAmount})
                     </>
                   )}
                 </Button>
               )}
             </div>
 
-            {totalEntries === 0 && (
+            {tipJarPercentage > 0 && totalEntries === 0 && (
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Tip jar payment will be available once participants join the pool.
+                  Platform support payment will be available once participants join the pool. 
+                  Thank you for choosing to support us! 🙏
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {tipJarPercentage === 0 && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <AlertDescription className="text-blue-800">
+                  💡 <strong>Supporting the platform is completely optional!</strong> Any amount helps us maintain and improve Poolside Picks for everyone. 
+                  Even 1-2% makes a difference and is greatly appreciated!
                 </AlertDescription>
               </Alert>
             )}
@@ -565,7 +587,7 @@ export const PrizePoolManagement: React.FC = () => {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-4 text-center">
             <p className="text-sm text-blue-600 font-medium">Total Entries</p>
@@ -584,16 +606,29 @@ export const PrizePoolManagement: React.FC = () => {
             <p className="text-2xl font-bold text-orange-900">{currency} ${config.admin_fee}</p>
           </CardContent>
         </Card>
-        <Card className={`${isOverBudget ? 'bg-red-50 border-red-200' : 'bg-purple-50 border-purple-200'}`}>
+        <Card className="bg-purple-50 border-purple-200">
           <CardContent className="p-4 text-center">
-            <p className={`text-sm font-medium ${isOverBudget ? 'text-red-600' : 'text-purple-600'}`}>
+            <p className="text-sm text-purple-600 font-medium">Platform Support</p>
+            <p className="text-2xl font-bold text-purple-900">{currency} ${tipJarAmount}</p>
+          </CardContent>
+        </Card>
+        <Card className={`${isOverBudget ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}>
+          <CardContent className="p-4 text-center">
+            <p className={`text-sm font-medium ${isOverBudget ? 'text-red-600' : 'text-emerald-600'}`}>
               Prize Pool
             </p>
-            <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-900' : 'text-purple-900'}`}>
+            <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-900' : 'text-emerald-900'}`}>
               {currency} ${config.mode === 'custom' ? totalCustom : availablePool}
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Formula Explanation */}
+      <div className="text-center text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg">
+        <strong>Formula:</strong> Total Collected = Prize Pool + Admin Fee + Platform Support
+        <br />
+        {currency} ${totalPot} = {currency} ${availablePool} + {currency} ${config.admin_fee} + {currency} ${tipJarAmount}
       </div>
 
       {/* Over Budget Warning */}

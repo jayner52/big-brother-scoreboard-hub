@@ -62,7 +62,7 @@ export const useWeeklyEventsData = (poolId?: string) => {
       // Fix 4: Get next editing week - find first incomplete week or highest + 1
       const { data: weeklyData } = await supabase
         .from('weekly_results')
-        .select('week_number, is_draft')
+        .select('week_number, is_draft, winner, runner_up, americas_favorite_player')
         .eq('pool_id', poolId)
         .order('week_number', { ascending: true });
       
@@ -72,9 +72,21 @@ export const useWeeklyEventsData = (poolId?: string) => {
         if (firstDraftWeek) {
           setEditingWeek(firstDraftWeek.week_number);
         } else {
-          // All weeks are complete, set next week after highest
+          // Check if the highest week is a completed Final Week
           const highestWeek = Math.max(...weeklyData.map(w => w.week_number));
-          setEditingWeek(highestWeek + 1);
+          const highestWeekData = weeklyData.find(w => w.week_number === highestWeek);
+          
+          // If highest week is a Final Week (has winner, runner_up, or americas_favorite_player), stay on it
+          const isFinalWeek = highestWeekData && 
+            (highestWeekData.winner || highestWeekData.runner_up || highestWeekData.americas_favorite_player);
+          
+          if (isFinalWeek) {
+            console.log('🏁 Final Week detected - staying on week', highestWeek);
+            setEditingWeek(highestWeek);
+          } else {
+            // All weeks are complete but not final week, set next week after highest
+            setEditingWeek(highestWeek + 1);
+          }
         }
       } else {
         // No weeks exist, start with week 1

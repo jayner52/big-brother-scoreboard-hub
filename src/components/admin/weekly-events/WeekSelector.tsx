@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Crown, Target, Award, RotateCcw, DoorOpen } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useWeekStatus } from '@/hooks/useWeekStatus';
 
 interface WeekData {
   number: number;
@@ -19,6 +20,7 @@ interface WeekSelectorProps {
 export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekChange }) => {
   const { activePool } = usePool();
   const [weeks, setWeeks] = useState<WeekData[]>([]);
+  const { weekStatus } = useWeekStatus(currentWeek);
 
   useEffect(() => {
     if (activePool?.id) {
@@ -258,13 +260,14 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
   return (
     <div className="mb-6">
       <Label className="block text-sm font-medium text-gray-700 mb-2">
-        Select Week to View/Edit
+        {weekStatus === 'season_complete' ? 'Season Complete - Final Week' : 'Select Week to View/Edit'}
       </Label>
       <Select
         value={currentWeek.toString()}
         onValueChange={(value) => onWeekChange(Number(value))}
+        disabled={weekStatus === 'season_complete'}
       >
-        <SelectTrigger className="w-full">
+        <SelectTrigger className={`w-full ${weekStatus === 'season_complete' ? 'opacity-75 cursor-not-allowed' : ''}`}>
           <SelectValue placeholder="Select a week" />
         </SelectTrigger>
         <SelectContent>
@@ -278,6 +281,11 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
           ))}
         </SelectContent>
       </Select>
+      {weekStatus === 'season_complete' && (
+        <p className="text-sm text-green-700 mt-2 font-medium">
+          🏆 Season has been completed! Final results are locked.
+        </p>
+      )}
     </div>
   );
 };

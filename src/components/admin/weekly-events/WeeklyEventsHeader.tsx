@@ -22,6 +22,8 @@ export const WeeklyEventsHeader: React.FC<WeeklyEventsHeaderProps> = ({
   
   const getWeekStatus = () => {
     switch (weekStatus) {
+      case 'season_complete':
+        return <span className="bg-yellow-600 text-white px-3 py-1 rounded font-bold text-xs">🏆 SEASON COMPLETE</span>;
       case 'completed':
         return <span className="bg-gray-600 text-white px-3 py-1 rounded font-bold text-xs">COMPLETED</span>;
       case 'current':
@@ -51,7 +53,10 @@ export const WeeklyEventsHeader: React.FC<WeeklyEventsHeaderProps> = ({
         </div>
       </CardTitle>
       <CardDescription className="text-purple-100">
-        Record all events for the week and automatically calculate points
+        {weekStatus === 'season_complete' 
+          ? 'Season completed! Final results have been recorded.' 
+          : 'Record all events for the week and automatically calculate points'
+        }
       </CardDescription>
     </CardHeader>
   );

@@ -26,6 +26,7 @@ interface PoolSettings {
   payment_method_2?: string;
   payment_details_2?: string;
   registration_deadline?: string;
+  registration_timezone?: string;
   draft_open: boolean;
   season_active: boolean;
   number_of_groups: number;
@@ -47,6 +48,45 @@ export const PoolSettingsPanel: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasExistingEntries, setHasExistingEntries] = useState(false);
+
+  // Helper functions for timezone-aware datetime handling
+  const formatDateTimeLocal = (isoString?: string | null): string => {
+    if (!isoString) return '';
+    
+    try {
+      const date = new Date(isoString);
+      // Format to datetime-local format (YYYY-MM-DDTHH:mm)
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (error) {
+      console.error('Error formatting datetime:', error);
+      return '';
+    }
+  };
+
+  const handleDateTimeChange = (datetimeLocalValue: string) => {
+    if (!datetimeLocalValue) {
+      setSettings({ ...settings!, registration_deadline: null });
+      return;
+    }
+
+    try {
+      // Create date object from datetime-local input (this treats it as local time)
+      const localDate = new Date(datetimeLocalValue);
+      
+      // Convert to ISO string which represents the actual moment in time
+      const isoString = localDate.toISOString();
+      
+      setSettings({ ...settings!, registration_deadline: isoString });
+    } catch (error) {
+      console.error('Error handling datetime change:', error);
+    }
+  };
 
 
   useEffect(() => {
@@ -517,14 +557,43 @@ export const PoolSettingsPanel: React.FC = () => {
                 </div>
 
 
-                <div>
-                  <Label htmlFor="draft_deadline">Draft Due Date & Time</Label>
-                  <Input
-                    id="draft_deadline"
-                    type="datetime-local"
-                    value={settings.registration_deadline ? new Date(settings.registration_deadline).toISOString().slice(0, 16) : ''}
-                    onChange={(e) => setSettings({ ...settings, registration_deadline: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="draft_deadline">Draft Due Date & Time</Label>
+                    <Input
+                      id="draft_deadline"
+                      type="datetime-local"
+                      value={formatDateTimeLocal(settings.registration_deadline)}
+                      onChange={(e) => handleDateTimeChange(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Time shown in selected timezone below
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="timezone">Timezone</Label>
+                    <Select
+                      value={settings.registration_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone}
+                      onValueChange={(value) => setSettings({ ...settings, registration_timezone: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select timezone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
+                        <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
+                        <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
+                        <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
+                        <SelectItem value="America/Toronto">Toronto (ET)</SelectItem>
+                        <SelectItem value="America/Vancouver">Vancouver (PT)</SelectItem>
+                        <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
+                        <SelectItem value="Europe/Paris">Paris (CET/CEST)</SelectItem>
+                        <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                        <SelectItem value="Australia/Sydney">Sydney (AEDT/AEST)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {/* CRITICAL FIX: Consolidated Buy-In Settings */}

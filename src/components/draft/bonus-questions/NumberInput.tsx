@@ -33,7 +33,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   return (
     <Input
       type="number"
-      value={value === 0 ? '' : value.toString()}
+      value={value === 0 ? '' : (value?.toString() || '')}
       onChange={handleChange}
       onBlur={handleBlur}
       placeholder="Enter a number"

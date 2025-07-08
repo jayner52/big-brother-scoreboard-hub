@@ -98,7 +98,7 @@ export const usePoolCreation = () => {
         setActivePool(result.data);
         toast({
           title: "Success!",
-          description: `Pool "${result.data.name}" created successfully`,
+          description: `Pool "${result.data.name}" created successfully. Setting up your pool...`,
         });
         
         // Reset form

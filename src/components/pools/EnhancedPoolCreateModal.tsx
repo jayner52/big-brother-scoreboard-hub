@@ -38,7 +38,6 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
     
     if (result?.success) {
       onOpenChange(false);
-      navigate('/admin?newPool=true');
       onSuccess?.();
       resetForm();
     }

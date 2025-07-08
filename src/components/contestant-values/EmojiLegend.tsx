@@ -23,10 +23,12 @@ export const EmojiLegend: React.FC = () => {
               <div key={rule.id} className="flex items-center gap-2">
                 <span className="text-sm">{emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <span className="text-muted-foreground truncate block">{rule.description}</span>
-                  <Badge variant="outline" className="text-xs mt-1">
-                    {rule.points > 0 ? '+' : ''}{rule.points} pts
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground truncate">{rule.description}</span>
+                    <span className={`text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {rule.points > 0 ? '+' : ''}{rule.points} pts
+                    </span>
+                  </div>
                 </div>
               </div>
             );

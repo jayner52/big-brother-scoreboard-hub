@@ -11,6 +11,7 @@ import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
 import { CustomEventSelector } from './CustomEventSelector';
+import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
 
 type SpecialEventFormData = {
   id?: string;
@@ -233,16 +234,20 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
                     <SelectValue placeholder="Select event type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableEvents.map(eventRule => (
-                      <SelectItem key={eventRule.subcategory} value={eventRule.subcategory}>
-                        <span className="flex items-center gap-2">
-                          <span>{eventRule.description}</span>
-                          <Badge variant="secondary" className="text-xs ml-2">
-                            {eventRule.points > 0 ? '+' : ''}{eventRule.points} pts
-                          </Badge>
-                        </span>
-                      </SelectItem>
-                    ))}
+                    {availableEvents.map(eventRule => {
+                      const emoji = getScoringRuleEmoji(eventRule.category, eventRule.subcategory);
+                      return (
+                        <SelectItem key={eventRule.subcategory} value={eventRule.subcategory}>
+                          <span className="flex items-center gap-2">
+                            <span className="text-sm">{emoji}</span>
+                            <span>{eventRule.description}</span>
+                            <Badge variant="secondary" className="text-xs ml-2">
+                              {eventRule.points > 0 ? '+' : ''}{eventRule.points} pts
+                            </Badge>
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>

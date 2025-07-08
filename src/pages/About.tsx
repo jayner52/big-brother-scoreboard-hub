@@ -10,6 +10,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { EnhancedPrizeDisplay } from '@/components/EnhancedPrizeDisplay';
 import { formatPrize } from '@/utils/prizeCalculation';
 import { Pool } from '@/types/pool';
+import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
 
 interface ScoringRule {
   id: string;
@@ -163,8 +164,11 @@ const About = () => {
     scoringRules.filter(rule => rule.category === category);
 
   const weeklyRules = getRulesByCategory('weekly');
+  const competitionRules = getRulesByCategory('competition');
   const specialRules = getRulesByCategory('special_events');
-  const finalRules = getRulesByCategory('final_results');
+  const finalRules = getRulesByCategory('final_placement');
+  const juryRules = getRulesByCategory('jury');
+  const achievementRules = getRulesByCategory('special_achievements');
 
   // Show prize section if admin allows it and pool has buy-in
   const showPrizeSection = poolConfig?.has_buy_in && poolConfig?.show_prize_amounts;
@@ -266,56 +270,152 @@ const About = () => {
             <CardDescription>{activePool ? `How your houseguests earn points in ${poolConfig.name || 'this pool'}` : 'How your houseguests earn points each week'}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {competitionRules.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span>🏆</span>
+                  Competition Events
+                </h3>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {competitionRules.map((rule) => {
+                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
+                    return (
+                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                        <span className="text-lg">{emoji}</span>
+                        <div className="flex-1">
+                          <span className="text-sm">{rule.description}</span>
+                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {weeklyRules.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-3">Weekly Competition Points</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {weeklyRules.map((rule) => (
-                    <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                      <span>{rule.description || rule.subcategory}</span>
-                      <Badge 
-                        variant={rule.points >= 0 ? "secondary" : "destructive"}
-                      >
-                        {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                      </Badge>
-                    </div>
-                  ))}
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span>📅</span>
+                  Weekly Events
+                </h3>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {weeklyRules.map((rule) => {
+                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
+                    return (
+                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                        <span className="text-lg">{emoji}</span>
+                        <div className="flex-1">
+                          <span className="text-sm">{rule.description}</span>
+                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {achievementRules.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span>💪</span>
+                  Special Achievements
+                </h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {achievementRules.map((rule) => {
+                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
+                    return (
+                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                        <span className="text-lg">{emoji}</span>
+                        <div className="flex-1">
+                          <span className="text-sm">{rule.description}</span>
+                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {specialRules.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-3">Special Events & Achievements</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {specialRules.map((rule) => (
-                    <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                      <span>{rule.description || rule.subcategory}</span>
-                      <Badge 
-                        variant={rule.points >= 0 ? "secondary" : "destructive"}
-                      >
-                        {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                      </Badge>
-                    </div>
-                  ))}
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span>⚡</span>
+                  Special Events
+                </h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {specialRules.map((rule) => {
+                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
+                    return (
+                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                        <span className="text-lg">{emoji}</span>
+                        <div className="flex-1">
+                          <span className="text-sm">{rule.description}</span>
+                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {juryRules.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span>⚖️</span>
+                  Jury Phase
+                </h3>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {juryRules.map((rule) => {
+                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
+                    return (
+                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                        <span className="text-lg">{emoji}</span>
+                        <div className="flex-1">
+                          <span className="text-sm">{rule.description}</span>
+                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {finalRules.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-3">Final Results</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {finalRules.map((rule) => (
-                    <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                      <span>{rule.description || rule.subcategory}</span>
-                      <Badge 
-                        variant={rule.points >= 0 ? "secondary" : "destructive"}
-                      >
-                        {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                      </Badge>
-                    </div>
-                  ))}
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span>👑</span>
+                  Final Placement
+                </h3>
+                <div className="grid md:grid-cols-3 gap-3">
+                  {finalRules.map((rule) => {
+                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
+                    return (
+                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                        <span className="text-lg">{emoji}</span>
+                        <div className="flex-1">
+                          <span className="text-sm">{rule.description}</span>
+                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -341,7 +441,7 @@ const About = () => {
               </div>
             )}
 
-            {weeklyRules.length === 0 && specialRules.length === 0 && finalRules.length === 0 && (
+            {scoringRules.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <p>No scoring rules configured yet.</p>
                 <p className="text-sm mt-2">Contact your pool administrator to set up scoring rules.</p>

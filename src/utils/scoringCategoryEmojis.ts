@@ -13,7 +13,7 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
   // Competition Events
   competition: [
     { category: 'competition', subcategory: 'hoh_winner', emoji: '🏆', description: 'Head of Household Winner' },
-    { category: 'competition', subcategory: 'pov_winner', emoji: '🗝️', description: 'Power of Veto Winner' },
+    { category: 'competition', subcategory: 'pov_winner', emoji: '🛡️', description: 'Power of Veto Winner' },
     { category: 'competition', subcategory: 'bb_arena_winner', emoji: '🛡️', description: 'BB Arena Winner' },
     { category: 'competition', subcategory: 'ai_arena_winner', emoji: '🛡️', description: 'AI Arena Winner' },
   ],
@@ -55,6 +55,7 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
     { category: 'special_events', subcategory: 'received_penalty', emoji: '⚠️', description: 'Received Penalty/Punishment' },
     { category: 'special_events', subcategory: 'costume_punishment', emoji: '🤡', description: 'Costume Punishment' },
     { category: 'special_events', subcategory: 'came_back_evicted', emoji: '🔄', description: 'Came Back After Evicted' },
+    { category: 'special_events', subcategory: 'won_bb_arena', emoji: '🛡️', description: 'Won BB Arena/AI Arena' },
     { category: 'special_events', subcategory: 'self_evicted', emoji: '🚪', description: 'Self-Evicted/Quit' },
     { category: 'special_events', subcategory: 'removed_production', emoji: '❌', description: 'Removed by Production' },
     { category: 'special_events', subcategory: 'won_safety_comp', emoji: '🔒', description: 'Won Safety Competition' },

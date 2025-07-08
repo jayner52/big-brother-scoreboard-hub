@@ -33,28 +33,33 @@ export const useSetupChecklistTracking = () => {
 
   // Enhanced navigation that handles tabs and accordions
   const navigateToSection = (tabValue: string, accordionSection?: string) => {
+    console.log('Navigating to:', tabValue, accordionSection);
+    
+    // First scroll to admin panel
     const adminPanel = document.querySelector('[data-admin-panel]');
     if (adminPanel) {
       adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      
-      // First navigate to the correct tab
-      setTimeout(() => {
-        const tabTrigger = document.querySelector(`[data-value="${tabValue}"]`);
-        if (tabTrigger && !tabTrigger.getAttribute('data-state')?.includes('active')) {
-          (tabTrigger as HTMLElement).click();
-        }
+    }
+    
+    // Switch to the correct tab
+    setTimeout(() => {
+      const tabTrigger = document.querySelector(`[data-value="${tabValue}"]`) as HTMLElement;
+      console.log('Found tab trigger:', tabTrigger);
+      if (tabTrigger) {
+        tabTrigger.click();
         
-        // Then open accordion if specified
+        // If accordion section specified, open it
         if (accordionSection) {
           setTimeout(() => {
-            const accordionTrigger = document.querySelector(`[data-accordion-section="${accordionSection}"]`);
-            if (accordionTrigger && !accordionTrigger.getAttribute('data-state')?.includes('open')) {
-              (accordionTrigger as HTMLElement).click();
+            const accordionTrigger = document.querySelector(`[data-accordion-section="${accordionSection}"]`) as HTMLElement;
+            console.log('Found accordion trigger:', accordionTrigger);
+            if (accordionTrigger) {
+              accordionTrigger.click();
             }
-          }, 300);
+          }, 500);
         }
-      }, 500);
-    }
+      }
+    }, 300);
   };
 
   // Copy invite code function

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,11 +35,19 @@ interface ContestantScore {
   cumulativeTotal: number;
 }
 
+interface SpecialEvent {
+  week_number: number;
+  contestant_name: string;
+  event_type: string;
+  description?: string;
+  points_awarded: number;
+}
+
 export const WeekByWeekOverview: React.FC = () => {
   const { activePool } = usePool();
   const [weeklyResults, setWeeklyResults] = useState<WeekSummary[]>([]);
   const [contestantScores, setContestantScores] = useState<Record<number, ContestantScore[]>>({});
-  const [specialEvents, setSpecialEvents] = useState<any[]>([]);
+  const [specialEvents, setSpecialEvents] = useState<SpecialEvent[]>([]);
   const [contestants, setContestants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,7 +55,7 @@ export const WeekByWeekOverview: React.FC = () => {
     loadWeekByWeekData();
   }, []);
 
-const loadWeekByWeekData = async () => {
+  const loadWeekByWeekData = async () => {
     if (!activePool?.id) return;
     
     try {
@@ -60,41 +69,14 @@ const loadWeekByWeekData = async () => {
       if (weeklyError) throw weeklyError;
       setWeeklyResults(weeklyData || []);
 
-      // Load weekly results to get the actual event data that was recorded
-      // CRITICAL FIX: Include both completed AND draft weeks to show all available data
-      const { data: completedWeeks, error: weeklyResultsError } = await supabase
-        .from('weekly_results')
-        .select(`
-          week_number,
-          hoh_winner,
-          pov_winner,
-          evicted_contestant,
-          nominees,
-          replacement_nominee,
-          pov_used,
-          pov_used_on,
-          is_double_eviction,
-          second_hoh_winner,
-          second_pov_winner,
-          second_evicted_contestant,
-          second_nominees,
-          second_replacement_nominee,
-          second_pov_used,
-          second_pov_used_on,
-          ai_arena_winner,
-          third_evicted_contestant,
-          is_triple_eviction,
-          jury_phase_started,
-          is_draft
-        `)
-        .eq('pool_id', activePool.id)
-        .order('week_number', { ascending: true });
-
-      // Load ALL contestants (not just active ones)
+      // Load contestants
       const { data: contestants, error: contestantsError } = await supabase
         .from('contestants')
         .select('id, name, is_active')
         .eq('pool_id', activePool.id);
+
+      if (contestantsError) throw contestantsError;
+      setContestants(contestants || []);
 
       // Load scoring rules
       const { data: rawScoringRules, error: scoringRulesError } = await supabase
@@ -102,63 +84,122 @@ const loadWeekByWeekData = async () => {
         .select('*')
         .eq('is_active', true);
 
-      // Load special events
-      const { data: specialEvents, error: specialError } = await supabase
+      if (scoringRulesError) throw scoringRulesError;
+
+      // Load ALL special events for this pool
+      const allSpecialEvents: SpecialEvent[] = [];
+
+      // 1. Load completed special events from special_events table
+      const { data: dbSpecialEvents, error: dbSpecialError } = await supabase
         .from('special_events')
         .select(`
           week_number,
-          contestant_id,
           event_type,
           description,
           points_awarded,
+          contestant_id,
           contestants(name)
         `)
         .eq('pool_id', activePool.id)
         .order('week_number', { ascending: true });
 
-      // Load BB Arena events
+      if (dbSpecialError) throw dbSpecialError;
+
+      // Add database special events
+      if (dbSpecialEvents) {
+        dbSpecialEvents.forEach(event => {
+          allSpecialEvents.push({
+            week_number: event.week_number,
+            contestant_name: (event.contestants as any)?.name || '',
+            event_type: event.event_type,
+            description: event.description || '',
+            points_awarded: event.points_awarded || 0
+          });
+        });
+      }
+
+      // 2. Load draft special events from weekly_results
+      const { data: draftWeeks, error: draftError } = await supabase
+        .from('weekly_results')
+        .select('week_number, draft_special_events')
+        .eq('pool_id', activePool.id)
+        .eq('is_draft', true)
+        .not('draft_special_events', 'is', null);
+
+      if (draftError) throw draftError;
+
+      // Parse and add draft special events
+      if (draftWeeks) {
+        draftWeeks.forEach(week => {
+          if (week.draft_special_events) {
+            try {
+              const draftEvents = JSON.parse(week.draft_special_events);
+              if (Array.isArray(draftEvents)) {
+                draftEvents.forEach((event: any) => {
+                  if (event.contestant && event.eventType) {
+                    // Get points from scoring rules or use custom points
+                    let eventPoints = event.customPoints || 0;
+                    if (!eventPoints && event.eventType !== 'custom_event') {
+                      const rule = rawScoringRules?.find(r => r.subcategory === event.eventType);
+                      eventPoints = rule?.points || 0;
+                    }
+
+                    allSpecialEvents.push({
+                      week_number: week.week_number,
+                      contestant_name: event.contestant,
+                      event_type: event.eventType,
+                      description: event.eventType === 'custom_event' ? event.customDescription : event.description,
+                      points_awarded: eventPoints
+                    });
+                  }
+                });
+              }
+            } catch (error) {
+              console.error('Error parsing draft special events for week', week.week_number, error);
+            }
+          }
+        });
+      }
+
+      // 3. Load BB Arena events from weekly_events
       const { data: bbArenaEvents, error: bbArenaError } = await supabase
         .from('weekly_events')
         .select(`
           week_number,
           contestant_id,
           event_type,
+          points_awarded,
           contestants(name)
         `)
         .eq('pool_id', activePool.id)
         .eq('event_type', 'bb_arena_winner')
         .order('week_number', { ascending: true });
 
-      if (weeklyResultsError || contestantsError || scoringRulesError || specialError || bbArenaError) {
-        throw weeklyResultsError || contestantsError || scoringRulesError || specialError || bbArenaError;
+      if (bbArenaError) throw bbArenaError;
+
+      // Add BB Arena events
+      if (bbArenaEvents) {
+        bbArenaEvents.forEach(event => {
+          allSpecialEvents.push({
+            week_number: event.week_number,
+            contestant_name: (event.contestants as any)?.name || '',
+            event_type: 'bb_arena_winner',
+            description: 'BB Arena Winner',
+            points_awarded: event.points_awarded || 0
+          });
+        });
       }
 
-      // Transform scoring rules to match the expected format
-      const scoringRules = (rawScoringRules || []).map(rule => ({
-        ...rule,
-        created_at: new Date(rule.created_at)
-      }));
-
-      // Combine special events with BB Arena events
-      const allSpecialEvents = [
-        ...(specialEvents || []),
-        ...(bbArenaEvents || []).map(event => ({
-          ...event,
-          event_type: 'bb_arena_winner',
-          description: 'BB Arena Winner',
-          points_awarded: 0
-        }))
-      ];
-
-      // Import the points calculation logic from weeklyEventsUtils
-      const { getPointsPreview, calculatePoints } = await import('@/utils/weeklyEventsUtils');
+      console.log('All special events loaded:', allSpecialEvents);
+      setSpecialEvents(allSpecialEvents);
 
       // Calculate scores by week using the same logic as Weekly Events Preview
+      const { getPointsPreview } = await import('@/utils/weeklyEventsUtils');
       const scoresByWeek: Record<number, ContestantScore[]> = {};
       const cumulativeScores: Record<string, number> = {};
 
       // Process each completed week
-      (completedWeeks || []).forEach(weekResult => {
+      (weeklyData || []).forEach(weekResult => {
         const weekNumber = weekResult.week_number;
         
         // Convert weekly_results to WeeklyEventForm format
@@ -185,16 +226,16 @@ const loadWeekByWeekData = async () => {
           specialEvents: []
         };
 
-        // Get evicted contestants up to the previous week (not including this week)
-        const evictedUpToPreviousWeek = (completedWeeks || [])
+        // Get evicted contestants up to the previous week
+        const evictedUpToPreviousWeek = (weeklyData || [])
           .filter(wr => wr.week_number < weekNumber)
           .flatMap(wr => [wr.evicted_contestant, wr.second_evicted_contestant, wr.third_evicted_contestant])
           .filter(Boolean);
 
-        // Add special events to the form
-        const weekSpecialEvents = allSpecialEvents?.filter(event => event.week_number === weekNumber) || [];
+        // Add special events for this week to the form
+        const weekSpecialEvents = allSpecialEvents.filter(event => event.week_number === weekNumber);
         eventForm.specialEvents = weekSpecialEvents.map(event => ({
-          contestant: (event.contestants as any)?.name || '',
+          contestant: event.contestant_name,
           eventType: event.event_type,
           customPoints: event.points_awarded
         }));
@@ -205,19 +246,13 @@ const loadWeekByWeekData = async () => {
           isActive: c.is_active
         }));
 
-        // Use the exact same calculation as Weekly Events Preview
+        // Calculate points for this week
         const weekContestantScores = getPointsPreview(
           eventForm as any,
           transformedContestants as any,
           evictedUpToPreviousWeek,
-          scoringRules
+          rawScoringRules || []
         );
-
-        console.log(`Week ${weekNumber} points calculation:`, {
-          eventForm,
-          evictedUpToPreviousWeek,
-          weekContestantScores
-        });
 
         // Convert to ContestantScore format with cumulative totals
         const weekScores: ContestantScore[] = Object.entries(weekContestantScores)
@@ -234,10 +269,6 @@ const loadWeekByWeekData = async () => {
       });
 
       setContestantScores(scoresByWeek);
-
-      // Store contestants and special events for use in component
-      setContestants(contestants || []);
-      setSpecialEvents(allSpecialEvents || []);
 
     } catch (error) {
       console.error('Error loading week by week data:', error);
@@ -335,7 +366,7 @@ const loadWeekByWeekData = async () => {
                         />
                       </div>
 
-                      {/* Points Section - Always show */}
+                      {/* Points Section */}
                       <PointsEarnedSection 
                         weekNumber={week.week_number}
                         contestantScores={contestantScores[week.week_number]}
@@ -350,26 +381,32 @@ const loadWeekByWeekData = async () => {
                     </div>
                   )}
 
-                  {/* Special Events for this week */}
+                  {/* Special Events for this week - Enhanced Display */}
                   {specialEvents?.filter(event => event.week_number === week.week_number).length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                      <h4 className="font-semibold mb-3 flex items-center gap-2 text-purple-800">
                         <span className="text-purple-600">⚡</span>
                         Special Events
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {specialEvents
                           ?.filter(event => event.week_number === week.week_number)
                           .map((event, index) => (
-                            <div key={index} className="bg-gradient-to-r from-purple-50 to-pink-50 p-3 rounded-lg border border-purple-200 shadow-sm">
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium text-purple-800">{(event.contestants as any)?.name}</span>
-                                <Badge variant="outline" className="text-xs border-purple-300 text-purple-600">
+                            <div key={index} className="bg-white/80 p-3 rounded-lg border border-purple-200/50 shadow-sm">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-medium text-purple-900">{event.contestant_name}</span>
+                                <Badge 
+                                  variant={event.points_awarded > 0 ? "default" : event.points_awarded < 0 ? "destructive" : "secondary"} 
+                                  className="text-xs"
+                                >
                                   {event.points_awarded > 0 ? '+' : ''}{event.points_awarded} pts
                                 </Badge>
                               </div>
-                              <div className="text-purple-600 text-xs mt-1">
-                                {event.description || event.event_type.replace(/_/g, ' ')}
+                              <div className="text-purple-700 text-sm">
+                                {event.description || event.event_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </div>
+                              <div className="text-purple-600 text-xs mt-1 opacity-75">
+                                {event.event_type}
                               </div>
                             </div>
                           ))}

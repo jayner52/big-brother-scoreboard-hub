@@ -27,7 +27,7 @@ export const PoolsidePicksLogo: React.FC<PoolsidePicksLogoProps> = ({
     )}>
       {/* Placeholder - replace with your actual logo */}
       <img 
-        src="/poolside-picks-logo.png"
+        src="https://i.imgur.com/E5vMAPD.png"
         alt="Poolside Picks Logo"
         className={cn(
           'object-contain filter drop-shadow-lg transition-transform duration-300 hover:scale-105',

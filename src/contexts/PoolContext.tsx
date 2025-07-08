@@ -404,26 +404,37 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: result.error || 'Failed to join pool' };
       }
 
-      // Reload pools and find the newly joined pool
-      await loadUserPools();
-      
-      // After reload, find the pool we just joined
-      const joinedMembership = userPools.find(m => m.pool_id === result.pool_id);
-      const joinedPool = joinedMembership?.pool;
-      
-      if (!joinedPool) {
-        // This shouldn't happen, but handle it gracefully
-        return { success: true, error: 'Joined pool but could not load pool details' };
+      // Fetch the pool data directly using the pool_id instead of relying on userPools state
+      if (result.pool_id) {
+        const { data: poolData, error: poolError } = await supabase
+          .from('pools')
+          .select('*')
+          .eq('id', result.pool_id)
+          .single();
+
+        if (poolError) {
+          console.error('Error fetching joined pool:', poolError);
+          // Still reload pools and return success, but without pool data
+          await loadUserPools();
+          return { success: true, error: 'Joined pool but could not load pool details' };
+        }
+
+        // Reload pools to update the user's pool list
+        await loadUserPools();
+        
+        return { success: true, data: poolData as Pool };
       }
 
-      return { success: true, data: joinedPool };
+      // Fallback - reload pools and return success without specific pool data
+      await loadUserPools();
+      return { success: true, error: 'Joined pool successfully' };
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to join pool';
       console.error('Error joining pool:', err);
       return { success: false, error: errorMessage };
     }
-  }, [loadUserPools, userPools]);
+  }, [loadUserPools]);
 
   const updatePool = useCallback(async (poolId: string, updates: Partial<Pool>): Promise<PoolOperationResult> => {
     try {

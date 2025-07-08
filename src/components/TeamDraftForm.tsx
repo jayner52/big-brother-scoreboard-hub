@@ -138,20 +138,6 @@ export const TeamDraftForm: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
-          {/* Validation Errors */}
-          {validationErrors.length > 0 && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <div className="font-semibold mb-2">Please complete the following:</div>
-                <ul className="list-disc list-inside space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          )}
 
           <BasicInfoForm
             formData={{
@@ -219,6 +205,21 @@ export const TeamDraftForm: React.FC = () => {
             paymentConfirmed={formData.payment_confirmed}
             onPaymentConfirmedChange={(confirmed) => handleFormDataChange({ payment_confirmed: confirmed })}
           />
+
+          {/* Validation Errors - Moved to bottom for visibility */}
+          {validationErrors.length > 0 && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="font-semibold mb-2">Please complete the following to submit your draft:</div>
+                <ul className="list-disc list-inside space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Button 
             type="submit" 

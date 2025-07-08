@@ -13,10 +13,10 @@ export const PoolsidePicksLogo: React.FC<PoolsidePicksLogoProps> = ({
   showAnimation = false
 }) => {
   const sizeClasses = {
-    sm: 'h-8',
-    md: 'h-12',
-    lg: 'h-16',
-    xl: 'h-24'
+    sm: 'h-12',
+    md: 'h-16',
+    lg: 'h-24',
+    xl: 'h-32'
   };
 
   return (

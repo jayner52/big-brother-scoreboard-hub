@@ -59,7 +59,13 @@ const Landing = () => {
       <nav className="bg-cream border-b border-brand-teal/20 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <PoolsidePicksLogo size="sm" />
+            <button 
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <PoolsidePicksLogo size="sm" />
+              <span className="text-sm text-dark/60">← Back to Poolside Picks</span>
+            </button>
           </div>
           
           {user ? (
@@ -89,8 +95,11 @@ const Landing = () => {
       <header className="hero-section py-16 px-4">
         <div className="container mx-auto text-center">
           <div className="mb-8">
+            <div className="mb-6 flex justify-center">
+              <PoolsidePicksLogo size="lg" />
+            </div>
             <h1 className="text-5xl md:text-6xl font-bold text-dark mb-4">
-              Where Big Brother Meets the Pool
+              Big Brother Pool
             </h1>
             <p className="text-xl md:text-2xl text-dark/80 mb-8">
               Join the ultimate Big Brother fantasy experience

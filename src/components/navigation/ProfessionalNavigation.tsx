@@ -240,7 +240,12 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
     <nav className="sticky top-0 z-40 flex items-center justify-between py-3 px-6 bg-background/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
       {/* LEFT SECTION - Pool Identity */}
       <div className="flex items-center gap-2 min-w-0">
-        <PoolsidePicksLogo size="sm" />
+        <button 
+          onClick={() => window.location.href = '/'}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <PoolsidePicksLogo size="sm" />
+        </button>
         <h3 className="text-lg font-semibold text-foreground truncate">
           {activePool?.name || 'Poolside Picks'}
         </h3>

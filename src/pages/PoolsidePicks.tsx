@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Trophy, BarChart3, MessageCircle, Play, Target, Award } from 'lucide-react';
+import { Users, Trophy, BarChart3, MessageCircle, Play, Target, Award, ArrowRight, Tv, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
@@ -33,7 +33,7 @@ const PoolsidePicks = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleJoinPool = () => {
+  const handleGetStarted = () => {
     if (user) {
       navigate('/dashboard');
     } else {
@@ -41,8 +41,8 @@ const PoolsidePicks = () => {
     }
   };
 
-  const handleLearnMore = () => {
-    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+  const handleBigBrotherLaunch = () => {
+    navigate('/landing');
   };
 
   if (loading) {
@@ -56,191 +56,192 @@ const PoolsidePicks = () => {
   return (
     <div className="min-h-screen bg-cream relative overflow-hidden">
       {/* Floating Pool Elements */}
-      <div className="absolute top-20 left-10 opacity-60">
+      <div className="absolute top-20 left-10 opacity-40 animate-bounce">
         <PoolFloat className="w-16 h-16" color="teal" />
       </div>
-      <div className="absolute top-40 right-20 opacity-40">
+      <div className="absolute top-40 right-20 opacity-30 animate-bounce" style={{ animationDelay: '1s' }}>
         <PoolFloat className="w-12 h-12" color="yellow" />
       </div>
-      <div className="absolute bottom-32 left-20 opacity-50">
+      <div className="absolute bottom-32 left-20 opacity-50 animate-bounce" style={{ animationDelay: '2s' }}>
         <PoolFloat className="w-20 h-20" color="orange" />
       </div>
-      <div className="absolute bottom-20 right-10 opacity-30">
+      <div className="absolute bottom-20 right-10 opacity-30 animate-bounce" style={{ animationDelay: '0.5s' }}>
         <PoolFloat className="w-14 h-14" color="coral" />
       </div>
+
+      {/* Navigation */}
+      <nav className="relative z-10 p-6">
+        <div className="container mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <PoolsidePicksLogo size="md" />
+          </div>
+          {user ? (
+            <Button
+              onClick={() => navigate('/dashboard')}
+              className="bg-coral hover:bg-coral/90 text-white"
+            >
+              Dashboard
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate('/auth')}
+              className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+            >
+              Sign In
+            </Button>
+          )}
+        </div>
+      </nav>
 
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="container mx-auto text-center">
-          {/* Logo and Brand */}
-          <div className="mb-8 flex justify-center">
+          {/* Giant Logo */}
+          <div className="mb-12 flex justify-center">
             <PoolsidePicksLogo size="xl" showAnimation={true} />
           </div>
           
-          <h1 className={`${isMobile ? 'text-4xl' : 'text-7xl'} font-bold text-dark mb-4`}>
+          <h1 className={`${isMobile ? 'text-5xl' : 'text-8xl'} font-bold text-dark mb-6 relative`}>
             Poolside Picks
+            <div className="absolute -top-2 -right-2 text-2xl animate-bounce">✨</div>
           </h1>
           
-          <p className={`${isMobile ? 'text-xl' : 'text-3xl'} text-brand-teal font-semibold mb-6`}>
-            Where Big Brother Meets the Pool
+          <p className={`${isMobile ? 'text-2xl' : 'text-4xl'} text-brand-teal font-bold mb-4`}>
+            The Smartest Way to Watch Dumb TV
           </p>
           
-          <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-12 max-w-3xl mx-auto leading-relaxed`}>
-            Join Big Brother fans in fun, competitive fantasy leagues that combine reality TV excitement with pool party vibes. 
-            Draft your team, make predictions, and dive into the ultimate summer competition!
+          <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-16 max-w-4xl mx-auto leading-relaxed`}>
+            Transform your reality TV obsession into competitive fun. Create fantasy pools for your favorite shows, 
+            compete with friends, and prove you've got the best picks in the pool!
           </p>
           
-          {/* CTA Buttons */}
-          <div className={`flex ${isMobile ? 'flex-col gap-4' : 'gap-6 justify-center'} mb-16`}>
+          {/* Main CTA */}
+          <div className={`flex ${isMobile ? 'flex-col gap-4' : 'gap-6 justify-center'} mb-20`}>
             <Button
-              onClick={handleJoinPool}
+              onClick={handleGetStarted}
               size={isMobile ? "default" : "lg"}
-              className={`${isMobile ? 'w-full' : 'px-12 py-4'} text-xl font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
+              className={`${isMobile ? 'w-full text-lg' : 'px-16 py-6 text-2xl'} font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105`}
               style={{ 
                 background: 'var(--gradient-coral)',
                 color: 'hsl(var(--coral-foreground))'
               }}
             >
-              <Trophy className="mr-2 h-6 w-6" />
-              {user ? 'Go to Dashboard' : 'Join the Big Brother Pool'}
-            </Button>
-            
-            <Button
-              onClick={handleLearnMore}
-              variant="outline"
-              size={isMobile ? "default" : "lg"}
-              className={`${isMobile ? 'w-full' : 'px-12 py-4'} text-xl font-semibold rounded-full border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-brand-teal-foreground transition-all duration-300`}
-            >
-              <Play className="mr-2 h-6 w-6" />
-              Learn How to Play
+              <Sparkles className="mr-3 h-6 w-6" />
+              Get Started Free
             </Button>
           </div>
+        </div>
+      </section>
 
-          {/* Sign In for Existing Users - Prominent Button */}
-          {!user && (
-            <div className="bg-gradient-to-r from-white via-white to-white/95 backdrop-blur-sm border-2 border-brand-teal/40 rounded-2xl p-8 mb-8 max-w-lg mx-auto shadow-xl">
-              <div className="text-center">
-                <h3 className="text-xl font-bold text-dark mb-2">Already have an account?</h3>
-                <p className="text-dark/70 mb-4">Sign in to access your teams and rankings</p>
+      {/* Available Shows Section */}
+      <section className="py-20 px-4 bg-white/80 backdrop-blur-sm">
+        <div className="container mx-auto">
+          <h2 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-bold text-center text-dark mb-6`}>
+            Available Reality Shows
+          </h2>
+          <p className="text-xl text-center text-dark/70 mb-16 max-w-2xl mx-auto">
+            Start with Big Brother and stay tuned for more shows coming soon!
+          </p>
+          
+          <div className="max-w-2xl mx-auto">
+            {/* Big Brother Card */}
+            <Card className="group hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-coral/30 bg-gradient-to-br from-coral/5 to-brand-teal/5">
+              <CardHeader className="text-center pb-4">
+                <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-coral to-brand-teal rounded-full flex items-center justify-center">
+                  <Tv className="h-12 w-12 text-white" />
+                </div>
+                <CardTitle className="text-3xl text-dark mb-2">Big Brother</CardTitle>
+                <CardDescription className="text-lg text-dark/70">
+                  Draft houseguests, predict evictions, and compete for the ultimate prize pool
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                  <div className="bg-white/60 p-3 rounded-lg">
+                    <Trophy className="h-6 w-6 mx-auto mb-2 text-coral" />
+                    <div className="font-semibold">Draft Teams</div>
+                    <div className="text-dark/70">Pick 5 houseguests</div>
+                  </div>
+                  <div className="bg-white/60 p-3 rounded-lg">
+                    <BarChart3 className="h-6 w-6 mx-auto mb-2 text-brand-teal" />
+                    <div className="font-semibold">Live Scoring</div>
+                    <div className="text-dark/70">Real-time updates</div>
+                  </div>
+                  <div className="bg-white/60 p-3 rounded-lg">
+                    <Users className="h-6 w-6 mx-auto mb-2 text-yellow" />
+                    <div className="font-semibold">Pool Play</div>
+                    <div className="text-dark/70">Compete with friends</div>
+                  </div>
+                  <div className="bg-white/60 p-3 rounded-lg">
+                    <MessageCircle className="h-6 w-6 mx-auto mb-2 text-orange" />
+                    <div className="font-semibold">Pool Chat</div>
+                    <div className="text-dark/70">Trash talk included</div>
+                  </div>
+                </div>
+                
                 <Button
-                  onClick={() => navigate('/auth?action=signin')}
-                  size={isMobile ? "default" : "lg"}
-                  className={`${isMobile ? 'w-full' : 'px-12 py-4'} text-xl font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
+                  onClick={handleBigBrotherLaunch}
+                  size="lg"
+                  className="w-full group-hover:scale-105 transition-transform duration-300"
                   style={{ 
                     background: 'var(--gradient-teal)',
                     color: 'white'
                   }}
                 >
-                  Sign In to Your Account
+                  Play Big Brother Pool
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+              </CardContent>
+            </Card>
 
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-white/60 backdrop-blur-sm">
-        <div className="container mx-auto">
-          <h2 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-bold text-center text-dark mb-4`}>
-            Why Poolside Picks?
-          </h2>
-          <p className="text-xl text-center text-dark/70 mb-16 max-w-2xl mx-auto">
-            The ultimate fantasy experience for Big Brother superfans
-          </p>
-          
-          <div className={`grid ${isMobile ? 'grid-cols-1 gap-8' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6'}`}>
-            <Card className="text-center border-2 border-coral/20 hover:border-coral/40 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <Users className="h-12 w-12 mx-auto text-coral mb-4" />
-                <CardTitle className="text-xl text-dark">Community Focused</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-dark/70 text-base">
-                  Join pools with friends, family, or fellow superfans. Chat, compete, and celebrate together all season long.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center border-2 border-brand-teal/20 hover:border-brand-teal/40 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <Trophy className="h-12 w-12 mx-auto text-brand-teal mb-4" />
-                <CardTitle className="text-xl text-dark">Competitive Pool Play</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-dark/70 text-base">
-                  Put money on the line or play just for fun. The competition keeps you engaged all season long.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center border-2 border-purple-400/20 hover:border-purple-400/40 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <Target className="h-12 w-12 mx-auto text-purple-600 mb-4" />
-                <CardTitle className="text-xl text-dark">Fully Customizable</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-dark/70 text-base">
-                  Starting your own pool? Configure everything exactly how you want - from scoring to prizes to team sizes.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center border-2 border-yellow/20 hover:border-yellow/40 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <BarChart3 className="h-12 w-12 mx-auto text-yellow mb-4" />
-                <CardTitle className="text-xl text-dark">Live Scoring</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-dark/70 text-base">
-                  Real-time updates and scoring keep you engaged every step of the way. Never miss a moment of the action.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center border-2 border-orange/20 hover:border-orange/40 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <MessageCircle className="h-12 w-12 mx-auto text-orange mb-4" />
-                <CardTitle className="text-xl text-dark">Social Features</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-dark/70 text-base">
-                  Pool chat, trash talk, strategy discussions, and victory celebrations. The social side of fantasy sports.
-                </CardDescription>
-              </CardContent>
-            </Card>
+            {/* Coming Soon Cards */}
+            <div className="mt-8 grid md:grid-cols-2 gap-6">
+              <Card className="opacity-60 bg-gradient-to-br from-muted/50 to-muted/30">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-xl text-muted-foreground">Survivor</CardTitle>
+                  <CardDescription>Coming Soon</CardDescription>
+                </CardHeader>
+              </Card>
+              
+              <Card className="opacity-60 bg-gradient-to-br from-muted/50 to-muted/30">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-xl text-muted-foreground">The Bachelor</CardTitle>
+                  <CardDescription>Coming Soon</CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4">
+      <section className="py-20 px-4">
         <div className="container mx-auto">
           <h2 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-bold text-center text-dark mb-4`}>
-            How It Works
+            How Poolside Picks Works
           </h2>
           <p className="text-xl text-center text-dark/70 mb-16 max-w-2xl mx-auto">
-            Get started in three simple steps
+            Fantasy sports meets reality TV in three simple steps
           </p>
           
           <div className={`grid ${isMobile ? 'grid-cols-1 gap-12' : 'md:grid-cols-3 gap-12'}`}>
             <div className="text-center">
               <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-coral)' }}>
-                <Target className="h-12 w-12 text-white" />
+                <Users className="h-12 w-12 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-dark mb-4">1. Create Your Team</h3>
+              <h3 className="text-2xl font-bold text-dark mb-4">1. Join or Create</h3>
               <p className="text-dark/70 text-lg leading-relaxed">
-                Draft your favorite houseguests from different groups and answer bonus questions to build your winning strategy.
+                Start your own pool with custom rules and prizes, or join an existing pool with friends and family.
               </p>
             </div>
             
             <div className="text-center">
               <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-teal)' }}>
-                <BarChart3 className="h-12 w-12 text-white" />
+                <Target className="h-12 w-12 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-dark mb-4">2. Make Weekly Picks</h3>
+              <h3 className="text-2xl font-bold text-dark mb-4">2. Draft & Predict</h3>
               <p className="text-dark/70 text-lg leading-relaxed">
-                Score points when your houseguests win competitions, survive evictions, and hit major milestones throughout the season.
+                Make your picks, draft your teams, and answer bonus questions. Your reality TV knowledge is about to pay off!
               </p>
             </div>
             
@@ -248,9 +249,9 @@ const PoolsidePicks = () => {
               <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-summer)' }}>
                 <Award className="h-12 w-12 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-dark mb-4">3. Win Prizes</h3>
+              <h3 className="text-2xl font-bold text-dark mb-4">3. Win Big</h3>
               <p className="text-dark/70 text-lg leading-relaxed">
-                Climb the leaderboard, claim victory, and win cash prizes or ultimate bragging rights in your pool!
+                Watch the season unfold as your picks earn points. Climb the leaderboard and claim your prizes!
               </p>
             </div>
           </div>
@@ -261,23 +262,23 @@ const PoolsidePicks = () => {
       <section className="py-20 px-4 bg-dark relative">
         <div className="container mx-auto text-center">
           <h2 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-bold text-cream mb-6`}>
-            Ready to Make a Splash?
+            Ready to Dive In?
           </h2>
           <p className="text-xl text-cream/80 mb-12 max-w-2xl mx-auto">
-            Join thousands of Big Brother fans in the ultimate fantasy pool experience
+            Join the smartest way to watch dumb TV. Your couch commentary just got competitive.
           </p>
           
           <Button
-            onClick={handleJoinPool}
+            onClick={handleGetStarted}
             size={isMobile ? "default" : "lg"}
-            className={`${isMobile ? 'w-full max-w-md' : 'px-16 py-6'} text-2xl font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110`}
+            className={`${isMobile ? 'w-full max-w-md text-lg' : 'px-16 py-6 text-2xl'} font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110`}
             style={{ 
               background: 'var(--gradient-coral)',
               color: 'hsl(var(--coral-foreground))'
             }}
           >
-            <Trophy className="mr-3 h-8 w-8" />
-            Start Playing Now
+            <Sparkles className="mr-3 h-8 w-8" />
+            Start Your First Pool
           </Button>
         </div>
       </section>
@@ -289,24 +290,18 @@ const PoolsidePicks = () => {
             <PoolsidePicksLogo size="sm" />
           </div>
           <p className="text-cream/60 mb-4">
-            © 2025 Poolside Picks | Where Big Brother Meets the Pool
+            © 2025 Poolside Picks | The Smartest Way to Watch Dumb TV
           </p>
           <div className="flex justify-center gap-8 text-cream/60">
             <button 
-              onClick={() => navigate('/about')}
+              onClick={handleBigBrotherLaunch}
               className="hover:text-coral transition-colors"
             >
-              About
-            </button>
-            <button 
-              onClick={handleLearnMore}
-              className="hover:text-brand-teal transition-colors"
-            >
-              How to Play
+              Big Brother Pool
             </button>
             <button 
               onClick={() => navigate('/auth')}
-              className="hover:text-yellow transition-colors"
+              className="hover:text-brand-teal transition-colors"
             >
               Sign In
             </button>

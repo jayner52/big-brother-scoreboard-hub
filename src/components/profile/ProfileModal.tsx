@@ -97,7 +97,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <div className="relative">
               <Avatar className="w-24 h-24">
                 {avatarUrl ? (
-                  <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-blue-100 to-cyan-100">
+                  <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-brand-teal/20 to-coral/20 rounded-full">
                     {avatarUrl}
                   </div>
                 ) : (

@@ -353,13 +353,24 @@ const loadWeekByWeekData = async () => {
                   {/* Special Events for this week */}
                   {specialEvents?.filter(event => event.week_number === week.week_number).length > 0 && (
                     <div className="mt-4">
-                      <h4 className="font-medium mb-2">Special Events</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <span className="text-purple-600">⚡</span>
+                        Special Events
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                         {specialEvents
                           ?.filter(event => event.week_number === week.week_number)
                           .map((event, index) => (
-                            <div key={index} className="bg-purple-50 p-2 rounded border-l-2 border-purple-200">
-                              <span className="font-medium">{(event.contestants as any)?.name}</span>: {event.description || event.event_type.replace(/_/g, ' ')}
+                            <div key={index} className="bg-gradient-to-r from-purple-50 to-pink-50 p-3 rounded-lg border border-purple-200 shadow-sm">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium text-purple-800">{(event.contestants as any)?.name}</span>
+                                <Badge variant="outline" className="text-xs border-purple-300 text-purple-600">
+                                  {event.points_awarded > 0 ? '+' : ''}{event.points_awarded} pts
+                                </Badge>
+                              </div>
+                              <div className="text-purple-600 text-xs mt-1">
+                                {event.description || event.event_type.replace(/_/g, ' ')}
+                              </div>
                             </div>
                           ))}
                       </div>

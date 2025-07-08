@@ -351,7 +351,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
           variant="outline"
           onClick={addSpecialEvent}
           className="w-full"
-          disabled={eventForm.specialEvents.some(e => !e.contestant || !e.eventType)}
+          disabled={eventForm.specialEvents.length > 0 && eventForm.specialEvents[eventForm.specialEvents.length - 1] && (!eventForm.specialEvents[eventForm.specialEvents.length - 1].contestant || !eventForm.specialEvents[eventForm.specialEvents.length - 1].eventType)}
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Special Event

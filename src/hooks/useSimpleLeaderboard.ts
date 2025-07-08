@@ -58,7 +58,10 @@ export const useSimpleLeaderboard = () => {
         .from('pool_entries')
         .select('*')
         .eq('pool_id', activePool.id)
-        .order('total_points', { ascending: false });
+        .order('total_points', { ascending: false })
+        .order('weekly_points', { ascending: false })
+        .order('bonus_points', { ascending: false })
+        .order('created_at', { ascending: true });
 
       if (queryError) {
         console.error('❌ Leaderboard query error:', queryError);

@@ -2,8 +2,10 @@ import React from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LeaderboardRow } from './LeaderboardRow';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Info } from 'lucide-react';
 
 interface LeaderboardTableProps {
   displayData: any[];
@@ -111,7 +113,23 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted">
-            <TableHead className="w-16 text-center font-bold">Rank</TableHead>
+            <TableHead className="w-16 text-center font-bold">
+              <div className="flex items-center justify-center gap-1">
+                Rank
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <p className="text-sm">
+                        Teams are ranked by: 1) Total Points, 2) Weekly Points, 3) Bonus Points, 4) Join Date (earliest first)
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </TableHead>
             {showHistoricalColumns && <TableHead className="w-20 text-center font-bold">Rank Δ</TableHead>}
             <TableHead className="w-48 font-bold">Team Name</TableHead>
             <TableHead className="w-32 font-bold">Participant</TableHead>

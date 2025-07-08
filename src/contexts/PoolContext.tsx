@@ -69,7 +69,10 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('pool_entries')
         .select('*')
         .eq('pool_id', poolId)
-        .order('total_points', { ascending: false });
+        .order('total_points', { ascending: false })
+        .order('weekly_points', { ascending: false })
+        .order('bonus_points', { ascending: false })
+        .order('created_at', { ascending: true });
       
       if (error) {
         console.error('Error loading pool entries:', error);

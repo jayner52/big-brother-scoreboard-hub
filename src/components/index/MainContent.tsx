@@ -55,7 +55,8 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       label: 'Leaderboard',
       shortLabel: 'Ranks',
       icon: Trophy,
-      component: <EnhancedTeamLeaderboard />
+      component: <EnhancedTeamLeaderboard />,
+      locked: shouldLockPicks
     },
     {
       id: 'picks',

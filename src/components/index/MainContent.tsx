@@ -46,7 +46,8 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
           )}
           <TeamDraftForm />
         </div>
-      )
+      ),
+      locked: !isDraftAccessible
     },
     {
       id: 'leaderboard',

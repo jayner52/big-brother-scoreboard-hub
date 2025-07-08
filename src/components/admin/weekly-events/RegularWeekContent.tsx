@@ -105,8 +105,6 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
         eventForm={eventForm}
         setEventForm={setEventForm}
         activeContestants={activeContestants}
-        scoringRules={scoringRules}
-        allContestants={contestants}
       />
     </>
   );

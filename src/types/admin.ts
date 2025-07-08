@@ -118,9 +118,12 @@ export interface WeeklyEventForm {
   runnerUp?: string;
   americasFavorite?: string;
   specialEvents: Array<{
+    id?: string;
     contestant: string;
     eventType: string;
     description?: string;
     customPoints?: number;
+    customDescription?: string;
+    customEmoji?: string;
   }>;
 }

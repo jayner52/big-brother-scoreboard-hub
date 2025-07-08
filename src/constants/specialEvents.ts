@@ -54,5 +54,15 @@ export const getSpecialEventById = (id: string): SpecialEventConfig | undefined 
 // Get default points for an event
 export const getDefaultPointsForEvent = (eventId: string): number => {
   const event = getSpecialEventById(eventId);
-  return event?.points || 0;
+  return event?.points || 1;
 };
+
+// Predefined emoji options for custom events
+export const CUSTOM_EVENT_EMOJIS = [
+  '✨', '🎯', '🎪', '🎭', '🎨', '🎵', '🎸', '🎤', '🎬', '🎮',
+  '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '👑', '💎', '⭐', '🌟',
+  '💫', '🔥', '💥', '⚡', '🌈', '🎊', '🎉', '🎁', '💝', '🎀',
+  '💯', '🔮', '🍀', '🦄', '🌸', '🌺', '🌻', '🌼', '🌷', '🌹',
+  '💖', '💕', '💘', '💗', '💓', '💟', '❤️', '🧡', '💛', '💚',
+  '💙', '💜', '🤍', '🖤', '🤎', '💔', '❣️', '💋', '👑', '💍'
+];

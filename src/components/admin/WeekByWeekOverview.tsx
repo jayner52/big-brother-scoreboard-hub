@@ -86,6 +86,12 @@ export const WeekByWeekOverview: React.FC = () => {
 
       if (scoringRulesError) throw scoringRulesError;
 
+      // Transform scoring rules to match the expected interface
+      const transformedScoringRules = (rawScoringRules || []).map(rule => ({
+        ...rule,
+        created_at: new Date(rule.created_at)
+      }));
+
       // Load ALL special events for this pool
       const allSpecialEvents: SpecialEvent[] = [];
 
@@ -251,7 +257,7 @@ export const WeekByWeekOverview: React.FC = () => {
           eventForm as any,
           transformedContestants as any,
           evictedUpToPreviousWeek,
-          rawScoringRules || []
+          transformedScoringRules
         );
 
         // Convert to ContestantScore format with cumulative totals

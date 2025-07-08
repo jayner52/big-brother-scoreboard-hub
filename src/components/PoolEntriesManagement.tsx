@@ -11,6 +11,7 @@ import { Trash2, Users, Lock, Unlock, Check, X, CreditCard } from 'lucide-react'
 import { usePool } from '@/contexts/PoolContext';
 import { UserPaymentButton } from '@/components/enhanced/UserPaymentButton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { InstructionAccordion } from '@/components/admin/InstructionAccordion';
 
 interface PoolEntry {
   id: string;
@@ -163,6 +164,23 @@ export const PoolEntriesManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <InstructionAccordion 
+        title="Pool Entries Management" 
+        tabKey="pool_entries"
+      >
+        <div className="space-y-2">
+          <p>Monitor participant status and payment confirmation. You can see who has drafted and who has paid their entry fee.</p>
+          <p><strong>Key functions:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li>Track payment status for participants with buy-ins</li>
+            <li>Confirm payments manually when received</li>
+            <li>Delete problematic or duplicate entries</li>
+            <li>Monitor who has submitted teams and when</li>
+            <li>Lock/unlock draft editing as needed</li>
+          </ul>
+        </div>
+      </InstructionAccordion>
+      
       <Card>
         <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
           <CardTitle className="flex items-center gap-2">

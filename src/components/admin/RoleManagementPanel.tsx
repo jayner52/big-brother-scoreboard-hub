@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePool } from '@/contexts/PoolContext';
 import { RoleBadge } from '@/components/ui/role-badge';
+import { InstructionAccordion } from './InstructionAccordion';
 import { 
   UserCheck, 
   UserPlus, 
@@ -156,7 +157,24 @@ export const RoleManagementPanel: React.FC = () => {
   const memberCount = members.filter(m => m.role === 'member').length;
 
   return (
-    <Card>
+    <div className="space-y-6">
+      <InstructionAccordion 
+        title="Role Management" 
+        tabKey="roles"
+      >
+        <div className="space-y-2">
+          <p>Assign admin privileges to trusted participants. Admins can update weekly results but cannot see payment info.</p>
+          <p><strong>Role hierarchy:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li><strong>Owner:</strong> Full control including financial settings and role management</li>
+            <li><strong>Admin:</strong> Can manage weekly events, bonus questions, and reveal settings</li>
+            <li><strong>Member:</strong> Can participate in the pool only</li>
+          </ul>
+          <p className="text-blue-700 font-medium">💡 Only promote trusted members who will help manage the pool responsibly.</p>
+        </div>
+      </InstructionAccordion>
+      
+      <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -305,5 +323,6 @@ export const RoleManagementPanel: React.FC = () => {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 };

@@ -60,7 +60,7 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
       </div>
 
       {/* Input Controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 chat-input-container">
         {/* Emoji Button */}
         <Button
           variant="ghost"
@@ -102,7 +102,7 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
           onKeyPress={onKeyPress}
           placeholder="Type a message... Use @ to mention someone 🏊"
           className="
-            flex-1 h-12
+            flex-1 h-12 chat-input
             border-2 border-brand-teal/20 
             focus:border-brand-teal 
             rounded-full
@@ -113,7 +113,9 @@ export const StickyInputBar: React.FC<StickyInputBarProps> = ({
             transition-all duration-200
             focus:ring-2 focus:ring-brand-teal/20
             focus:shadow-md
+            text-base
           "
+          style={{ fontSize: '16px' }} // Prevent iOS zoom
           maxLength={1000}
         />
 

@@ -14,6 +14,7 @@ import { usePool } from '@/contexts/PoolContext';
 import { PrizePoolManagement } from '@/components/admin/PrizePoolManagement';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
 import { useGroupAutoGeneration } from '@/hooks/useGroupAutoGeneration';
+import { InstructionAccordion } from './InstructionAccordion';
 
 interface PoolSettings {
   id: string;
@@ -410,7 +411,23 @@ export const PoolSettingsPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Accordion 
+      <InstructionAccordion 
+        title="Pool Settings Configuration" 
+        tabKey="pool_settings"
+      >
+        <div className="space-y-2">
+          <p>Configure basic pool settings. Changes here affect the entire pool. Be careful when modifying settings mid-season.</p>
+          <p><strong>Important considerations:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li>Changing buy-in amounts after people have paid can cause confusion</li>
+            <li>Modifying group counts will redistribute all houseguests</li>
+            <li>Draft timing affects when participants can submit teams</li>
+            <li>Hiding picks prevents participants from seeing others' selections until draft closes</li>
+          </ul>
+        </div>
+      </InstructionAccordion>
+      
+      <Accordion
         type="multiple" 
         value={expandedSections} 
         onValueChange={handleExpandedSectionsChange}

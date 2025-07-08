@@ -9,6 +9,7 @@ import { ManageContestantsTab } from './contestants/ManageContestantsTab';
 import { AIGenerationTab } from './contestants/AIGenerationTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePool } from '@/contexts/PoolContext';
+import { InstructionAccordion } from './InstructionAccordion';
 
 export const ContestantManagement: React.FC = () => {
   const { activePool } = usePool();
@@ -42,6 +43,23 @@ export const ContestantManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <InstructionAccordion 
+        title="Houseguest Management" 
+        tabKey="houseguests"
+      >
+        <div className="space-y-2">
+          <p>Manage the Big Brother cast list. Add all houseguests before opening the draft. Mark as evicted as the season progresses.</p>
+          <p><strong>Setup steps:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li>Add all houseguests before opening draft to participants</li>
+            <li>Organize into groups (like "men/women" or "old/new school")</li>
+            <li>Update evicted status as the season progresses</li>
+            <li>Use AI generation to create realistic profiles and photos</li>
+            <li>Verify all information is accurate before going live</li>
+          </ul>
+        </div>
+      </InstructionAccordion>
+      
       <ContestantManagementHeader onAddClick={() => setShowAddForm(true)} />
 
       <Tabs defaultValue="manage" className="w-full">

@@ -13,6 +13,7 @@ import { useBonusQuestions } from '@/hooks/useBonusQuestions';
 import { useAutoPointsRecalculation } from '@/hooks/useAutoPointsRecalculation';
 import { BonusQuestionCard } from './bonus-questions/BonusQuestionCard';
 import { Plus, Settings } from 'lucide-react';
+import { InstructionAccordion } from './InstructionAccordion';
 
 export const EnhancedBonusQuestionsPanel: React.FC = () => {
   const { activePool } = usePool();
@@ -174,6 +175,23 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <InstructionAccordion 
+        title="Bonus Questions Management" 
+        tabKey="bonus_questions"
+      >
+        <div className="space-y-2">
+          <p>Create prediction questions for bonus points. Questions should be set before the season starts. Reveal answers when outcomes are known.</p>
+          <p><strong>Best practices:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li>Create all bonus questions before draft period opens</li>
+            <li>Use clear, unambiguous question wording</li>
+            <li>Set appropriate point values based on difficulty</li>
+            <li>Only reveal answers when outcomes are confirmed</li>
+            <li>Consider different question types for variety</li>
+          </ul>
+        </div>
+      </InstructionAccordion>
+      
       {/* Global Controls */}
       <Card>
         <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">

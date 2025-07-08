@@ -354,7 +354,7 @@ export const EnhancedGifPicker: React.FC<EnhancedGifPickerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Card className="absolute bottom-full left-0 right-0 mb-2 z-50 h-[600px] overflow-hidden shadow-xl border-primary/20 animate-scale-in">
+    <Card className="absolute bottom-full left-0 right-0 mb-2 z-50 h-[600px] gif-picker-modal overflow-hidden shadow-xl border-primary/20 animate-scale-in">
       <CardContent className="p-0 h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-coral/5 to-brand-teal/5">

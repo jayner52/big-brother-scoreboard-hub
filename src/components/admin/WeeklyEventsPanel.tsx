@@ -9,6 +9,7 @@ import { WeeklyEventsToggles } from './weekly-events/WeeklyEventsToggles';
 import { WeeklyEventsContent } from './weekly-events/WeeklyEventsContent';
 import { WeekSelector } from './weekly-events/WeekSelector';
 import { usePool } from '@/contexts/PoolContext';
+import { InstructionAccordion } from './InstructionAccordion';
 
 export const WeeklyEventsPanel: React.FC = () => {
   const {
@@ -78,6 +79,23 @@ export const WeeklyEventsPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <InstructionAccordion 
+        title="How to Record Weekly Events" 
+        tabKey="weekly_events"
+      >
+        <div className="space-y-2">
+          <p>Record competition results and evictions for each week. Always complete weeks in order.</p>
+          <p>For double evictions, use the toggle and fill both eviction sections.</p>
+          <p><strong>Common mistakes to avoid:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li>Skipping weeks - this will affect point calculations</li>
+            <li>Forgetting to mark POV usage when someone uses it</li>
+            <li>Not setting replacement nominees when POV is used</li>
+            <li>Missing special events like AI Arena competitions</li>
+          </ul>
+        </div>
+      </InstructionAccordion>
+      
       <Card>
         <WeeklyEventsHeader
           week={eventForm.week}

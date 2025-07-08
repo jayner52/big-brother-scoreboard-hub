@@ -7,6 +7,7 @@ import { usePool } from '@/contexts/PoolContext';
 import { ResultTile } from './weekly-overview/ResultTile';
 import { PointsEarnedSection } from './weekly-overview/PointsEarnedSection';
 import { DoubleEvictionDisplay } from './weekly-overview/DoubleEvictionDisplay';
+import { InstructionAccordion } from './InstructionAccordion';
 
 interface WeekSummary {
   week_number: number;
@@ -250,6 +251,23 @@ const loadWeekByWeekData = async () => {
 
   return (
     <div className="space-y-6">
+      <InstructionAccordion 
+        title="Week by Week Overview" 
+        tabKey="week_overview"
+      >
+        <div className="space-y-2">
+          <p>View a read-only summary of all weekly results and point changes. To make changes, use the Weekly Events tab.</p>
+          <p><strong>What you can see here:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li>All completed weeks with winners and evicted houseguests</li>
+            <li>Point changes for each week broken down by contestant</li>
+            <li>Special events like double evictions and AI Arena wins</li>
+            <li>Running totals and weekly scoreboard updates</li>
+          </ul>
+          <p className="text-blue-700 font-medium">💡 This is for viewing only - edit results in the Weekly Events tab.</p>
+        </div>
+      </InstructionAccordion>
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

@@ -57,13 +57,13 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
                   tab.locked && "opacity-50 cursor-not-allowed"
                 )}
               >
-                <div className="flex items-center justify-center relative">
-                  <tab.icon className="h-5 w-5" />
-                  {tab.locked && <Lock className="h-3 w-3 absolute -top-1 -right-1" />}
-                </div>
+              <div className="flex items-center gap-2">
+                <tab.icon className="h-5 w-5" />
                 <span className="text-xs leading-tight text-center">
                   {tab.shortLabel}
                 </span>
+                {tab.locked && <Lock className="h-3 w-3" />}
+              </div>
               </Button>
             ))}
           </div>
@@ -97,13 +97,13 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
                 tab.locked && "opacity-50 cursor-not-allowed"
               )}
             >
-              <div className="flex items-center justify-center relative">
+              <div className="flex items-center gap-2">
                 <tab.icon className="h-5 w-5" />
-                {tab.locked && <Lock className="h-3 w-3 absolute -top-1 -right-1" />}
+                <span className="text-sm leading-tight text-center">
+                  {tab.shortLabel}
+                </span>
+                {tab.locked && <Lock className="h-3 w-3" />}
               </div>
-              <span className="text-sm leading-tight text-center">
-                {tab.shortLabel}
-              </span>
             </Button>
           ))}
           {visibleTabs.length === 5 && <div></div>} {/* Spacer for 5 tabs */}

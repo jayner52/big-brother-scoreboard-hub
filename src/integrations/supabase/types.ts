@@ -1022,6 +1022,7 @@ export type Database = {
         Row: {
           ai_arena_enabled: boolean | null
           ai_arena_winner: string | null
+          americas_favorite_player: string | null
           created_at: string
           draft_special_events: string | null
           evicted_contestant: string | null
@@ -1037,6 +1038,7 @@ export type Database = {
           pov_used_on: string | null
           pov_winner: string | null
           replacement_nominee: string | null
+          runner_up: string | null
           second_evicted_contestant: string | null
           second_hoh_winner: string | null
           second_nominees: string[] | null
@@ -1048,10 +1050,12 @@ export type Database = {
           third_hoh_winner: string | null
           third_pov_winner: string | null
           week_number: number
+          winner: string | null
         }
         Insert: {
           ai_arena_enabled?: boolean | null
           ai_arena_winner?: string | null
+          americas_favorite_player?: string | null
           created_at?: string
           draft_special_events?: string | null
           evicted_contestant?: string | null
@@ -1067,6 +1071,7 @@ export type Database = {
           pov_used_on?: string | null
           pov_winner?: string | null
           replacement_nominee?: string | null
+          runner_up?: string | null
           second_evicted_contestant?: string | null
           second_hoh_winner?: string | null
           second_nominees?: string[] | null
@@ -1078,10 +1083,12 @@ export type Database = {
           third_hoh_winner?: string | null
           third_pov_winner?: string | null
           week_number: number
+          winner?: string | null
         }
         Update: {
           ai_arena_enabled?: boolean | null
           ai_arena_winner?: string | null
+          americas_favorite_player?: string | null
           created_at?: string
           draft_special_events?: string | null
           evicted_contestant?: string | null
@@ -1097,6 +1104,7 @@ export type Database = {
           pov_used_on?: string | null
           pov_winner?: string | null
           replacement_nominee?: string | null
+          runner_up?: string | null
           second_evicted_contestant?: string | null
           second_hoh_winner?: string | null
           second_nominees?: string[] | null
@@ -1108,6 +1116,7 @@ export type Database = {
           third_hoh_winner?: string | null
           third_pov_winner?: string | null
           week_number?: number
+          winner?: string | null
         }
         Relationships: [
           {

@@ -83,16 +83,48 @@ export const WeeklyEventsPanel: React.FC = () => {
         title="How to Record Weekly Events" 
         tabKey="weekly_events"
       >
-        <div className="space-y-2">
+        <div className="space-y-3">
           <p>Record competition results and evictions for each week. Always complete weeks in order.</p>
-          <p>For double evictions, use the toggle and fill both eviction sections.</p>
-          <p><strong>Common mistakes to avoid:</strong></p>
-          <ul className="list-disc list-inside ml-4 space-y-1">
-            <li>Skipping weeks - this will affect point calculations</li>
-            <li>Forgetting to mark POV usage when someone uses it</li>
-            <li>Not setting replacement nominees when POV is used</li>
-            <li>Missing special events like AI Arena competitions</li>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded p-3">
+            <p className="font-semibold text-blue-800 mb-2">📋 Standard Week Process:</p>
+            <ol className="list-decimal list-inside ml-2 space-y-1 text-sm text-blue-700">
+              <li>Set HoH winner and nominees</li>
+              <li>Set PoV winner and usage (if applicable)</li>
+              <li>Add replacement nominee if PoV used</li>
+              <li>Set evicted houseguest</li>
+              <li>Add any special events or competitions</li>
+              <li>Review points preview before submitting</li>
+            </ol>
+          </div>
+
+          <div className="bg-purple-50 border border-purple-200 rounded p-3">
+            <p className="font-semibold text-purple-800 mb-2">🏆 Final Week Process:</p>
+            <ol className="list-decimal list-inside ml-2 space-y-1 text-sm text-purple-700">
+              <li>Enable "Final Week" toggle</li>
+              <li>Set Final HoH winner (Part 3 competition)</li>
+              <li>Select season winner (1st place)</li>
+              <li>Select runner-up (2nd place)</li>
+              <li>Select America's Favorite Player</li>
+              <li><strong>Submit the week to save results</strong></li>
+              <li>Complete season in the completion section below</li>
+            </ol>
+          </div>
+
+          <p><strong>⚠️ Common mistakes to avoid:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+            <li>Skipping weeks - this will break point calculations</li>
+            <li>Forgetting to mark PoV usage when someone uses it</li>
+            <li>Not setting replacement nominees when PoV is used</li>
+            <li>Missing special events like AI Arena wins</li>
+            <li><strong>Final Week: Forgetting to submit the week after setting winner/runner-up</strong></li>
+            <li><strong>Trying to complete season before final week is submitted</strong></li>
           </ul>
+
+          <p className="text-sm text-gray-600 mt-3">
+            💡 <strong>Tip:</strong> The points preview shows exactly what each contestant will earn before you submit. 
+            For final week, you'll see winner/runner-up/AFP points added to the preview.
+          </p>
         </div>
       </InstructionAccordion>
       

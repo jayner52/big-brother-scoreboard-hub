@@ -139,6 +139,40 @@ export const useWeeklyEventsSubmission = (
         });
       }
 
+      // Handle Final Week events BEFORE filtering valid events
+      if (eventForm.isFinalWeek) {
+        // Add final week specific events
+        if (eventForm.winner) {
+          events.push({
+            week_number: eventForm.week,
+            contestant_id: contestants.find(c => c.name === eventForm.winner)?.id,
+            event_type: 'winner',
+            points_awarded: calculatePoints('winner', undefined, scoringRules),
+            pool_id: poolId
+          });
+        }
+
+        if (eventForm.runnerUp) {
+          events.push({
+            week_number: eventForm.week,
+            contestant_id: contestants.find(c => c.name === eventForm.runnerUp)?.id,
+            event_type: 'runner_up',
+            points_awarded: calculatePoints('runner_up', undefined, scoringRules),
+            pool_id: poolId
+          });
+        }
+
+        if (eventForm.americasFavorite) {
+          events.push({
+            week_number: eventForm.week,
+            contestant_id: contestants.find(c => c.name === eventForm.americasFavorite)?.id,
+            event_type: 'americas_favorite',
+            points_awarded: calculatePoints('americas_favorite', undefined, scoringRules),
+            pool_id: poolId
+          });
+        }
+      }
+
       // Filter out events with missing contestant_id
       const validEvents = events.filter(e => e.contestant_id);
       
@@ -181,39 +215,6 @@ export const useWeeklyEventsSubmission = (
         }
       }
 
-      // Handle Final Week events
-      if (eventForm.isFinalWeek) {
-        // Add final week specific events
-        if (eventForm.winner) {
-          events.push({
-            week_number: eventForm.week,
-            contestant_id: contestants.find(c => c.name === eventForm.winner)?.id,
-            event_type: 'winner',
-            points_awarded: calculatePoints('winner', undefined, scoringRules),
-            pool_id: poolId
-          });
-        }
-
-        if (eventForm.runnerUp) {
-          events.push({
-            week_number: eventForm.week,
-            contestant_id: contestants.find(c => c.name === eventForm.runnerUp)?.id,
-            event_type: 'runner_up',
-            points_awarded: calculatePoints('runner_up', undefined, scoringRules),
-            pool_id: poolId
-          });
-        }
-
-        if (eventForm.americasFavorite) {
-          events.push({
-            week_number: eventForm.week,
-            contestant_id: contestants.find(c => c.name === eventForm.americasFavorite)?.id,
-            event_type: 'americas_favorite',
-            points_awarded: calculatePoints('americas_favorite', undefined, scoringRules),
-            pool_id: poolId
-          });
-        }
-      }
 
       // Update evicted contestant statuses
       const evictedNames = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
@@ -291,7 +292,7 @@ export const useWeeklyEventsSubmission = (
         Object.assign(weekData, {
           winner: eventForm.winner || null,
           runner_up: eventForm.runnerUp || null,
-          americas_favorite: eventForm.americasFavorite || null
+          americas_favorite_player: eventForm.americasFavorite || null
         });
       }
 

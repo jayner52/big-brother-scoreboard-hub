@@ -82,13 +82,26 @@ export const SeasonCompletionSection: React.FC<SeasonCompletionSectionProps> = (
 
       // Check 2: Final week data completed
       const finalWeekComplete = !!(eventForm?.winner && eventForm?.runnerUp);
+      
+      // Also check if final week has been submitted to the database
+      const { data: finalWeekSubmitted } = await supabase
+        .from('weekly_results')
+        .select('winner, runner_up')
+        .eq('pool_id', activePool.id)
+        .not('winner', 'is', null)
+        .not('runner_up', 'is', null)
+        .maybeSingle();
+      
+      const finalWeekInDB = !!finalWeekSubmitted;
+      const overallFinalWeekComplete = finalWeekComplete && finalWeekInDB;
+      
       completionChecks.push({
         id: 'final-week-complete',
         label: 'Final Week Results Set',
-        completed: finalWeekComplete,
-        description: finalWeekComplete ? 
-          'Winner and runner-up have been selected' : 
-          'Please set winner and runner-up in the Final Week section above'
+        completed: overallFinalWeekComplete,
+        description: overallFinalWeekComplete ? 
+          'Winner and runner-up have been selected and submitted' : 
+          finalWeekComplete ? 'Please submit the final week results' : 'Please set winner and runner-up in the Final Week section above'
       });
 
       // Check 3: Final standings calculated

@@ -87,7 +87,7 @@ export const useWeeklyEvents = () => {
             evicted: weekData?.evicted_contestant || '',
             isDoubleEviction: weekData?.is_double_eviction || false,
             isTripleEviction: weekData?.is_triple_eviction || false,
-            isFinalWeek: false, // Final week is handled at pool level, not weekly results level
+            isFinalWeek: weekData?.winner ? true : false, // Check if final week data exists
             isJuryPhase: weekData?.jury_phase_started || false,
             aiArenaEnabled: weekData?.ai_arena_enabled || false,
             aiArenaWinner: weekData?.ai_arena_winner || '',
@@ -107,9 +107,9 @@ export const useWeeklyEvents = () => {
             thirdEvicted: weekData?.third_evicted_contestant || '',
             maxNominees: 4,
             specialEvents,
-            winner: '',
-            runnerUp: '',
-            americasFavorite: ''
+            winner: weekData?.winner || '',
+            runnerUp: weekData?.runner_up || '',
+            americasFavorite: weekData?.americas_favorite_player || ''
           };
 
           setEventForm(formData);
@@ -127,7 +127,28 @@ export const useWeeklyEvents = () => {
 
   const getFormPointsPreview = () => {
     if (!eventForm) return {};
-    return getPointsPreview(eventForm, contestants, allEvictedUpToThisWeek, scoringRules);
+    
+    // Calculate regular points
+    let pointsPreview = getPointsPreview(eventForm, contestants, allEvictedUpToThisWeek, scoringRules);
+    
+    // Add final week points if it's final week
+    if (eventForm.isFinalWeek) {
+      const winnerPoints = scoringRules.find(rule => rule.category === 'final_placement' && rule.subcategory === 'winner')?.points || 50;
+      const runnerUpPoints = scoringRules.find(rule => rule.category === 'final_placement' && rule.subcategory === 'runner_up')?.points || 25;
+      const afpPoints = scoringRules.find(rule => rule.category === 'special_achievements' && rule.subcategory === 'americas_favorite')?.points || 15;
+      
+      if (eventForm.winner) {
+        pointsPreview[eventForm.winner] = (pointsPreview[eventForm.winner] || 0) + winnerPoints;
+      }
+      if (eventForm.runnerUp) {
+        pointsPreview[eventForm.runnerUp] = (pointsPreview[eventForm.runnerUp] || 0) + runnerUpPoints;
+      }
+      if (eventForm.americasFavorite) {
+        pointsPreview[eventForm.americasFavorite] = (pointsPreview[eventForm.americasFavorite] || 0) + afpPoints;
+      }
+    }
+    
+    return pointsPreview;
   };
 
   const calculateEventPoints = (eventType: string, customPoints?: number) => {

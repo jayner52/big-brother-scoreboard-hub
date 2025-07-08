@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -9,11 +10,13 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu } from 'lucide-react';
+import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu, User } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { EnhancedChatIcon } from '@/components/chat/EnhancedChatIcon';
+import { ProfileModal } from '@/components/profile/ProfileModal';
 import { usePool } from '@/contexts/PoolContext';
 import { useUserPoolRole } from '@/hooks/useUserPoolRole';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -36,8 +39,10 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
   const { activePool } = usePool();
   const [userId, setUserId] = React.useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
+  const { profile, refreshProfile } = useUserProfile(user);
   
   React.useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -48,6 +53,10 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
   const { isAdmin } = useUserPoolRole(activePool?.id, userId || undefined);
 
   const isActiveRoute = (path: string) => location.pathname === path;
+
+  const displayName = profile?.display_name || userEntry?.participant_name || user?.email?.split('@')[0] || 'User';
+  const avatarUrl = profile?.avatar_url;
+  const initials = displayName.charAt(0).toUpperCase();
 
   const NavButton: React.FC<{
     to: string;
@@ -85,14 +94,17 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
           variant="ghost"
           className="flex items-center gap-2 px-3 py-2 h-10 rounded-full hover:bg-muted/50 transition-all duration-200"
         >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-coral to-brand-teal flex items-center justify-center text-white font-semibold text-sm">
-            {(userEntry?.participant_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
-          </div>
+          <Avatar className="w-8 h-8">
+            <AvatarImage src={avatarUrl} />
+            <AvatarFallback className="bg-gradient-to-br from-coral to-brand-teal text-white font-semibold text-sm">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
           {!isMobile && (
             <>
               <div className="flex flex-col text-left">
                 <span className="text-sm font-medium text-foreground truncate max-w-32">
-                  {userEntry?.participant_name || user?.email?.split('@')[0] || 'User'}
+                  {displayName}
                 </span>
                 {userRank && (
                   <span className="text-xs text-muted-foreground">
@@ -109,17 +121,23 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
         align="end" 
         className="w-56 bg-background/95 backdrop-blur-sm border shadow-lg"
       >
+        <DropdownMenuItem onClick={() => setProfileModalOpen(true)} className="flex items-center gap-2 cursor-pointer">
+          <User className="h-4 w-4" />
+          Edit Profile
+        </DropdownMenuItem>
+        
         {isAdmin && (
           <>
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
                 <Settings className="h-4 w-4" />
                 Admin Panel
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
           </>
         )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onSignOut} className="flex items-center gap-2 cursor-pointer text-destructive">
           <LogOut className="h-4 w-4" />
           Sign Out
@@ -252,6 +270,17 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
           <MobileMenu />
         )}
       </div>
+      
+      {/* Profile Modal */}
+      {user && (
+        <ProfileModal
+          isOpen={profileModalOpen}
+          onClose={() => setProfileModalOpen(false)}
+          user={user}
+          userProfile={profile || undefined}
+          onProfileUpdate={refreshProfile}
+        />
+      )}
     </nav>
   );
 };

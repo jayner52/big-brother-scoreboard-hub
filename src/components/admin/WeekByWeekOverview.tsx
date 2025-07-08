@@ -59,6 +59,7 @@ const loadWeekByWeekData = async () => {
       setWeeklyResults(weeklyData || []);
 
       // Load weekly results to get the actual event data that was recorded
+      // CRITICAL FIX: Include both completed AND draft weeks to show all available data
       const { data: completedWeeks, error: weeklyResultsError } = await supabase
         .from('weekly_results')
         .select(`
@@ -81,10 +82,10 @@ const loadWeekByWeekData = async () => {
           ai_arena_winner,
           third_evicted_contestant,
           is_triple_eviction,
-          jury_phase_started
+          jury_phase_started,
+          is_draft
         `)
         .eq('pool_id', activePool.id)
-        .eq('is_draft', false)
         .order('week_number', { ascending: true });
 
       // Load contestants

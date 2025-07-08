@@ -276,7 +276,7 @@ export const TeamDraftFormFixed: React.FC = () => {
           return (
           <div className="relative">
             {/* Draft Form Content */}
-            <div className={isDraftLocked ? "pointer-events-none blur-sm" : ""}>
+            <div className={isDraftLocked ? "opacity-50" : ""}>
               {/* CRITICAL FIX: Only show payment info if pool has buy-in */}
               {poolData?.has_buy_in && (
                 <>
@@ -328,8 +328,9 @@ export const TeamDraftFormFixed: React.FC = () => {
 
               <form 
                 onSubmit={(e) => {
+                  e.preventDefault();
                   if (isDraftLocked) {
-                    e.preventDefault();
+                    console.log('🔒 Form submission blocked - draft is locked');
                     return;
                   }
                   handleSubmit(e);
@@ -351,7 +352,7 @@ export const TeamDraftFormFixed: React.FC = () => {
                   </Alert>
                 )}
 
-                <div className={isDraftLocked ? "pointer-events-none" : ""}>
+                <div style={{ pointerEvents: isDraftLocked ? 'none' : 'auto' }}>
                   <BasicInfoForm
                     formData={{
                       participant_name: formData.participant_name,
@@ -364,7 +365,7 @@ export const TeamDraftFormFixed: React.FC = () => {
 
                 <Separator />
 
-                <div className={isDraftLocked ? "pointer-events-none" : ""}>
+                <div style={{ pointerEvents: isDraftLocked ? 'none' : 'auto' }}>
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold">
                       Draft Your Team ({poolData?.picks_per_team || 5} Players)
@@ -392,7 +393,7 @@ export const TeamDraftFormFixed: React.FC = () => {
 
                 {poolData?.enable_bonus_questions && bonusQuestions.length > 0 && (
                   <>
-                    <div className={isDraftLocked ? "pointer-events-none" : ""}>
+                    <div style={{ pointerEvents: isDraftLocked ? 'none' : 'auto' }}>
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-bold text-purple-800">🎯 Bonus Predictions</h3>
                         <Button
@@ -420,7 +421,7 @@ export const TeamDraftFormFixed: React.FC = () => {
                 {/* CRITICAL FIX: Only show payment validation if pool has buy-in */}
                 {poolData?.has_buy_in && (
                   <>
-                    <div className={isDraftLocked ? "pointer-events-none" : ""}>
+                    <div style={{ pointerEvents: isDraftLocked ? 'none' : 'auto' }}>
                       <PaymentValidationSection
                         paymentConfirmed={formData.payment_confirmed}
                         onPaymentConfirmedChange={(confirmed) => updateFormData({ payment_confirmed: confirmed })}
@@ -430,25 +431,28 @@ export const TeamDraftFormFixed: React.FC = () => {
                   </>
                 )}
 
-                {!isDraftLocked && (
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
-                    disabled={validationErrors.length > 0}
-                  >
-                    {editingTeamId ? 'Update Team & Predictions' : 'Submit My Team & Predictions'}
-                  </Button>
-                )}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
+                  disabled={isDraftLocked || validationErrors.length > 0}
+                >
+                  {editingTeamId ? 'Update Team & Predictions' : 'Submit My Team & Predictions'}
+                </Button>
               </form>
             </div>
 
-            {/* Lock Overlay with stronger blocking */}
+            {/* STRONGER Lock Overlay */}
             {isDraftLocked && (
               <div 
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg flex items-center justify-center z-50"
-                style={{ pointerEvents: 'auto' }}
+                className="absolute inset-0 bg-black/80 backdrop-blur-md rounded-lg flex items-center justify-center z-[100]"
+                style={{ 
+                  pointerEvents: 'auto',
+                  userSelect: 'none'
+                }}
+                onMouseDown={(e) => e.preventDefault()}
                 onKeyDown={(e) => e.preventDefault()}
-                tabIndex={0}
+                onFocus={(e) => e.preventDefault()}
+                tabIndex={-1}
               >
                 <div className="text-center p-8 bg-white rounded-xl border shadow-2xl max-w-md mx-4">
                   <div className="bg-gray-100 rounded-full p-4 mx-auto mb-6 w-fit">

@@ -148,7 +148,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose }) => {
             <section>
               <h3 className="text-lg font-semibold">15. Contact Information</h3>
               <p>
-                For questions about these Terms, please contact us at support@poolsidepicks.com
+                For questions about these Terms, please contact us at admin@poolside-picks.com
               </p>
             </section>
           </div>

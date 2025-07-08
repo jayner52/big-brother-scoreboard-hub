@@ -387,20 +387,20 @@ export const WeekByWeekOverview: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Special Events for this week - Enhanced Display */}
+                  {/* Special Events for this week - Compact Display */}
                   {specialEvents?.filter(event => event.week_number === week.week_number).length > 0 && (
-                    <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                      <h4 className="font-semibold mb-3 flex items-center gap-2 text-purple-800">
+                    <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2 text-purple-800">
                         <span className="text-purple-600">⚡</span>
                         Special Events
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {specialEvents
                           ?.filter(event => event.week_number === week.week_number)
                           .map((event, index) => (
-                            <div key={index} className="bg-white/80 p-3 rounded-lg border border-purple-200/50 shadow-sm">
+                            <div key={index} className="bg-white/80 p-2 rounded-md border border-purple-200/50 shadow-sm">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-purple-900">{event.contestant_name}</span>
+                                <span className="font-medium text-purple-900 text-sm">{event.contestant_name}</span>
                                 <Badge 
                                   variant={event.points_awarded > 0 ? "default" : event.points_awarded < 0 ? "destructive" : "secondary"} 
                                   className="text-xs"
@@ -408,11 +408,8 @@ export const WeekByWeekOverview: React.FC = () => {
                                   {event.points_awarded > 0 ? '+' : ''}{event.points_awarded} pts
                                 </Badge>
                               </div>
-                              <div className="text-purple-700 text-sm">
+                              <div className="text-purple-700 text-xs">
                                 {event.description || event.event_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                              </div>
-                              <div className="text-purple-600 text-xs mt-1 opacity-75">
-                                {event.event_type}
                               </div>
                             </div>
                           ))}

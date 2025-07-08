@@ -38,6 +38,7 @@ interface SpecialEvent {
   event_type: string;
   description: string | null;
   houseguest_name: string;
+  points_awarded: number;
 }
 
 export const LiveResults: React.FC = () => {
@@ -73,14 +74,15 @@ export const LiveResults: React.FC = () => {
       if (error) throw error;
       setWeeklyResults(data || []);
 
-      // Load special events from both special_events and weekly_events (for BB Arena)
-      const [specialData, bbArenaData] = await Promise.all([
+      // Load special events from all sources with points
+      const [specialData, bbArenaData, draftEventsData, scoringRulesData] = await Promise.all([
         supabase
           .from('special_events')
           .select(`
             week_number,
             event_type,
             description,
+            points_awarded,
             contestants(name)
           `)
           .eq('pool_id', activePool.id)
@@ -90,31 +92,86 @@ export const LiveResults: React.FC = () => {
           .select(`
             week_number,
             event_type,
+            points_awarded,
             contestants(name)
           `)
           .eq('event_type', 'bb_arena_winner')
           .eq('pool_id', activePool.id)
-          .order('week_number', { ascending: false })
+          .order('week_number', { ascending: false }),
+        supabase
+          .from('weekly_results')
+          .select('week_number, draft_special_events')
+          .eq('pool_id', activePool.id)
+          .eq('is_draft', true)
+          .not('draft_special_events', 'is', null),
+        supabase
+          .from('detailed_scoring_rules')
+          .select('*')
+          .eq('is_active', true)
       ]);
 
       if (specialData.error) throw specialData.error;
       if (bbArenaData.error) throw bbArenaData.error;
+      if (draftEventsData.error) throw draftEventsData.error;
+      if (scoringRulesData.error) throw scoringRulesData.error;
       
+      const allSpecialEvents: SpecialEvent[] = [];
+
+      // Add database special events
       const mappedSpecialEvents = (specialData.data || []).map(event => ({
         week_number: event.week_number,
         event_type: event.event_type,
         description: event.description,
-        houseguest_name: (event.contestants as any)?.name || 'Unknown'
+        houseguest_name: (event.contestants as any)?.name || 'Unknown',
+        points_awarded: event.points_awarded || 0
       }));
 
+      // Add BB Arena events
       const mappedBBArenaEvents = (bbArenaData.data || []).map(event => ({
         week_number: event.week_number,
         event_type: 'bb_arena_winner',
         description: 'BB Arena Winner',
-        houseguest_name: (event.contestants as any)?.name || 'Unknown'
+        houseguest_name: (event.contestants as any)?.name || 'Unknown',
+        points_awarded: event.points_awarded || 0
       }));
+
+      // Add draft special events
+      const mappedDraftEvents: SpecialEvent[] = [];
+      if (draftEventsData.data) {
+        draftEventsData.data.forEach(week => {
+          if (week.draft_special_events) {
+            try {
+              const draftEvents = JSON.parse(week.draft_special_events);
+              if (Array.isArray(draftEvents)) {
+                draftEvents.forEach((event: any) => {
+                  if (event.contestant && event.eventType) {
+                    // Get points from scoring rules or use custom points
+                    let eventPoints = event.customPoints || 0;
+                    if (!eventPoints && event.eventType !== 'custom_event') {
+                      const rule = scoringRulesData.data?.find(r => r.subcategory === event.eventType);
+                      eventPoints = rule?.points || 0;
+                    }
+
+                    mappedDraftEvents.push({
+                      week_number: week.week_number,
+                      event_type: event.eventType,
+                      description: event.eventType === 'custom_event' ? event.customDescription : event.description,
+                      houseguest_name: event.contestant,
+                      points_awarded: eventPoints
+                    });
+                  }
+                });
+              }
+            } catch (error) {
+              console.error('Error parsing draft special events for week', week.week_number, error);
+            }
+          }
+        });
+      }
+
+      allSpecialEvents.push(...mappedSpecialEvents, ...mappedBBArenaEvents, ...mappedDraftEvents);
       
-      setSpecialEvents([...mappedSpecialEvents, ...mappedBBArenaEvents]);
+      setSpecialEvents(allSpecialEvents);
       
       // Find the current in-progress week (first week with is_draft=true)
       const inProgressWeek = data?.find(week => week.is_draft === true);
@@ -312,13 +369,24 @@ export const LiveResults: React.FC = () => {
             {(!currentWeekData.is_draft || showSpoilers) && specialEvents.filter(event => event.week_number === currentWeekData.week_number).length > 0 && (
               <div className="mt-6">
                 <h4 className="font-semibold mb-2">Special Events This Week</h4>
-                 <div className="flex flex-wrap gap-2">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                    {specialEvents
                      .filter(event => event.week_number === currentWeekData.week_number)
                      .map((event, index) => (
-                       <Badge key={index} variant="outline" className="text-xs">
-                         <span className="font-medium">{event.houseguest_name}</span>: {getEventDisplayText(event.event_type, event.description)}
-                       </Badge>
+                       <div key={index} className="bg-purple-50 p-2 rounded-md border border-purple-200">
+                         <div className="flex items-center justify-between mb-1">
+                           <span className="font-medium text-purple-900 text-sm">{event.houseguest_name}</span>
+                           <Badge 
+                             variant={event.points_awarded > 0 ? "default" : event.points_awarded < 0 ? "destructive" : "secondary"} 
+                             className="text-xs"
+                           >
+                             {event.points_awarded > 0 ? '+' : ''}{event.points_awarded} pts
+                           </Badge>
+                         </div>
+                         <div className="text-purple-700 text-xs">
+                           {getEventDisplayText(event.event_type, event.description)}
+                         </div>
+                       </div>
                      ))}
                  </div>
               </div>
@@ -484,14 +552,28 @@ export const LiveResults: React.FC = () => {
 
                     {/* Special Events for this week */}
                     {specialEvents?.filter(event => event.week_number === week.week_number).length > 0 && (
-                      <div>
-                        <span className="font-medium">Special Events: </span>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-1">
+                      <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                        <h5 className="font-semibold mb-2 flex items-center gap-2 text-purple-800 text-sm">
+                          <span className="text-purple-600">⚡</span>
+                          Special Events
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {specialEvents
                             ?.filter(event => event.week_number === week.week_number)
                             .map((event, index) => (
-                              <div key={index} className="bg-purple-50 p-2 rounded border-l-2 border-purple-200">
-                                <span className="font-medium">{event.houseguest_name}</span>: {getEventDisplayText(event.event_type, event.description)}
+                              <div key={index} className="bg-white/80 p-2 rounded-md border border-purple-200/50 shadow-sm">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-medium text-purple-900 text-sm">{event.houseguest_name}</span>
+                                  <Badge 
+                                    variant={event.points_awarded > 0 ? "default" : event.points_awarded < 0 ? "destructive" : "secondary"} 
+                                    className="text-xs"
+                                  >
+                                    {event.points_awarded > 0 ? '+' : ''}{event.points_awarded} pts
+                                  </Badge>
+                                </div>
+                                <div className="text-purple-700 text-xs">
+                                  {getEventDisplayText(event.event_type, event.description)}
+                                </div>
                               </div>
                             ))}
                         </div>

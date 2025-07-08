@@ -90,9 +90,11 @@ export const PrizePoolManagement: React.FC = () => {
       // Load existing configuration from new prize_configuration field
       const existingConfig = activePool.prize_configuration;
       if (existingConfig && existingConfig.mode) {
+        // Default admin fee to 5% of total expected if not set
+        const defaultAdminFee = existingConfig.admin_fee || Math.round((entryCount * (activePool?.entry_fee_amount || 0)) * 0.05);
         setConfig({
           mode: existingConfig.mode || 'percentage',
-          admin_fee: existingConfig.admin_fee || 0,
+          admin_fee: defaultAdminFee,
           percentage_distribution: {
             first_place_percentage: existingConfig.percentage_distribution?.first_place_percentage || 50,
             second_place_percentage: existingConfig.percentage_distribution?.second_place_percentage || 30,
@@ -112,7 +114,7 @@ export const PrizePoolManagement: React.FC = () => {
         if (oldConfig) {
           const migratedConfig = {
             mode: (activePool.prize_mode || 'percentage') as 'percentage' | 'custom',
-            admin_fee: 0,
+            admin_fee: Math.round((entryCount * (activePool?.entry_fee_amount || 0)) * 0.05),
             percentage_distribution: {
               first_place_percentage: oldConfig.first_place_percentage || 50,
               second_place_percentage: oldConfig.second_place_percentage || 30,
@@ -386,12 +388,31 @@ export const PrizePoolManagement: React.FC = () => {
       const tipAmount = calculateTipJarAmount();
       const tipPercentage = (activePool as any).tip_jar_percentage || 10;
 
-      console.log('Invoking create-tip-payment function with:', { 
+      console.log('🚀 STRIPE DEBUG: Starting tip payment process', { 
         poolId: activePool.id, 
         tipPercentage, 
-        tipAmount 
+        tipAmount,
+        activePoolName: activePool.name
       });
 
+      // First, test if the function is accessible
+      const { data: testData, error: testError } = await supabase.functions.invoke('create-tip-payment', {
+        body: {
+          test: true,
+          poolId: activePool.id,
+          tipPercentage,
+          tipAmount
+        }
+      });
+
+      console.log('🔍 STRIPE DEBUG: Function test response', { testData, testError });
+
+      if (testError) {
+        console.error('❌ STRIPE DEBUG: Test function error', testError);
+        throw new Error(`Test function error: ${testError.message || JSON.stringify(testError)}`);
+      }
+
+      // If test passed, proceed with actual payment
       const { data, error } = await supabase.functions.invoke('create-tip-payment', {
         body: {
           poolId: activePool.id,
@@ -400,20 +421,20 @@ export const PrizePoolManagement: React.FC = () => {
         }
       });
 
-      console.log('Function response:', { data, error });
+      console.log('💳 STRIPE DEBUG: Payment function response', { data, error });
 
       if (error) {
-        console.error('Function error details:', error);
+        console.error('❌ STRIPE DEBUG: Payment function error', error);
         throw new Error(`Function error: ${error.message || JSON.stringify(error)}`);
       }
 
       if (data?.error) {
-        console.error('Function returned error:', data);
-        throw new Error(`Payment error: ${data.error} (${data.errorType || 'Unknown'})`);
+        console.error('❌ STRIPE DEBUG: Function returned error', data);
+        throw new Error(`Payment error: ${data.error} (${data.errorCode || 'Unknown'})`);
       }
 
       if (data?.url) {
-        console.log('Opening Stripe checkout URL:', data.url);
+        console.log('✅ STRIPE DEBUG: Opening Stripe checkout URL', data.url);
         // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
       } else {
@@ -686,7 +707,7 @@ export const PrizePoolManagement: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Admin Fee Configuration</CardTitle>
-          <CardDescription>Set aside funds for pool administration costs</CardDescription>
+          <CardDescription>Your time has value. Set aside funds for pool administration costs.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">

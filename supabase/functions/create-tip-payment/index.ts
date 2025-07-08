@@ -17,7 +17,37 @@ serve(async (req) => {
   }
 
   try {
-    // Step 1: Verify environment variables first
+    // Step 1: Parse request body early to check for test mode
+    console.log('📋 CREATE-TIP-PAYMENT: Parsing request body...');
+    let requestBody;
+    try {
+      requestBody = await req.json();
+      console.log('📋 CREATE-TIP-PAYMENT: Request data:', requestBody);
+    } catch (parseError) {
+      console.error('❌ CREATE-TIP-PAYMENT: Failed to parse request body:', parseError);
+      return new Response(JSON.stringify({ 
+        error: "Invalid request body",
+        errorCode: "PARSE_ERROR" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    // Handle test mode - just return success for health check
+    if (requestBody.test) {
+      console.log('🧪 CREATE-TIP-PAYMENT: Test mode - returning success');
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: "Function is accessible",
+        testMode: true
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // Step 2: Verify environment variables
     console.log('🔍 CREATE-TIP-PAYMENT: Checking environment variables...');
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -56,26 +86,9 @@ serve(async (req) => {
       });
     }
 
-    // Step 2: Create Supabase client
+    // Step 3: Create Supabase client
     console.log('🔧 CREATE-TIP-PAYMENT: Creating Supabase client...');
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-
-    // Step 3: Parse request body early
-    console.log('📋 CREATE-TIP-PAYMENT: Parsing request body...');
-    let requestBody;
-    try {
-      requestBody = await req.json();
-      console.log('📋 CREATE-TIP-PAYMENT: Request data:', requestBody);
-    } catch (parseError) {
-      console.error('❌ CREATE-TIP-PAYMENT: Failed to parse request body:', parseError);
-      return new Response(JSON.stringify({ 
-        error: "Invalid request body",
-        errorCode: "PARSE_ERROR" 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      });
-    }
 
     const { poolId, tipPercentage, tipAmount } = requestBody;
 

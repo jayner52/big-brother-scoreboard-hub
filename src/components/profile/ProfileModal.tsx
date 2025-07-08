@@ -32,10 +32,10 @@ const backgroundColors = [
   { name: 'Coral Reef', value: 'from-coral to-brand-teal' },
   { name: 'Golden Hour', value: 'from-yellow-400 to-orange-400' },
   { name: 'Night Sky', value: 'from-slate-800 to-slate-600' },
-  { name: 'Custom Pink', value: 'from-pink-400 to-rose-300' },
-  { name: 'Custom Purple', value: 'from-purple-400 to-indigo-300' },
-  { name: 'Custom Green', value: 'from-emerald-400 to-teal-300' },
-  { name: 'Custom Orange', value: 'from-orange-400 to-amber-300' },
+  { name: 'Rose Garden', value: 'from-pink-400 to-rose-300' },
+  { name: 'Lavender Fields', value: 'from-purple-400 to-indigo-300' },
+  { name: 'Mint Fresh', value: 'from-emerald-400 to-teal-300' },
+  { name: 'Autumn Sunset', value: 'from-orange-400 to-amber-300' },
 ];
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -114,9 +114,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Error updating profile:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to update profile. Please try again.";
+      if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = `Update failed: ${error.message}`;
+      }
+      
       toast({
         title: "Update failed",
-        description: "Failed to update profile. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

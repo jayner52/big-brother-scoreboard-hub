@@ -81,6 +81,8 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
       );
     }
 
+    console.log('🔍 Week', week.number, 'data:', week.data);
+    
     const icons = [];
     const isDoubleEviction = week.data.is_double_eviction;
     const isTripleEviction = week.data.is_triple_eviction;
@@ -94,7 +96,9 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({ currentWeek, onWeekC
     );
     
     // Nominees - Target icons (red if filled)
-    const nomineesCount = week.data.nominees?.length || 0;
+    const nominees = week.data.nominees || [];
+    const nomineesCount = nominees.filter(n => n && n.trim()).length;
+    console.log('🔍 Week', week.number, 'nominees array:', nominees, 'filtered count:', nomineesCount);
     const maxNominees = Math.max(2, nomineesCount);
     
     for (let i = 0; i < Math.min(maxNominees, 4); i++) {

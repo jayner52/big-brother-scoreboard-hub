@@ -8,118 +8,202 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🚀 CREATE-TIP-PAYMENT: Function started');
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log('✅ CREATE-TIP-PAYMENT: Handling CORS preflight');
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Create Supabase client
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
-    console.log('CREATE-TIP-PAYMENT: Function started');
-    
-    // Verify environment variables
+    // Step 1: Verify environment variables first
+    console.log('🔍 CREATE-TIP-PAYMENT: Checking environment variables...');
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
     
-    console.log('CREATE-TIP-PAYMENT: Environment check:', {
+    console.log('🔍 CREATE-TIP-PAYMENT: Environment status:', {
       hasStripeKey: !!stripeKey,
+      stripeKeyLength: stripeKey ? stripeKey.length : 0,
       hasSupabaseUrl: !!supabaseUrl,
-      hasSupabaseAnonKey: !!supabaseAnonKey
+      hasSupabaseAnonKey: !!supabaseAnonKey,
+      method: req.method,
+      url: req.url
     });
-    
-    if (!stripeKey) {
-      console.error('CREATE-TIP-PAYMENT: STRIPE_SECRET_KEY not found in environment');
-      throw new Error("Stripe configuration missing");
+
+    // Fail fast if missing critical environment variables
+    if (!stripeKey || stripeKey.length < 10) {
+      console.error('❌ CREATE-TIP-PAYMENT: Invalid or missing STRIPE_SECRET_KEY');
+      return new Response(JSON.stringify({ 
+        error: "Stripe configuration error - secret key missing or invalid",
+        errorCode: "STRIPE_CONFIG_ERROR",
+        debug: { hasKey: !!stripeKey, keyLength: stripeKey ? stripeKey.length : 0 }
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
     }
 
-    // Get the authenticated user
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('❌ CREATE-TIP-PAYMENT: Missing Supabase configuration');
+      return new Response(JSON.stringify({ 
+        error: "Supabase configuration missing",
+        errorCode: "SUPABASE_CONFIG_ERROR" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    // Step 2: Create Supabase client
+    console.log('🔧 CREATE-TIP-PAYMENT: Creating Supabase client...');
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+    // Step 3: Parse request body early
+    console.log('📋 CREATE-TIP-PAYMENT: Parsing request body...');
+    let requestBody;
+    try {
+      requestBody = await req.json();
+      console.log('📋 CREATE-TIP-PAYMENT: Request data:', requestBody);
+    } catch (parseError) {
+      console.error('❌ CREATE-TIP-PAYMENT: Failed to parse request body:', parseError);
+      return new Response(JSON.stringify({ 
+        error: "Invalid request body",
+        errorCode: "PARSE_ERROR" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    const { poolId, tipPercentage, tipAmount } = requestBody;
+
+    if (!poolId || !tipAmount || tipAmount <= 0) {
+      console.error('❌ CREATE-TIP-PAYMENT: Invalid parameters:', { poolId, tipAmount });
+      return new Response(JSON.stringify({ 
+        error: "Missing or invalid required parameters",
+        errorCode: "INVALID_PARAMS",
+        received: { poolId: !!poolId, tipAmount }
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    // Step 4: Authenticate user
+    console.log('🔐 CREATE-TIP-PAYMENT: Authenticating user...');
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error('CREATE-TIP-PAYMENT: No authorization header');
-      throw new Error("No authorization header");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.error('❌ CREATE-TIP-PAYMENT: Missing or invalid authorization header');
+      return new Response(JSON.stringify({ 
+        error: "Authentication required",
+        errorCode: "AUTH_MISSING" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
-    
+
     const token = authHeader.replace("Bearer ", "");
-    console.log('CREATE-TIP-PAYMENT: Getting user with token');
-    const { data, error: authError } = await supabaseClient.auth.getUser(token);
+    console.log('🔐 CREATE-TIP-PAYMENT: Verifying token...');
     
-    if (authError) {
-      console.error('CREATE-TIP-PAYMENT: Auth error:', authError);
-      throw new Error(`Authentication failed: ${authError.message}`);
-    }
+    const { data: userData, error: authError } = await supabaseClient.auth.getUser(token);
     
-    const user = data.user;
-    if (!user?.email) {
-      console.error('CREATE-TIP-PAYMENT: User not authenticated or no email');
-      throw new Error("User not authenticated or email missing");
-    }
-    
-    console.log('CREATE-TIP-PAYMENT: User authenticated:', user.id);
-
-    // Parse request body
-    const { poolId, tipPercentage, tipAmount } = await req.json();
-    console.log('CREATE-TIP-PAYMENT: Request data:', { poolId, tipPercentage, tipAmount });
-
-    if (!poolId || !tipAmount) {
-      console.error('CREATE-TIP-PAYMENT: Missing required parameters');
-      throw new Error("Missing required parameters");
+    if (authError || !userData.user) {
+      console.error('❌ CREATE-TIP-PAYMENT: Authentication failed:', authError);
+      return new Response(JSON.stringify({ 
+        error: "Authentication failed",
+        errorCode: "AUTH_FAILED",
+        details: authError?.message 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
 
-    // Verify user is pool owner
-    console.log('CREATE-TIP-PAYMENT: Checking pool ownership');
+    const user = userData.user;
+    console.log('✅ CREATE-TIP-PAYMENT: User authenticated:', { 
+      userId: user.id, 
+      email: user.email 
+    });
+
+    // Step 5: Verify pool ownership
+    console.log('🏠 CREATE-TIP-PAYMENT: Verifying pool ownership...');
     const { data: poolData, error: poolError } = await supabaseClient
       .from('pools')
       .select('owner_id, name')
       .eq('id', poolId)
       .single();
 
-    if (poolError) {
-      console.error('CREATE-TIP-PAYMENT: Pool query error:', poolError);
-      throw new Error(`Pool query failed: ${poolError.message}`);
-    }
-    
-    if (!poolData) {
-      console.error('CREATE-TIP-PAYMENT: Pool not found');
-      throw new Error("Pool not found");
+    if (poolError || !poolData) {
+      console.error('❌ CREATE-TIP-PAYMENT: Pool query failed:', poolError);
+      return new Response(JSON.stringify({ 
+        error: "Pool not found or access denied",
+        errorCode: "POOL_NOT_FOUND",
+        details: poolError?.message 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      });
     }
 
     if (poolData.owner_id !== user.id) {
-      console.error('CREATE-TIP-PAYMENT: User is not pool owner');
-      throw new Error("Only pool owner can pay tip jar");
+      console.error('❌ CREATE-TIP-PAYMENT: User is not pool owner:', {
+        userId: user.id,
+        ownerId: poolData.owner_id
+      });
+      return new Response(JSON.stringify({ 
+        error: "Only pool owner can pay tip jar",
+        errorCode: "NOT_OWNER" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+      });
     }
-    
-    console.log('CREATE-TIP-PAYMENT: Pool ownership verified');
 
-    // Initialize Stripe
-    console.log('CREATE-TIP-PAYMENT: Initializing Stripe');
-    const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
-    });
+    console.log('✅ CREATE-TIP-PAYMENT: Pool ownership verified for:', poolData.name);
 
-    // Check if customer exists
-    console.log('CREATE-TIP-PAYMENT: Checking for existing Stripe customer');
-    const customers = await stripe.customers.list({ 
-      email: user.email, 
-      limit: 1 
-    });
-    
+    // Step 6: Initialize Stripe
+    console.log('💳 CREATE-TIP-PAYMENT: Initializing Stripe...');
+    let stripe;
+    try {
+      stripe = new Stripe(stripeKey, {
+        apiVersion: "2023-10-16",
+      });
+    } catch (stripeError) {
+      console.error('❌ CREATE-TIP-PAYMENT: Stripe initialization failed:', stripeError);
+      return new Response(JSON.stringify({ 
+        error: "Payment service initialization failed",
+        errorCode: "STRIPE_INIT_ERROR" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    // Step 7: Check for existing customer
+    console.log('👤 CREATE-TIP-PAYMENT: Checking for existing Stripe customer...');
     let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      console.log('CREATE-TIP-PAYMENT: Found existing customer:', customerId);
-    } else {
-      console.log('CREATE-TIP-PAYMENT: No existing customer found');
+    try {
+      const customers = await stripe.customers.list({ 
+        email: user.email, 
+        limit: 1 
+      });
+      
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        console.log('✅ CREATE-TIP-PAYMENT: Found existing customer:', customerId);
+      } else {
+        console.log('ℹ️ CREATE-TIP-PAYMENT: No existing customer found, will create new one');
+      }
+    } catch (customerError) {
+      console.error('⚠️ CREATE-TIP-PAYMENT: Customer lookup failed, proceeding without:', customerError);
     }
 
-    // Create Stripe Checkout session for tip payment
-    console.log('CREATE-TIP-PAYMENT: Creating Stripe checkout session');
-    const session = await stripe.checkout.sessions.create({
+    // Step 8: Create Stripe Checkout session
+    console.log('🛒 CREATE-TIP-PAYMENT: Creating Stripe checkout session...');
+    const sessionData = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -127,8 +211,8 @@ serve(async (req) => {
           price_data: {
             currency: "cad",
             product_data: { 
-              name: `Pool Tip Payment - ${tipPercentage}%`,
-              description: `Tip jar payment for ${poolData.name}`,
+              name: `Poolside Picks Platform Support - ${tipPercentage}%`,
+              description: `Thank you for supporting Poolside Picks! Pool: ${poolData.name}`,
             },
             unit_amount: Math.round(tipAmount * 100), // Convert to cents
           },
@@ -136,8 +220,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/admin?tab=prizepool&tip=success`,
-      cancel_url: `${req.headers.get("origin")}/admin?tab=prizepool&tip=cancelled`,
+      success_url: `${req.headers.get("origin") || 'https://poolside-picks.com'}/admin?tab=prizepool&tip=success`,
+      cancel_url: `${req.headers.get("origin") || 'https://poolside-picks.com'}/admin?tab=prizepool&tip=cancelled`,
       metadata: {
         poolId: poolId,
         userId: user.id,
@@ -145,32 +229,54 @@ serve(async (req) => {
         tipAmount: tipAmount.toString(),
         paymentType: 'tip_jar'
       }
+    };
+
+    console.log('🛒 CREATE-TIP-PAYMENT: Session configuration:', {
+      currency: sessionData.line_items[0].price_data.currency,
+      amount: sessionData.line_items[0].price_data.unit_amount,
+      hasCustomer: !!customerId,
+      successUrl: sessionData.success_url
     });
 
-    console.log('CREATE-TIP-PAYMENT: Successfully created session:', {
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create(sessionData);
+    } catch (sessionError) {
+      console.error('❌ CREATE-TIP-PAYMENT: Session creation failed:', sessionError);
+      return new Response(JSON.stringify({ 
+        error: "Failed to create payment session",
+        errorCode: "SESSION_CREATE_ERROR",
+        details: sessionError.message 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    console.log('🎉 CREATE-TIP-PAYMENT: Successfully created session:', {
       sessionId: session.id,
       poolId,
       userId: user.id,
       tipAmount,
-      sessionUrl: session.url
+      url: session.url
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    return new Response(JSON.stringify({ 
+      url: session.url,
+      sessionId: session.id
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
 
   } catch (error) {
-    console.error('CREATE-TIP-PAYMENT: Error occurred:', error);
-    console.error('CREATE-TIP-PAYMENT: Error stack:', error.stack);
-    
-    // Return more specific error information
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    const errorType = error.name || 'Error';
+    console.error('💥 CREATE-TIP-PAYMENT: Unexpected error:', error);
+    console.error('💥 CREATE-TIP-PAYMENT: Error stack:', error.stack);
     
     return new Response(JSON.stringify({ 
-      error: errorMessage,
-      errorType: errorType,
+      error: "Internal server error",
+      errorCode: "INTERNAL_ERROR",
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
       timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

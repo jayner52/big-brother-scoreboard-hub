@@ -32,7 +32,15 @@ Deno.serve(async (req) => {
     // Get the stored company admin password from environment
     const storedPassword = Deno.env.get('COMPANY_ADMIN_PASSWORD')
     
+    console.log('Password verification attempt:', {
+      receivedPasswordLength: password.length,
+      hasStoredPassword: !!storedPassword,
+      storedPasswordLength: storedPassword?.length || 0,
+      passwordsMatch: password === storedPassword
+    })
+    
     if (!storedPassword) {
+      console.error('COMPANY_ADMIN_PASSWORD environment variable not found')
       return new Response(
         JSON.stringify({ valid: false, error: 'Company admin password not configured' }),
         { 

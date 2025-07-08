@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 
@@ -24,11 +23,19 @@ export const NumberInput: React.FC<NumberInputProps> = ({
     onChange(numericValue);
   };
 
+  const handleBlur = () => {
+    // If value is 0, keep it as 0 (don't make it empty)
+    if (value === 0) {
+      onChange(0);
+    }
+  };
+
   return (
     <Input
       type="number"
       value={value === 0 ? '' : value.toString()}
       onChange={handleChange}
+      onBlur={handleBlur}
       placeholder="Enter a number"
       min="0"
     />

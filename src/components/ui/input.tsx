@@ -25,8 +25,8 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
     const handleNumberBlur = (e: React.FocusEvent<HTMLInputElement>) => {
       if (type === "number") {
         const value = e.target.value;
-        // Set to 0 if empty when losing focus
-        if (value === "" || isNaN(Number(value))) {
+        // Only set to 0 if empty AND there's no placeholder suggesting otherwise
+        if (value === "" && !props.placeholder) {
           e.target.value = "0";
           // Trigger onChange to update the form state
           if (props.onChange) {

@@ -35,7 +35,7 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
     name: '',
     description: `Big Brother ${currentYear}`,
     has_buy_in: true, // Default to paid pool
-    entry_fee_amount: 15, // Default $15 entry fee
+    entry_fee_amount: 20, // Default $20 entry fee
     entry_fee_currency: '', // Require user selection
     payment_method_1: '', // Require user selection
     payment_details_1: '',
@@ -90,7 +90,11 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
         enable_bonus_questions: true,
       };
       
+      console.log('Creating pool with data:', poolData);
+      
       const result = await createPool(poolData);
+      console.log('Pool creation result:', result);
+      
       if (result.success && result.data) {
         setActivePool(result.data);
         toast({
@@ -108,7 +112,7 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
           name: '',
           description: `Big Brother ${currentYear}`,
           has_buy_in: true,
-          entry_fee_amount: 15,
+          entry_fee_amount: 20,
           entry_fee_currency: '',
           payment_method_1: '',
           payment_details_1: '',
@@ -116,9 +120,10 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
         });
         setErrors({});
       } else {
+        console.error('Pool creation failed:', result.error);
         toast({
           title: "Error",
-          description: "Failed to create pool",
+          description: result.error || "Failed to create pool",
           variant: "destructive",
         });
       }
@@ -132,6 +137,26 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEntryFeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow empty string during editing, convert to number on blur
+    if (value === '') {
+      setFormData(prev => ({ ...prev, entry_fee_amount: 0 }));
+    } else {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        setFormData(prev => ({ ...prev, entry_fee_amount: numValue }));
+      }
+    }
+  };
+
+  const handleEntryFeeBlur = () => {
+    // If it's 0 or empty, set to default of 20
+    if (!formData.entry_fee_amount || formData.entry_fee_amount === 0) {
+      setFormData(prev => ({ ...prev, entry_fee_amount: 20 }));
     }
   };
 
@@ -198,8 +223,10 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
                         type="number"
                         min="1"
                         step="0.01"
-                        value={formData.entry_fee_amount}
-                        onChange={(e) => setFormData(prev => ({ ...prev, entry_fee_amount: Number(e.target.value) }))}
+                        value={formData.entry_fee_amount || ''}
+                        onChange={handleEntryFeeChange}
+                        onBlur={handleEntryFeeBlur}
+                        placeholder="20"
                         required
                       />
                     </div>

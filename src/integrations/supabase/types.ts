@@ -430,6 +430,47 @@ export type Database = {
         }
         Relationships: []
       }
+      pool_checklist_overrides: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          id: string
+          manually_completed: boolean | null
+          pool_id: string | null
+          task_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          id?: string
+          manually_completed?: boolean | null
+          pool_id?: string | null
+          task_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          id?: string
+          manually_completed?: boolean | null
+          pool_id?: string | null
+          task_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pool_checklist_overrides_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pool_entries: {
         Row: {
           bonus_answers: Json

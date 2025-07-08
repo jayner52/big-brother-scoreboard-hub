@@ -477,9 +477,9 @@ export const PoolSettingsPanel: React.FC = () => {
         className="space-y-6"
       >
         {/* Basic Pool Settings */}
-        <AccordionItem value="basic-settings" className="border-0" data-accordion-value="basic-settings">
+        <AccordionItem value="basic-settings" className="border-0" data-accordion-section="basic-settings">
           <Card>
-            <AccordionTrigger className="hover:no-underline p-0">
+            <AccordionTrigger className="hover:no-underline p-0" data-accordion-section="basic-settings">
               <CardHeader className="bg-gradient-to-r from-teal-700 to-teal-600 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
                   <Settings className="h-5 w-5" />
@@ -644,9 +644,9 @@ export const PoolSettingsPanel: React.FC = () => {
 
 
         {/* Draft Configuration */}
-        <AccordionItem value="draft-configuration" className="border-0" data-value="draft-configuration">
+        <AccordionItem value="draft-configuration" className="border-0" data-accordion-section="draft-configuration">
           <Card>
-            <AccordionTrigger className="hover:no-underline p-0">
+            <AccordionTrigger className="hover:no-underline p-0" data-accordion-section="draft-configuration">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
                   <UserCheck className="h-5 w-5" />
@@ -805,9 +805,9 @@ export const PoolSettingsPanel: React.FC = () => {
          </AccordionItem>
  
          {/* Draft Timing & Visibility */}
-         <AccordionItem value="draft-timing" className="border-0">
+         <AccordionItem value="draft-timing" className="border-0" data-accordion-section="draft-timing">
            <Card>
-             <AccordionTrigger className="hover:no-underline p-0">
+             <AccordionTrigger className="hover:no-underline p-0" data-accordion-section="draft-timing">
                <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg w-full">
                  <CardTitle className="flex items-center gap-2 text-left">
                    <Clock className="h-5 w-5" />
@@ -965,9 +965,9 @@ export const PoolSettingsPanel: React.FC = () => {
          </AccordionItem>
 
         {/* Custom Scoring Rules */}
-        <AccordionItem value="custom-scoring" className="border-0">
+        <AccordionItem value="custom-scoring" className="border-0" data-accordion-section="custom-scoring">
           <Card>
-            <AccordionTrigger className="hover:no-underline p-0">
+            <AccordionTrigger className="hover:no-underline p-0" data-accordion-section="custom-scoring">
               <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
                   <Calculator className="h-5 w-5" />
@@ -987,9 +987,9 @@ export const PoolSettingsPanel: React.FC = () => {
         </AccordionItem>
 
         {/* Prize Pool */}
-        <AccordionItem value="prize-pool" className="border-0">
+        <AccordionItem value="prize-pool" className="border-0" data-accordion-section="prize-pool">
           <Card>
-            <AccordionTrigger className="hover:no-underline p-0">
+            <AccordionTrigger className="hover:no-underline p-0" data-accordion-section="prize-pool">
               <CardHeader className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-t-lg w-full">
                 <CardTitle className="flex items-center gap-2 text-left">
                   <DollarSign className="h-5 w-5" />

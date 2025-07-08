@@ -19,22 +19,30 @@ import { useSetupChecklistTracking } from '@/hooks/useSetupChecklistTracking';
 
 interface ChecklistItemProps {
   completed: boolean;
+  autoCompleted: boolean;
+  manuallyCompleted: boolean;
   icon: React.ReactNode;
   title: string;
   description: string;
   warning?: string;
   action?: () => void;
   actionLabel?: string;
+  canToggle?: boolean;
+  onToggle?: () => void;
 }
 
 const ChecklistItem: React.FC<ChecklistItemProps> = ({
   completed,
+  autoCompleted,
+  manuallyCompleted,
   icon,
   title,
   description,
   warning,
   action,
-  actionLabel
+  actionLabel,
+  canToggle,
+  onToggle
 }) => (
   <div className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
     completed 
@@ -45,9 +53,21 @@ const ChecklistItem: React.FC<ChecklistItemProps> = ({
       {icon}
     </div>
     <div className="flex-1 min-w-0">
-      <h4 className="font-medium text-sm">
-        {title}
-      </h4>
+      <div className="flex items-center gap-2 mb-1">
+        <h4 className="font-medium text-sm">
+          {title}
+        </h4>
+        {manuallyCompleted && (
+          <Badge variant="outline" className="text-xs px-1 py-0">
+            Manual
+          </Badge>
+        )}
+        {autoCompleted && !manuallyCompleted && (
+          <Badge variant="outline" className="text-xs px-1 py-0 bg-green-100">
+            Auto
+          </Badge>
+        )}
+      </div>
       <p className="text-xs text-muted-foreground mt-1">
         {description}
       </p>
@@ -60,16 +80,29 @@ const ChecklistItem: React.FC<ChecklistItemProps> = ({
         </div>
       )}
     </div>
-    {action && !completed && (
-      <Button
-        onClick={action}
-        size="sm"
-        variant="outline"
-        className="text-xs"
-      >
-        {actionLabel}
-      </Button>
-    )}
+    <div className="flex items-center gap-2">
+      {canToggle && onToggle && (
+        <Button
+          onClick={onToggle}
+          size="sm"
+          variant="ghost"
+          className="text-xs h-6 w-6 p-0"
+          title={completed ? "Mark as incomplete" : "Mark as complete"}
+        >
+          {completed ? <X className="h-3 w-3" /> : <CheckSquare className="h-3 w-3" />}
+        </Button>
+      )}
+      {action && !completed && (
+        <Button
+          onClick={action}
+          size="sm"
+          variant="outline"
+          className="text-xs"
+        >
+          {actionLabel}
+        </Button>
+      )}
+    </div>
   </div>
 );
 
@@ -91,6 +124,7 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
     totalSteps, 
     loading, 
     refreshStatus, 
+    toggleManualCompletion,
     isComplete 
   } = useSetupChecklistTracking();
 
@@ -188,6 +222,8 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
             <ChecklistItem 
               key={step.id} 
               completed={step.completed}
+              autoCompleted={step.autoCompleted}
+              manuallyCompleted={step.manuallyCompleted}
               icon={step.completed ? 
                 <CheckCircle className="h-5 w-5 text-green-600" /> : 
                 <UserCheck className="h-5 w-5 text-blue-600" />
@@ -197,6 +233,8 @@ export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProp
               warning={step.warning}
               action={step.action}
               actionLabel={step.actionLabel}
+              canToggle={step.canToggle}
+              onToggle={() => toggleManualCompletion(step.id, step.completed)}
             />
           ))}
         </div>

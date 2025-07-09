@@ -1534,6 +1534,10 @@ export type Database = {
         Args: { week_num: number }
         Returns: undefined
       }
+      get_user_admin_status: {
+        Args: { target_user_id?: string }
+        Returns: boolean
+      }
       get_user_pool_admin_status: {
         Args: { target_pool_id: string }
         Returns: boolean

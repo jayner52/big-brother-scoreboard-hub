@@ -36,7 +36,23 @@ export const ForceBB27PopulationButton: React.FC<ForceBB27PopulationButtonProps>
         console.warn('🚀 FORCE BB27: Error clearing existing defaults:', clearError);
       }
       
-      // Force population
+      // Also clear default groups to ensure fresh start
+      try {
+        const { error: groupDeleteError } = await supabase
+          .from('contestant_groups')
+          .delete()
+          .is('pool_id', null);
+        
+        if (groupDeleteError) {
+          console.warn('🚀 FORCE BB27: Could not clear existing groups:', groupDeleteError);
+        } else {
+          console.log('🚀 FORCE BB27: Cleared existing default groups');
+        }
+      } catch (clearError) {
+        console.warn('🚀 FORCE BB27: Error clearing existing groups:', clearError);
+      }
+      
+      // Force population with fresh start
       const result = await populateSeason27GlobalDefaults();
       
       if (result.success) {

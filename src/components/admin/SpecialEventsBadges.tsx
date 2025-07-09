@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { getSpecialEventIcon } from '@/utils/specialEventIcons';
+import { useScoringRules } from '@/hooks/useScoringRules';
+import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
 
 interface SpecialEventsBadgesProps {
   events: Array<{
@@ -13,9 +15,35 @@ interface SpecialEventsBadgesProps {
 }
 
 export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events }) => {
+  const { scoringRules } = useScoringRules();
+  
   if (events.length === 0) return null;
 
-  const eventCounts = events.reduce((acc, event) => {
+  // Filter out regular weekly events that shouldn't show as special event badges
+  const excludedEventTypes = [
+    'hoh_winner',
+    'pov_winner', 
+    'nominee',
+    'replacement_nominee',
+    'evicted',
+    'survival',
+    'pov_used_on'
+  ];
+
+  const specialEventsOnly = events.filter(event => {
+    // First check if it's a UUID (new format)
+    if (event.event_type.length > 20) {
+      // Find the scoring rule to get the subcategory
+      const rule = scoringRules.find(r => r.id === event.event_type);
+      return rule && !excludedEventTypes.includes(rule.subcategory);
+    }
+    // Legacy string format
+    return !excludedEventTypes.includes(event.event_type);
+  });
+
+  if (specialEventsOnly.length === 0) return null;
+
+  const eventCounts = specialEventsOnly.reduce((acc, event) => {
     const type = event.event_type;
     acc[type] = (acc[type] || 0) + 1;
     return acc;
@@ -26,11 +54,21 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
       <div className="flex flex-wrap gap-1">
         {Object.entries(eventCounts).map(([eventType, count]) => {
           // Find the first event with this type to get the emoji
-          const eventData = events.find(e => e.event_type === eventType);
+          const eventData = specialEventsOnly.find(e => e.event_type === eventType);
           
-          // Use custom emoji if available, otherwise fall back to default icon
-          const emoji = eventData?.emoji || getSpecialEventIcon(eventType);
-          const tooltip = getEventTooltip(eventType);
+          let emoji = '✨'; // Default fallback
+          let tooltip = 'Special Event';
+          
+          // Try to get emoji from scoring rules (for UUID event types)
+          const rule = scoringRules.find(r => r.id === eventType);
+          if (rule) {
+            emoji = getScoringRuleEmoji(rule.category, rule.subcategory, rule.emoji);
+            tooltip = rule.description || rule.subcategory.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          } else if (eventData?.emoji) {
+            // Use custom emoji if available
+            emoji = eventData.emoji;
+            tooltip = eventData.description || eventType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          }
           
           return (
             <Tooltip key={eventType}>
@@ -52,57 +90,4 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
       </div>
     </TooltipProvider>
   );
-};
-
-const getEventTooltip = (eventType: string): string => {
-  const tooltipMap: Record<string, string> = {
-    // Showmance events
-    'in_showmance': 'In Showmance',
-    'showmance': 'Showmance',
-    
-    // Competition events
-    'bb_arena_winner': 'BB Arena Winner',
-    'hoh_winner': 'Head of Household',
-    'pov_winner': 'Power of Veto Winner',
-    
-    // Prize and punishment events
-    'wins_prize': 'Won Prize',
-    'given_prize': 'Given Prize',
-    'prize_won': 'Prize Won',
-    'wins_cash': 'Won Cash Prize',
-    'punishment': 'Punishment',
-    'costume_punishment': 'Costume Punishment',
-    'receives_punishment': 'Received Punishment',
-    
-    // Power and safety events
-    'power_from_hg': 'Power from Houseguest',
-    'given_power': 'Given Power',
-    'special_power': 'Special Power',
-    'granted_safety': 'Granted Safety',
-    'safety': 'Safety Prize',
-    
-    // Game milestones
-    'jury_member': 'Jury Member',
-    'americas_favorite': "America's Favorite",
-    'winner': 'Winner',
-    'runner_up': 'Runner-up',
-    
-    // Survival bonuses
-    'block_survival_2_weeks': '2-Week Block Survival',
-    'block_survival_4_weeks': '4-Week Block Survival',
-    'no_comp_4_weeks': '4 Weeks No Comp Wins',
-    
-    // Return/comeback events
-    'comeback': 'Comeback Player',
-    'comes_back': 'Comes Back',
-    
-    // Exit events
-    'leaves_early': 'Left Early',
-    'leaves_not_eviction': 'Left Not by Eviction',
-    
-    // Default/custom
-    'custom': 'Custom Event'
-  };
-  
-  return tooltipMap[eventType] || eventType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 };

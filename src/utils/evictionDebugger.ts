@@ -34,34 +34,49 @@ export const debugContestantEvictionStatus = async (contestantName: string, pool
     console.log(`📅 Weekly evictions found:`, evictionWeeks);
     
     // 3. Check special eviction events (quit/removed)
-    const { data: specialEvictions } = await supabase
+    // First get weekly events for this contestant
+    const { data: weeklyEvents } = await supabase
       .from('weekly_events')
-      .select(`
-        week_number,
-        event_type,
-        contestants!inner(name),
-        detailed_scoring_rules!inner(subcategory)
-      `)
-      .eq('pool_id', poolId)
-      .eq('contestants.name', contestantName);
+      .select('week_number, event_type, contestant_id')
+      .eq('pool_id', poolId);
     
-    const quitEvents = specialEvictions?.filter(event => 
-      event.detailed_scoring_rules?.subcategory === 'self_evicted' ||
-      event.detailed_scoring_rules?.subcategory === 'removed_production'
+    // Get contestant ID
+    const { data: contestantData } = await supabase
+      .from('contestants')
+      .select('id')
+      .eq('name', contestantName)
+      .eq('pool_id', poolId)
+      .single();
+    
+    // Filter events for this contestant
+    const contestantEvents = weeklyEvents?.filter(event => 
+      event.contestant_id === contestantData?.id
     ) || [];
+    
+    // Get scoring rules for special evictions
+    const { data: evictionRules } = await supabase
+      .from('detailed_scoring_rules')
+      .select('id, subcategory')
+      .in('subcategory', ['self_evicted', 'removed_production']);
+    
+    const evictionRuleIds = evictionRules?.map(rule => rule.id) || [];
+    
+    const quitEvents = contestantEvents.filter(event => 
+      evictionRuleIds.includes(event.event_type)
+    );
     
     console.log(`🚪 Special eviction events found:`, quitEvents);
     
     // 4. Check revival events
-    const { data: revivalEvents } = await supabase
+    const { data: specialEvents } = await supabase
       .from('special_events')
-      .select(`
-        week_number,
-        event_type,
-        contestants!inner(name)
-      `)
-      .eq('pool_id', poolId)
-      .eq('contestants.name', contestantName);
+      .select('week_number, event_type, contestant_id')
+      .eq('pool_id', poolId);
+    
+    // Filter special events for this contestant
+    const contestantSpecialEvents = specialEvents?.filter(event => 
+      event.contestant_id === contestantData?.id
+    ) || [];
     
     // Get revival scoring rules
     const { data: revivalRules } = await supabase
@@ -70,9 +85,9 @@ export const debugContestantEvictionStatus = async (contestantName: string, pool
       .eq('subcategory', 'came_back_evicted');
     
     const revivalEventIds = revivalRules?.map(r => r.id) || [];
-    const revivals = revivalEvents?.filter(event => 
+    const revivals = contestantSpecialEvents.filter(event => 
       revivalEventIds.includes(event.event_type)
-    ) || [];
+    );
     
     console.log(`🔄 Revival events found:`, revivals);
     

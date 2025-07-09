@@ -90,7 +90,7 @@ const ContestantBiosContent: React.FC = () => {
         const mappedContestants = contestantsData.map(c => ({
           id: c.id,
           name: c.name,
-          isActive: !evictedContestants.includes(c.name),
+          isActive: c.is_active, // Use database is_active field directly
           group_id: c.group_id,
           group_name: c.contestant_groups?.group_name,
           sort_order: c.sort_order,

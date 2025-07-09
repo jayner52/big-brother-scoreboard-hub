@@ -130,7 +130,7 @@ export const ContestantBios: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
         {contestants.map((contestant) => (
           <Card 
             key={contestant.id} 
@@ -142,10 +142,10 @@ export const ContestantBios: React.FC = () => {
              <div className="relative">
                 {getGroupBadge(contestant)}
                  {contestant.photo_url ? (
-                   <img 
-                     src={contestant.photo_url} 
-                     alt={contestant.name}
-                     className="w-full h-32 object-cover object-top"
+                    <img 
+                      src={contestant.photo_url} 
+                      alt={contestant.name}
+                      className="w-full h-32 sm:h-36 md:h-40 object-cover object-top"
                      onError={(e) => {
                        // Fallback to initials avatar if photo fails to load
                        const target = e.target as HTMLImageElement;
@@ -155,10 +155,10 @@ export const ContestantBios: React.FC = () => {
                      }}
                    />
                  ) : null}
-                <div 
-                  className="w-full h-32 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center"
-                  style={{ display: contestant.photo_url ? 'none' : 'flex' }}
-                >
+                 <div 
+                   className="w-full h-32 sm:h-36 md:h-40 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center"
+                   style={{ display: contestant.photo_url ? 'none' : 'flex' }}
+                 >
                   {contestant.photo_url ? (
                      <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold">
                        {contestant.name.split(' ').map(n => n[0]).join('').slice(0, 2)}

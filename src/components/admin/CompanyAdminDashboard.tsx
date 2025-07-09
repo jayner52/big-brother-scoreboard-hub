@@ -60,22 +60,19 @@ export const CompanyAdminDashboard: React.FC = () => {
 
   const loadUserRegistrations = async () => {
     try {
-      // Get all user profiles with their preferences and pool memberships
+      // Get all user profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          user_id,
-          display_name,
-          created_at,
-          user_preferences (
-            terms_accepted_at,
-            terms_version,
-            email_opt_in
-          )
-        `);
+        .select('id, user_id, display_name, created_at');
 
       if (profilesError) throw profilesError;
+
+      // Get user preferences separately
+      const { data: preferencesData, error: preferencesError } = await supabase
+        .from('user_preferences')
+        .select('user_id, terms_accepted_at, terms_version, email_opt_in');
+
+      if (preferencesError) throw preferencesError;
 
       // Get email list data
       const { data: emailData, error: emailError } = await supabase
@@ -104,7 +101,7 @@ export const CompanyAdminDashboard: React.FC = () => {
       const combinedUsers: UserRegistration[] = (profilesData || []).map((profile: any) => {
         const emailInfo = emailData?.find(e => e.user_id === profile.user_id);
         const userMemberships = membershipData?.filter(m => m.user_id === profile.user_id) || [];
-        const preferences = profile.user_preferences;
+        const preferences = preferencesData?.find(p => p.user_id === profile.user_id);
 
         return {
           id: profile.id,

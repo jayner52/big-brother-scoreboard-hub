@@ -1,13 +1,11 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { X } from 'lucide-react';
+import { CardContent } from '@/components/ui/card';
+import { FeedbackFormModal } from './FeedbackFormModal';
+import { FeedbackFormHeader } from './FeedbackFormHeader';
+import { FeedbackFormFields } from './FeedbackFormFields';
+import { FeedbackFormActions } from './FeedbackFormActions';
+import { useFeedbackSubmit } from '@/hooks/useFeedbackSubmit';
 
 interface FeedbackFormProps {
   type: 'bug' | 'feature' | 'comment';
@@ -21,235 +19,46 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ type, onClose }) => 
   const [bugLocation, setBugLocation] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const getFormTitle = () => {
-    switch (type) {
-      case 'bug': return 'Report a Bug';
-      case 'feature': return 'Request a Feature';
-      case 'comment': return 'General Feedback';
-      default: return 'Feedback';
-    }
-  };
-
-  const getFormDescription = () => {
-    switch (type) {
-      case 'bug': return 'Help us fix issues by describing what went wrong';
-      case 'feature': return 'Tell us what new features would make your experience better';
-      case 'comment': return 'Share your thoughts, suggestions, or general feedback';
-      default: return 'Share your feedback with us';
-    }
-  };
-
-  const siteLocations = [
-    'Dashboard',
-    'Draft/Team Selection',
-    'Leaderboard',
-    'Admin Panel',
-    'Pool Settings',
-    'Navigation',
-    'Chat',
-    'User Profile',
-    'Payment/Billing',
-    'Mobile View',
-    'Other'
-  ];
+  
+  const { submitFeedback, isSubmitting } = useFeedbackSubmit();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!title.trim() || !description.trim()) {
-      toast({
-        title: "Required fields missing",
-        description: "Please fill in both title and description",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (type === 'bug' && !bugLocation) {
-      toast({
-        title: "Location required",
-        description: "Please specify where on the site the bug occurred",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      // Prepare the description with bug location if it's a bug report
-      let finalDescription = description.trim();
-      if (type === 'bug' && bugLocation) {
-        finalDescription = `Location: ${bugLocation}\n\n${finalDescription}`;
-      }
-
-      const { error } = await supabase
-        .from('user_feedback')
-        .insert({
-          user_id: user?.id || null,
-          user_email: userEmail || user?.email || null,
-          user_name: userName || user?.user_metadata?.display_name || null,
-          feedback_type: type,
-          title: title.trim(),
-          description: finalDescription,
-          priority,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Feedback submitted successfully",
-        description: "Thank you for your feedback! We'll review it soon.",
-      });
-
-      onClose();
-    } catch (error: any) {
-      console.error('Error submitting feedback:', error);
-      toast({
-        title: "Error submitting feedback",
-        description: "Please try again later",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await submitFeedback(
+      type,
+      title,
+      description,
+      bugLocation,
+      priority,
+      userName,
+      userEmail,
+      onClose
+    );
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <div>
-            <CardTitle>{getFormTitle()}</CardTitle>
-            <CardDescription>{getFormDescription()}</CardDescription>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="title" className="text-sm font-medium">
-                Title *
-              </label>
-              <Input
-                id="title"
-                placeholder={`Brief ${type} title...`}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
-
-            {type === 'bug' && (
-              <div className="space-y-2">
-                <label htmlFor="bugLocation" className="text-sm font-medium">
-                  Where on the site did this occur? *
-                </label>
-                <Select value={bugLocation} onValueChange={setBugLocation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select page/section..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {siteLocations.map((location) => (
-                      <SelectItem key={location} value={location}>
-                        {location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label htmlFor="description" className="text-sm font-medium">
-                Description *
-              </label>
-              <Textarea
-                id="description"
-                placeholder={`Describe the ${type} in detail...`}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                required
-              />
-            </div>
-
-            {type === 'bug' && (
-              <div className="space-y-2">
-                <label htmlFor="priority" className="text-sm font-medium">
-                  Priority
-                </label>
-                <Select value={priority} onValueChange={(value: 'low' | 'medium' | 'high') => setPriority(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="userName" className="text-sm font-medium">
-                  Your Name
-                </label>
-                <Input
-                  id="userName"
-                  placeholder="Your name (optional)"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="userEmail" className="text-sm font-medium">
-                  Your Email
-                </label>
-                <Input
-                  id="userEmail"
-                  type="email"
-                  placeholder="your@email.com (optional)"
-                  value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <FeedbackFormModal>
+      <FeedbackFormHeader type={type} onClose={onClose} />
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FeedbackFormFields
+            type={type}
+            title={title}
+            setTitle={setTitle}
+            description={description}
+            setDescription={setDescription}
+            priority={priority}
+            setPriority={setPriority}
+            bugLocation={bugLocation}
+            setBugLocation={setBugLocation}
+            userName={userName}
+            setUserName={setUserName}
+            userEmail={userEmail}
+            setUserEmail={setUserEmail}
+          />
+          <FeedbackFormActions isSubmitting={isSubmitting} onClose={onClose} />
+        </form>
+      </CardContent>
+    </FeedbackFormModal>
   );
 };

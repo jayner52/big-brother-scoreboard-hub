@@ -70,6 +70,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
               console.log('🔍 Select onValueChange:', { 
                 selectedValue: value, 
                 eventIndex: index, 
+                currentEventType: event.eventType,
                 availableEvents: availableEvents.map(e => ({
                   id: e.id, 
                   subcategory: e.subcategory, 
@@ -77,6 +78,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
                 }))
               });
               updateSpecialEvent(index, 'eventType', value);
+              console.log('🔍 After updateSpecialEvent, eventType should be:', value);
               // Reset custom points when changing event type (except for custom events)
               if (value !== 'custom_event') {
                 updateSpecialEvent(index, 'customPoints', undefined);
@@ -125,7 +127,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
           <Select
             value={event.contestant}
             onValueChange={(value) => updateSpecialEvent(index, 'contestant', value)}
-            disabled={!event.eventType}
+            disabled={!event.eventType || event.eventType === ''}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select contestant" />

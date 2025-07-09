@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Star, Target } from 'lucide-react';
 import { PoolEntry } from '@/types/pool';
-import { useContestantStatus } from '@/hooks/useContestantStatus';
+// REMOVED: useContestantStatus - eviction logic will be reimplemented from scratch
 import { usePool } from '@/contexts/PoolContext';
 
 interface TeamCardProps {
@@ -18,7 +18,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   houseguestPoints,
   teamIndex,
 }) => {
-  const { contestantStatus } = useContestantStatus();
+  // REMOVED: contestantStatus - will be reimplemented from scratch
   const { activePool } = usePool();
   
   // Include bonus points in total calculation  
@@ -28,19 +28,8 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   }).filter(Boolean);
   const totalPoints = teamPlayers.reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0) + entry.bonus_points;
 
+  // REMOVED: Status icon rendering - will be reimplemented from scratch
   const renderStatusIcon = (playerName: string) => {
-    const status = contestantStatus[playerName];
-    if (!status) return null;
-
-    if (status.current_hoh) {
-      return <Crown className="h-3 w-3 text-amber-600" />;
-    }
-    if (status.current_pov_winner) {
-      return <Star className="h-3 w-3 text-emerald-600" />;
-    }
-    if (status.currently_nominated) {
-      return <Target className="h-3 w-3 text-red-600" />;
-    }
     return null;
   };
 
@@ -70,7 +59,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
           }).filter(Boolean).map((player, index) => {
             const points = houseguestPoints[player] || 0;
             const contestant = contestants.find(c => c.name === player);
-            const isEvicted = contestant ? !contestant.is_active : false;
+            const isEvicted = false; // REMOVED: eviction logic - always show as active
             const statusIcon = renderStatusIcon(player);
             
             return (

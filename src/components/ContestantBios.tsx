@@ -6,11 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
 // Removed useEvictedContestants - using contestants.is_active as single source of truth
 import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
-import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
 import { ContestantProfileModal } from '@/components/admin/contestants/ContestantProfileModal';
 import { useActivePool } from '@/hooks/useActivePool';
 // Removed ContestantStatusProvider - using direct contestant.is_active checks
-import { getContestantStatusBadge } from '@/utils/contestantStatusUtils';
+// REMOVED: All eviction status logic - will be reimplemented from scratch
 
 interface ContestantWithGroup extends ContestantWithBio {
   group_name?: string;
@@ -22,9 +21,9 @@ const ContestantBiosContent: React.FC = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const activePool = useActivePool();
-  // Using contestants.is_active as single source of truth instead of separate evicted list
+  // REMOVED: All eviction status logic - will be reimplemented from scratch
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
-  const { evictionWeeks } = useEvictionWeeks();
+  // REMOVED: evictionWeeks hook - will be reimplemented from scratch
 
   const handleContestantClick = (contestant: ContestantWithGroup) => {
     setSelectedContestant(contestant);
@@ -90,7 +89,7 @@ const ContestantBiosContent: React.FC = () => {
         const mappedContestants = contestantsData.map(c => ({
           id: c.id,
           name: c.name,
-          isActive: c.is_active, // Use database is_active field directly
+          isActive: true, // REMOVED: eviction logic - always show as active until new implementation
           group_id: c.group_id,
           group_name: c.contestant_groups?.group_name,
           sort_order: c.sort_order,
@@ -101,12 +100,8 @@ const ContestantBiosContent: React.FC = () => {
           occupation: c.occupation
         }));
         
-        // Sort: active contestants first, then eliminated
-        mappedContestants.sort((a, b) => {
-          if (a.isActive && !b.isActive) return -1;
-          if (!a.isActive && b.isActive) return 1;
-          return a.sort_order - b.sort_order;
-        });
+        // REMOVED: eviction-based sorting - will be reimplemented from scratch
+        mappedContestants.sort((a, b) => a.sort_order - b.sort_order);
         
         setContestants(mappedContestants);
       }
@@ -136,9 +131,7 @@ const ContestantBiosContent: React.FC = () => {
         {contestants.map((contestant) => (
           <Card 
             key={contestant.id} 
-            className={`overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:scale-105 ${
-              !contestant.isActive ? 'opacity-70 border-destructive/20 bg-destructive/5' : ''
-            }`}
+            className="overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:scale-105"
             onClick={() => handleContestantClick(contestant)}
           >
              <div className="relative">
@@ -170,43 +163,33 @@ const ContestantBiosContent: React.FC = () => {
                   )}
                 </div>
               <div className="absolute top-2 right-2 flex flex-col gap-1">
-                <Badge variant={getContestantStatusBadge(contestant.isActive).variant}>
-                  {contestant.isActive 
-                    ? 'Active' 
-                    : evictionWeeks[contestant.name] 
-                      ? `Evicted - Week ${evictionWeeks[contestant.name]}`
-                      : 'Evicted'
-                  }
-                </Badge>
-                {contestant.isActive && (
-                  <>
-                    {hohWinner === contestant.name && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Crown className="h-3 w-3" />
-                        HOH
-                      </Badge>
-                    )}
-                    {povWinner === contestant.name && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Shield className="h-3 w-3" />
-                        POV
-                      </Badge>
-                    )}
-                    {nominees.includes(contestant.name) && (
-                      <Badge variant="destructive" className="flex items-center gap-1">
-                        <Target className="h-3 w-3" />
-                        Nominated
-                      </Badge>
-                    )}
-                  </>
+                <Badge variant="default">Active</Badge>
+                {/* REMOVED: Eviction status and current game status - will be reimplemented */}
+                {hohWinner === contestant.name && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Crown className="h-3 w-3" />
+                    HOH
+                  </Badge>
+                )}
+                {povWinner === contestant.name && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    POV
+                  </Badge>
+                )}
+                {nominees.includes(contestant.name) && (
+                  <Badge variant="destructive" className="flex items-center gap-1">
+                    <Target className="h-3 w-3" />
+                    Nominated
+                  </Badge>
                 )}
               </div>
             </div>
             
             <CardHeader className="pb-2">
-              <CardTitle className={`text-lg ${!contestant.isActive ? 'text-destructive' : ''}`}>
-                {contestant.name}
-              </CardTitle>
+            <CardTitle className="text-lg">
+              {contestant.name}
+            </CardTitle>
               {contestant.bio && (
                 <CardDescription className="text-xs line-clamp-2">
                   {contestant.bio}

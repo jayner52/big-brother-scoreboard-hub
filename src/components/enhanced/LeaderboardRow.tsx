@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronUp, ChevronDown, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
-// Remove useEvictedContestants - get contestant status from database
+// REMOVED: All eviction status logic - will be reimplemented from scratch
 import { useBonusQuestions } from '@/hooks/useBonusQuestions';
 import { usePool } from '@/contexts/PoolContext';
 import { evaluateBonusAnswer } from '@/utils/bonusQuestionUtils';
@@ -14,7 +14,7 @@ interface LeaderboardRowProps {
   index: number;  
   showHistoricalColumns: boolean;
   selectedWeek?: number | null;
-  contestants?: Array<{ name: string; is_active: boolean }>;
+  contestants?: Array<{ name: string; is_active: boolean }>; // REMOVED: eviction logic
 }
 
 export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
@@ -25,7 +25,7 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   contestants = []
 }) => {
   const { houseguestPoints } = useHouseguestPoints();
-  // Removed useEvictedContestants - using contestants prop with is_active status
+  // REMOVED: eviction logic - will be reimplemented from scratch
   const { bonusQuestions } = useBonusQuestions();
   const { activePool } = usePool();
 
@@ -68,19 +68,14 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   };
 
   const renderPlayerName = (playerName: string) => {
-    const contestant = contestants.find(c => c.name === playerName);
-    const isEliminated = !contestant?.is_active;
+    const isEliminated = false; // REMOVED: eviction logic - always show as active
     const points = houseguestPoints[playerName];
     
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            <span className={`text-xs px-2 py-1 rounded-full inline-block ${
-              isEliminated 
-                ? 'bg-destructive/20 text-destructive border border-destructive/30 opacity-70' 
-                : 'bg-muted text-foreground'
-            }`}>
+            <span className="text-xs px-2 py-1 rounded-full inline-block bg-muted text-foreground">
               {playerName}
               {points !== undefined && ` (${points})`}
             </span>
@@ -89,7 +84,7 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
             <div className="text-xs">
               <div className="font-semibold">{playerName}</div>
               <div className="text-muted-foreground">
-                {isEliminated ? 'Eliminated' : 'Active'} • {points || 0} total points
+                Active • {points || 0} total points
               </div>
             </div>
           </TooltipContent>

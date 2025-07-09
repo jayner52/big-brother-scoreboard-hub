@@ -11,27 +11,9 @@ export const useLeaderboardData = () => {
   const [contestants, setContestants] = useState<Array<{ name: string; is_active: boolean }>>([]);
   const { snapshots, completedWeeks, loadSnapshotsForWeek } = useWeeklySnapshots();
 
-  // Fetch contestants data for eviction status
+  // REMOVED: Contestant data fetching for eviction status - will be reimplemented from scratch
   useEffect(() => {
-    const fetchContestants = async () => {
-      if (!activePool?.id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('contestants')
-          .select('name, is_active')
-          .eq('pool_id', activePool.id);
-        
-        if (error) throw error;
-        
-        setContestants(data || []);
-        console.log('🔍 LEADERBOARD DEBUG - Loaded contestants:', data?.length);
-      } catch (error) {
-        console.error('Error fetching contestants:', error);
-      }
-    };
-
-    fetchContestants();
+    setContestants([]); // REMOVED: eviction logic - empty array
   }, [activePool?.id]);
 
   useEffect(() => {

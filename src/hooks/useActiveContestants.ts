@@ -12,51 +12,26 @@ export const useActiveContestants = (poolId?: string) => {
     if (!poolId) return;
     
     try {
-      // Load contestants for this pool only
+      // REMOVED: All eviction status logic - will be reimplemented from scratch
       const { data: contestantsData } = await supabase
         .from('contestants')
         .select('*')
         .eq('pool_id', poolId)
         .order('name');
 
-      // Load evicted contestants from weekly_events with proper join
-      // Get current week to determine who should be considered evicted
-      const { data: currentWeekData } = await supabase
-        .from('current_game_week')
-        .select('week_number')
-        .single();
-      
-      const currentWeek = currentWeekData?.week_number || 7;
-      
-      const { data: evictionData } = await supabase
-        .from('weekly_events')
-        .select(`
-          contestants(name),
-          event_type,
-          week_number
-        `)
-        .eq('event_type', 'evicted')
-        .eq('pool_id', poolId)
-        .lt('week_number', currentWeek); // Only get evictions before current week
-
-      const evicted = evictionData?.map(event => event.contestants?.name).filter(Boolean) || [];
-      
       const contestants = contestantsData?.map(c => ({
         id: c.id,
         name: c.name,
-        isActive: true, // We'll determine this dynamically
+        isActive: true, // REMOVED: eviction logic - always show as active
         group_id: c.group_id,
         sort_order: c.sort_order,
         bio: c.bio,
         photo_url: c.photo_url
       })) || [];
 
-      // Determine active contestants (not evicted)
-      const active = contestants.filter(c => !evicted.includes(c.name));
-
       setAllContestants(contestants);
-      setEvictedContestants(evicted);
-      setActiveContestants(active);
+      setEvictedContestants([]); // REMOVED: eviction logic - empty array
+      setActiveContestants(contestants); // REMOVED: eviction logic - all contestants are active
     } catch (error) {
       console.error('Error loading contestant data:', error);
     } finally {

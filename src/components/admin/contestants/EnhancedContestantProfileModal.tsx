@@ -14,7 +14,7 @@ import { User, Camera, Info, Target, Trophy } from 'lucide-react';
 import { ContestantWithBio } from '@/types/admin';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { getContestantStatusBadge } from '@/utils/contestantStatusUtils';
+// REMOVED: contestantStatusUtils - eviction logic will be reimplemented from scratch
 
 interface EnhancedContestantProfileModalProps {
   contestant: ContestantWithBio | null;
@@ -117,8 +117,8 @@ export const EnhancedContestantProfileModal: React.FC<EnhancedContestantProfileM
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Status:</span>
-                    <Badge variant={getContestantStatusBadge(contestant.isActive).variant}>
-                      {getContestantStatusBadge(contestant.isActive).text}
+                    <Badge variant="default">
+                      Active
                     </Badge>
                   </div>
                 </CardContent>

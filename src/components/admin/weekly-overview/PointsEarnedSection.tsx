@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useScoringRules } from '@/hooks/useScoringRules';
-import { getContestantVisualStyling } from '@/utils/contestantStatusUtils';
+// REMOVED: contestantStatusUtils - eviction logic will be reimplemented from scratch
 
 interface ContestantScore {
   name: string;
@@ -59,14 +59,9 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
     return rule && (rule.subcategory === 'self_evicted' || rule.subcategory === 'removed_production');
   };
 
-  // Create a complete list showing all contestants with their points or 0
-  // CRITICAL FIX: Use the centralized is_active field as the single source of truth
+  // REMOVED: Eviction status logic - will be reimplemented from scratch
   const completeContestantScores = allContestants.map(contestant => {
     const existingScore = contestantScores.find(score => score.name === contestant.name);
-    
-    // SIMPLIFIED LOGIC: Use the database is_active field as the single source of truth
-    // The database trigger already handles all eviction scenarios correctly
-    const isEvicted = !contestant.is_active;
     
     // Check if contestant has special events this week
     const hasSpecialEvent = specialEvents.some(event => 
@@ -77,7 +72,7 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
       name: contestant.name,
       weeklyTotal: existingScore?.weeklyTotal || 0,
       cumulativeTotal: existingScore?.cumulativeTotal || 0,
-      isEvicted,
+      isEvicted: false, // REMOVED: eviction logic - always show as active
       hasSpecialEvent
     };
   });

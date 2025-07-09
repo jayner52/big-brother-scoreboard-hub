@@ -8,7 +8,7 @@ import { usePool } from '@/contexts/PoolContext';
 
 export const useContestantStats = () => {
   const [contestantStats, setContestantStats] = useState<ContestantStats[]>([]);
-  const { evictedContestants } = useActiveContestants();
+  // REMOVED: evictedContestants - will be reimplemented from scratch
   const { activePool } = usePool();
   const { 
     contestants, 
@@ -25,7 +25,7 @@ export const useContestantStats = () => {
     if (!loading && contestants.length > 0 && activePool?.id) {
       processContestantStats();
     }
-  }, [loading, contestants, weeklyEvents, specialEvents, evictedContestants, activePool?.id]);
+  }, [loading, contestants, weeklyEvents, specialEvents, activePool?.id]); // REMOVED: evictedContestants dependency
 
   const processContestantStats = async () => {
     if (!activePool?.id) {
@@ -42,14 +42,14 @@ export const useContestantStats = () => {
       // Refetch data to include any newly created special events
       await refetchData();
       
-      // Calculate contestant statistics with current game week
+      // REMOVED: evictedContestants parameter - will be reimplemented from scratch
       const stats = calculateContestantStats(
         contestants,
         contestantGroups,
         poolEntries,
         weeklyEvents,
         specialEvents,
-        evictedContestants,
+        [], // REMOVED: evictedContestants - empty array
         7 // Updated to current game week
       );
       

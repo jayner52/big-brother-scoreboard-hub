@@ -5,7 +5,7 @@ import { Crown, Target, Shield } from 'lucide-react';
 import { ContestantStats } from '@/types/contestant-stats';
 import { Contestant } from '@/types/pool';
 import { SpecialEventsBadges } from '@/components/admin/SpecialEventsBadges';
-import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
+// REMOVED: useEvictionWeeks - eviction logic will be reimplemented from scratch
 
 interface ContestantStatsTableProps {
   contestantStats: ContestantStats[];
@@ -24,7 +24,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
   povWinner,
   nominees,
 }) => {
-  const { evictionWeeks } = useEvictionWeeks();
+  // REMOVED: evictionWeeks - will be reimplemented from scratch
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -46,7 +46,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
         <TableBody>
         {contestantStats.map((stat, index) => {
             const contestant = contestants.find(c => c.name === stat.contestant_name);
-            const isEvicted = !contestant?.isActive; // Use database is_active field via isActive property
+            const isEvicted = false; // REMOVED: eviction logic - always show as active
             
             return (
               <TableRow key={stat.contestant_name}>
@@ -64,44 +64,25 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                 {showSpoilers && (
                   <TableCell>
                     <div className="flex flex-wrap gap-1 justify-center">
-                      {!isEvicted ? (
-                        <>
-                          <Badge variant="default">Active</Badge>
-                          {hohWinner === stat.contestant_name && (
-                            <Badge variant="secondary" className="flex items-center gap-1">
-                              <Crown className="h-3 w-3" />
-                              HOH
-                            </Badge>
-                          )}
-                          {povWinner === stat.contestant_name && (
-                            <Badge variant="secondary" className="flex items-center gap-1">
-                              <Shield className="h-3 w-3" />
-                              POV
-                            </Badge>
-                          )}
-                          {nominees.includes(stat.contestant_name) && (
-                            <Badge variant="destructive" className="flex items-center gap-1">
-                              <Target className="h-3 w-3" />
-                              Nominated
-                            </Badge>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <Badge variant="destructive">
-                            {evictionWeeks[stat.contestant_name] ? `Evicted - Week ${evictionWeeks[stat.contestant_name]}` : "Evicted"}
-                          </Badge>
-                          {stat.final_placement && (
-                            <Badge variant="outline">
-                              {stat.final_placement === 1 ? "Winner" : 
-                               stat.final_placement === 2 ? "Runner-up" :
-                               `${stat.final_placement}th Place`}
-                            </Badge>
-                          )}
-                          {stat.americas_favorite && (
-                            <Badge variant="secondary">AFP</Badge>
-                          )}
-                        </>
+                      <Badge variant="default">Active</Badge>
+                      {/* REMOVED: Eviction status and current game status - will be reimplemented */}
+                      {hohWinner === stat.contestant_name && (
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          <Crown className="h-3 w-3" />
+                          HOH
+                        </Badge>
+                      )}
+                      {povWinner === stat.contestant_name && (
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          <Shield className="h-3 w-3" />
+                          POV
+                        </Badge>
+                      )}
+                      {nominees.includes(stat.contestant_name) && (
+                        <Badge variant="destructive" className="flex items-center gap-1">
+                          <Target className="h-3 w-3" />
+                          Nominated
+                        </Badge>
                       )}
                     </div>
                   </TableCell>

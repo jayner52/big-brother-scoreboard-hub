@@ -11,7 +11,7 @@ import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
 type SpecialEventFormData = {
   id?: string;
   contestant: string;
-  eventType: string;
+  eventType: string | undefined;
   description?: string;
   customPoints?: number;
   customDescription?: string;
@@ -65,7 +65,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
         <div>
           <Label>Event Type</Label>
           <Select
-            value={event.eventType}
+            value={event.eventType || undefined}
             onValueChange={(value) => {
               console.log('🔍 Select onValueChange:', { 
                 selectedValue: value, 

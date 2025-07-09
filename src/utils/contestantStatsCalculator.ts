@@ -1,8 +1,9 @@
 import { ContestantStats } from '@/types/contestant-stats';
 import { Contestant, ContestantGroup } from '@/types/pool';
 import { calculateBlockSurvivalStats } from './blockSurvivalUtils';
+import { isEventOfType, isEventAnyOfTypes, getEventSubcategory } from './scoringRulesLookup';
 
-export const calculateContestantStats = (
+export const calculateContestantStats = async (
   contestants: Contestant[],
   contestantGroups: ContestantGroup[],
   poolEntries: any[],
@@ -10,22 +11,27 @@ export const calculateContestantStats = (
   specialEvents: any[],
   evictedContestants: string[],
   currentGameWeek: number = 7
-): ContestantStats[] => {
-  // Determine who is evicted based on current game week
-  const evictedThisGameWeek = weeklyEvents
-    .filter(event => event.event_type === 'evicted' && event.week_number < currentGameWeek)
-    .map(event => {
+): Promise<ContestantStats[]> => {
+  // Determine who is evicted based on current game week  
+  const evictedThisGameWeek: string[] = [];
+  for (const event of weeklyEvents) {
+    if (await isEventOfType(event.event_type, 'evicted') && event.week_number < currentGameWeek) {
       const contestant = contestants.find(c => c.id === event.contestant_id);
-      return contestant?.name;
-    })
-    .filter(Boolean);
+      if (contestant?.name) {
+        evictedThisGameWeek.push(contestant.name);
+      }
+    }
+  }
 
   const mappedContestants = contestants.map(c => ({
     ...c,
     isActive: !evictedThisGameWeek.includes(c.name)
   }));
 
-  const stats: ContestantStats[] = mappedContestants.map(contestant => {
+  // Process each contestant's stats using proper async calculations
+  const stats: ContestantStats[] = [];
+  
+  for (const contestant of mappedContestants) {
     const group = contestantGroups.find(g => g.id === contestant.group_id);
     
     // Count how many times this contestant was selected
@@ -34,58 +40,54 @@ export const calculateContestantStats = (
       return count + (players.includes(contestant.name) ? 1 : 0);
     }, 0);
 
-    // Count HOH wins - use current scoring rule system
-    const hohWins = weeklyEvents.filter(event => {
-      // Check if event_type is a UUID (new system) or string (legacy)
-      if (event.event_type?.length > 20) {
-        // UUID format - this is the current system
-        return event.contestant_id === contestant.id && 
-               event.event_type?.includes('hoh_winner') ||
-               event.event_type === 'hoh_winner';
+    // Count HOH wins using proper UUID matching
+    let hohWins = 0;
+    for (const event of weeklyEvents) {
+      if (event.contestant_id === contestant.id && 
+          await isEventOfType(event.event_type, 'hoh_winner')) {
+        hohWins++;
       }
-      // Legacy string format
-      return event.contestant_id === contestant.id && event.event_type === 'hoh_winner';
-    }).length;
+    }
 
-    // Count Veto wins - use current scoring rule system
-    const vetoWins = weeklyEvents.filter(event => {
-      // Check if event_type is a UUID (new system) or string (legacy)
-      if (event.event_type?.length > 20) {
-        // UUID format - this is the current system
-        return event.contestant_id === contestant.id && 
-               event.event_type?.includes('pov_winner') ||
-               event.event_type === 'pov_winner';
+    // Count POV wins using proper UUID matching
+    let vetoWins = 0;
+    for (const event of weeklyEvents) {
+      if (event.contestant_id === contestant.id && 
+          await isEventOfType(event.event_type, 'pov_winner')) {
+        vetoWins++;
       }
-      // Legacy string format
-      return event.contestant_id === contestant.id && event.event_type === 'pov_winner';
-    }).length;
+    }
 
-    // Count times on block (nominations)
-    const timesOnBlock = weeklyEvents.filter(event => 
-      event.contestant_id === contestant.id && event.event_type === 'nominee'
-    ).length;
-
-    // Count times on block at eviction and survived
-    const timesOnBlockAtEviction = calculateBlockSurvivalStats(contestant.id, weeklyEvents);
-
-    // Count times saved by veto - use current scoring rule system
-    const timesSavedByVeto = weeklyEvents.filter(event => {
-      // Check if event_type is a UUID (new system) or string (legacy)
-      if (event.event_type?.length > 20) {
-        // UUID format - this is the current system
-        return event.contestant_id === contestant.id && 
-               event.event_type?.includes('pov_used_on') ||
-               event.event_type === 'pov_used_on';
+    // Count times on block (nominations) using proper UUID matching
+    let timesOnBlock = 0;
+    for (const event of weeklyEvents) {
+      if (event.contestant_id === contestant.id && 
+          await isEventOfType(event.event_type, 'nominee')) {
+        timesOnBlock++;
       }
-      // Legacy string format
-      return event.contestant_id === contestant.id && event.event_type === 'pov_used_on';
-    }).length;
+    }
 
-    // Find elimination week
-    const evictionEvent = weeklyEvents.find(event => 
-      event.contestant_id === contestant.id && event.event_type === 'evicted'
-    );
-    const eliminationWeek = evictionEvent ? evictionEvent.week_number : undefined;
+    // Count times on block at eviction and survived (will fix this in blockSurvivalUtils)
+    const timesOnBlockAtEviction = await calculateBlockSurvivalStats(contestant.id, weeklyEvents);
+
+    // Count times saved by veto using proper UUID matching
+    let timesSavedByVeto = 0;
+    for (const event of weeklyEvents) {
+      if (event.contestant_id === contestant.id && 
+          await isEventOfType(event.event_type, 'pov_used_on')) {
+        timesSavedByVeto++;
+      }
+    }
+
+    // Find elimination week using proper UUID matching
+    let eliminationWeek: number | undefined;
+    for (const event of weeklyEvents) {
+      if (event.contestant_id === contestant.id && 
+          await isEventOfType(event.event_type, 'evicted')) {
+        eliminationWeek = event.week_number;
+        break;
+      }
+    }
 
     // Get all special events for this contestant
     const contestantSpecialEvents = specialEvents
@@ -96,26 +98,20 @@ export const calculateContestantStats = (
         points_awarded: event.points_awarded
       }));
 
-    // Include relevant weekly events as special events for display
-    const weeklySpecialEvents = weeklyEvents
-      .filter(event => {
-        if (event.contestant_id !== contestant.id) return false;
-        
-        // Handle both UUID and string event types
-        if (event.event_type?.length > 20) {
-          // UUID format - check against scoring rules
-          return ['bb_arena_winner', 'jury_member'].some(type => 
-            event.event_type?.includes(type) || event.event_type === type
-          );
+    // Include relevant weekly events as special events for display using proper UUID matching
+    const weeklySpecialEvents: any[] = [];
+    for (const event of weeklyEvents) {
+      if (event.contestant_id === contestant.id) {
+        if (await isEventAnyOfTypes(event.event_type, ['bb_arena_winner', 'jury_member'])) {
+          const subcategory = await getEventSubcategory(event.event_type);
+          weeklySpecialEvents.push({
+            event_type: event.event_type,
+            description: subcategory === 'bb_arena_winner' ? 'BB Arena Winner' : 'Jury Member',
+            points_awarded: event.points_awarded
+          });
         }
-        // Legacy string format
-        return ['bb_arena_winner', 'jury_member'].includes(event.event_type);
-      })
-      .map(event => ({
-        event_type: event.event_type,
-        description: event.event_type?.includes('bb_arena_winner') || event.event_type === 'bb_arena_winner' ? 'BB Arena Winner' : 'Jury Member',
-        points_awarded: event.points_awarded
-      }));
+      }
+    }
 
     const allSpecialEvents = [...contestantSpecialEvents, ...weeklySpecialEvents];
 
@@ -131,7 +127,7 @@ export const calculateContestantStats = (
     // Block survival points are now handled through special events, no need for manual calculation
     const totalPointsEarned = weeklyPoints + specialPoints;
 
-    return {
+    stats.push({
       contestant_name: contestant.name,
       total_points_earned: totalPointsEarned,
       weeks_active: contestant.isActive ? (weeklyEvents.filter(e => e.contestant_id === contestant.id).length || 0) : 0,
@@ -150,8 +146,8 @@ export const calculateContestantStats = (
       final_placement: (contestant as any).final_placement,
       americas_favorite: (contestant as any).americas_favorite || false,
       special_events: allSpecialEvents
-    };
-  });
+    });
+  }
 
   // Sort by total points earned (descending)
   stats.sort((a, b) => b.total_points_earned - a.total_points_earned);

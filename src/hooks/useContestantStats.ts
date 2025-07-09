@@ -43,7 +43,7 @@ export const useContestantStats = () => {
       await refetchData();
       
       // REMOVED: evictedContestants parameter - will be reimplemented from scratch
-      const stats = calculateContestantStats(
+      const stats = await calculateContestantStats(
         contestants,
         contestantGroups,
         poolEntries,

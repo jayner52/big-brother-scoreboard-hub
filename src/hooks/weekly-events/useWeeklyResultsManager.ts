@@ -88,6 +88,74 @@ export const useWeeklyResultsManager = () => {
     }
   };
 
+  const updateCurrentWeekStatuses = async (
+    eventForm: WeeklyEventForm,
+    poolId: string
+  ) => {
+    // Reset all current week statuses first
+    await supabase
+      .from('contestants')
+      .update({ 
+        current_hoh: false, 
+        current_pov_winner: false, 
+        currently_nominated: false,
+        pov_used_on: false 
+      })
+      .eq('pool_id', poolId);
+
+    // Set current HOH winners
+    const hohWinners = [eventForm.hohWinner, eventForm.secondHohWinner, eventForm.thirdHohWinner]
+      .filter(name => name && name !== 'no-winner');
+    
+    for (const hohWinner of hohWinners) {
+      await supabase
+        .from('contestants')
+        .update({ current_hoh: true })
+        .eq('name', hohWinner)
+        .eq('pool_id', poolId);
+    }
+
+    // Set current POV winners
+    const povWinners = [eventForm.povWinner, eventForm.secondPovWinner, eventForm.thirdPovWinner]
+      .filter(name => name && name !== 'no-winner');
+    
+    for (const povWinner of povWinners) {
+      await supabase
+        .from('contestants')
+        .update({ current_pov_winner: true })
+        .eq('name', povWinner)
+        .eq('pool_id', poolId);
+    }
+
+    // Set current nominees
+    const allNominees = [
+      ...eventForm.nominees,
+      ...eventForm.secondNominees,
+      ...(eventForm.replacementNominee ? [eventForm.replacementNominee] : []),
+      ...(eventForm.secondReplacementNominee ? [eventForm.secondReplacementNominee] : [])
+    ].filter(name => name && name !== 'no-nominee');
+    
+    for (const nominee of allNominees) {
+      await supabase
+        .from('contestants')
+        .update({ currently_nominated: true })
+        .eq('name', nominee)
+        .eq('pool_id', poolId);
+    }
+
+    // Set POV used on status
+    const povUsedOnNames = [eventForm.povUsedOn, eventForm.secondPovUsedOn]
+      .filter(name => name);
+    
+    for (const povUsedOn of povUsedOnNames) {
+      await supabase
+        .from('contestants')
+        .update({ pov_used_on: true })
+        .eq('name', povUsedOn)
+        .eq('pool_id', poolId);
+    }
+  };
+
   const updateFinalWeekContestantStatuses = async (
     eventForm: WeeklyEventForm,
     poolId: string
@@ -125,6 +193,7 @@ export const useWeeklyResultsManager = () => {
   return { 
     createOrUpdateWeeklyResults, 
     updateEvictedContestantStatuses, 
+    updateCurrentWeekStatuses,
     updateFinalWeekContestantStatuses 
   };
 };

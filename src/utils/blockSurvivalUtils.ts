@@ -1,33 +1,58 @@
 import { supabase } from '@/integrations/supabase/client';
+import { isEventOfType } from './scoringRulesLookup';
 
-export const calculateBlockSurvivalStats = (contestantId: string, weeklyEvents: any[]) => {
-  const nomineeEvents = weeklyEvents.filter(event => 
-    event.contestant_id === contestantId && event.event_type === 'nominee'
-  );
+export const calculateBlockSurvivalStats = async (contestantId: string, weeklyEvents: any[]): Promise<number> => {
+  // Find nominee events using proper UUID matching
+  const nomineeEvents: any[] = [];
+  for (const event of weeklyEvents) {
+    if (event.contestant_id === contestantId && await isEventOfType(event.event_type, 'nominee')) {
+      nomineeEvents.push(event);
+    }
+  }
   
-  const weeksWithEvictions = new Set(
-    weeklyEvents.filter(event => event.event_type === 'evicted').map(event => event.week_number)
-  );
+  // Find weeks with evictions using proper UUID matching
+  const weeksWithEvictions = new Set<number>();
+  for (const event of weeklyEvents) {
+    if (await isEventOfType(event.event_type, 'evicted')) {
+      weeksWithEvictions.add(event.week_number);
+    }
+  }
   
-  const weeksSavedByPov = new Set(
-    weeklyEvents.filter(event => event.contestant_id === contestantId && event.event_type === 'pov_used_on').map(event => event.week_number)
-  );
+  // Find weeks saved by POV using proper UUID matching
+  const weeksSavedByPov = new Set<number>();
+  for (const event of weeklyEvents) {
+    if (event.contestant_id === contestantId && await isEventOfType(event.event_type, 'pov_used_on')) {
+      weeksSavedByPov.add(event.week_number);
+    }
+  }
   
-  const weeksWonBBArena = new Set(
-    weeklyEvents.filter(event => event.contestant_id === contestantId && event.event_type === 'bb_arena_winner').map(event => event.week_number)
-  );
+  // Find weeks won BB Arena using proper UUID matching
+  const weeksWonBBArena = new Set<number>();
+  for (const event of weeklyEvents) {
+    if (event.contestant_id === contestantId && await isEventOfType(event.event_type, 'bb_arena_winner')) {
+      weeksWonBBArena.add(event.week_number);
+    }
+  }
   
-  const weeksEvicted = new Set(
-    weeklyEvents.filter(event => event.contestant_id === contestantId && event.event_type === 'evicted').map(event => event.week_number)
-  );
+  // Find weeks evicted using proper UUID matching
+  const weeksEvicted = new Set<number>();
+  for (const event of weeklyEvents) {
+    if (event.contestant_id === contestantId && await isEventOfType(event.event_type, 'evicted')) {
+      weeksEvicted.add(event.week_number);
+    }
+  }
   
-  const timesOnBlockAtEviction = nomineeEvents.filter(nomEvent => {
+  // Count times on block at eviction where they survived
+  let timesOnBlockAtEviction = 0;
+  for (const nomEvent of nomineeEvents) {
     const week = nomEvent.week_number;
-    return weeksWithEvictions.has(week) && 
-           !weeksSavedByPov.has(week) && 
-           !weeksWonBBArena.has(week) && 
-           !weeksEvicted.has(week);
-  }).length;
+    if (weeksWithEvictions.has(week) && 
+        !weeksSavedByPov.has(week) && 
+        !weeksWonBBArena.has(week) && 
+        !weeksEvicted.has(week)) {
+      timesOnBlockAtEviction++;
+    }
+  }
 
   return timesOnBlockAtEviction;
 };
@@ -45,26 +70,46 @@ export const createBlockSurvivalBonuses = async (contestants: any[], weeklyEvent
 };
 
 export const checkAndCreateBlockSurvivalEvents = async (contestantId: string, weeklyEvents: any[]) => {
-  // Get nomination events for this contestant, sorted by week
-  const nomineeEvents = weeklyEvents
-    .filter(event => event.contestant_id === contestantId && event.event_type === 'nominee')
-    .sort((a, b) => a.week_number - b.week_number);
+  // Get nomination events for this contestant using proper UUID matching
+  const nomineeEvents: any[] = [];
+  for (const event of weeklyEvents) {
+    if (event.contestant_id === contestantId && await isEventOfType(event.event_type, 'nominee')) {
+      nomineeEvents.push(event);
+    }
+  }
+  nomineeEvents.sort((a, b) => a.week_number - b.week_number);
   
-  const weeksWithEvictions = new Set(
-    weeklyEvents.filter(event => event.event_type === 'evicted').map(event => event.week_number)
-  );
+  // Get weeks with evictions using proper UUID matching
+  const weeksWithEvictions = new Set<number>();
+  for (const event of weeklyEvents) {
+    if (await isEventOfType(event.event_type, 'evicted')) {
+      weeksWithEvictions.add(event.week_number);
+    }
+  }
   
-  const weeksSavedByPov = new Set(
-    weeklyEvents.filter(event => event.contestant_id === contestantId && event.event_type === 'pov_used_on').map(event => event.week_number)
-  );
+  // Get weeks saved by POV using proper UUID matching
+  const weeksSavedByPov = new Set<number>();
+  for (const event of weeklyEvents) {
+    if (event.contestant_id === contestantId && await isEventOfType(event.event_type, 'pov_used_on')) {
+      weeksSavedByPov.add(event.week_number);
+    }
+  }
   
-  const weeksWonBBArena = new Set(
-    weeklyEvents.filter(event => event.contestant_id === contestantId && event.event_type === 'bb_arena_winner').map(event => event.week_number)
-  );
+  // Get weeks won BB Arena using proper UUID matching
+  const weeksWonBBArena = new Set<number>();
+  for (const event of weeklyEvents) {
+    if (event.contestant_id === contestantId && await isEventOfType(event.event_type, 'bb_arena_winner')) {
+      weeksWonBBArena.add(event.week_number);
+    }
+  }
   
-  const weeksEvicted = new Set(
-    weeklyEvents.filter(event => event.contestant_id === contestantId && event.event_type === 'evicted').map(event => event.week_number)
-  );
+  // Get weeks evicted using proper UUID matching
+  const weeksEvicted = new Set<number>();
+  for (const event of weeklyEvents) {
+    if (event.contestant_id === contestantId && await isEventOfType(event.event_type, 'evicted')) {
+      weeksEvicted.add(event.week_number);
+    }
+  }
   
   // Track survival streaks week by week
   let survivalCount = 0;
@@ -194,11 +239,16 @@ export const checkAndCreateFloaterAchievement = async (contestantId: string, wee
       return; // Already earned or contestant not found
     }
 
-    // Get all competition wins for this contestant (HOH and POV)
-    const competitionWins = weeklyEvents.filter(event => 
-      event.contestant_id === contestantId && 
-      (event.event_type === 'hoh_winner' || event.event_type === 'pov_winner')
-    ).sort((a, b) => a.week_number - b.week_number);
+    // Get all competition wins for this contestant (HOH and POV) using proper UUID matching
+    const competitionWins: any[] = [];
+    for (const event of weeklyEvents) {
+      if (event.contestant_id === contestantId && 
+          (await isEventOfType(event.event_type, 'hoh_winner') || 
+           await isEventOfType(event.event_type, 'pov_winner'))) {
+        competitionWins.push(event);
+      }
+    }
+    competitionWins.sort((a, b) => a.week_number - b.week_number);
 
     // Get all weeks with events to determine the current week
     const allWeeks = [...new Set(weeklyEvents.map(e => e.week_number))].sort((a, b) => a - b);
@@ -215,12 +265,16 @@ export const checkAndCreateFloaterAchievement = async (contestantId: string, wee
         consecutiveWeeks = 0; // Reset counter
         lastWinWeek = week;
       } else {
-        // Check if contestant was still in the house this week (not evicted)
-        const wasEvicted = weeklyEvents.some(event => 
-          event.contestant_id === contestantId && 
-          event.event_type === 'evicted' && 
-          event.week_number <= week
-        );
+        // Check if contestant was still in the house this week (not evicted) using proper UUID matching
+        let wasEvicted = false;
+        for (const event of weeklyEvents) {
+          if (event.contestant_id === contestantId && 
+              event.week_number <= week && 
+              await isEventOfType(event.event_type, 'evicted')) {
+            wasEvicted = true;
+            break;
+          }
+        }
         
         if (!wasEvicted) {
           consecutiveWeeks++;

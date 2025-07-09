@@ -23,7 +23,7 @@ export const useWeeklyEventsSubmission = (
   const { processEvictionCycle, processTripleEvictionCycle } = useEvictionCycleProcessor();
   const { processSpecialEvents, handleAutoEvictionForQuitEvents, handleSpecialEventStatusChanges } = useSpecialEventHandler();
   const { calculateSurvivalPoints, calculateJuryPoints } = useSurvivalPointsCalculator();
-  const { createOrUpdateWeeklyResults, updateEvictedContestantStatuses, updateFinalWeekContestantStatuses } = useWeeklyResultsManager();
+  const { createOrUpdateWeeklyResults, updateEvictedContestantStatuses, updateCurrentWeekStatuses, updateFinalWeekContestantStatuses } = useWeeklyResultsManager();
   const { advanceWeek } = useWeekAdvancement();
   const { processFinalWeekEvents } = useFinalWeekProcessor();
 
@@ -125,6 +125,9 @@ export const useWeeklyEventsSubmission = (
 
       // Update evicted contestant statuses
       await updateEvictedContestantStatuses(eventForm, poolId);
+
+      // Update current week statuses (HOH, POV, nominees)
+      await updateCurrentWeekStatuses(eventForm, poolId);
 
       // Update final week contestant statuses
       await updateFinalWeekContestantStatuses(eventForm, poolId);

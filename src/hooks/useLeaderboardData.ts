@@ -8,9 +8,24 @@ export const useLeaderboardData = () => {
   const { activePool, poolEntries } = usePool();
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [contestants, setContestants] = useState<Array<{ name: string; is_active: boolean }>>([]);
   const { snapshots, completedWeeks, loadSnapshotsForWeek } = useWeeklySnapshots();
 
   useEffect(() => {
+    const loadContestants = async () => {
+      if (!activePool?.id) return;
+      
+      const { data: contestantsData } = await supabase
+        .from('contestants')
+        .select('name, is_active')
+        .eq('pool_id', activePool.id)
+        .order('name');
+      
+      setContestants(contestantsData || []);
+    };
+
+    loadContestants();
+    
     console.log('🔍 LEADERBOARD DEBUG - Pool context data:', {
       activePoolId: activePool?.id,
       activePoolName: activePool?.name,
@@ -72,6 +87,7 @@ export const useLeaderboardData = () => {
     selectedWeek,
     completedWeeks,
     loading,
-    handleWeekChange
+    handleWeekChange,
+    contestants
   };
 };

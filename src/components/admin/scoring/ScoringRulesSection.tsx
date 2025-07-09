@@ -27,12 +27,14 @@ interface ScoringRulesSectionProps {
   groupedRules: Record<string, ScoringRule[]>;
   onUpdateRule: (id: string, field: keyof ScoringRule, value: any) => void;
   onShowCustomEventForm: () => void;
+  onDeleteCustomEvent: (id: string) => void;
 }
 
 export const ScoringRulesSection: React.FC<ScoringRulesSectionProps> = ({
   groupedRules,
   onUpdateRule,
-  onShowCustomEventForm
+  onShowCustomEventForm,
+  onDeleteCustomEvent
 }) => {
   const { toast } = useToast();
 
@@ -50,8 +52,8 @@ export const ScoringRulesSection: React.FC<ScoringRulesSectionProps> = ({
         description: "Custom special event deleted",
       });
 
-      // Force a page reload to refresh the data
-      window.location.reload();
+      // Call the parent callback to refresh data
+      onDeleteCustomEvent(ruleId);
     } catch (error) {
       console.error('Error deleting custom event:', error);
       toast({

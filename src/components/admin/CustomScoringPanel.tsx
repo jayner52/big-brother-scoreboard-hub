@@ -93,6 +93,11 @@ export const CustomScoringPanel: React.FC = () => {
     }
   };
 
+  const handleDeleteCustomEvent = async (ruleId: string) => {
+    // Refresh the scoring rules data after deletion
+    await loadScoringRules();
+  };
+
   const saveConfiguration = async () => {
     if (!activePool) return;
 
@@ -148,6 +153,7 @@ export const CustomScoringPanel: React.FC = () => {
         groupedRules={groupedRules}
         onUpdateRule={updateRule}
         onShowCustomEventForm={() => setShowCustomEventForm(true)}
+        onDeleteCustomEvent={handleDeleteCustomEvent}
       />
 
       {/* Save Button */}

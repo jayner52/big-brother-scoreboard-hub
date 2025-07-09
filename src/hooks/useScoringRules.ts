@@ -8,6 +8,7 @@ interface ScoringRule {
   points: number;
   description: string;
   is_active: boolean;
+  emoji?: string | null;
 }
 
 export const useScoringRules = () => {

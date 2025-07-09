@@ -3,7 +3,6 @@ import { ContestantWithBio, ContestantGroup } from '@/types/admin';
 import { ContestantForm } from './ContestantForm';
 import { ContestantList } from './ContestantList';
 import { GenerateFullCastButton } from './GenerateFullCastButton';
-import { ForceBB27PopulationButton } from './ForceBB27PopulationButton';
 import { ManualSeedButton } from './ManualSeedButton';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -75,7 +74,6 @@ export const ManageContestantsTab: React.FC<ManageContestantsTabProps> = ({
       {/* Action Buttons */}
       <div className="flex gap-4 flex-wrap">
         <GenerateFullCastButton onRefresh={onRefresh} seasonNumber={27} />
-        <ForceBB27PopulationButton onRefresh={onRefresh} />
         
         <Button 
           onClick={handlePopulatePhotos}

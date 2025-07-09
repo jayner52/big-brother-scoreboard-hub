@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -44,6 +44,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
   const { profile, refreshProfile } = useUserProfile(user);
   
   React.useEffect(() => {
@@ -246,7 +247,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
       {/* LEFT SECTION - Pool Identity */}
       <div className="flex items-center gap-2 min-w-0">
         <button 
-          onClick={() => window.location.href = '/'}
+          onClick={() => navigate('/dashboard')}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <PoolsidePicksLogo size="sm" />

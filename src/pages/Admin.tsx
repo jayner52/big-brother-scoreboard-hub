@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { usePool } from '@/contexts/PoolContext';
 import { CompanyAdminAccess } from '@/components/admin/CompanyAdminAccess';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -17,12 +18,24 @@ const Admin = () => {
   const [showSetupWizard, setShowSetupWizard] = useState(false);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
   const { activePool } = usePool();
+  const { isAdmin, loading: adminLoading } = useAdminAccess();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      // Only redirect if user is not authenticated at all
+      if (!user) {
+        navigate('/auth');
+      }
     });
-  }, []);
+  }, [navigate]);
+
+  // Redirect non-admin users after admin check completes
+  useEffect(() => {
+    if (!adminLoading && user && !isAdmin) {
+      navigate(user ? '/dashboard' : '/');
+    }
+  }, [adminLoading, user, isAdmin, navigate]);
 
   // Check for new pool creation and first visit
   useEffect(() => {
@@ -50,6 +63,18 @@ const Admin = () => {
       return () => clearTimeout(timer);
     }
   }, [showSetupWizard]);
+
+  // Show loading while checking admin access
+  if (adminLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Checking admin access...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

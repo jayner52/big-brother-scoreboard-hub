@@ -67,6 +67,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
           <Select
             value={event.eventType}
             onValueChange={(value) => {
+              console.log('🔍 Select onValueChange:', { eventType: value, eventIndex: index });
               updateSpecialEvent(index, 'eventType', value);
               // Reset custom points when changing event type (except for custom events)
               if (value !== 'custom_event') {

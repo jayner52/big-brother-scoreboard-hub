@@ -38,39 +38,14 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   const { toast } = useToast();
   const { scoringRules } = useScoringRules();
   const [showCustomEventForm, setShowCustomEventForm] = useState(false);
-  const [customScoringRules, setCustomScoringRules] = useState<any[]>([]);
+  // Get available special events from active scoring rules (including custom permanent)
+  const availableEvents = scoringRules.filter(rule => 
+    rule.category === 'special_events' && 
+    rule.is_active &&
+    rule.subcategory !== 'won_bb_arena' // Exclude automatic events only
+  );
 
-  // Load custom scoring rules on component mount
-  React.useEffect(() => {
-    loadCustomScoringRules();
-  }, []);
-
-  const loadCustomScoringRules = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('detailed_scoring_rules')
-        .select('*')
-        .eq('category', 'special_events')
-        .eq('subcategory', 'custom_permanent')
-        .eq('is_active', true);
-
-      if (error) throw error;
-      setCustomScoringRules(data || []);
-    } catch (error) {
-      console.error('Error loading custom scoring rules:', error);
-    }
-  };
-
-  // Get available special events from active scoring rules plus custom ones
-  const availableEvents = [
-    ...scoringRules.filter(rule => 
-      rule.category === 'special_events' && 
-      rule.is_active &&
-      rule.subcategory !== 'won_bb_arena' && // Exclude automatic events
-      rule.subcategory !== 'custom_permanent' // We'll show these separately
-    ),
-    ...customScoringRules
-  ];
+  console.log('🎯 Available Events:', availableEvents);
 
   // Get all contestants for events like "came back after evicted"
   const evictedContestants = activeContestants.filter(c => !c.isActive);
@@ -100,6 +75,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   };
 
   const updateSpecialEvent = (index: number, field: keyof SpecialEventFormData, value: any) => {
+    console.log('🔧 updateSpecialEvent called:', { index, field, value, currentEventType: eventForm.specialEvents[index]?.eventType });
     const newEvents = [...eventForm.specialEvents];
     newEvents[index] = { ...newEvents[index], [field]: value };
 
@@ -168,8 +144,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
 
       if (error) throw error;
 
-      // Reload custom scoring rules
-      await loadCustomScoringRules();
+      // Reload scoring rules (will be handled by the hook automatically)
 
       // Find the incomplete custom event in the form and complete it
       const newEvents = [...eventForm.specialEvents];
@@ -214,8 +189,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
 
       if (error) throw error;
 
-      // Reload custom scoring rules
-      await loadCustomScoringRules();
+      // Scoring rules will be reloaded automatically by the hook
       
       toast({
         title: "Success!",
@@ -276,7 +250,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     return eventRule?.points || 1;
   };
 
-  if (availableEvents.length === 0 && customScoringRules.length === 0) {
+  if (availableEvents.length === 0) {
     return (
       <Card>
         <CardHeader>

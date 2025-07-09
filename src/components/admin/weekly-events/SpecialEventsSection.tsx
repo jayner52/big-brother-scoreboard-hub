@@ -50,6 +50,16 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   // Get all contestants for events like "came back after evicted"
   const evictedContestants = activeContestants.filter(c => !c.isActive);
   
+  // Helper function to check if a rule is a custom event rule
+  const isCustomEventRule = (ruleId: string) => {
+    if (!ruleId) return false;
+    const rule = availableEvents.find(r => r.id === ruleId);
+    return rule?.subcategory === 'custom_event';
+  };
+
+  // Find the custom event rule UUID
+  const customEventRule = availableEvents.find(rule => rule.subcategory === 'custom_event');
+
   const addSpecialEvent = () => {
     const newEvent: SpecialEventFormData = {
       id: Date.now().toString(),
@@ -80,14 +90,14 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     newEvents[index] = { ...newEvents[index], [field]: value };
 
     // Reset custom fields if switching away from custom event
-    if (field === 'eventType' && value !== 'custom_event') {
+    if (field === 'eventType' && !isCustomEventRule(value)) {
       newEvents[index].customPoints = undefined;
       newEvents[index].customDescription = '';
       newEvents[index].customEmoji = '✨';
     }
 
     // Set default points when event type changes
-    if (field === 'eventType' && value !== 'custom_event') {
+    if (field === 'eventType' && !isCustomEventRule(value)) {
       newEvents[index].customPoints = undefined; // Use default from scoring rules
     }
 
@@ -148,7 +158,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
 
       // Find the incomplete custom event in the form and complete it
       const newEvents = [...eventForm.specialEvents];
-      const targetEventIndex = newEvents.findIndex(e => e.eventType === 'custom_event' && !e.contestant);
+      const targetEventIndex = newEvents.findIndex(e => isCustomEventRule(e.eventType) && !e.contestant);
       
       if (targetEventIndex >= 0) {
         newEvents[targetEventIndex] = {
@@ -230,12 +240,12 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   };
 
   const getEventDisplayName = (event: SpecialEventFormData) => {
-    if (event.eventType === 'custom_event' && event.customDescription) {
-      return `${event.customEmoji} ${event.customDescription}`;
-    }
-    // Find rule by ID (consistent with new approach)
     const eventRule = availableEvents.find(rule => rule.id === event.eventType);
     if (eventRule) {
+      // For custom events with custom description, show that
+      if (isCustomEventRule(event.eventType) && event.customDescription) {
+        return `${event.customEmoji} ${event.customDescription}`;
+      }
       // For custom permanent rules, show emoji + description
       if (eventRule.subcategory === 'custom_permanent' && eventRule.emoji) {
         return `${eventRule.emoji} ${eventRule.description}`;
@@ -246,13 +256,11 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   };
 
   const getEventPoints = (event: SpecialEventFormData) => {
-    if (event.eventType === 'custom_event') {
-      return event.customPoints || 1;
-    }
-    if (event.customPoints !== undefined) {
+    // For custom events, use custom points if set
+    if (isCustomEventRule(event.eventType) && event.customPoints !== undefined) {
       return event.customPoints;
     }
-    // Find rule by ID (consistent with new approach)
+    // Find rule by ID and use rule points
     const eventRule = availableEvents.find(rule => rule.id === event.eventType);
     return eventRule?.points || 1;
   };

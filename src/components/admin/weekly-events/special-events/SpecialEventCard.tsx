@@ -52,6 +52,16 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
   const selectedRule = availableEvents.find(rule => rule.id === event.eventType);
   console.log('🔵 Selected Rule:', selectedRule);
   
+  // Helper function to check if a rule is a custom event rule
+  const isCustomEventRule = (ruleId: string) => {
+    if (!ruleId) return false;
+    const rule = availableEvents.find(r => r.id === ruleId);
+    return rule?.subcategory === 'custom_event';
+  };
+
+  // Find the custom event rule for the "Create Custom Event" option
+  const customEventRule = availableEvents.find(rule => rule.subcategory === 'custom_event');
+  
   const displayPoints = getEventPoints(event);
 
   return (
@@ -84,7 +94,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
               updateSpecialEvent(index, 'eventType', value);
               console.log('🔍 After updateSpecialEvent, eventType should be:', value);
               // Reset custom points when changing event type (except for custom events)
-              if (value !== 'custom_event') {
+              if (!isCustomEventRule(value)) {
                 updateSpecialEvent(index, 'customPoints', undefined);
               }
             }}
@@ -113,12 +123,6 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
                   </SelectItem>
                 );
               })}
-              <SelectItem value="custom_event">
-                <span className="flex items-center gap-2">
-                  <span className="text-sm">✨</span>
-                  <span>Create Custom Event</span>
-                </span>
-              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -152,7 +156,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
       </div>
 
       {/* Custom Event Fields */}
-      {event.eventType === 'custom_event' && (
+      {isCustomEventRule(event.eventType) && (
         <div className="space-y-3 p-3 bg-muted/30 rounded">
           {!event.customDescription ? (
             <div className="text-center">

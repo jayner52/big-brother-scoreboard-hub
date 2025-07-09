@@ -28,8 +28,8 @@ export const TeamDisplaySection: React.FC<TeamDisplaySectionProps> = ({
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-        <div className="space-y-2 sm:space-y-3">
+      <CardContent className="px-2 sm:px-6 pb-2 sm:pb-6 pt-0">
+        <div className="space-y-1.5 sm:space-y-3">
           {poolEntries.map((entry, index) => (
             <TeamCard
               key={entry.id}

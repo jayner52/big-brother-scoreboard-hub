@@ -3,23 +3,78 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Building2, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CompanyAdminDashboard } from '@/components/admin/CompanyAdminDashboard';
+import { supabase } from '@/integrations/supabase/client';
 
 const CompanyAdmin = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user is authenticated via session storage
-    const unlocked = sessionStorage.getItem('company_admin_unlocked');
-    if (unlocked !== 'true') {
-      navigate('/admin');
-      return;
-    }
-    setIsAuthenticated(true);
+    const validateAccess = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate('/admin');
+        return;
+      }
+
+      setCurrentUserId(user.id);
+      
+      // Enhanced security check with user binding and timestamp validation
+      const unlocked = sessionStorage.getItem('company_admin_unlocked');
+      const sessionUserId = sessionStorage.getItem('company_admin_user_id');
+      const timestamp = sessionStorage.getItem('company_admin_timestamp');
+      
+      if (unlocked !== 'true' || sessionUserId !== user.id || !timestamp) {
+        navigate('/admin');
+        return;
+      }
+      
+      // Check session expiry (30 minutes)
+      const sessionTime = parseInt(timestamp);
+      const now = Date.now();
+      const thirtyMinutes = 30 * 60 * 1000;
+      
+      if (now - sessionTime > thirtyMinutes) {
+        // Session expired
+        sessionStorage.removeItem('company_admin_unlocked');
+        sessionStorage.removeItem('company_admin_user_id');
+        sessionStorage.removeItem('company_admin_timestamp');
+        navigate('/admin');
+        return;
+      }
+      
+      // Update timestamp to extend session
+      sessionStorage.setItem('company_admin_timestamp', now.toString());
+      setIsAuthenticated(true);
+    };
+
+    validateAccess();
+
+    // Auto-lock when user becomes inactive or changes tabs
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Set a timeout to lock after 5 minutes of inactivity
+        setTimeout(() => {
+          if (document.hidden) {
+            handleLock();
+          }
+        }, 5 * 60 * 1000);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [navigate]);
 
   const handleLock = () => {
     sessionStorage.removeItem('company_admin_unlocked');
+    sessionStorage.removeItem('company_admin_user_id');
+    sessionStorage.removeItem('company_admin_timestamp');
     navigate('/admin');
   };
 

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Building2, Lock, Unlock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 export const CompanyAdminAccess: React.FC = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -13,15 +14,70 @@ export const CompanyAdminAccess: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Check if already unlocked in session
+  // Check auth status and validate session
   useEffect(() => {
-    const unlocked = sessionStorage.getItem('company_admin_unlocked');
-    if (unlocked === 'true') {
-      setIsUnlocked(true);
-    }
+    const checkAuthAndSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // Not authenticated - clear any existing session
+        sessionStorage.removeItem('company_admin_unlocked');
+        sessionStorage.removeItem('company_admin_user_id');
+        sessionStorage.removeItem('company_admin_timestamp');
+        setIsUnlocked(false);
+        return;
+      }
+
+      setCurrentUserId(user.id);
+      
+      // Check if already unlocked and validate user binding
+      const unlocked = sessionStorage.getItem('company_admin_unlocked');
+      const sessionUserId = sessionStorage.getItem('company_admin_user_id');
+      const timestamp = sessionStorage.getItem('company_admin_timestamp');
+      
+      if (unlocked === 'true' && sessionUserId === user.id && timestamp) {
+        // Check if session is still valid (30 minutes)
+        const sessionTime = parseInt(timestamp);
+        const now = Date.now();
+        const thirtyMinutes = 30 * 60 * 1000;
+        
+        if (now - sessionTime < thirtyMinutes) {
+          setIsUnlocked(true);
+          // Update timestamp to extend session
+          sessionStorage.setItem('company_admin_timestamp', now.toString());
+        } else {
+          // Session expired
+          handleLock();
+        }
+      } else {
+        // Invalid session - clear everything
+        handleLock();
+      }
+    };
+
+    checkAuthAndSession();
+    
+    // Auto-lock on page visibility change (tab switch, minimize, etc.)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Start a timer to auto-lock after 5 minutes of inactivity
+        setTimeout(() => {
+          if (document.hidden) {
+            handleLock();
+          }
+        }, 5 * 60 * 1000);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const handlePasswordSubmit = async () => {
@@ -34,16 +90,35 @@ export const CompanyAdminAccess: React.FC = () => {
       return;
     }
 
+    if (!currentUserId) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to access company admin.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      // Simple direct comparison for now (we can add hashing later)
-      const validPassword = 'EW7e1rM2WBs16TFyWJiP';
-      
-      if (password === validPassword) {
+      // Verify password using edge function
+      const { data, error } = await supabase.functions.invoke('verify-company-admin', {
+        body: { password }
+      });
+
+      if (error) {
+        throw new Error(`Function error: ${error.message}`);
+      }
+
+      if (data?.valid) {
         setIsUnlocked(true);
+        const now = Date.now();
         sessionStorage.setItem('company_admin_unlocked', 'true');
+        sessionStorage.setItem('company_admin_user_id', currentUserId);
+        sessionStorage.setItem('company_admin_timestamp', now.toString());
         setPassword('');
         setAttemptCount(0);
+        
         toast({
           title: "Access Granted",
           description: "Welcome to Poolside Picks Company Admin",
@@ -57,6 +132,7 @@ export const CompanyAdminAccess: React.FC = () => {
         });
       }
     } catch (error: any) {
+      console.error('Password verification error:', error);
       setAttemptCount(prev => prev + 1);
       toast({
         title: "Authentication Error",
@@ -71,7 +147,11 @@ export const CompanyAdminAccess: React.FC = () => {
   const handleLock = () => {
     setIsUnlocked(false);
     sessionStorage.removeItem('company_admin_unlocked');
+    sessionStorage.removeItem('company_admin_user_id');
+    sessionStorage.removeItem('company_admin_timestamp');
     setPassword('');
+    setAttemptCount(0);
+    
     toast({
       title: "Locked",
       description: "Company admin access has been locked.",

@@ -72,7 +72,7 @@ export const PoolAnalyticsTab: React.FC = () => {
     try {
       console.log('COMPANY_ADMIN: Loading pool analytics...');
       
-      // Get pools with owner info
+      // Get all pools (basic info only, no joins that might cause RLS issues)
       const { data: poolsData, error: poolsError } = await supabase
         .from('pools')
         .select(`
@@ -85,10 +85,7 @@ export const PoolAnalyticsTab: React.FC = () => {
           draft_open,
           draft_locked,
           season_complete,
-          has_buy_in,
-          profiles!pools_owner_id_fkey (
-            display_name
-          )
+          has_buy_in
         `);
 
       if (poolsError) {
@@ -97,6 +94,23 @@ export const PoolAnalyticsTab: React.FC = () => {
       }
 
       console.log('COMPANY_ADMIN: Loaded pools:', poolsData?.length || 0);
+
+      // Get owner profiles separately to handle RLS gracefully
+      let ownerProfiles = null;
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('user_id, display_name');
+        
+        if (error) {
+          console.warn('COMPANY_ADMIN: Cannot access profiles due to RLS:', error.message);
+        } else {
+          ownerProfiles = data;
+          console.log('COMPANY_ADMIN: Loaded owner profiles:', data?.length || 0);
+        }
+      } catch (err) {
+        console.warn('COMPANY_ADMIN: Failed to load owner profiles:', err);
+      }
 
       // Get member counts for each pool
       const { data: memberData, error: memberError } = await supabase
@@ -126,10 +140,13 @@ export const PoolAnalyticsTab: React.FC = () => {
         // Calculate total prize pool (confirmed entries * entry fee)
         const prizePoolTotal = pool.has_buy_in ? (confirmedEntries * pool.entry_fee_amount) : 0;
 
+        // Find owner profile
+        const ownerProfile = ownerProfiles?.find(p => p.user_id === pool.owner_id);
+
         return {
           id: pool.id,
           name: pool.name,
-          owner_display_name: pool.profiles?.display_name || 'Unknown Owner',
+          owner_display_name: ownerProfile?.display_name || 'Unknown Owner',
           owner_id: pool.owner_id,
           member_count: memberCount,
           entry_count: entryCount,

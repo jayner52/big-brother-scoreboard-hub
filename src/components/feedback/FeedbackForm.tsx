@@ -157,7 +157,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ type, onClose }) => 
                 <label htmlFor="bugLocation" className="text-sm font-medium">
                   Where on the site did this occur? *
                 </label>
-                <Select value={bugLocation} onValueChange={setBugLocation} required>
+                <Select value={bugLocation} onValueChange={setBugLocation}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select page/section..." />
                   </SelectTrigger>

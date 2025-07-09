@@ -60,42 +60,79 @@ export const CompanyAdminDashboard: React.FC = () => {
 
   const loadUserRegistrations = async () => {
     try {
-      // Get all user profiles
+      console.log('COMPANY_ADMIN: Starting data load...');
+      
+      // Get all user profiles - this should work with current RLS
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, user_id, display_name, created_at');
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('COMPANY_ADMIN: Error loading profiles:', profilesError);
+        throw profilesError;
+      }
+      
+      console.log('COMPANY_ADMIN: Loaded profiles:', profilesData?.length || 0);
 
-      // Get user preferences separately
-      const { data: preferencesData, error: preferencesError } = await supabase
-        .from('user_preferences')
-        .select('user_id, terms_accepted_at, terms_version, email_opt_in');
+      // Try to get user preferences - may fail due to RLS
+      let preferencesData = null;
+      try {
+        const { data, error } = await supabase
+          .from('user_preferences')
+          .select('user_id, terms_accepted_at, terms_version, email_opt_in');
+        
+        if (error) {
+          console.warn('COMPANY_ADMIN: Cannot access user_preferences due to RLS:', error.message);
+        } else {
+          preferencesData = data;
+          console.log('COMPANY_ADMIN: Loaded preferences:', data?.length || 0);
+        }
+      } catch (err) {
+        console.warn('COMPANY_ADMIN: Failed to load user preferences:', err);
+      }
 
-      if (preferencesError) throw preferencesError;
+      // Try to get email list data - may fail due to RLS
+      let emailData = null;
+      try {
+        const { data, error } = await supabase
+          .from('email_list')
+          .select('user_id, email, status');
+        
+        if (error) {
+          console.warn('COMPANY_ADMIN: Cannot access email_list due to RLS:', error.message);
+        } else {
+          emailData = data;
+          console.log('COMPANY_ADMIN: Loaded email data:', data?.length || 0);
+        }
+      } catch (err) {
+        console.warn('COMPANY_ADMIN: Failed to load email list:', err);
+      }
 
-      // Get email list data
-      const { data: emailData, error: emailError } = await supabase
-        .from('email_list')
-        .select('user_id, email, status');
-
-      if (emailError) throw emailError;
-
-      // Get pool memberships
-      const { data: membershipData, error: membershipError } = await supabase
-        .from('pool_memberships')
-        .select(`
-          user_id,
-          role,
-          joined_at,
-          active,
-          pools (
-            name
-          )
-        `)
-        .eq('active', true);
-
-      if (membershipError) throw membershipError;
+      // Try to get pool memberships - may fail due to RLS
+      let membershipData = null;
+      try {
+        const { data, error } = await supabase
+          .from('pool_memberships')
+          .select(`
+            user_id,
+            role,
+            joined_at,
+            active,
+            pools (
+              name
+            )
+          `)
+          .eq('active', true);
+        
+        if (error) {
+          console.warn('COMPANY_ADMIN: Cannot access pool_memberships due to RLS:', error.message);
+        } else {
+          membershipData = data;
+          console.log('COMPANY_ADMIN: Loaded memberships:', data?.length || 0);
+        }
+      } catch (err) {
+        console.warn('COMPANY_ADMIN: Failed to load pool memberships:', err);
+      }
 
       // Combine all data
       const combinedUsers: UserRegistration[] = (profilesData || []).map((profile: any) => {

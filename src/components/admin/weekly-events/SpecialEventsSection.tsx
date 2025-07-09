@@ -294,7 +294,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         {/* Special Events for this week */}
         {eventForm.specialEvents.map((event, index) => (
           <SpecialEventCard
-            key={event.id}
+            key={`${event.id}-${index}-${event.eventType || 'empty'}`}
             event={event}
             index={index}
             availableEvents={availableEvents}

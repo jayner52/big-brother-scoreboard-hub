@@ -70,9 +70,30 @@ export const PoolAnalyticsTab: React.FC = () => {
 
   const loadPoolData = async () => {
     try {
-      console.log('COMPANY_ADMIN: Loading pool analytics...');
+      console.log('COMPANY_ADMIN: Loading enhanced pool analytics...');
       
-      // Get all pools (basic info only, no joins that might cause RLS issues)
+      // Try to load enhanced data via edge function first
+      try {
+        const { data: enhancedData, error: enhancedError } = await supabase.functions.invoke('company-admin-data', {
+          body: { action: 'get_pool_analytics' }
+        });
+
+        if (enhancedError) {
+          console.warn('COMPANY_ADMIN: Enhanced pool data failed, falling back to basic data:', enhancedError);
+          throw enhancedError;
+        }
+
+        console.log('COMPANY_ADMIN: Enhanced pool data loaded successfully');
+        
+        setPools(enhancedData.pools || []);
+        setStats(enhancedData.stats || stats);
+        return;
+        
+      } catch (enhancedError) {
+        console.log('COMPANY_ADMIN: Falling back to basic pool data loading...');
+      }
+
+      // Fallback to basic data loading
       const { data: poolsData, error: poolsError } = await supabase
         .from('pools')
         .select(`

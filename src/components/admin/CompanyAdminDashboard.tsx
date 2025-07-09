@@ -50,9 +50,46 @@ export const CompanyAdminDashboard: React.FC = () => {
 
   const loadUserRegistrations = async () => {
     try {
-      console.log('COMPANY_ADMIN: Starting data load...');
+      console.log('COMPANY_ADMIN: Starting enhanced data load...');
       
-      // Get all user profiles - this should work with current RLS
+      // Try to load enhanced data via edge function first
+      try {
+        const { data: enhancedData, error: enhancedError } = await supabase.functions.invoke('company-admin-data', {
+          body: { action: 'get_user_data' }
+        });
+
+        if (enhancedError) {
+          console.warn('COMPANY_ADMIN: Enhanced data failed, falling back to basic data:', enhancedError);
+          throw enhancedError;
+        }
+
+        console.log('COMPANY_ADMIN: Enhanced data loaded successfully');
+        
+        // Convert enhanced data to basic format for compatibility
+        const enhancedUsers = enhancedData.users || [];
+        const basicUsers: UserRegistration[] = enhancedUsers.map((user: any) => ({
+          id: user.id,
+          user_id: user.user_id,
+          display_name: user.display_name,
+          registration_date: user.registration_date,
+          email: user.email,
+          terms_accepted: user.terms_accepted,
+          terms_accepted_at: user.terms_accepted_at,
+          terms_version: user.terms_version,
+          email_opt_in: user.email_opt_in,
+          email_subscription_status: user.email_subscription_status,
+          pool_memberships: user.pool_memberships
+        }));
+
+        setUsers(basicUsers);
+        setStats(enhancedData.stats || stats);
+        return;
+        
+      } catch (enhancedError) {
+        console.log('COMPANY_ADMIN: Falling back to basic data loading...');
+      }
+
+      // Fallback to basic data loading
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, user_id, display_name, created_at');

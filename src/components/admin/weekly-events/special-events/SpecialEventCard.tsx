@@ -67,7 +67,15 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
           <Select
             value={event.eventType}
             onValueChange={(value) => {
-              console.log('🔍 Select onValueChange:', { eventType: value, eventIndex: index });
+              console.log('🔍 Select onValueChange:', { 
+                selectedValue: value, 
+                eventIndex: index, 
+                availableEvents: availableEvents.map(e => ({
+                  id: e.id, 
+                  subcategory: e.subcategory, 
+                  itemValue: e.subcategory === 'custom_permanent' ? e.id : e.subcategory
+                }))
+              });
               updateSpecialEvent(index, 'eventType', value);
               // Reset custom points when changing event type (except for custom events)
               if (value !== 'custom_event') {
@@ -83,6 +91,13 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
                 const emoji = getScoringRuleEmoji(eventRule.category, eventRule.subcategory, eventRule.emoji);
                 // Use unique ID for custom permanent events, subcategory for others
                 const itemValue = eventRule.subcategory === 'custom_permanent' ? eventRule.id : eventRule.subcategory;
+                console.log('🔍 SelectItem:', { 
+                  ruleId: eventRule.id, 
+                  subcategory: eventRule.subcategory, 
+                  itemValue, 
+                  currentEventType: event.eventType,
+                  matches: itemValue === event.eventType
+                });
                 return (
                   <SelectItem key={eventRule.id || eventRule.subcategory} value={itemValue}>
                     <span className="flex items-center gap-2">

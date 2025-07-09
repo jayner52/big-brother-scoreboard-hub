@@ -36,22 +36,36 @@ export const populateSeason27GlobalDefaults = async (): Promise<{ success: boole
       { group_name: 'Group D', sort_order: 4 }
     ];
     
-    // Insert groups if they don't exist
+    // Insert groups if they don't exist - use simple insert with error handling
     for (const group of defaultGroups) {
-      const { error: insertError } = await supabase
-        .from('contestant_groups')
-        .upsert({
-          pool_id: null,
-          group_name: group.group_name,
-          sort_order: group.sort_order
-        }, {
-          onConflict: 'pool_id,group_name',
-          ignoreDuplicates: true
-        });
-        
-      if (insertError) {
-        console.error(`🏠 BB27: Error creating group ${group.group_name}:`, insertError);
-        throw insertError;
+      try {
+        const { data: existingGroup } = await supabase
+          .from('contestant_groups')
+          .select('id')
+          .is('pool_id', null)
+          .eq('group_name', group.group_name)
+          .single();
+          
+        if (!existingGroup) {
+          const { error: insertError } = await supabase
+            .from('contestant_groups')
+            .insert({
+              pool_id: null,
+              group_name: group.group_name,
+              sort_order: group.sort_order
+            });
+            
+          if (insertError) {
+            console.error(`🏠 BB27: Error creating group ${group.group_name}:`, insertError);
+            throw insertError;
+          }
+        }
+      } catch (error) {
+        // If it's a duplicate key error, that's fine - group already exists
+        if (error.code !== '23505') {
+          console.error(`🏠 BB27: Error creating group ${group.group_name}:`, error);
+          throw error;
+        }
       }
     }
     

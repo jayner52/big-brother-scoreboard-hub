@@ -125,10 +125,10 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Switch
-                  checked={editForm.isActive ?? true}
-                  onCheckedChange={(checked) => onFormChange({ isActive: checked })}
+                  checked={true}
+                  disabled
                 />
-                <Label>Active</Label>
+                <Label>Active (Always)</Label>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" onClick={onSave}>
@@ -167,11 +167,11 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
               )}
             </div>
             <div>
-              <h3 className={`font-semibold text-lg ${!contestant.isActive ? 'text-destructive' : 'text-primary'}`}>
+              <h3 className="font-semibold text-lg text-primary">
                 {contestant.name}
               </h3>
               <p className="text-sm text-muted-foreground mb-1">
-                {!contestant.isActive ? 'Evicted' : 'Active'} • Order: {contestant.sort_order}
+                Active • Order: {contestant.sort_order}
               </p>
               <p className="text-sm text-muted-foreground mb-2">
                 Group: {groups.find(g => g.id === contestant.group_id)?.group_name || 'Unassigned'}

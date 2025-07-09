@@ -22,9 +22,9 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // CRITICAL: Use is_active field as single source of truth (maintained by database triggers)
-  const activeContestants = contestants.filter(c => c.isActive);
-  const evictedContestants = contestants.filter(c => !c.isActive);
+  // Show all contestants as active (no eviction filtering)
+  const activeContestants = contestants;
+  const evictedContestants = [];
 
   return (
     <Card className="bg-muted/50">

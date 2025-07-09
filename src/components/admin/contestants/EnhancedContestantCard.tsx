@@ -39,7 +39,7 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [editBio, setEditBio] = useState(contestant.bio || '');
   const [isSaving, setIsSaving] = useState(false);
-  const isEvicted = !contestant.isActive; // Use isActive field directly
+  const isEvicted = false; // No eviction logic - all contestants active
   
   const archetype = contestant.personality_traits?.archetype;
   const threatLevel = contestant.gameplay_strategy?.threat_level;
@@ -110,7 +110,7 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
               </div>
             )}
             <div>
-              <h3 className={`font-bold text-lg ${isEvicted ? 'text-destructive' : 'text-primary'}`}>
+              <h3 className="font-bold text-lg text-primary">
                 {contestant.name}
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -129,11 +129,6 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
               <Badge variant="secondary" className="text-xs">
                 <Bot className="h-3 w-3 mr-1" />
                 AI Generated
-              </Badge>
-            )}
-            {isEvicted && (
-              <Badge variant="destructive" className="text-xs">
-                Evicted
               </Badge>
             )}
           </div>

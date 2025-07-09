@@ -18,14 +18,6 @@ export const SCORING_CATEGORY_EMOJIS: Record<string, ScoringCategoryMapping[]> =
     { category: 'competition', subcategory: 'ai_arena_winner', emoji: '🤖', description: 'AI Arena Winner' },
   ],
 
-  // Weekly Events
-  weekly: [
-    { category: 'weekly', subcategory: 'nominee', emoji: '🎯', description: 'Nominated for Eviction' },
-    { category: 'weekly', subcategory: 'replacement_nominee', emoji: '🔃', description: 'Replacement Nominee' },
-    { category: 'weekly', subcategory: 'saved_by_veto', emoji: '🆓', description: 'Saved by Power of Veto' },
-    { category: 'weekly', subcategory: 'survival', emoji: '💚', description: 'Survived Eviction' },
-    { category: 'weekly', subcategory: 'bb_arena_winner', emoji: '🏟️', description: 'Won BB Arena (Safety from Eviction)' },
-  ],
 
   // Special Achievements
   special_achievements: [
@@ -83,7 +75,6 @@ export const getScoringRuleEmoji = (category: string, subcategory?: string, cust
 export const getCategoryHeaderEmoji = (category: string): string => {
   const emojiMap: Record<string, string> = {
     competition: '🏁',      // Changed from 🏆 to avoid duplicate
-    weekly: '📅',
     special_achievements: '🎖️',  // Changed from 🌟 to avoid duplicate  
     jury: '👨‍⚖️',             // Changed from ⚖️ to avoid duplicate
     final_placement: '🥇',   // Changed from 👑 to avoid duplicate

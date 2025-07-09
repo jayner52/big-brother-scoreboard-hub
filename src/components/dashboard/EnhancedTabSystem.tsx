@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -30,12 +30,59 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const visibleTabs = tabs.filter(tab => !tab.hidden);
-  const [activeTab, setActiveTab] = useState(defaultTab || visibleTabs[0]?.id || '');
+  
+  // Initialize active tab from URL hash or localStorage, fallback to defaultTab
+  const getInitialTab = () => {
+    // First check URL hash
+    const hashTab = window.location.hash.replace('#', '');
+    if (hashTab && visibleTabs.some(tab => tab.id === hashTab)) {
+      return hashTab;
+    }
+    
+    // Then check localStorage
+    const storedTab = localStorage.getItem('dashboard-active-tab');
+    if (storedTab && visibleTabs.some(tab => tab.id === storedTab)) {
+      return storedTab;
+    }
+    
+    // Finally use defaultTab or first available tab
+    return defaultTab || visibleTabs[0]?.id || '';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab);
 
+  // Persist tab selection and update URL hash
   const handleTabClick = (tabId: string, tab: TabConfig) => {
     if (tab.locked) return; // Don't allow clicking locked tabs
     setActiveTab(tabId);
+    
+    // Persist to localStorage
+    localStorage.setItem('dashboard-active-tab', tabId);
+    
+    // Update URL hash without triggering navigation
+    window.history.replaceState(null, '', `#${tabId}`);
   };
+
+  // Listen for hash changes (back/forward button)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hashTab = window.location.hash.replace('#', '');
+      if (hashTab && visibleTabs.some(tab => tab.id === hashTab)) {
+        setActiveTab(hashTab);
+        localStorage.setItem('dashboard-active-tab', hashTab);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [visibleTabs]);
+
+  // Set initial hash if none exists
+  useEffect(() => {
+    if (activeTab && !window.location.hash) {
+      window.history.replaceState(null, '', `#${activeTab}`);
+    }
+  }, [activeTab]);
 
   const activeTabData = visibleTabs.find(tab => tab.id === activeTab);
 

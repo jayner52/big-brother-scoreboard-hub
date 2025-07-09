@@ -34,15 +34,31 @@ export const calculateContestantStats = (
       return count + (players.includes(contestant.name) ? 1 : 0);
     }, 0);
 
-    // Count HOH wins
-    const hohWins = weeklyEvents.filter(event => 
-      event.contestant_id === contestant.id && event.event_type === 'hoh_winner'
-    ).length;
+    // Count HOH wins - use current scoring rule system
+    const hohWins = weeklyEvents.filter(event => {
+      // Check if event_type is a UUID (new system) or string (legacy)
+      if (event.event_type?.length > 20) {
+        // UUID format - this is the current system
+        return event.contestant_id === contestant.id && 
+               event.event_type?.includes('hoh_winner') ||
+               event.event_type === 'hoh_winner';
+      }
+      // Legacy string format
+      return event.contestant_id === contestant.id && event.event_type === 'hoh_winner';
+    }).length;
 
-    // Count Veto wins
-    const vetoWins = weeklyEvents.filter(event => 
-      event.contestant_id === contestant.id && event.event_type === 'pov_winner'
-    ).length;
+    // Count Veto wins - use current scoring rule system
+    const vetoWins = weeklyEvents.filter(event => {
+      // Check if event_type is a UUID (new system) or string (legacy)
+      if (event.event_type?.length > 20) {
+        // UUID format - this is the current system
+        return event.contestant_id === contestant.id && 
+               event.event_type?.includes('pov_winner') ||
+               event.event_type === 'pov_winner';
+      }
+      // Legacy string format
+      return event.contestant_id === contestant.id && event.event_type === 'pov_winner';
+    }).length;
 
     // Count times on block (nominations)
     const timesOnBlock = weeklyEvents.filter(event => 
@@ -52,10 +68,18 @@ export const calculateContestantStats = (
     // Count times on block at eviction and survived
     const timesOnBlockAtEviction = calculateBlockSurvivalStats(contestant.id, weeklyEvents);
 
-    // Count times saved by veto
-    const timesSavedByVeto = weeklyEvents.filter(event => 
-      event.contestant_id === contestant.id && event.event_type === 'pov_used_on'
-    ).length;
+    // Count times saved by veto - use current scoring rule system
+    const timesSavedByVeto = weeklyEvents.filter(event => {
+      // Check if event_type is a UUID (new system) or string (legacy)
+      if (event.event_type?.length > 20) {
+        // UUID format - this is the current system
+        return event.contestant_id === contestant.id && 
+               event.event_type?.includes('pov_used_on') ||
+               event.event_type === 'pov_used_on';
+      }
+      // Legacy string format
+      return event.contestant_id === contestant.id && event.event_type === 'pov_used_on';
+    }).length;
 
     // Find elimination week
     const evictionEvent = weeklyEvents.find(event => 
@@ -74,13 +98,22 @@ export const calculateContestantStats = (
 
     // Include relevant weekly events as special events for display
     const weeklySpecialEvents = weeklyEvents
-      .filter(event => 
-        event.contestant_id === contestant.id && 
-        ['bb_arena_winner', 'jury_member'].includes(event.event_type)
-      )
+      .filter(event => {
+        if (event.contestant_id !== contestant.id) return false;
+        
+        // Handle both UUID and string event types
+        if (event.event_type?.length > 20) {
+          // UUID format - check against scoring rules
+          return ['bb_arena_winner', 'jury_member'].some(type => 
+            event.event_type?.includes(type) || event.event_type === type
+          );
+        }
+        // Legacy string format
+        return ['bb_arena_winner', 'jury_member'].includes(event.event_type);
+      })
       .map(event => ({
         event_type: event.event_type,
-        description: event.event_type === 'bb_arena_winner' ? 'BB Arena Winner' : 'Jury Member',
+        description: event.event_type?.includes('bb_arena_winner') || event.event_type === 'bb_arena_winner' ? 'BB Arena Winner' : 'Jury Member',
         points_awarded: event.points_awarded
       }));
 

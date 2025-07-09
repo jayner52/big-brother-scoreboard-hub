@@ -32,7 +32,8 @@ export const EmojiLegend: React.FC = () => {
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
           {activeScoringRules.map((rule) => {
-            const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
+            // Prioritize database emoji field over utility function
+            const emoji = rule.emoji || getScoringRuleEmoji(rule.category, rule.subcategory);
             return (
               <div key={rule.id} className="flex items-center gap-2">
                 <span className="text-sm">{emoji}</span>

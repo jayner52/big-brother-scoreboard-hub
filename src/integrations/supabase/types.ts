@@ -296,8 +296,6 @@ export type Database = {
           relationship_status: string | null
           season_number: number | null
           sort_order: number | null
-          times_on_block_at_eviction: number | null
-          times_saved_by_veto: number | null
         }
         Insert: {
           age?: number | null
@@ -333,8 +331,6 @@ export type Database = {
           relationship_status?: string | null
           season_number?: number | null
           sort_order?: number | null
-          times_on_block_at_eviction?: number | null
-          times_saved_by_veto?: number | null
         }
         Update: {
           age?: number | null
@@ -370,8 +366,6 @@ export type Database = {
           relationship_status?: string | null
           season_number?: number | null
           sort_order?: number | null
-          times_on_block_at_eviction?: number | null
-          times_saved_by_veto?: number | null
         }
         Relationships: [
           {

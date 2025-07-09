@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { AdminEmailDashboard } from './AdminEmailDashboard';
+import { CompanyAdminDashboard } from './CompanyAdminDashboard';
 import { Building2, Lock, Unlock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -113,7 +113,7 @@ export const CompanyAdminAccess: React.FC = () => {
           </Button>
         </div>
         
-        <AdminEmailDashboard />
+        <CompanyAdminDashboard />
       </div>
     );
   }

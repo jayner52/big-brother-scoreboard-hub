@@ -29,7 +29,7 @@ export const ScoringBadges: React.FC = () => {
     } else if (rule.subcategory === 'pov_winner') {
       badges.push(
         <Badge key={rule.id} variant="secondary" className="bg-white/80 backdrop-blur-sm text-green-800 border border-green-200">
-          🗝️ POV: {rule.points} pts
+          🚫 POV: {rule.points} pts
         </Badge>
       );
     } else if (rule.subcategory === 'bb_arena_winner') {

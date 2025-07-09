@@ -9,7 +9,12 @@ interface PointsPreviewProps {
   pointsPreview: Record<string, number>;
   contestants: ContestantWithBio[];
   evictedThisWeek?: string[];
-  eventForm?: { week: number };
+  eventForm?: { 
+    week: number;
+    evicted?: string;
+    secondEvicted?: string;
+    thirdEvicted?: string;
+  };
 }
 
 export const PointsPreview: React.FC<PointsPreviewProps> = ({ 
@@ -26,9 +31,18 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // Separate contestants by eviction status (using week-aware eviction data)
-  const activeContestants = contestants.filter(c => !evictedContestants.includes(c.name));
-  const evictedContestantsList = contestants.filter(c => evictedContestants.includes(c.name));
+  // Combine database evictions with current form evictions for dynamic preview
+  const currentFormEvictions = [
+    eventForm?.evicted,
+    eventForm?.secondEvicted, 
+    eventForm?.thirdEvicted
+  ].filter(name => name && name !== 'no-eviction');
+
+  const allEvictedContestants = [...new Set([...evictedContestants, ...currentFormEvictions])];
+
+  // Separate contestants by eviction status (using combined eviction data)
+  const activeContestants = contestants.filter(c => !allEvictedContestants.includes(c.name));
+  const evictedContestantsList = contestants.filter(c => allEvictedContestants.includes(c.name));
 
   // Combine and sort contestants: active first, then evicted (earliest evictions last)
   const sortedContestants = [
@@ -47,7 +61,7 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {sortedContestants.map((contestant) => {
             const points = allContestantsPreview[contestant.name] || 0;
-            const isEvicted = evictedContestants.includes(contestant.name);
+            const isEvicted = allEvictedContestants.includes(contestant.name);
             
             if (isEvicted) {
               return (

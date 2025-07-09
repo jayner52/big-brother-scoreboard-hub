@@ -29,24 +29,33 @@ export const useContestants = (poolId?: string) => {
       if (!poolContestants || poolContestants.length < 17) {
         console.log('🔥 Pool has few contestants, checking if defaults need to be seeded...');
         
-        // Check if Season 27 defaults exist (prioritize Season 27)
-        const { data: defaultContestants } = await supabase
+        // Check if Season 27 defaults exist - we can't query them directly due to RLS,
+        // so we'll rely on the seeding function to handle this
+        console.log('🔥 Attempting to seed Season 27 contestants for empty pool...');
+        
+        // The pool is empty and we need to seed it - try the seeding function
+        const { data: defaultCheck } = await supabase
           .from('contestants')
-          .select('*')
+          .select('count')
           .is('pool_id', null)
           .eq('season_number', 27)
-          .order('name', { ascending: true });
+          .single();
         
-        console.log('🔥 Season 27 default contestants available:', defaultContestants?.length || 0);
+        console.log('🔥 Season 27 global defaults check result:', defaultCheck);
         
-        // If Season 27 defaults exist but pool has none, trigger seeding
-        if (defaultContestants && defaultContestants.length >= 17 && (!poolContestants || poolContestants.length === 0)) {
+        // Always try seeding for empty pools (the function will handle if defaults exist)
+        if (!poolContestants || poolContestants.length === 0) {
           console.log('🔥 Triggering Season 27 pool seeding...');
           try {
             const { error } = await supabase.rpc('seed_new_pool_defaults', { target_pool_id: poolId });
             if (error) {
               console.error('🔥 Pool seeding RPC error:', error);
-              throw error;
+              // If it's a duplicate key error, the contestants might already be there
+              if (!error.message.includes('duplicate key')) {
+                throw error;
+              } else {
+                console.log('🔥 Contestants may already exist, continuing...');
+              }
             }
             console.log('🔥 Pool seeding completed, reloading contestants...');
             
@@ -71,17 +80,12 @@ export const useContestants = (poolId?: string) => {
             console.error('🔥 Pool seeding failed:', seedError);
             toast({
               title: "Warning",
-              description: "Failed to load Season 27 contestants. You may need to add contestants manually.",
+              description: "Failed to load Season 27 contestants. Using manual seeding button below.",
               variant: "destructive",
             });
           }
-        } else if (!defaultContestants || defaultContestants.length === 0) {
-          console.log('🔥 No Season 27 defaults found - this should not happen!');
-          toast({
-            title: "Warning", 
-            description: "Season 27 contestants not found in database. Please contact support.",
-            variant: "destructive",
-          });
+        } else {
+          console.log('🔥 Pool already has contestants, skipping seeding');
         }
       }
       

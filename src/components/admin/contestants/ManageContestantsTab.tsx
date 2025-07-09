@@ -4,6 +4,7 @@ import { ContestantForm } from './ContestantForm';
 import { ContestantList } from './ContestantList';
 import { GenerateFullCastButton } from './GenerateFullCastButton';
 import { ForceBB27PopulationButton } from './ForceBB27PopulationButton';
+import { ManualSeedButton } from './ManualSeedButton';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Trash2, Camera, Loader2 } from 'lucide-react';
@@ -65,6 +66,12 @@ export const ManageContestantsTab: React.FC<ManageContestantsTabProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Manual Seed Button for empty pools */}
+      <ManualSeedButton 
+        contestantCount={contestants.length}
+        onSeedComplete={onRefresh}
+      />
+      
       {/* Action Buttons */}
       <div className="flex gap-4 flex-wrap">
         <GenerateFullCastButton onRefresh={onRefresh} seasonNumber={27} />

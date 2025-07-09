@@ -21,7 +21,7 @@ const PrizePoolManagement = React.lazy(() => import('@/components/admin/PrizePoo
 export const AdminScoringPanel: React.FC = () => {
   const { canManagePool, canManageRoles, getUserRole } = usePoolPermissions();
   const activePool = useActivePool();
-  const [activeTab, setActiveTab] = useState('events');
+  const [activeTab, setActiveTab] = useState('settings');
   
   const userRole = getUserRole();
   const isOwner = userRole === 'owner';
@@ -35,7 +35,7 @@ export const AdminScoringPanel: React.FC = () => {
     if (poolId) {
       const savedTab = localStorage.getItem(`admin_panel_active_tab_${poolId}`);
       if (savedTab) {
-        const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants', 'prizepool'];
+        const validTabs = ['settings', 'events', 'legacy', 'bonus', 'entries', 'contestants'];
         if (canManageRoles()) validTabs.push('roles');
         
         if (validTabs.includes(savedTab)) {
@@ -48,7 +48,7 @@ export const AdminScoringPanel: React.FC = () => {
     // Fall back to URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
-    const validTabs = ['events', 'legacy', 'settings', 'bonus', 'entries', 'contestants', 'prizepool'];
+    const validTabs = ['settings', 'events', 'legacy', 'bonus', 'entries', 'contestants'];
     if (canManageRoles()) validTabs.push('roles');
     
     if (tab && validTabs.includes(tab)) {
@@ -126,6 +126,13 @@ export const AdminScoringPanel: React.FC = () => {
             <div className="px-4 py-2">
               <TabsList className="grid w-full h-auto gap-1 bg-transparent p-0 md:flex md:flex-wrap">
                 <TabsTrigger 
+                  value="settings" 
+                  data-value="settings"
+                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
+                  Pool Settings
+                </TabsTrigger>
+                <TabsTrigger 
                   value="events" 
                   data-value="events"
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
@@ -138,13 +145,6 @@ export const AdminScoringPanel: React.FC = () => {
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   Week Overview
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="settings" 
-                  data-value="settings"
-                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                >
-                  Pool Settings
                 </TabsTrigger>
                 <TabsTrigger 
                   value="bonus" 
@@ -167,13 +167,6 @@ export const AdminScoringPanel: React.FC = () => {
                 >
                   Houseguests
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="prizepool" 
-                  data-value="prizepool"
-                  className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                >
-                  Prize Pool
-                </TabsTrigger>
                 {canManageRoles() && (
                   <TabsTrigger 
                     value="roles" 
@@ -189,7 +182,15 @@ export const AdminScoringPanel: React.FC = () => {
 
       {/* Tab Content with Consistent Padding */}
       <div className="p-4 md:p-6" data-admin-panel>
-        <TabsContent value="events" className="space-y-4 mt-0">
+        <TabsContent value="settings" className="space-y-4 mt-0">
+              <ErrorBoundary>
+                <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading pool settings...</div>}>
+                  <PoolSettingsPanel />
+                </Suspense>
+              </ErrorBoundary>
+            </TabsContent>
+
+            <TabsContent value="events" className="space-y-4 mt-0">
               <ErrorBoundary>
                 <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading weekly events...</div>}>
                   <WeeklyEventsPanel />
@@ -201,14 +202,6 @@ export const AdminScoringPanel: React.FC = () => {
               <ErrorBoundary>
                 <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading week overview...</div>}>
                   <WeekByWeekOverview />
-                </Suspense>
-              </ErrorBoundary>
-            </TabsContent>
-
-            <TabsContent value="settings" className="space-y-4 mt-0">
-              <ErrorBoundary>
-                <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading pool settings...</div>}>
-                  <PoolSettingsPanel />
                 </Suspense>
               </ErrorBoundary>
             </TabsContent>
@@ -233,14 +226,6 @@ export const AdminScoringPanel: React.FC = () => {
               <ErrorBoundary>
                 <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading houseguest management...</div>}>
                   <ContestantManagement />
-                </Suspense>
-              </ErrorBoundary>
-            </TabsContent>
-
-            <TabsContent value="prizepool" className="space-y-4 mt-0">
-              <ErrorBoundary>
-                <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading prize pool management...</div>}>
-                  <PrizePoolManagement />
                 </Suspense>
               </ErrorBoundary>
             </TabsContent>

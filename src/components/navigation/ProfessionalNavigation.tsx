@@ -90,7 +90,10 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
           </Badge>
         )}
         {hasNotification && (
-          <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
+          <div 
+            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white cursor-help"
+            title="Buy In Outstanding"
+          >
             !
           </div>
         )}
@@ -199,7 +202,10 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
                   <Users className="h-4 w-4" />
                   My Team(s)
                    {(hasUnreadNotifications || hasOutstandingPayment) && (
-                     <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
+                     <div 
+                       className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white cursor-help"
+                       title="Buy In Outstanding"
+                     >
                        !
                      </div>
                    )}

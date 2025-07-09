@@ -54,7 +54,9 @@ export const usePaymentNotifications = () => {
 
       console.log('PAYMENT_NOTIFICATIONS: Results:', {
         notifications: notifications?.length || 0,
+        notificationDetails: notifications?.map(n => ({ id: n.id, type: n.notification_type, read_at: n.read_at })),
         outstandingEntries: entries?.length || 0,
+        entryDetails: entries?.map(e => ({ id: e.id, payment_confirmed: e.payment_confirmed })),
         hasUnreadNotifications,
         hasOutstandingPayment,
         totalUnread

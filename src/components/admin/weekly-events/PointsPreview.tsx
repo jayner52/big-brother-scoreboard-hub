@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContestantWithBio } from '@/types/admin';
@@ -17,15 +18,17 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
   evictedThisWeek = [],
   eventForm
 }) => {
+  const { evictedContestants } = useWeekAwareContestants(eventForm?.week || 1);
+
   // Ensure all contestants appear in preview
   const allContestantsPreview = contestants.reduce((acc, contestant) => {
     acc[contestant.name] = pointsPreview[contestant.name] || 0;
     return acc;
   }, {} as Record<string, number>);
 
-  // Separate contestants by eviction status (using week-aware isActive)
-  const activeContestants = contestants.filter(c => c.isActive);
-  const evictedContestants = contestants.filter(c => !c.isActive);
+  // Separate contestants by eviction status (using week-aware eviction data)
+  const activeContestants = contestants.filter(c => !evictedContestants.includes(c.name));
+  const evictedContestantsList = contestants.filter(c => evictedContestants.includes(c.name));
 
   return (
     <Card className="bg-muted/50">
@@ -58,11 +61,11 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
         )}
 
         {/* Evicted Contestants */}
-        {evictedContestants.length > 0 && (
+        {evictedContestantsList.length > 0 && (
           <div>
             <h4 className="font-semibold text-sm text-muted-foreground mb-3">Evicted Contestants</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {evictedContestants.map((contestant) => {
+              {evictedContestantsList.map((contestant) => {
                 const points = allContestantsPreview[contestant.name] || 0;
                 return (
                   <EvictedContestantTile

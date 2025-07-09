@@ -36,14 +36,17 @@ export const CompanyAdminAccess: React.FC = () => {
 
     setLoading(true);
     try {
-      // Fetch the company admin password from Supabase secrets
-      const { data, error } = await supabase.functions.invoke('verify-company-admin', {
-        body: { password }
-      });
-
-      if (error) throw error;
-
-      if (data.valid) {
+      // Hash the input password using SHA-256
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      // Compare with the stored hash of "EW7e1rM2WBs16TFyWJiP"
+      const validPasswordHash = '48c8947f69c054a5caa934674ce8881d02bb18fb59d5a63eeaddff735b0e9801';
+      
+      if (hashHex === validPasswordHash) {
         setIsUnlocked(true);
         sessionStorage.setItem('company_admin_unlocked', 'true');
         setPassword('');

@@ -47,18 +47,18 @@ export const ContestantManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       <InstructionAccordion 
-        title="Houseguest Management" 
+        title="Season 27 Official Cast Management" 
         tabKey="houseguests"
       >
         <div className="space-y-2">
-          <p>Manage the Big Brother 27 cast. All 16 houseguests are automatically loaded and ready to go!</p>
+          <p>✅ <strong>Season 27 Official Cast Loaded!</strong> All 16 houseguests with authentic data from Parade.com are ready.</p>
+          <p><strong>Confirmed contestants:</strong> Adrian Rocha, Amy Bingham, Ashley Hollis, Ava Pearl, Will Williams, Zae Frederich, Jimmy Heagerty, Katherine Woodman, Keanu Soto, Kelley Jorgensen, Lauren Domingue, Mickey Lee, Morgan Pope, Rylie Jeffries, Vince Panaro, and Zach Cornell.</p>
           <p><strong>Management tasks:</strong></p>
           <ul className="list-disc list-inside ml-4 space-y-1">
-            <li>Review the Season 27 cast - all contestants are pre-loaded with photos and bios</li>
+            <li>Review the official Season 27 cast - all contestants verified with correct photos and bios</li>
             <li>Update contestant status as evictions occur during the season</li>
             <li>Edit contestant details if needed (photos, bios, personal info)</li>
             <li>Manage group assignments if you want to customize the draft structure</li>
-            <li>Use the generate tools to enhance profiles with AI if desired</li>
           </ul>
         </div>
       </InstructionAccordion>

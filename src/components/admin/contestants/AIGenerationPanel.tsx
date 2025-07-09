@@ -41,7 +41,7 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
     'big-brother': {
       name: 'Big Brother',
       seasons: {
-        27: { cast: 16, theme: 'TBD', format: 'TBD', twists: 'Cast not yet announced' },
+        27: { cast: 16, theme: 'New School vs Old School', format: 'Standard', twists: 'BB AI, Arena, Multiverse' },
         26: { cast: 16, theme: 'AI Arena', format: 'Standard', twists: 'AI Arena competition, America\'s Veto' },
         25: { cast: 17, theme: 'Regular Season', format: 'Standard', twists: 'Invisible HOH, Comic-Verse Power' },
         24: { cast: 16, theme: 'Regular Season', format: 'Standard', twists: 'Backstage Boss, Festie Besties' },
@@ -61,10 +61,10 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
   const [selectedShow, setSelectedShow] = useState('big-brother');
   const [seasonConfig, setSeasonConfig] = useState({
     season_number: 27,
-    season_theme: 'TBD',
-    season_format: 'TBD',
+    season_theme: 'New School vs Old School',
+    season_format: 'Standard',
     cast_size: 16,
-    special_twists: 'Cast not yet announced',
+    special_twists: 'BB AI, Arena, Multiverse',
     count: 16,
     pool_id: null as string | null
   });
@@ -142,13 +142,46 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
   const generateFullCast = async () => {
     const season = showConfigs[selectedShow].seasons[seasonConfig.season_number];
     
-    // Check if Season 27 (TBD)
+    // Handle Season 27 via Parade scraping
     if (seasonConfig.season_number === 27) {
-      toast({
-        title: "Season 27 Not Available",
-        description: "Big Brother 27 cast has not been announced yet. Please select a different season.",
-        variant: "destructive",
-      });
+      setIsGenerating(true);
+      setProgress(10);
+      setError(null);
+      
+      try {
+        setProgress(30);
+        console.log('🏠 BB27: Starting Season 27 population...');
+        
+        // Import the BB27 function
+        const { populateSeason27Houseguests } = await import('@/data/season27Houseguests');
+        
+        setProgress(60);
+        const result = await populateSeason27Houseguests(activePool?.id || '');
+        setProgress(100);
+        
+        if (result.success) {
+          toast({
+            title: "✅ Season 27 Populated!",
+            description: `Successfully added ${result.count} Season 27 houseguests from Parade!`,
+          });
+          
+          // Trigger parent component refresh
+          onProfilesGenerated([]);
+        } else {
+          throw new Error(result.error || 'Failed to populate Season 27 houseguests');
+        }
+      } catch (error) {
+        console.error('❌ Season 27 population failed:', error);
+        setError(error.message || 'Failed to populate Season 27 houseguests');
+        toast({
+          title: "Population Failed",
+          description: error.message || 'Failed to populate Season 27 houseguests',
+          variant: "destructive",
+        });
+      } finally {
+        setIsGenerating(false);
+        setProgress(0);
+      }
       return;
     }
 
@@ -412,19 +445,25 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">
-                {seasonConfig.season_number === 26 ? 
-                  (progress < 50 ? "Populating Season 26 houseguests..." : "Finalizing houseguest setup...") :
-                  (progress < 20 ? "Starting web scraping..." :
-                   progress < 40 ? "Validating contestant photos..." :
-                   progress < 60 ? "Processing batch 1 of 2..." :
-                   progress < 80 ? "Processing batch 2 of 2..." :
-                   "Finalizing database operations...")}
+              {seasonConfig.season_number === 26 ? 
+                (progress < 50 ? "Populating Season 26 houseguests..." : "Finalizing houseguest setup...") :
+                seasonConfig.season_number === 27 ?
+                (progress < 30 ? "Scraping Parade.com for BB27 cast..." :
+                 progress < 60 ? "Processing contestant data..." :
+                 "Setting up global defaults...") :
+                (progress < 20 ? "Starting web scraping..." :
+                 progress < 40 ? "Validating contestant photos..." :
+                 progress < 60 ? "Processing batch 1 of 2..." :
+                 progress < 80 ? "Processing batch 2 of 2..." :
+                 "Finalizing database operations...")}
               </span>
             </div>
             <Progress value={progress} className="w-full" />
             <div className="text-xs text-muted-foreground">
               {seasonConfig.season_number === 26 ? 
                 "Instant population with verified Season 26 cast" :
+                seasonConfig.season_number === 27 ?
+                "Live scraping from Parade.com with AI processing" :
                 "Robust processing with retry logic and rate limiting"}
             </div>
           </div>
@@ -432,29 +471,30 @@ export const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({ onProfiles
 
         {/* Generation Button */}
         <div className="flex justify-center">
-            <Button 
+          <Button 
             onClick={generateFullCast}
-            disabled={isGenerating || seasonConfig.season_number === 27}
+            disabled={isGenerating}
             className="flex items-center gap-2 px-8"
           >
             <Users className="h-4 w-4" />
             {isGenerating ? "Processing..." : 
              seasonConfig.season_number === 26 ? `Populate Season 26 (${showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})` :
+             seasonConfig.season_number === 27 ? `Populate Season 27 (${showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})` :
              `Generate Full Cast (${showConfigs[selectedShow].seasons[seasonConfig.season_number].cast})`}
           </Button>
         </div>
 
         {seasonConfig.season_number === 27 && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-amber-800">Season 27 Coming Soon</h4>
-                <p className="text-sm text-amber-700 mt-1">The Big Brother 27 cast has not been announced yet. Generation will be available once the official cast is revealed.</p>
+                <h4 className="text-sm font-medium text-green-800">Season 27 Available</h4>
+                <p className="text-sm text-green-700 mt-1">Big Brother 27 cast is now available via live scraping from Parade.com. Data is refreshed automatically.</p>
               </div>
             </div>
           </div>

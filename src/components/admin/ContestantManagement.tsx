@@ -10,12 +10,16 @@ import { AIGenerationTab } from './contestants/AIGenerationTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePool } from '@/contexts/PoolContext';
 import { InstructionAccordion } from './InstructionAccordion';
+import { useBB27GlobalDefaults } from '@/hooks/useBB27GlobalDefaults';
 
 export const ContestantManagement: React.FC = () => {
   const { activePool } = usePool();
   const { contestants, setContestants, groups, loading, loadContestants } = useContestants(activePool?.id);
   const [selectedContestant, setSelectedContestant] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  
+  // Initialize BB27 global defaults
+  const { isInitializing } = useBB27GlobalDefaults();
   
   const {
     editingId,
@@ -37,8 +41,12 @@ export const ContestantManagement: React.FC = () => {
     setShowProfileModal(true);
   };
 
-  if (loading) {
-    return <div className="text-center py-8">Loading contestants...</div>;
+  if (loading || isInitializing) {
+    return (
+      <div className="text-center py-8">
+        {isInitializing ? 'Initializing Season 27 defaults...' : 'Loading contestants...'}
+      </div>
+    );
   }
 
   return (

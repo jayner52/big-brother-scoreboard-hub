@@ -1502,7 +1502,15 @@ export type Database = {
         Args: { invite_code_param: string }
         Returns: Json
       }
+      populate_bb27_global_defaults: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       seed_new_pool_defaults: {
+        Args: { target_pool_id: string }
+        Returns: undefined
+      }
+      seed_pool_bb27_contestants: {
         Args: { target_pool_id: string }
         Returns: undefined
       }

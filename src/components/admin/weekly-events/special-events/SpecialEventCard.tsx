@@ -43,6 +43,15 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
   getEventPoints,
   onShowCustomEventForm
 }) => {
+  console.log('🔴 SpecialEventCard RENDER:', {
+    eventId: event.id,
+    eventType: event.eventType,
+    availableEventsCount: availableEvents.length
+  });
+  
+  const selectedRule = availableEvents.find(rule => rule.id === event.eventType);
+  console.log('🔵 Selected Rule:', selectedRule);
+  
   const displayPoints = getEventPoints(event);
 
   return (
@@ -67,10 +76,10 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
           <Select
             value={event.eventType || ''}
             onValueChange={(value) => {
-              console.log('🔍 Select onValueChange:', { 
-                selectedValue: value, 
-                eventIndex: index, 
-                currentEventType: event.eventType
+              console.log('🟢 SELECT CHANGED:', {
+                oldValue: event.eventType,
+                newValue: value,
+                eventId: event.id
               });
               updateSpecialEvent(index, 'eventType', value);
               console.log('🔍 After updateSpecialEvent, eventType should be:', value);
@@ -84,13 +93,13 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
               <SelectValue placeholder="Select event type" />
             </SelectTrigger>
             <SelectContent>
-              {availableEvents.map(eventRule => {
+              {availableEvents.map((eventRule) => {
                 const emoji = getScoringRuleEmoji(eventRule.category, eventRule.subcategory, eventRule.emoji);
-                console.log('🔍 SelectItem:', { 
-                  ruleId: eventRule.id, 
-                  subcategory: eventRule.subcategory, 
-                  currentEventType: event.eventType,
-                  matches: eventRule.id === event.eventType
+                console.log('🟡 SelectItem:', {
+                  id: eventRule.id,
+                  value: eventRule.id,
+                  matchesEventType: eventRule.id === event.eventType,
+                  description: eventRule.description
                 });
                 return (
                   <SelectItem key={eventRule.id} value={eventRule.id}>

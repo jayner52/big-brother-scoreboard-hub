@@ -258,6 +258,43 @@ export const useWeeklyEventsSubmission = (
         }
       }
 
+      // Prepare special events for processing
+      const specialEvents = eventForm.specialEvents
+        .filter(se => se.contestant && se.eventType)
+        .map(se => ({
+          week_number: eventForm.week,
+          contestant_id: contestants.find(c => c.name === se.contestant)?.id,
+          event_type: se.eventType,
+          description: se.description,
+          points_awarded: calculatePoints(se.eventType, se.customPoints, scoringRules),
+          pool_id: poolId
+        }))
+        .filter(se => se.contestant_id);
+
+      // Handle automatic evictions for quit events (self_evicted, removed_production)
+      for (const se of specialEvents) {
+        if ((se.event_type === 'self_evicted' || se.event_type === 'removed_production') && se.contestant_id) {
+          console.log('🚪 WeeklyEvents - Auto-evicting contestant due to quit:', se.contestant_id, se.event_type);
+          
+          // Create an eviction event for this contestant
+          const evictionEvent = {
+            week_number: eventForm.week,
+            contestant_id: se.contestant_id,
+            event_type: eventTypeMapping.get('evicted'),
+            points_awarded: 0, // No points for being evicted
+            pool_id: poolId
+          };
+          
+          // Add to events array if event_type exists and not already present
+          if (evictionEvent.event_type && !events.some(e => 
+            e.contestant_id === se.contestant_id && e.event_type === evictionEvent.event_type
+          )) {
+            events.push(evictionEvent);
+            console.log('✅ WeeklyEvents - Auto-eviction event created for contestant:', se.contestant_id);
+          }
+        }
+      }
+
       // Filter out events with missing contestant_id or event_type
       const validEvents = events.filter(e => e.contestant_id && e.event_type);
       
@@ -274,17 +311,13 @@ export const useWeeklyEventsSubmission = (
       }
 
       // Insert special events
-      const specialEvents = eventForm.specialEvents
-        .filter(se => se.contestant && se.eventType)
-        .map(se => ({
-          week_number: eventForm.week,
-          contestant_id: contestants.find(c => c.name === se.contestant)?.id,
-          event_type: se.eventType,
-          description: se.description,
-          points_awarded: calculatePoints(se.eventType, se.customPoints, scoringRules),
-          pool_id: poolId
-        }))
-        .filter(se => se.contestant_id);
+      if (specialEvents.length > 0) {
+        const { error: specialEventsError } = await supabase
+          .from('special_events')
+          .insert(specialEvents);
+
+        if (specialEventsError) throw specialEventsError;
+      }
 
       // Handle special houseguest revival automatically
       for (const se of specialEvents) {
@@ -304,6 +337,25 @@ export const useWeeklyEventsSubmission = (
         }
       }
 
+      // Handle automatic evictions for quit events - mark contestants as inactive
+      for (const se of specialEvents) {
+        if ((se.event_type === 'self_evicted' || se.event_type === 'removed_production') && se.contestant_id) {
+          console.log('🚪 WeeklyEvents - Marking contestant inactive due to quit:', se.contestant_id, se.event_type);
+          
+          // Mark contestant as inactive
+          const { error: inactiveError } = await supabase
+            .from('contestants')
+            .update({ is_active: false })
+            .eq('id', se.contestant_id)
+            .eq('pool_id', poolId);
+          
+          if (inactiveError) {
+            console.error('❌ WeeklyEvents - Error marking contestant inactive:', inactiveError);
+          } else {
+            console.log('✅ WeeklyEvents - Contestant marked inactive due to quit');
+          }
+        }
+      }
 
       // Update evicted contestant statuses
       const evictedNames = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]

@@ -27,6 +27,8 @@ export const useWeeklyEventsSubmission = (
         }
       });
 
+      console.log('🔍 Event type mapping:', Object.fromEntries(eventTypeMapping));
+
       // First delete existing data for this week to avoid duplicates
       await Promise.all([
         supabase.from('weekly_events').delete().eq('week_number', eventForm.week).eq('pool_id', poolId),
@@ -256,11 +258,12 @@ export const useWeeklyEventsSubmission = (
         }
       }
 
-      // Filter out events with missing contestant_id
-      const validEvents = events.filter(e => e.contestant_id);
+      // Filter out events with missing contestant_id or event_type
+      const validEvents = events.filter(e => e.contestant_id && e.event_type);
       
       console.log('🔍 All events created:', events);
       console.log('🔍 Valid events for insertion:', validEvents);
+      console.log('🔍 Filtered out events:', events.filter(e => !e.contestant_id || !e.event_type));
       
       if (validEvents.length > 0) {
         const { error: eventsError } = await supabase

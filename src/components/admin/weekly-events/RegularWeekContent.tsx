@@ -5,7 +5,7 @@ import { NomineesSection } from './NomineesSection';
 import { PovWinnerSection } from './PovWinnerSection';
 import { PovUsageSection } from './PovUsageSection';
 import { EvictionSection } from './EvictionSection';
-import { SpecialEventsSection } from './SpecialEventsSection';
+import { SimpleSpecialEventsSection } from './SimpleSpecialEventsSection';
 import { SecondEvictionSection } from './SecondEvictionSection';
 import { ThirdEvictionSection } from './ThirdEvictionSection';
 import { AIArenaSection } from './AIArenaSection';
@@ -121,18 +121,12 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
         />
       )}
 
-      {/* Special Events - Purple Theme */}
-      <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-4 text-purple-800 flex items-center gap-2">
-          <span className="text-xl">⚡</span>
-          Special Events
-        </h3>
-        <SpecialEventsSection
-          eventForm={eventForm}
-          setEventForm={setEventForm}
-          activeContestants={activeContestants}
-        />
-      </div>
+      {/* Special Events */}
+      <SimpleSpecialEventsSection
+        eventForm={eventForm}
+        setEventForm={setEventForm}
+        activeContestants={activeContestants}
+      />
     </>
   );
 };

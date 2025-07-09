@@ -15,10 +15,14 @@ import {
   Globe,
   Calendar,
   TrendingUp,
-  Shield
+  Shield,
+  Trash2,
+  Clock,
+  Award
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
+import { UserDeleteConfirmation } from './UserDeleteConfirmation';
 
 interface EnhancedUserData {
   id: string;
@@ -33,6 +37,9 @@ interface EnhancedUserData {
   terms_version: string | null;
   email_opt_in: boolean;
   email_subscription_status: string | null;
+  account_age_days: number;
+  profile_completion: number;
+  last_login: string | null;
   pool_memberships: Array<{
     pool_name: string;
     role: string;
@@ -77,6 +84,8 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [userToDelete, setUserToDelete] = useState<EnhancedUserData | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -159,10 +168,47 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
     setFilteredUsers(filtered);
   };
 
+  const handleDeleteUser = async (user: EnhancedUserData) => {
+    setUserToDelete(user);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('company-admin-data', {
+        body: { action: 'delete_user', user_id: userToDelete.user_id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "User Deleted",
+        description: `${userToDelete.display_name || 'User'} has been permanently deleted.`,
+      });
+
+      // Refresh the user list
+      await loadEnhancedUserData();
+      setUserToDelete(null);
+      
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const exportUsersToCsv = () => {
     const headers = [
       'Display Name', 'Email', 'Email Source', 'Email Verified', 'Registration Date', 
-      'Terms Accepted', 'Email Opt-in', 'Pool Memberships', 'Subscription Status'
+      'Terms Accepted', 'Email Opt-in', 'Pool Memberships', 'Subscription Status',
+      'Account Age (Days)', 'Profile Completion', 'Last Login'
     ];
     
     const csvContent = [
@@ -176,7 +222,10 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
         user.terms_accepted ? 'Yes' : 'No',
         user.email_opt_in ? 'Yes' : 'No',
         user.pool_memberships.length,
-        `"${user.email_subscription_status || 'None'}"`
+        `"${user.email_subscription_status || 'None'}"`,
+        user.account_age_days,
+        `${user.profile_completion}%`,
+        user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'
       ].join(','))
     ].join('\n');
 
@@ -248,7 +297,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
       </div>
 
       {/* Enhanced Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -292,6 +341,34 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
               <div>
                 <p className="text-sm text-muted-foreground">Pool Members</p>
                 <p className="text-2xl font-bold text-orange-600">{stats.active_pool_members}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-cyan-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Avg Age (Days)</p>
+                <p className="text-2xl font-bold text-cyan-600">
+                  {Math.round(users.reduce((sum, u) => sum + u.account_age_days, 0) / users.length) || 0}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-amber-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Avg Completion</p>
+                <p className="text-2xl font-bold text-amber-600">
+                  {Math.round(users.reduce((sum, u) => sum + u.profile_completion, 0) / users.length) || 0}%
+                </p>
               </div>
             </div>
           </CardContent>
@@ -372,9 +449,9 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-4">User</th>
+                    <th className="text-left py-2 px-4">User & Actions</th>
                     <th className="text-left py-2 px-4">Email & Source</th>
-                    <th className="text-left py-2 px-4">Registration</th>
+                    <th className="text-left py-2 px-4">Activity & Status</th>
                     <th className="text-left py-2 px-4">Terms & Opt-in</th>
                     <th className="text-left py-2 px-4">Pool Activity</th>
                   </tr>
@@ -383,9 +460,27 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                   {filteredUsers.map((user) => (
                     <tr key={user.id} className="border-b hover:bg-muted/50">
                       <td className="py-2 px-4">
-                        <div>
-                          <p className="font-medium">{user.display_name || 'Anonymous User'}</p>
-                          <p className="text-xs text-muted-foreground">ID: {user.user_id.slice(0, 8)}...</p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{user.display_name || 'Anonymous User'}</p>
+                            <p className="text-xs text-muted-foreground">ID: {user.user_id.slice(0, 8)}...</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">
+                                {user.account_age_days}d old
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {user.profile_completion}% complete
+                              </Badge>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </td>
                       <td className="py-2 px-4">
@@ -395,9 +490,17 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                         </div>
                       </td>
                       <td className="py-2 px-4">
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(user.registration_date).toLocaleDateString()}
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-sm">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(user.registration_date).toLocaleDateString()}
+                          </div>
+                          {user.last_login && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              Last: {new Date(user.last_login).toLocaleDateString()}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="py-2 px-4">
@@ -443,6 +546,14 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
           )}
         </CardContent>
       </Card>
+
+      <UserDeleteConfirmation
+        isOpen={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={confirmDeleteUser}
+        user={userToDelete}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

@@ -6,7 +6,8 @@ const corsHeaders = {
 }
 
 interface CompanyAdminDataRequest {
-  action: 'get_user_data' | 'get_pool_analytics';
+  action: 'get_user_data' | 'get_pool_analytics' | 'delete_user';
+  user_id?: string;
 }
 
 interface EnhancedUserData {
@@ -58,13 +59,25 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Parse request body
-    const { action }: CompanyAdminDataRequest = await req.json()
+    const requestBody: CompanyAdminDataRequest = await req.json()
+    const { action, user_id } = requestBody
     console.log('COMPANY_ADMIN_DATA: Action requested:', action)
 
     if (action === 'get_user_data') {
       return await handleGetUserData(supabase)
     } else if (action === 'get_pool_analytics') {
       return await handleGetPoolAnalytics(supabase)
+    } else if (action === 'delete_user') {
+      if (!user_id) {
+        return new Response(
+          JSON.stringify({ error: 'user_id is required for deletion' }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400 
+          }
+        )
+      }
+      return await handleDeleteUser(supabase, user_id)
     } else {
       return new Response(
         JSON.stringify({ error: 'Invalid action' }),
@@ -161,12 +174,12 @@ async function handleGetUserData(supabase: any) {
         email = authUser.email
         emailVerified = authUser.email_confirmed_at ? true : false
         
-        // Determine source based on auth provider
-        if (authUser.app_metadata?.providers?.includes('google')) {
-          emailSource = 'google_oauth'
-        } else {
-          emailSource = 'manual_signup'
-        }
+      // Determine source based on auth provider
+      if (authUser.app_metadata?.providers?.includes('google')) {
+        emailSource = 'google_oauth'
+      } else {
+        emailSource = 'manual_signup'
+      }
       } else {
         // Fallback to email_list
         const emailListEntry = emailList?.find((e: any) => e.user_id === profile.user_id)
@@ -185,6 +198,16 @@ async function handleGetUserData(supabase: any) {
       // Get pool memberships
       const userMemberships = memberships?.filter((m: any) => m.user_id === profile.user_id) || []
 
+      // Calculate account age in days
+      const accountAge = Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+      
+      // Calculate profile completion percentage
+      let profileCompletion = 0
+      if (profile.display_name) profileCompletion += 25
+      if (email) profileCompletion += 25
+      if (userPrefs?.terms_accepted_at) profileCompletion += 25
+      if (userMemberships.length > 0) profileCompletion += 25
+
       return {
         id: profile.id,
         user_id: profile.user_id,
@@ -198,6 +221,9 @@ async function handleGetUserData(supabase: any) {
         terms_version: userPrefs?.terms_version || null,
         email_opt_in: userPrefs?.email_opt_in || false,
         email_subscription_status: emailSub?.status || null,
+        account_age_days: accountAge,
+        profile_completion: profileCompletion,
+        last_login: authUser?.last_sign_in_at || null,
         pool_memberships: userMemberships.map((m: any) => ({
           pool_name: m.pools?.name || 'Unknown Pool',
           role: m.role,
@@ -322,6 +348,49 @@ async function handleGetPoolAnalytics(supabase: any) {
 
   } catch (error: any) {
     console.error('COMPANY_ADMIN_DATA: Error in handleGetPoolAnalytics:', error)
+    throw error
+  }
+}
+
+async function handleDeleteUser(supabase: any, userId: string) {
+  console.log('COMPANY_ADMIN_DATA: Deleting user:', userId)
+  
+  try {
+    // Get user data for audit log before deletion
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('display_name, created_at')
+      .eq('user_id', userId)
+      .single()
+
+    // Delete user from auth (this cascades to other tables due to foreign keys)
+    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
+    
+    if (deleteError) {
+      console.error('COMPANY_ADMIN_DATA: Error deleting user:', deleteError)
+      throw deleteError
+    }
+
+    console.log(`COMPANY_ADMIN_DATA: Successfully deleted user ${userId} (${userProfile?.display_name || 'Unknown'})`)
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `User ${userProfile?.display_name || userId} deleted successfully`,
+        deleted_user: {
+          user_id: userId,
+          display_name: userProfile?.display_name,
+          created_at: userProfile?.created_at
+        }
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+
+  } catch (error: any) {
+    console.error('COMPANY_ADMIN_DATA: Error in handleDeleteUser:', error)
     throw error
   }
 }

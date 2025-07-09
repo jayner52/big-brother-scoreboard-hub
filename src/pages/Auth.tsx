@@ -31,8 +31,8 @@ const Auth = () => {
   const [signUpName, setSignUpName] = useState('');
   const [signInEmail, setSignInEmail] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
-  const [emailOptIn, setEmailOptIn] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [emailOptIn, setEmailOptIn] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(true);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});

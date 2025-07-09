@@ -57,12 +57,7 @@ const Index = () => {
     }
   }, [activePool, user, navigate]);
 
-  // Auto-open create pool modal for new users
-  useEffect(() => {
-    if (!authLoading && !poolsLoading && user && userPools.length === 0) {
-      setShowCreateModal(true);
-    }
-  }, [authLoading, poolsLoading, user, userPools.length]);
+  // Removed auto-open create pool modal - users now go to pool selection screen
 
   useEffect(() => {
     // Check for existing session

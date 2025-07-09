@@ -27,7 +27,7 @@ export const usePoolCreation = () => {
   const currentYear = new Date().getFullYear();
   const [formData, setFormData] = useState<PoolFormData>({
     name: '',
-    description: `Big Brother ${currentYear}`,
+    description: `Big Brother 27`,
     has_buy_in: true,
     entry_fee_amount: 20,
     entry_fee_currency: '',

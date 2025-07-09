@@ -4,26 +4,28 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronUp, ChevronDown, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
-import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+// Remove useEvictedContestants - get contestant status from database
 import { useBonusQuestions } from '@/hooks/useBonusQuestions';
 import { usePool } from '@/contexts/PoolContext';
 import { evaluateBonusAnswer } from '@/utils/bonusQuestionUtils';
 
 interface LeaderboardRowProps {
   entry: any;
-  index: number;
+  index: number;  
   showHistoricalColumns: boolean;
   selectedWeek?: number | null;
+  contestants?: Array<{ name: string; is_active: boolean }>;
 }
 
 export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   entry,
   index,
   showHistoricalColumns,
-  selectedWeek
+  selectedWeek,
+  contestants = []
 }) => {
   const { houseguestPoints } = useHouseguestPoints();
-  const { evictedContestants } = useEvictedContestants();
+  // Removed useEvictedContestants - using contestants prop with is_active status
   const { bonusQuestions } = useBonusQuestions();
   const { activePool } = usePool();
 
@@ -66,7 +68,8 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
   };
 
   const renderPlayerName = (playerName: string) => {
-    const isEliminated = evictedContestants.includes(playerName);
+    const contestant = contestants.find(c => c.name === playerName);
+    const isEliminated = !contestant?.is_active;
     const points = houseguestPoints[playerName];
     
     return (
@@ -75,7 +78,7 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
           <TooltipTrigger>
             <span className={`text-xs px-2 py-1 rounded-full inline-block ${
               isEliminated 
-                ? 'bg-red-100 text-red-700 line-through' 
+                ? 'bg-destructive/20 text-destructive border border-destructive/30 opacity-70' 
                 : 'bg-muted text-foreground'
             }`}>
               {playerName}

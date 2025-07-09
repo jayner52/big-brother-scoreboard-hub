@@ -6,8 +6,9 @@ import { ContestantWithBio } from '@/types/admin';
  * Single source of truth: contestants.is_active field
  */
 
-export const getContestantStatusStyling = (isEvicted: boolean): string => {
-  return isEvicted ? 'text-red-500 line-through' : '';
+// Removed line-through styling - use contextual visual indicators instead
+export const getContestantVisualStyling = (isEvicted: boolean): string => {
+  return isEvicted ? 'opacity-70' : '';
 };
 
 export const getAdminStatusStyling = (isEvicted: boolean): string => {

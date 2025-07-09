@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useScoringRules } from '@/hooks/useScoringRules';
-import { getContestantStatusStyling } from '@/utils/contestantStatusUtils';
+import { getContestantVisualStyling } from '@/utils/contestantStatusUtils';
 
 interface ContestantScore {
   name: string;
@@ -89,10 +89,10 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
         {completeContestantScores
           .sort((a, b) => b.weeklyTotal - a.weeklyTotal)
           .map((contestant) => (
-            <div key={contestant.name} className={`flex flex-col justify-between bg-gray-50 p-2 rounded relative ${
-              contestant.hasSpecialEvent ? 'ring-2 ring-purple-200 bg-purple-50' : ''
-            }`}>
-              <span className={`truncate text-xs ${getContestantStatusStyling(contestant.isEvicted)}`}>
+            <div key={contestant.name} className={`flex flex-col justify-between p-2 rounded relative ${
+              contestant.isEvicted ? 'bg-destructive/10 border border-destructive/20' : 'bg-background border border-border'
+            } ${contestant.hasSpecialEvent ? 'ring-2 ring-purple-200' : ''}`}>
+              <span className={`truncate text-xs ${contestant.isEvicted ? 'text-destructive font-medium' : ''}`}>
                 {contestant.name}
                 {contestant.hasSpecialEvent && <span className="text-purple-600 ml-1">⚡</span>}
               </span>

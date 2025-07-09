@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
-import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+// Remove useEvictedContestants - get contestant status from database
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
 import { usePool } from '@/contexts/PoolContext';
 import { TeamDisplaySection } from './everyone-picks/TeamDisplaySection';
@@ -12,7 +12,7 @@ export const EveryonesPicksMatrix: React.FC = () => {
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
   const [loading, setLoading] = useState(true);
-  const { evictedContestants } = useEvictedContestants();
+  const [contestants, setContestants] = useState<any[]>([]);
   const { houseguestPoints } = useHouseguestPoints();
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export const EveryonesPicksMatrix: React.FC = () => {
     
     try {
       console.log('EveryonesPicksMatrix: Loading data for pool', activePool.id);
-      const [entriesResponse, questionsResponse] = await Promise.all([
+      const [entriesResponse, questionsResponse, contestantsResponse] = await Promise.all([
         supabase
           .from('pool_entries')
           .select('*')
@@ -59,11 +59,16 @@ export const EveryonesPicksMatrix: React.FC = () => {
           .select('*')
           .eq('pool_id', activePool.id)
           .eq('is_active', true)
-          .order('sort_order')
+          .order('sort_order'),
+        supabase
+          .from('contestants')
+          .select('name, is_active')
+          .eq('pool_id', activePool.id)
       ]);
 
       if (entriesResponse.error) throw entriesResponse.error;
       if (questionsResponse.error) throw questionsResponse.error;
+      if (contestantsResponse.error) throw contestantsResponse.error;
 
       const mappedEntries = entriesResponse.data?.map(entry => ({
         ...entry,
@@ -72,6 +77,7 @@ export const EveryonesPicksMatrix: React.FC = () => {
         updated_at: new Date(entry.updated_at)
       })) || [];
 
+      setContestants(contestantsResponse.data || []);
       setPoolEntries(mappedEntries);
       setBonusQuestions(questionsResponse.data?.map(q => ({
         ...q,
@@ -94,7 +100,7 @@ export const EveryonesPicksMatrix: React.FC = () => {
     return (
       <TeamDisplaySection
         poolEntries={poolEntries}
-        evictedContestants={evictedContestants}
+        contestants={contestants}
         houseguestPoints={houseguestPoints}
       />
     );
@@ -104,7 +110,7 @@ export const EveryonesPicksMatrix: React.FC = () => {
     <div className="space-y-6">
       <TeamDisplaySection
         poolEntries={poolEntries}
-        evictedContestants={evictedContestants}
+        contestants={contestants}
         houseguestPoints={houseguestPoints}
       />
 

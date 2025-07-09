@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContestantWithBio, ContestantGroup } from '@/types/admin';
 import { Pencil, Save, X, Trash2, Eye, Camera } from 'lucide-react';
-import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+// Remove useEvictedContestants - using contestant.isActive prop
 
 interface ContestantCardProps {
   contestant: ContestantWithBio;
@@ -35,8 +35,7 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
   onDelete,
   onView,
 }) => {
-  const { evictedContestants } = useEvictedContestants();
-  const isEvicted = evictedContestants.includes(contestant.name);
+  // Using contestant.isActive prop instead of separate evicted hook
   if (isEditing) {
     return (
       <Card>
@@ -168,11 +167,11 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
               )}
             </div>
             <div>
-              <h3 className={`font-semibold text-lg ${isEvicted ? 'text-red-600' : 'text-green-600'}`}>
+              <h3 className={`font-semibold text-lg ${!contestant.isActive ? 'text-destructive' : 'text-primary'}`}>
                 {contestant.name}
               </h3>
               <p className="text-sm text-muted-foreground mb-1">
-                {isEvicted ? 'Evicted' : 'Active'} • Order: {contestant.sort_order}
+                {!contestant.isActive ? 'Evicted' : 'Active'} • Order: {contestant.sort_order}
               </p>
               <p className="text-sm text-muted-foreground mb-2">
                 Group: {groups.find(g => g.id === contestant.group_id)?.group_name || 'Unassigned'}

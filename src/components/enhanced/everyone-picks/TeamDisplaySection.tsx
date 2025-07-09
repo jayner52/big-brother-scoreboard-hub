@@ -7,13 +7,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TeamDisplaySectionProps {
   poolEntries: PoolEntry[];
-  evictedContestants: string[];
+  contestants: Array<{ name: string; is_active: boolean }>;
   houseguestPoints: Record<string, number>;
 }
 
 export const TeamDisplaySection: React.FC<TeamDisplaySectionProps> = ({
   poolEntries,
-  evictedContestants,
+  contestants,
   houseguestPoints,
 }) => {
   const isMobile = useIsMobile();
@@ -34,7 +34,7 @@ export const TeamDisplaySection: React.FC<TeamDisplaySectionProps> = ({
             <TeamCard
               key={entry.id}
               entry={entry}
-              evictedContestants={evictedContestants}
+              contestants={contestants}
               houseguestPoints={houseguestPoints}
               teamIndex={index}
             />

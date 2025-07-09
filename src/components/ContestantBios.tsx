@@ -4,13 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Users, MapPin, Briefcase, Calendar, Crown, Shield, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
-import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+// Removed useEvictedContestants - using contestants.is_active as single source of truth
 import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
 import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
 import { ContestantProfileModal } from '@/components/admin/contestants/ContestantProfileModal';
 import { useActivePool } from '@/hooks/useActivePool';
-import { ContestantStatusProvider } from '@/contexts/ContestantStatusContext';
-import { getContestantStatusStyling, getContestantStatusBadge } from '@/utils/contestantStatusUtils';
+// Removed ContestantStatusProvider - using direct contestant.is_active checks
+import { getContestantStatusBadge } from '@/utils/contestantStatusUtils';
 
 interface ContestantWithGroup extends ContestantWithBio {
   group_name?: string;
@@ -22,7 +22,7 @@ const ContestantBiosContent: React.FC = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const activePool = useActivePool();
-  const { evictedContestants } = useEvictedContestants();
+  // Using contestants.is_active as single source of truth instead of separate evicted list
   const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
   const { evictionWeeks } = useEvictionWeeks();
 
@@ -65,7 +65,7 @@ const ContestantBiosContent: React.FC = () => {
     if (activePool) {
       loadContestants();
     }
-  }, [activePool, evictedContestants]); // Re-run when pool or evicted contestants change
+  }, [activePool]); // Re-run when pool changes
 
   const loadContestants = async () => {
     if (!activePool) {
@@ -137,7 +137,7 @@ const ContestantBiosContent: React.FC = () => {
           <Card 
             key={contestant.id} 
             className={`overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:scale-105 ${
-              !contestant.isActive ? 'opacity-60 border-destructive/20' : ''
+              !contestant.isActive ? 'opacity-70 border-destructive/20 bg-destructive/5' : ''
             }`}
             onClick={() => handleContestantClick(contestant)}
           >
@@ -204,8 +204,8 @@ const ContestantBiosContent: React.FC = () => {
             </div>
             
             <CardHeader className="pb-2">
-              <CardTitle className={`text-lg ${getContestantStatusStyling(contestant.isActive)}`}>
-                {!contestant.isActive ? `Evicted: ${contestant.name}` : contestant.name}
+              <CardTitle className={`text-lg ${!contestant.isActive ? 'text-destructive' : ''}`}>
+                {contestant.name}
               </CardTitle>
               {contestant.bio && (
                 <CardDescription className="text-xs line-clamp-2">
@@ -250,9 +250,5 @@ const ContestantBiosContent: React.FC = () => {
 };
 
 export const ContestantBios: React.FC = () => {
-  return (
-    <ContestantStatusProvider>
-      <ContestantBiosContent />
-    </ContestantStatusProvider>
-  );
+  return <ContestantBiosContent />;
 };

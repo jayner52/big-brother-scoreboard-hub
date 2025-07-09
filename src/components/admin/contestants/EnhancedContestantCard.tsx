@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ContestantWithBio } from '@/types/admin';
 import { Pencil, Bot, Eye, Trash2, Check, X } from 'lucide-react';
-import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+// Remove useEvictedContestants - using contestant.is_active directly
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -34,12 +34,12 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
   onBioUpdate,
   hideEditButton = false,
 }) => {
-  const { evictedContestants } = useEvictedContestants();
+  // Removed useEvictedContestants - using is_active field from contestant data
   const { toast } = useToast();
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [editBio, setEditBio] = useState(contestant.bio || '');
   const [isSaving, setIsSaving] = useState(false);
-  const isEvicted = evictedContestants.includes(contestant.name);
+  const isEvicted = !contestant.isActive; // Use isActive field directly
   
   const archetype = contestant.personality_traits?.archetype;
   const threatLevel = contestant.gameplay_strategy?.threat_level;
@@ -110,7 +110,7 @@ export const EnhancedContestantCard: React.FC<EnhancedContestantCardProps> = ({
               </div>
             )}
             <div>
-              <h3 className={`font-bold text-lg ${isEvicted ? 'text-red-600' : 'text-green-600'}`}>
+              <h3 className={`font-bold text-lg ${isEvicted ? 'text-destructive' : 'text-primary'}`}>
                 {contestant.name}
               </h3>
               <p className="text-sm text-muted-foreground">

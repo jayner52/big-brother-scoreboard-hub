@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Users, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
-import { useEvictedContestants } from '@/hooks/useEvictedContestants';
+// Remove useEvictedContestants - now getting eviction status from contestants.is_active
 import { useUserPaymentUpdate } from '@/hooks/useUserPaymentUpdate';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -18,11 +18,12 @@ interface UserTeamsProps {
 export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   const [userEntries, setUserEntries] = useState<PoolEntry[]>([]);
   const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [draftLocked, setDraftLocked] = useState(true);
+  const [contestants, setContestants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const activePool = useActivePool();
   const { houseguestPoints } = useHouseguestPoints();
-  const { evictedContestants } = useEvictedContestants();
+  // Removed useEvictedContestants - using contestants data directly
   const { updatePaymentStatus, updating } = useUserPaymentUpdate();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
     if (activePool) {
       loadUserEntries();
       loadDraftSettings();
+      loadContestants();
     }
   }, [userId, activePool]);
 
@@ -68,6 +70,21 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
       console.error('Error loading user entries:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadContestants = async () => {
+    if (!activePool?.id) return;
+    
+    try {
+      const { data } = await supabase
+        .from('contestants')
+        .select('name, is_active')
+        .eq('pool_id', activePool.id);
+      
+      setContestants(data || []);
+    } catch (error) {
+      console.error('Error loading contestants:', error);
     }
   };
 
@@ -153,16 +170,17 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   };
 
   const renderPlayerName = (playerName: string) => {
-    const isEliminated = evictedContestants.includes(playerName);
+    const contestant = contestants.find(c => c.name === playerName);
+    const isEliminated = !contestant?.is_active;
     const points = houseguestPoints[playerName] || 0;
     
     return (
       <div className={`flex flex-col items-center transition-colors ${isEliminated ? 'opacity-60' : ''}`}>
-        <span className={`font-medium text-xs mb-1 ${isEliminated ? 'text-red-500 line-through' : 'text-foreground'}`} title={playerName}>
+        <span className={`font-medium text-xs mb-1 ${isEliminated ? 'text-destructive' : 'text-foreground'}`} title={playerName}>
           {playerName.split(' ')[0]}
         </span>
-        <div className={`rounded-full px-2 py-0.5 ${isEliminated ? 'bg-red-100' : 'bg-primary/10'}`}>
-          <span className={`text-xs font-semibold ${isEliminated ? 'text-red-700' : 'text-primary'}`}>
+        <div className={`rounded-full px-2 py-0.5 ${isEliminated ? 'bg-destructive/20 border border-destructive/30' : 'bg-primary/10'}`}>
+          <span className={`text-xs font-semibold ${isEliminated ? 'text-destructive' : 'text-primary'}`}>
             {points}
           </span>
         </div>

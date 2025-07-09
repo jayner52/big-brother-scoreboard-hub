@@ -72,7 +72,7 @@ const Auth = () => {
         });
       }
     }
-    navigate('/dashboard');
+    navigate('/');
   };
 
   useEffect(() => {
@@ -150,7 +150,7 @@ const Auth = () => {
         email: signUpEmail,
         password: signUpPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             display_name: signUpName
           }
@@ -219,11 +219,25 @@ const Auth = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/dashboard` }
+        options: { 
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Google OAuth error:', error);
+        toast({
+          title: "Authentication Error",
+          description: error.message || "Failed to sign in with Google. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
+      console.error('Google OAuth error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to sign in with Google",

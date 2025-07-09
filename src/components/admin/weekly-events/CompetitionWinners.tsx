@@ -26,7 +26,7 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
     <div>
       <ScoringLabel 
         scoringRules={scoringRules} 
-        category="competitions" 
+        category="competition" 
         subcategory="hoh_winner"
       >
         <BigBrotherIcon type="hoh" />
@@ -34,7 +34,7 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
       </ScoringLabel>
       <PointsTooltip 
         scoringRules={scoringRules} 
-        category="competitions" 
+        category="competition" 
         subcategory="hoh_winner"
       >
         <Select value={eventForm.hohWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, hohWinner: value }))}>

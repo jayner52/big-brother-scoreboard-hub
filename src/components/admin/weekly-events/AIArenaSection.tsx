@@ -150,7 +150,7 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
               )}
               {eventForm.aiArenaWinner && (
                 <p className="text-xs text-purple-700 mt-1">
-                  Winner is safe from eviction (+{bbArenaPoints} points)
+                  Winner is safe from eviction
                 </p>
               )}
             </div>

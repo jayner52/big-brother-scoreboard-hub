@@ -63,7 +63,7 @@ const WeekStatusIcons: React.FC<WeekStatusIconsProps> = ({ weekData, weekNumber,
           emoji: '🔄',
           filled: true
         });
-      } else if (data?.pov_used === false || isInProgress || isCompleted) {
+      } else if (data?.pov_used === false || data?.pov_winner) {
         icons.push({
           type: 'veto',
           emoji: '🔄',
@@ -72,7 +72,9 @@ const WeekStatusIcons: React.FC<WeekStatusIconsProps> = ({ weekData, weekNumber,
       }
       
       // Evicted - Door
-      const hasEviction = hasValidData(data?.evicted_contestant);
+      const hasEviction = hasValidData(data?.evicted_contestant) || 
+                         hasValidData(data?.second_evicted_contestant) || 
+                         hasValidData(data?.third_evicted_contestant);
       icons.push({
         type: 'evicted',
         emoji: '🚪',

@@ -32,7 +32,7 @@ export const PovWinnerSection: React.FC<PovWinnerSectionProps> = ({
       <div className="flex-1">
         <ScoringLabel 
           scoringRules={scoringRules} 
-          category="competitions" 
+          category="competition" 
           subcategory="pov_winner"
         >
           <BigBrotherIcon type="pov" />
@@ -40,7 +40,7 @@ export const PovWinnerSection: React.FC<PovWinnerSectionProps> = ({
         </ScoringLabel>
         <PointsTooltip 
           scoringRules={scoringRules} 
-          category="competitions" 
+          category="competition" 
           subcategory="pov_winner"
         >
           <Select 

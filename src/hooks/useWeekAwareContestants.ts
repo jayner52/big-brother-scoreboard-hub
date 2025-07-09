@@ -16,17 +16,25 @@ export const useWeekAwareContestants = (weekNumber: number) => {
         .select('*')
         .order('name');
 
-      // Load evicted contestants up to AND INCLUDING the current week
-      // This ensures that contestants evicted in previous weeks show as evicted in the current week
-      const { data: evictionData } = await supabase
-        .from('weekly_events')
+      // Load evicted contestants from weekly_results table (authoritative source for regular evictions)
+      const { data: weeklyResultsData } = await supabase
+        .from('weekly_results')
         .select(`
-          contestants(name),
-          event_type,
-          week_number
+          week_number,
+          evicted_contestant,
+          second_evicted_contestant,
+          third_evicted_contestant
         `)
-        .eq('event_type', 'evicted')
-        .lte('week_number', weekNumber);
+        .lte('week_number', weekNumber)
+        .eq('is_draft', false);
+
+      // Get all evicted contestants up to and including current week
+      const evictedByVote = weeklyResultsData?.reduce((acc, result) => {
+        if (result.evicted_contestant) acc.push(result.evicted_contestant);
+        if (result.second_evicted_contestant) acc.push(result.second_evicted_contestant);
+        if (result.third_evicted_contestant) acc.push(result.third_evicted_contestant);
+        return acc;
+      }, [] as string[]) || [];
 
       // Also check for contestants marked as inactive due to special events (self-evicted, removed by production)
       const { data: inactiveContestants } = await supabase
@@ -34,7 +42,6 @@ export const useWeekAwareContestants = (weekNumber: number) => {
         .select('name, is_active')
         .eq('is_active', false);
 
-      const evictedByVote = evictionData?.map(event => event.contestants?.name).filter(Boolean) || [];
       const evictedBySpecialEvent = inactiveContestants?.map(c => c.name).filter(Boolean) || [];
       const evicted = [...new Set([...evictedByVote, ...evictedBySpecialEvent])]; // Remove duplicates
       

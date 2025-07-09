@@ -209,6 +209,20 @@ const PoolsidePicks = () => {
                   <CardDescription>Coming Soon</CardDescription>
                 </CardHeader>
               </Card>
+
+              <Card className="opacity-60 bg-gradient-to-br from-muted/50 to-muted/30">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-xl text-muted-foreground">Traitors</CardTitle>
+                  <CardDescription>Coming Soon</CardDescription>
+                </CardHeader>
+              </Card>
+              
+              <Card className="opacity-60 bg-gradient-to-br from-muted/50 to-muted/30">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-xl text-muted-foreground">The Circle</CardTitle>
+                  <CardDescription>Coming Soon</CardDescription>
+                </CardHeader>
+              </Card>
             </div>
           </div>
         </div>

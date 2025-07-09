@@ -81,11 +81,11 @@ export const WeeklyEventsPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       <InstructionAccordion 
-        title="How to Record Weekly Events" 
+        title="How to Log Weekly Events" 
         tabKey="weekly_events"
       >
         <div className="space-y-3">
-          <p>Record competition results and evictions for each week. Always complete weeks in order.</p>
+          <p>Log competition results and evictions for each week. Always complete weeks in order.</p>
           
           <div className="bg-blue-50 border border-blue-200 rounded p-3">
             <p className="font-semibold text-blue-800 mb-2">📋 Standard Week Process:</p>

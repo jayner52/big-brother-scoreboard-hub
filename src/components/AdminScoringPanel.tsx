@@ -137,7 +137,7 @@ export const AdminScoringPanel: React.FC = () => {
                   data-value="events"
                   className="text-base font-medium px-4 py-3 mobile-button transition-all duration-300 hover:bg-gradient-to-r hover:from-coral hover:to-orange hover:text-white data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
-                  Weekly Events
+                  Weekly Events Logging
                 </TabsTrigger>
                 <TabsTrigger 
                   value="legacy" 

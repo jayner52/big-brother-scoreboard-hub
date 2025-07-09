@@ -41,7 +41,7 @@ export const WeeklyEventsHeader: React.FC<WeeklyEventsHeaderProps> = ({
         <div className="flex items-center gap-2">
           <Award className="h-5 w-5" />
           {getWeekStatus()}
-          Week {week} Events
+          Week {week} Events Logging
         </div>
         <div className="flex items-center gap-3">
           <ResetAllWeeksButton />
@@ -55,7 +55,7 @@ export const WeeklyEventsHeader: React.FC<WeeklyEventsHeaderProps> = ({
       <CardDescription className="text-purple-100">
         {weekStatus === 'season_complete' 
           ? 'Season completed! Final results have been recorded.' 
-          : 'Record all events for the week and automatically calculate points'
+          : 'Log all weekly events and automatically calculate points'
         }
       </CardDescription>
     </CardHeader>

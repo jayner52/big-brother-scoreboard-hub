@@ -136,7 +136,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
               <SelectValue placeholder="Select contestant" />
             </SelectTrigger>
             <SelectContent>
-              {event.eventType && event.eventType !== '' && getAvailableContestants(event.eventType).map(contestant => (
+              {event.eventType ? getAvailableContestants(event.eventType).map(contestant => (
                 <SelectItem key={contestant.name} value={contestant.name}>
                   <span className="flex items-center justify-between w-full">
                     <span>{contestant.name}</span>
@@ -144,6 +144,10 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
                       <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
                     )}
                   </span>
+                </SelectItem>
+              )) : activeContestants.map(contestant => (
+                <SelectItem key={contestant.name} value={contestant.name}>
+                  <span>{contestant.name}</span>
                 </SelectItem>
               ))}
             </SelectContent>

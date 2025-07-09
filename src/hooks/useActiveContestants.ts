@@ -21,14 +21,21 @@ export const useActiveContestants = (poolId?: string) => {
       const contestants = contestantsData?.map(c => ({
         id: c.id,
         name: c.name,
-        isActive: c.is_active, // Use actual is_active status from database
+        isActive: c.is_active, // Single source of truth: database is_active field
         group_id: c.group_id,
         sort_order: c.sort_order,
         bio: c.bio,
         photo_url: c.photo_url
       })) || [];
 
-      // Separate active and evicted contestants
+      console.log('📊 Active contestants data loaded:', {
+        total: contestants.length,
+        active: contestants.filter(c => c.isActive).length,
+        inactive: contestants.filter(c => !c.isActive).length,
+        evicted_names: contestants.filter(c => !c.isActive).map(c => c.name)
+      });
+
+      // Separate active and evicted contestants based on is_active field ONLY
       const activeList = contestants.filter(c => c.isActive);
       const evictedNames = contestants.filter(c => !c.isActive).map(c => c.name);
 

@@ -106,15 +106,26 @@ export const useSpecialEventHandler = () => {
     specialEvents: any[],
     poolId: string
   ) => {
+    console.log('🔄 Starting special event status changes for', specialEvents.length, 'events');
+    
     for (const se of specialEvents) {
       // Get the subcategory for this event type UUID
-      const { data: scoringRule } = await supabase
+      const { data: scoringRule, error: ruleError } = await supabase
         .from('detailed_scoring_rules')
-        .select('subcategory')
+        .select('subcategory, description')
         .eq('id', se.event_type)
         .single();
 
-      if (!scoringRule) continue;
+      if (ruleError || !scoringRule) {
+        console.error('❌ Failed to get scoring rule for event:', se.event_type, ruleError);
+        continue;
+      }
+
+      console.log('📋 Processing special event:', {
+        contestant_id: se.contestant_id,
+        event_type: scoringRule.subcategory,
+        description: scoringRule.description
+      });
 
       // Handle special houseguest revival automatically
       if (scoringRule.subcategory === 'came_back_evicted' && se.contestant_id) {
@@ -129,6 +140,14 @@ export const useSpecialEventHandler = () => {
           console.error('❌ WeeklyEvents - Revival error:', revivalError);
         } else {
           console.log('✅ WeeklyEvents - Houseguest revived successfully');
+          
+          // Double-check the update worked
+          const { data: contestant } = await supabase
+            .from('contestants')
+            .select('name, is_active')
+            .eq('id', se.contestant_id)
+            .single();
+          console.log('✅ Verified contestant status:', contestant);
         }
       }
 
@@ -136,7 +155,7 @@ export const useSpecialEventHandler = () => {
       if ((scoringRule.subcategory === 'self_evicted' || scoringRule.subcategory === 'removed_production') && se.contestant_id) {
         console.log('🚪 WeeklyEvents - Marking contestant inactive due to quit:', se.contestant_id, scoringRule.subcategory);
         
-        // Mark contestant as inactive
+        // Mark contestant as inactive - this provides redundancy to the database trigger
         const { error: inactiveError } = await supabase
           .from('contestants')
           .update({ is_active: false })
@@ -147,9 +166,19 @@ export const useSpecialEventHandler = () => {
           console.error('❌ WeeklyEvents - Error marking contestant inactive:', inactiveError);
         } else {
           console.log('✅ WeeklyEvents - Contestant marked inactive due to quit');
+          
+          // Double-check the update worked and log the contestant info
+          const { data: contestant } = await supabase
+            .from('contestants')
+            .select('name, is_active')
+            .eq('id', se.contestant_id)
+            .single();
+          console.log('✅ Verified contestant status:', contestant);
         }
       }
     }
+    
+    console.log('✅ Completed special event status changes');
   };
 
   return { 

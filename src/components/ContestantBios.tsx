@@ -141,20 +141,20 @@ export const ContestantBios: React.FC = () => {
           >
              <div className="relative">
                 {getGroupBadge(contestant)}
-                {contestant.photo_url ? (
-                  <img 
-                    src={contestant.photo_url} 
-                    alt={contestant.name}
-                    className="w-full h-32 object-cover"
-                    onError={(e) => {
-                      // Fallback to initials avatar if photo fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLDivElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
+                 {contestant.photo_url ? (
+                   <img 
+                     src={contestant.photo_url} 
+                     alt={contestant.name}
+                     className="w-full h-32 object-cover object-top"
+                     onError={(e) => {
+                       // Fallback to initials avatar if photo fails to load
+                       const target = e.target as HTMLImageElement;
+                       target.style.display = 'none';
+                       const fallback = target.nextElementSibling as HTMLDivElement;
+                       if (fallback) fallback.style.display = 'flex';
+                     }}
+                   />
+                 ) : null}
                 <div 
                   className="w-full h-32 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center"
                   style={{ display: contestant.photo_url ? 'none' : 'flex' }}

@@ -94,7 +94,7 @@ export const AdminInstructionsModal: React.FC = () => {
                   <p>Create and manage prediction questions:</p>
                   <ul className="list-disc ml-4 space-y-1">
                     <li>Add new questions with different answer types</li>
-                    <li>Set point values (typically 5-10 points)</li>
+                    <li>Set point values (typically 1-5 points)</li>
                     <li>Reveal correct answers when results are known</li>
                     <li>Deactivate outdated questions</li>
                   </ul>
@@ -122,6 +122,7 @@ export const AdminInstructionsModal: React.FC = () => {
                   <ul className="list-disc ml-4 space-y-1">
                     <li><strong>Draft Control:</strong> Open/close draft and lock submissions</li>
                     <li><strong>Payment Settings:</strong> Entry fees and payment methods</li>
+                    <li><strong>Prize Pool:</strong> Manage prize distribution and amounts</li>
                     <li><strong>Jury Phase:</strong> Enable when jury voting begins</li>
                     <li><strong>Custom Scoring:</strong> Adjust point values and special events</li>
                   </ul>
@@ -154,13 +155,13 @@ export const AdminInstructionsModal: React.FC = () => {
               </AccordionTrigger>
               <AccordionContent className="pb-4">
                 <div className="space-y-3 text-sm">
-                  <p><strong>Automatic Point Calculation:</strong></p>
+                  <p><strong>Customizable Scoring System:</strong></p>
                   <ul className="list-disc ml-4 space-y-1">
-                    <li><strong>Survival:</strong> 1 point per week for staying in the house</li>
-                    <li><strong>HOH Wins:</strong> 3 points for each Head of Household win</li>
-                    <li><strong>POV Wins:</strong> 3 points for each Power of Veto win</li>
-                    <li><strong>Bonus Questions:</strong> 5-10 points each when revealed</li>
-                    <li><strong>Special Events:</strong> Various points for unique occurrences</li>
+                    <li><strong>Custom Point Values:</strong> Adjust points for all categories (survival, competitions, nominations, etc.)</li>
+                    <li><strong>Special Events:</strong> Create custom events with custom point values</li>
+                    <li><strong>Category Control:</strong> Turn point categories on and off as needed</li>
+                    <li><strong>Bonus Questions:</strong> Set custom point values for prediction questions</li>
+                    <li><strong>Automatic Calculation:</strong> Points update automatically when you log weekly results</li>
                   </ul>
                   <div className="bg-indigo-50 p-3 rounded mt-3">
                     <p><strong>🔄 Real-time Updates:</strong> Points automatically recalculate when you save weekly results or reveal bonus answers!</p>

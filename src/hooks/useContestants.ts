@@ -12,64 +12,103 @@ export const useContestants = (poolId?: string) => {
   const loadContestants = async () => {
     if (!poolId) return;
     
-    console.log('🔥 LOADING CONTESTANTS - START', { poolId });
     try {
-      // Use edge function to bypass RLS and handle seeding
-      const { data: response, error } = await supabase.functions.invoke('get-pool-contestants', {
-        body: { poolId }
-      });
+      // Direct query to contestants table with proper RLS
+      const { data: contestantsData, error } = await supabase
+        .from('contestants')
+        .select(`
+          id,
+          name,
+          age,
+          hometown,
+          occupation,
+          bio,
+          photo_url,
+          is_active,
+          group_id,
+          sort_order,
+          season_number
+        `)
+        .eq('pool_id', poolId)
+        .order('sort_order', { ascending: true });
 
       if (error) {
-        console.error('🔥 Edge function error:', error);
+        console.error('Error loading contestants:', error);
         throw error;
       }
 
-      console.log('🔥 Edge function response:', response);
-
-      if (response?.success && response?.contestants) {
-        const finalData = response.contestants;
-        console.log('🔥 Final contestant data:', { count: finalData.length });
+      if (contestantsData && contestantsData.length > 0) {
+        const mappedContestants = contestantsData.map(c => ({
+          id: c.id,
+          name: c.name,
+          isActive: c.is_active,
+          group_id: c.group_id,
+          sort_order: c.sort_order,
+          bio: c.bio,
+          photo_url: c.photo_url,
+          hometown: c.hometown,
+          age: c.age,
+          occupation: c.occupation
+        }));
         
-        if (finalData.length > 0) {
-          const mappedContestants = finalData.map(c => ({
-            id: c.id,
-            name: c.name,
-            isActive: c.is_active,
-            group_id: c.group_id,
-            sort_order: c.sort_order,
-            bio: c.bio,
-            photo_url: c.photo_url,
-            hometown: c.hometown,
-            age: c.age,
-            occupation: c.occupation
-          }));
-          
-          console.log('🔥 Mapped contestants:', { count: mappedContestants.length, sample: mappedContestants[0] });
-          setContestants(mappedContestants);
-          console.log('🔥 State updated with contestants');
-          
-          if (response.message) {
-            toast({
-              title: "Success",
-              description: response.message,
-            });
+        setContestants(mappedContestants);
+      } else {
+        // If no contestants exist, check if we need to seed from global defaults
+        const { data: globalContestants, error: globalError } = await supabase
+          .from('contestants')
+          .select('*')
+          .is('pool_id', null)
+          .eq('season_number', 27)
+          .order('sort_order', { ascending: true });
+
+        if (globalError) {
+          throw globalError;
+        }
+
+        if (globalContestants && globalContestants.length > 0) {
+          // Try to seed from global defaults using the edge function
+          const { data: response, error: seedError } = await supabase.functions.invoke('get-pool-contestants', {
+            body: { poolId }
+          });
+
+          if (!seedError && response?.success && response?.contestants) {
+            const mappedContestants = response.contestants.map(c => ({
+              id: c.id,
+              name: c.name,
+              isActive: c.is_active,
+              group_id: c.group_id,
+              sort_order: c.sort_order,
+              bio: c.bio,
+              photo_url: c.photo_url,
+              hometown: c.hometown,
+              age: c.age,
+              occupation: c.occupation
+            }));
+            
+            setContestants(mappedContestants);
+            
+            if (response.message) {
+              toast({
+                title: "Success",
+                description: response.message,
+              });
+            }
+          } else {
+            setContestants([]);
           }
         } else {
-          console.log('🔥 No contestants found, setting empty state');
           setContestants([]);
         }
-      } else {
-        throw new Error(response?.error || 'Failed to load contestants');
       }
     } catch (error) {
-      console.error('🔥 ERROR LOADING CONTESTANTS:', error);
+      console.error('Error loading contestants:', error);
       toast({
         title: "Error",
         description: "Failed to load contestants",
         variant: "destructive",
       });
+      setContestants([]);
     } finally {
-      console.log('🔥 LOADING CONTESTANTS - END');
       setLoading(false);
     }
   };

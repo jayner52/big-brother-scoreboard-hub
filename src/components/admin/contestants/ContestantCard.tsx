@@ -156,7 +156,7 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
                 <img 
                   src={contestant.photo_url} 
                   alt={contestant.name}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                  className="w-16 h-16 rounded-full object-cover object-top border-2 border-border"
                   onError={(e) => {
                     e.currentTarget.src = '/placeholder.svg';
                   }}

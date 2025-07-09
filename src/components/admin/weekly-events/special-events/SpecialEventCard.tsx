@@ -84,15 +84,18 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
         <div>
           <Label>Event Type</Label>
           <Select
+            key={`event-select-${event.id}-${event.eventType}`}
             value={event.eventType || ''}
             onValueChange={(value) => {
               console.log('🟢 SELECT CHANGED:', {
                 oldValue: event.eventType,
                 newValue: value,
-                eventId: event.id
+                eventId: event.id,
+                index: index
               });
+              console.log('🔧 About to call updateSpecialEvent with:', { index, field: 'eventType', value });
               updateSpecialEvent(index, 'eventType', value);
-              console.log('🔍 After updateSpecialEvent, eventType should be:', value);
+              console.log('🔍 After updateSpecialEvent call completed');
               // Reset custom points when changing event type (except for custom events)
               if (!isCustomEventRule(value)) {
                 updateSpecialEvent(index, 'customPoints', undefined);

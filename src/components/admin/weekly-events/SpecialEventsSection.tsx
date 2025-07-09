@@ -85,9 +85,17 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   };
 
   const updateSpecialEvent = (index: number, field: keyof SpecialEventFormData, value: any) => {
-    console.log('🔧 updateSpecialEvent called:', { index, field, value, currentEventType: eventForm.specialEvents[index]?.eventType });
+    console.log('🔧 updateSpecialEvent called:', { 
+      index, 
+      field, 
+      value, 
+      currentEventType: eventForm.specialEvents[index]?.eventType,
+      currentEventsArray: eventForm.specialEvents.map(e => ({ id: e.id, eventType: e.eventType }))
+    });
     const newEvents = [...eventForm.specialEvents];
-    newEvents[index] = { ...newEvents[index], [field]: value };
+    const oldEvent = newEvents[index];
+    newEvents[index] = { ...oldEvent, [field]: value };
+    console.log('🔧 Event updated from:', oldEvent, 'to:', newEvents[index]);
 
     // Reset custom fields if switching away from custom event
     if (field === 'eventType' && !isCustomEventRule(value)) {
@@ -132,10 +140,12 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
       }
     }
 
+    console.log('🔧 About to setEventForm with newEvents:', newEvents);
     setEventForm({
       ...eventForm,
       specialEvents: newEvents
     });
+    console.log('🔧 setEventForm called, new form should have updated events');
   };
 
   const handleCustomEventAdd = async (eventData: { description: string; emoji: string; points: number }) => {

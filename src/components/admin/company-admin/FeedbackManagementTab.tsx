@@ -14,11 +14,11 @@ interface FeedbackItem {
   id: string;
   user_name: string | null;
   user_email: string | null;
-  feedback_type: 'bug' | 'feature' | 'comment';
+  feedback_type: string;
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high';
-  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: string;
+  status: string;
   created_at: string;
   updated_at: string;
   resolved_at: string | null;

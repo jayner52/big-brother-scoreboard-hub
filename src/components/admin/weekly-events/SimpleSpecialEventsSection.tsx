@@ -18,13 +18,13 @@ interface SimpleSpecialEvent {
 interface SimpleSpecialEventsSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: (form: WeeklyEventForm) => void;
-  activeContestants: ContestantWithBio[];
+  allContestants: ContestantWithBio[];
 }
 
 export const SimpleSpecialEventsSection: React.FC<SimpleSpecialEventsSectionProps> = ({
   eventForm,
   setEventForm,
-  activeContestants
+  allContestants
 }) => {
   const { scoringRules } = useScoringRules();
 
@@ -33,6 +33,17 @@ export const SimpleSpecialEventsSection: React.FC<SimpleSpecialEventsSectionProp
     rule.category === 'special_events' && 
     rule.is_active
   );
+
+  // Get available contestants based on event type
+  const getAvailableContestants = (eventType: string) => {
+    const eventRule = availableEvents.find(rule => rule.id === eventType);
+    if (eventRule?.subcategory === 'came_back_evicted') {
+      // Only show evicted contestants (inactive)
+      return allContestants.filter(c => !c.isActive);
+    }
+    // For all other events, show all contestants
+    return allContestants;
+  };
 
   // Convert complex form data to simple format for this component
   const simpleEvents: SimpleSpecialEvent[] = (eventForm.specialEvents || []).map((event, index) => ({
@@ -180,7 +191,7 @@ export const SimpleSpecialEventsSection: React.FC<SimpleSpecialEventsSectionProp
                       <SelectValue placeholder="Select contestant" />
                     </SelectTrigger>
                     <SelectContent>
-                      {activeContestants.map(contestant => (
+                      {getAvailableContestants(event.eventType).map(contestant => (
                         <SelectItem key={contestant.name} value={contestant.name}>
                           <div className="flex items-center justify-between w-full">
                             <span>{contestant.name}</span>

@@ -125,7 +125,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
       <SimpleSpecialEventsSection
         eventForm={eventForm}
         setEventForm={setEventForm}
-        activeContestants={activeContestants}
+        allContestants={contestants}
       />
     </>
   );

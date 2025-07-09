@@ -36,6 +36,7 @@ export const CustomScoringPanel: React.FC = () => {
       const { data, error } = await supabase
         .from('detailed_scoring_rules')
         .select('*')
+        .eq('is_active', true)
         .order('category', { ascending: true })
         .order('subcategory', { ascending: true });
 

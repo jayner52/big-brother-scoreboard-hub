@@ -22,14 +22,14 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // Show all contestants as active (no eviction filtering)
-  const activeContestants = contestants;
-  const evictedContestants = [];
+  // Separate contestants by eviction status
+  const activeContestants = contestants.filter(c => c.isActive);
+  const evictedContestants = contestants.filter(c => !c.isActive);
 
   return (
     <Card className="bg-muted/50">
       <CardHeader>
-        <CardTitle className="text-lg">Points Preview - All Contestants</CardTitle>
+        <CardTitle className="text-lg">Points Preview</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Active Contestants */}
@@ -42,14 +42,14 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
                 .map((contestant) => {
                   const points = allContestantsPreview[contestant.name] || 0;
                   return (
-                    <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/50 rounded border">
-                      <span className="font-medium text-sm truncate pr-2" title={contestant.name}>
-                        {contestant.name}:
-                      </span>
-                      <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
-                        {points > 0 ? '+' : ''}{points}pts
-                      </span>
-                    </div>
+                     <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/50 rounded border">
+                       <span className="font-medium text-sm truncate pr-2" title={contestant.name}>
+                         {contestant.name}:
+                       </span>
+                       <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
+                         {points > 0 ? '+' : ''}{points}pts
+                       </span>
+                     </div>
                   );
                 })}
             </div>
@@ -65,19 +65,20 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
                 const points = allContestantsPreview[contestant.name] || 0;
                 const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
                 return (
-                  <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/30 rounded border border-dashed">
-                     <span className={`text-sm truncate pr-2 ${isEvictedThisWeek ? 'text-red-600 font-medium' : 'font-medium text-muted-foreground'}`} title={contestant.name}>
-                       {contestant.name}:
-                    </span>
-                    <div className="flex flex-col items-end">
-                      <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
-                        {points > 0 ? '+' : ''}{points}pts
-                      </span>
-                      {isEvictedThisWeek && (
-                        <span className="text-xs text-red-500">evicted this week</span>
-                      )}
-                    </div>
-                  </div>
+                   <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/30 rounded border border-dashed">
+                      <span className={`text-sm truncate pr-2 ${isEvictedThisWeek ? 'text-red-600 font-medium line-through' : 'text-red-600 font-medium'}`} title={contestant.name}>
+                        {contestant.name}:
+                        {!isEvictedThisWeek && <span className="text-red-500 text-xs ml-1">(Evicted)</span>}
+                     </span>
+                     <div className="flex flex-col items-end">
+                       <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
+                         {points > 0 ? '+' : ''}{points}pts
+                       </span>
+                       {isEvictedThisWeek && (
+                         <span className="text-xs text-red-500">evicted this week</span>
+                       )}
+                     </div>
+                   </div>
                 );
               })}
             </div>

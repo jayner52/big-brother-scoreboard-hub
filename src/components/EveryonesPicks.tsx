@@ -16,6 +16,7 @@ export const EveryonesPicks: React.FC = () => {
   const activePool = useActivePool();
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
+  const [contestants, setContestants] = useState<{name: string, isActive: boolean}[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { houseguestPoints, loading: pointsLoading, error: pointsError } = useHouseguestPoints();
@@ -34,13 +35,15 @@ export const EveryonesPicks: React.FC = () => {
       setLoading(true);
       console.log('EveryonesPicks: Loading data for pool', activePool.id);
       
-      const [entriesResult, questionsResult] = await Promise.all([
+      const [entriesResult, questionsResult, contestantsResult] = await Promise.all([
         supabase.from('pool_entries').select('*').eq('pool_id', activePool.id).order('participant_name'),
-        supabase.from('bonus_questions').select('*').eq('pool_id', activePool.id).eq('is_active', true).order('sort_order')
+        supabase.from('bonus_questions').select('*').eq('pool_id', activePool.id).eq('is_active', true).order('sort_order'),
+        supabase.from('contestants').select('name, is_active').eq('pool_id', activePool.id)
       ]);
 
       if (entriesResult.error) throw entriesResult.error;
       if (questionsResult.error) throw questionsResult.error;
+      if (contestantsResult.error) throw contestantsResult.error;
 
       const mappedEntries = entriesResult.data?.map(entry => ({
         ...entry,
@@ -57,6 +60,11 @@ export const EveryonesPicks: React.FC = () => {
         question_type: q.question_type as 'player_select' | 'dual_player_select' | 'yes_no' | 'number'
       }));
       setBonusQuestions(mappedQuestions);
+      
+      // Set contestants data
+      if (contestantsResult.data) {
+        setContestants(contestantsResult.data.map(c => ({ name: c.name, isActive: c.is_active })));
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       setError(error instanceof Error ? error.message : 'Failed to load data');
@@ -120,20 +128,29 @@ export const EveryonesPicks: React.FC = () => {
                   
                    {/* Players - horizontal layout with even spacing */}
                    <div className="flex-1 grid grid-cols-5 gap-3">
-                      {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
-                        const playerKey = `player_${i + 1}` as keyof typeof entry;
-                        return entry[playerKey];
-                      }).filter(Boolean).map((player, index) => (
-                       <div key={index} className="bg-muted/50 rounded p-3 text-center min-h-[65px] flex flex-col justify-center">
-                         <div className="text-xs text-muted-foreground mb-1">P{index + 1}</div>
-                         <div className="text-sm font-medium">{player as string}</div>
-                        {houseguestPoints[player as string] !== undefined && (
-                          <div className="text-xs text-primary font-semibold">
-                            {houseguestPoints[player as string]}pts
-                          </div>
-                        )}
-                       </div>
-                     ))}
+                       {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+                         const playerKey = `player_${i + 1}` as keyof typeof entry;
+                         return entry[playerKey];
+                       }).filter(Boolean).map((player, index) => {
+                         // Find contestant to check if evicted
+                         const contestant = contestants.find(c => c.name === player);
+                         const isEvicted = contestant && !contestant.isActive;
+                         
+                         return (
+                           <div key={index} className="bg-muted/50 rounded p-3 text-center min-h-[65px] flex flex-col justify-center">
+                             <div className="text-xs text-muted-foreground mb-1">P{index + 1}</div>
+                             <div className={`text-sm font-medium ${isEvicted ? 'text-red-600 line-through' : ''}`}>
+                               {player as string}
+                               {isEvicted && <span className="text-red-500 text-xs block">(Evicted)</span>}
+                             </div>
+                             {houseguestPoints[player as string] !== undefined && (
+                               <div className="text-xs text-primary font-semibold">
+                                 {houseguestPoints[player as string]}pts
+                               </div>
+                             )}
+                           </div>
+                         );
+                       })}
                    </div>
                   
                   {/* Total Points - right aligned */}

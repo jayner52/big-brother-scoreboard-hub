@@ -59,7 +59,7 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
     return rule && (rule.subcategory === 'self_evicted' || rule.subcategory === 'removed_production');
   };
 
-  // REMOVED: Eviction status logic - will be reimplemented from scratch
+  // Apply eviction styling based on contestant status
   const completeContestantScores = allContestants.map(contestant => {
     const existingScore = contestantScores.find(score => score.name === contestant.name);
     
@@ -72,7 +72,7 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
       name: contestant.name,
       weeklyTotal: existingScore?.weeklyTotal || 0,
       cumulativeTotal: existingScore?.cumulativeTotal || 0,
-      isEvicted: false, // REMOVED: eviction logic - always show as active
+      isEvicted: !contestant.is_active, // Use actual eviction status
       hasSpecialEvent
     };
   });
@@ -87,10 +87,11 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
             <div key={contestant.name} className={`flex flex-col justify-between p-2 rounded relative ${
               contestant.isEvicted ? 'bg-destructive/10 border border-destructive/20' : 'bg-background border border-border'
             } ${contestant.hasSpecialEvent ? 'ring-2 ring-purple-200' : ''}`}>
-              <span className={`truncate text-xs ${contestant.isEvicted ? 'text-destructive font-medium' : ''}`}>
-                {contestant.name}
-                {contestant.hasSpecialEvent && <span className="text-purple-600 ml-1">⚡</span>}
-              </span>
+               <span className={`truncate text-xs ${contestant.isEvicted ? 'text-red-600 font-medium line-through' : ''}`}>
+                 {contestant.name}
+                 {contestant.isEvicted && <span className="text-red-500 text-xs ml-1">(Evicted)</span>}
+                 {contestant.hasSpecialEvent && <span className="text-purple-600 ml-1">⚡</span>}
+               </span>
               <span className={`font-bold text-sm ${
                 contestant.weeklyTotal > 0 ? 'text-green-600' : 
                 contestant.weeklyTotal < 0 ? 'text-red-600' : 'text-gray-600'

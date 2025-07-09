@@ -65,7 +65,10 @@ export const ResultTile: React.FC<ResultTileProps> = ({
     <div className={`text-center p-3 rounded-lg border ${colorClasses[colorScheme]}`}>
       {renderIcon()}
       <p className={`text-sm font-medium ${colorClasses[colorScheme].split(' ')[2]}`}>{label}</p>
-      <p className={`font-bold ${valueColorClasses[colorScheme]}`}>{value || "N/A"}</p>
+      <p className={`font-bold ${valueColorClasses[colorScheme]} ${colorScheme === 'red' && value !== 'N/A' ? 'line-through' : ''}`}>
+        {value || "N/A"}
+        {colorScheme === 'red' && value !== 'N/A' && <span className="text-red-500 text-xs block">(Evicted)</span>}
+      </p>
       {subtitle && (
         <p className={`text-xs ${iconColorClasses[colorScheme]}`}>{subtitle}</p>
       )}

@@ -46,15 +46,16 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
         <TableBody>
         {contestantStats.map((stat, index) => {
             const contestant = contestants.find(c => c.name === stat.contestant_name);
-            const isEvicted = false; // REMOVED: eviction logic - always show as active
+            const isEvicted = contestant && !contestant.isActive; // Use actual eviction status
             
             return (
               <TableRow key={stat.contestant_name}>
                 <TableCell className="text-center font-bold">
                   {index + 1}
                 </TableCell>
-                <TableCell className="text-center font-semibold">
+                <TableCell className={`text-center font-semibold ${isEvicted ? 'text-red-600 line-through' : ''}`}>
                   {stat.contestant_name}
+                  {isEvicted && <span className="text-red-500 text-xs ml-1">(Evicted)</span>}
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge variant="outline" className="text-xs">

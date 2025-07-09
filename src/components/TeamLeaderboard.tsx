@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useSimpleLeaderboard } from '@/hooks/useSimpleLeaderboard';
 import { useActivePool } from '@/hooks/useActivePool';
 
@@ -13,6 +15,24 @@ export const TeamLeaderboard: React.FC = () => {
   const activePool = useActivePool();
   const { poolEntries, loading, error, reload } = useSimpleLeaderboard();
   const { houseguestPoints } = useHouseguestPoints();
+  const [contestants, setContestants] = useState<{name: string, isActive: boolean}[]>([]);
+
+  useEffect(() => {
+    const loadContestants = async () => {
+      if (!activePool?.id) return;
+      
+      const { data } = await supabase
+        .from('contestants')
+        .select('name, is_active')
+        .eq('pool_id', activePool.id);
+      
+      if (data) {
+        setContestants(data.map(c => ({ name: c.name, isActive: c.is_active })));
+      }
+    };
+    
+    loadContestants();
+  }, [activePool?.id]);
 
   if (loading) {
     return (
@@ -101,15 +121,24 @@ export const TeamLeaderboard: React.FC = () => {
                   </TableCell>
                   <TableCell className="font-semibold text-blue-600">{entry.team_name}</TableCell>
                   <TableCell>{entry.participant_name}</TableCell>
-                  {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
-                    const playerKey = `player_${i + 1}` as keyof typeof entry;
-                    const playerName = entry[playerKey] as string;
-                    return (
-                      <TableCell key={i}>
-                        {playerName} {houseguestPoints[playerName] !== undefined && `(${houseguestPoints[playerName]} pts)`}
-                      </TableCell>
-                    );
-                  })}
+                   {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
+                     const playerKey = `player_${i + 1}` as keyof typeof entry;
+                     const playerName = entry[playerKey] as string;
+                     
+                     // Find contestant to check if evicted
+                     const contestant = contestants.find(c => c.name === playerName);
+                     const isEvicted = contestant && !contestant.isActive;
+                     
+                     return (
+                       <TableCell key={i}>
+                         <span className={isEvicted ? 'text-red-600 line-through' : ''}>
+                           {playerName}
+                         </span>
+                         {isEvicted && <span className="text-red-500 text-xs ml-1">(Evicted)</span>}
+                         {houseguestPoints[playerName] !== undefined && ` (${houseguestPoints[playerName]} pts)`}
+                       </TableCell>
+                     );
+                   })}
                   <TableCell className="text-center">{entry.weekly_points}</TableCell>
                   <TableCell className="text-center">{entry.bonus_points}</TableCell>
                   <TableCell className="text-center font-bold text-lg bg-yellow-100">

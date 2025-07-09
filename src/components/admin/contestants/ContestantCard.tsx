@@ -167,11 +167,12 @@ export const ContestantCard: React.FC<ContestantCardProps> = ({
               )}
             </div>
             <div>
-              <h3 className="font-semibold text-lg text-primary">
+              <h3 className={`font-semibold text-lg ${!contestant.isActive ? 'text-red-600' : 'text-primary'}`}>
                 {contestant.name}
+                {!contestant.isActive && <span className="text-red-500 text-sm ml-1">(Evicted)</span>}
               </h3>
               <p className="text-sm text-muted-foreground mb-1">
-                Active • Order: {contestant.sort_order}
+                {contestant.isActive ? 'Active' : 'Evicted'} • Order: {contestant.sort_order}
               </p>
               <p className="text-sm text-muted-foreground mb-2">
                 Group: {groups.find(g => g.id === contestant.group_id)?.group_name || 'Unassigned'}

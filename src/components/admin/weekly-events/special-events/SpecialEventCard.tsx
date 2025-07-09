@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -42,6 +43,28 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
   getEventPoints,
   onShowCustomEventForm
 }) => {
+  // Calculate points based on event type and custom points
+  const calculateEventPoints = (eventData: SpecialEventFormData): number => {
+    // If custom points are explicitly set, use them
+    if (eventData.customPoints !== undefined && eventData.customPoints !== null) {
+      return eventData.customPoints;
+    }
+    
+    // For custom events, use customPoints or default to 1
+    if (eventData.eventType === 'custom_event') {
+      return eventData.customPoints || 1;
+    }
+    
+    // Find the scoring rule for this event type
+    const eventRule = availableEvents.find(rule => 
+      rule.subcategory === eventData.eventType || rule.id === eventData.eventType
+    );
+    
+    return eventRule?.points || 1;
+  };
+
+  const displayPoints = calculateEventPoints(event);
+
   return (
     <div className="flex flex-col gap-3 p-4 border rounded-lg">
       <div className="flex items-center justify-between">
@@ -63,7 +86,13 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
           <Label>Event Type</Label>
           <Select
             value={event.eventType}
-            onValueChange={(value) => updateSpecialEvent(index, 'eventType', value)}
+            onValueChange={(value) => {
+              updateSpecialEvent(index, 'eventType', value);
+              // Reset custom points when changing event type (except for custom events)
+              if (value !== 'custom_event') {
+                updateSpecialEvent(index, 'customPoints', undefined);
+              }
+            }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select event type" />
@@ -139,8 +168,8 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
                 <Badge variant="secondary">
                   {event.customEmoji} {event.customDescription}
                 </Badge>
-                <Badge variant={event.customPoints && event.customPoints > 0 ? "default" : "destructive"}>
-                  {event.customPoints && event.customPoints > 0 ? '+' : ''}{event.customPoints || 0} pts
+                <Badge variant={displayPoints > 0 ? "default" : "destructive"}>
+                  {displayPoints > 0 ? '+' : ''}{displayPoints} pts
                 </Badge>
               </div>
               <Button
@@ -166,8 +195,8 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
           <span>
             <strong>{event.contestant}</strong> → {getEventDisplayName(event)}
           </span>
-          <Badge variant={getEventPoints(event) > 0 ? "default" : getEventPoints(event) < 0 ? "destructive" : "secondary"}>
-            {getEventPoints(event) > 0 ? '+' : ''}{getEventPoints(event)} pts
+          <Badge variant={displayPoints > 0 ? "default" : displayPoints < 0 ? "destructive" : "secondary"}>
+            {displayPoints > 0 ? '+' : ''}{displayPoints} pts
           </Badge>
         </div>
       )}

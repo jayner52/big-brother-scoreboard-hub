@@ -60,12 +60,14 @@ export const useWeeklyEvents = () => {
               const parsedEvents = JSON.parse(weekData.draft_special_events);
               console.log('Parsed draft special events:', parsedEvents);
               
-              // Map the saved format to the expected form format
+              // Map the saved format to the expected form format with proper customPoints preservation
               draftSpecialEvents = parsedEvents.map((event: any) => ({
                 contestant: event.contestant || '',
                 eventType: event.eventType || event.event_type || '',
                 description: event.description || '',
-                customPoints: event.customPoints || event.points_awarded || 0
+                customPoints: event.customPoints !== undefined ? event.customPoints : event.points_awarded,
+                customDescription: event.customDescription || '',
+                customEmoji: event.customEmoji || '✨'
               }));
               
               console.log('Mapped draft special events:', draftSpecialEvents);

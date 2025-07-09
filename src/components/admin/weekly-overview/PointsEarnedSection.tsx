@@ -47,7 +47,15 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
   // Create a complete list showing all contestants with their points or 0
   const completeContestantScores = allContestants.map(contestant => {
     const existingScore = contestantScores.find(score => score.name === contestant.name);
-    const isEvicted = evictedThisWeek.includes(contestant.name);
+    
+    // Check if contestant is evicted - either passed in evictedThisWeek or marked inactive due to special events
+    const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
+    const hasQuitEvent = specialEvents.some(event => 
+      event.week_number <= weekNumber && 
+      event.contestant_name === contestant.name &&
+      (event.event_type === 'self_evicted' || event.event_type === 'removed_production')
+    );
+    const isEvicted = isEvictedThisWeek || hasQuitEvent || !contestant.is_active;
     
     // Check if contestant has special events this week
     const hasSpecialEvent = specialEvents.some(event => 

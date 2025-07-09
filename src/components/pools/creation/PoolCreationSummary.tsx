@@ -6,7 +6,7 @@ export const PoolCreationSummary = () => {
         <li>• 🏆 Pre-configured scoring rules for all BB events</li>
         <li>• 📊 Prize distribution: 50% / 30% / 20%</li>
         <li>• 👥 4 draft groups + 1 free pick (5 selections per team)</li>
-        <li>• 🏠 Season 26 houseguests will be loaded automatically</li>
+        <li>• 🏠 Season 27 houseguests will be loaded automatically</li>
         <li>• 🔒 Invite-only for security</li>
       </ul>
     </div>

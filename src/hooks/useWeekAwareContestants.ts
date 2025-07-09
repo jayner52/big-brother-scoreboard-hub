@@ -58,16 +58,38 @@ export const useWeekAwareContestants = (weekNumber: number) => {
         return acc;
       }, [] as string[]) || [];
 
-      // Check for contestants marked as inactive in this pool (special events)
-      const { data: inactiveContestants } = await supabase
-        .from('contestants')
-        .select('name, is_active')
+      // Check for contestants evicted by special events (self_evicted, removed_production)
+      const { data: specialEvictionData } = await supabase
+        .from('weekly_events')
+        .select(`
+          contestants(name),
+          event_type
+        `)
         .eq('pool_id', activePool.id)
-        .eq('is_active', false);
+        .lte('week_number', weekNumber);
 
-      console.log('🚫 Inactive contestants:', inactiveContestants);
+      console.log('🚫 Special eviction data:', specialEvictionData);
 
-      const evictedBySpecialEvent = inactiveContestants?.map(c => c.name).filter(Boolean) || [];
+      // Filter for only legitimate eviction special events
+      const evictedBySpecialEvent = [];
+      if (specialEvictionData) {
+        for (const event of specialEvictionData) {
+          if (event.event_type && event.contestants?.name) {
+            // Check if this event type is a legitimate eviction event
+            const { data: scoringRule } = await supabase
+              .from('detailed_scoring_rules')
+              .select('subcategory')
+              .eq('id', event.event_type)
+              .single();
+            
+            if (scoringRule && (scoringRule.subcategory === 'self_evicted' || scoringRule.subcategory === 'removed_production')) {
+              evictedBySpecialEvent.push(event.contestants.name);
+              console.log(`🚪 Special eviction: ${event.contestants.name} (${scoringRule.subcategory})`);
+            }
+          }
+        }
+      }
+
       const allEvicted = [...new Set([...evictedByVote, ...evictedBySpecialEvent])];
 
       console.log('❌ All evicted contestants:', allEvicted);

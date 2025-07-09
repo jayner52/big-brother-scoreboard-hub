@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContestantWithBio } from '@/types/admin';
 import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
+import { EvictedContestantTile } from '@/components/ui/evicted-contestant-tile';
 
 interface PointsPreviewProps {
   pointsPreview: Record<string, number>;
@@ -63,22 +64,13 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {evictedContestants.map((contestant) => {
                 const points = allContestantsPreview[contestant.name] || 0;
-                const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
                 return (
-                   <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/30 rounded border border-dashed">
-                      <span className="text-red-600 font-medium text-sm truncate pr-2" title={contestant.name}>
-                        {contestant.name}:
-                        <span className="text-red-500 text-xs ml-1">(Evicted)</span>
-                     </span>
-                     <div className="flex flex-col items-end">
-                       <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
-                         {points > 0 ? '+' : ''}{points}pts
-                       </span>
-                       {isEvictedThisWeek && (
-                         <span className="text-xs text-red-500">evicted this week</span>
-                       )}
-                     </div>
-                   </div>
+                  <EvictedContestantTile
+                    key={contestant.name}
+                    name={contestant.name}
+                    points={points}
+                    showEvictionInfo={false}
+                  />
                 );
               })}
             </div>

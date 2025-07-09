@@ -1551,6 +1551,16 @@ export type Database = {
           eviction_source: string
         }[]
       }
+      get_contestants_evicted_up_to_week: {
+        Args: { target_pool_id: string; target_week_number: number }
+        Returns: {
+          contestant_id: string
+          contestant_name: string
+          eviction_type: string
+          eviction_source: string
+          eviction_week: number
+        }[]
+      }
       get_evicted_contestants: {
         Args: { target_pool_id: string }
         Returns: {

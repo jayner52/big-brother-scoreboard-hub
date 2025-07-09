@@ -32,9 +32,9 @@ export const useWeekAwareContestants = (weekNumber: number) => {
         return;
       }
 
-      // Get contestants who were evicted in this specific week
-      const { data: evictedThisWeek } = await supabase
-        .rpc('get_contestants_evicted_in_week', {
+      // Get contestants who were evicted up to this week (cumulative)
+      const { data: evictedUpToWeek } = await supabase
+        .rpc('get_contestants_evicted_up_to_week', {
           target_pool_id: activePool.id,
           target_week_number: weekNumber
         });
@@ -46,7 +46,7 @@ export const useWeekAwareContestants = (weekNumber: number) => {
           target_week_number: weekNumber
         });
 
-      console.log('📊 Week', weekNumber, 'evicted:', evictedThisWeek?.map(e => e.contestant_name));
+      console.log('📊 Week', weekNumber, 'evicted up to week:', evictedUpToWeek?.map(e => e.contestant_name));
       console.log('📊 Week', weekNumber, 'active:', activeThisWeek?.filter(a => a.is_active_this_week).map(a => a.contestant_name));
 
       // Map contestants with week-aware status
@@ -60,8 +60,8 @@ export const useWeekAwareContestants = (weekNumber: number) => {
         photo_url: c.photo_url
       }));
 
-      // Get names of contestants evicted this week
-      const evictedNames = evictedThisWeek?.map(e => e.contestant_name) || [];
+      // Get names of contestants evicted up to this week
+      const evictedNames = evictedUpToWeek?.map(e => e.contestant_name) || [];
       
       // Filter active contestants for this week
       const activeContestantsList = contestants.filter(c => c.isActive);
@@ -72,7 +72,7 @@ export const useWeekAwareContestants = (weekNumber: number) => {
 
       console.log('✅ Week-aware data loaded:', {
         allContestants: contestants.length,
-        evictedThisWeek: evictedNames.length,
+        evictedUpToWeek: evictedNames.length,
         activeThisWeek: activeContestantsList.length
       });
     } catch (error) {

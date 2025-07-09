@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 import { usePool } from '@/contexts/PoolContext';
+import { EvictedContestantTile } from '@/components/ui/evicted-contestant-tile';
 
 interface ContestantScore {
   name: string;
@@ -89,23 +90,34 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm">
         {completeContestantScores
           .sort((a, b) => b.weeklyTotal - a.weeklyTotal)
-          .map((contestant) => (
-            <div key={contestant.name} className={`flex flex-col justify-between p-2 rounded relative ${
-              contestant.isEvicted ? 'bg-destructive/10 border border-destructive/20' : 'bg-background border border-border'
-            } ${contestant.hasSpecialEvent ? 'ring-2 ring-purple-200' : ''}`}>
-               <span className={`truncate text-xs ${contestant.isEvicted ? 'text-red-600 font-medium line-through' : ''}`}>
-                 {contestant.name}
-                 {contestant.isEvicted && <span className="text-red-500 text-xs ml-1">(Evicted)</span>}
-                 {contestant.hasSpecialEvent && <span className="text-purple-600 ml-1">⚡</span>}
-               </span>
-              <span className={`font-bold text-sm ${
-                contestant.weeklyTotal > 0 ? 'text-green-600' : 
-                contestant.weeklyTotal < 0 ? 'text-red-600' : 'text-gray-600'
-              }`}>
-                {contestant.weeklyTotal > 0 ? '+' : ''}{contestant.weeklyTotal}
-              </span>
-            </div>
-          ))}
+          .map((contestant) => {
+            if (contestant.isEvicted) {
+              return (
+                <EvictedContestantTile
+                  key={contestant.name}
+                  name={contestant.name}
+                  points={contestant.weeklyTotal}
+                  showEvictionInfo={false}
+                  className={contestant.hasSpecialEvent ? 'ring-2 ring-purple-200' : ''}
+                />
+              );
+            } else {
+              return (
+                <div key={contestant.name} className={`flex flex-col justify-between p-2 rounded relative bg-background border border-border ${contestant.hasSpecialEvent ? 'ring-2 ring-purple-200' : ''}`}>
+                  <span className="truncate text-xs">
+                    {contestant.name}
+                    {contestant.hasSpecialEvent && <span className="text-purple-600 ml-1">⚡</span>}
+                  </span>
+                  <span className={`font-bold text-sm ${
+                    contestant.weeklyTotal > 0 ? 'text-green-600' : 
+                    contestant.weeklyTotal < 0 ? 'text-red-600' : 'text-gray-600'
+                  }`}>
+                    {contestant.weeklyTotal > 0 ? '+' : ''}{contestant.weeklyTotal}
+                  </span>
+                </div>
+              );
+            }
+          })}
       </div>
       
       {/* Nominees details */}

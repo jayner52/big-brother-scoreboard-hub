@@ -1,4 +1,4 @@
-// Season 27 Houseguests - Dynamic Loading via Parade Scraping
+// Season 27 Houseguests - Fixed Cast Data from Official CBS Release
 // This creates BB27 as global defaults and enables auto-population for all new pools
 
 import { supabase } from '@/integrations/supabase/client';
@@ -75,7 +75,7 @@ export const populateSeason27GlobalDefaults = async (): Promise<{ success: boole
         season_number: 27,
         sort_order: index + 1,
         ai_generated: false,
-        data_source: 'bb27_parade_scraping'
+        data_source: 'bb27_fixed_cast'
       };
     });
     

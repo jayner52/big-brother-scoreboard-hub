@@ -21,85 +21,165 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🔍 Starting Big Brother 27 cast scraping from Parade...');
+    console.log('🏠 Loading Big Brother 27 fixed cast data...');
     
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    // Use GPT-4 to scrape the Parade page for BB27 cast
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
+    // Fixed Season 27 cast data - no more dynamic scraping
+    const bb27FixedCast: ContestantData[] = [
+      {
+        name: "Adrian Rocha",
+        age: 23,
+        location: "San Antonio, TX",
+        occupation: "Carpenter",
+        bio: "A skilled carpenter from San Antonio who has been training extensively for Big Brother, building his own competition setups and studying social psychology to become the greatest player of all time.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/adrian-rocha/"
       },
-      body: JSON.stringify({
-        model: 'gpt-4',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a web scraper that extracts Big Brother 27 cast information. Visit the URL and return contestant data in the exact XML format requested. Be precise with names, ages, locations, occupations, bios, and image URLs.`
-          },
-          {
-            role: 'user',
-            content: `Scrape the Parade page at: https://parade.com/tv/big-brother-27-cast-photos-interview-2025 and return a complete <contestants> list in XML, where each <contestant> includes: <name>, <age>, <location>, <occupation>, <bio>, and <imageUrl> (direct link to their headshot). Format precisely like:
+      {
+        name: "Amy Bingham",
+        age: 43,
+        location: "Stockton, CA",
+        occupation: "Insurance Agent",
+        bio: "An insurance agent from California bringing maturity and life experience to the game, ready to navigate the social dynamics of the Big Brother house.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/amy-bingham/"
+      },
+      {
+        name: "Ava Pearl",
+        age: 24,
+        location: "New York, NY",
+        occupation: "Aura Painter",
+        bio: "A creative aura painter from New York City who brings unique perspective and artistic energy to the house, ready to read the competition in more ways than one.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/ava-pearl/"
+      },
+      {
+        name: "Ashley Hollis",
+        age: 25,
+        location: "New York, NY",
+        occupation: "Attorney",
+        bio: "A sharp attorney from Chicago now living in New York, bringing legal strategy and analytical thinking to the Big Brother game.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/ashley-hollis/"
+      },
+      {
+        name: "Cliffton \"Will\" Williams",
+        age: 50,
+        location: "Charlotte, NC",
+        occupation: "College Sports Podcaster",
+        bio: "A 22-year Army veteran and college sports podcaster who brings energy, joy, and life experience as 'Captain Will' with five kids and nine grandkids.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/will-williams/"
+      },
+      {
+        name: "Isaiah \"Zae\" Frederich",
+        age: 23,
+        location: "Provo, UT",
+        occupation: "Salesperson",
+        bio: "A young salesperson from Kentucky now living in Utah, ready to use his sales skills to navigate the social game of Big Brother.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/zae-frederich/"
+      },
+      {
+        name: "Jimmy Heagerty",
+        age: 25,
+        location: "Washington, DC",
+        occupation: "AI Consultant",
+        bio: "An AI consultant from DC who brings tech-savvy strategy to the game, ready to analyze and adapt to any situation in the Big Brother house.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/jimmy-heagerty/"
+      },
+      {
+        name: "Katherine Woodman",
+        age: 23,
+        location: "Columbia, SC",
+        occupation: "Fine Dining Server",
+        bio: "A fine dining server from Georgia who knows how to read people and serve up strategy, ready to play a strong social game.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/katherine-woodman/"
+      },
+      {
+        name: "Keanu Soto",
+        age: 33,
+        location: "McKinney, TX",
+        occupation: "Personal Trainer/Dungeon Master",
+        bio: "A personal trainer and dungeon master from Texas who brings both physical prowess and strategic gameplay from his D&D experience.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/keanu-soto/"
+      },
+      {
+        name: "Lance Rylie",
+        age: 29,
+        location: "Burbank, SD",
+        occupation: "Web Designer",
+        bio: "A web designer from South Dakota who brings technical skills and creative problem-solving to the Big Brother competition.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/lance-rylie/"
+      },
+      {
+        name: "Madison Ivy",
+        age: 22,
+        location: "Lafayette, LA",
+        occupation: "Bridal Consultant",
+        bio: "The youngest houseguest at 22, a bridal consultant from Louisiana ready to say 'I do' to winning the $750,000 grand prize.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/madison-ivy/"
+      },
+      {
+        name: "Rylie Jeffries",
+        age: 27,
+        location: "Luther, OK",
+        occupation: "Professional Bull Rider",
+        bio: "A professional bull rider from Oklahoma who's used to holding on for dear life and ready to ride out any storm in the Big Brother house.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/rylie-jeffries/"
+      },
+      {
+        name: "Serenity Mason",
+        age: 27,
+        location: "Cartersville, GA",
+        occupation: "Marketing Manager",
+        bio: "A marketing manager from Georgia who knows how to sell herself and her ideas, ready to market her way to the final two.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/serenity-mason/"
+      },
+      {
+        name: "Tiffany Johnson",
+        age: 35,
+        location: "Atlanta, GA",
+        occupation: "Event Curator",
+        bio: "An event curator from Atlanta who knows how to plan and execute, ready to orchestrate her way through the Big Brother game.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/tiffany-johnson/"
+      },
+      {
+        name: "Vince Panaro",
+        age: 32,
+        location: "New York, NY",
+        occupation: "Gamer",
+        bio: "A professional gamer from New York who brings competitive gaming strategy and quick reflexes to the Big Brother competition.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/vince-panaro/"
+      },
+      {
+        name: "Zach Cornell",
+        age: 28,
+        location: "Houston, TX",
+        occupation: "Former Professional Baseball Player",
+        bio: "A former professional baseball player who's ready to hit a home run in the Big Brother house with his competitive spirit and athletic prowess.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/cast/zach-cornell/"
+      },
+      {
+        name: "Mystery Houseguest",
+        age: 0,
+        location: "Unknown",
+        occupation: "To Be Revealed",
+        bio: "The 17th houseguest whose identity remains a mystery. Will be revealed during the premiere episode on July 10, 2025.",
+        imageUrl: "https://www.cbs.com/shows/big_brother/mystery-houseguest/"
+      }
+    ];
 
-<contestants>
-  <contestant>
-    <name>Jane Doe</name>
-    <age>24</age>
-    <location>Chicago, IL</location>
-    <occupation>Barista</occupation>
-    <bio>Short 1–2 sentence bio about their background and strategy.</bio>
-    <imageUrl>https://example.com/jane.jpg</imageUrl>
-  </contestant>
-  <!-- more contestants -->
-</contestants>
-
-Return ONLY the XML, no other text.`
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 4000
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`OpenAI API error: ${error.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
-    const xmlContent = data.choices[0].message.content;
-    
-    console.log('📋 Raw XML response:', xmlContent);
-
-    // Parse the XML response to extract contestant data
-    const contestants = parseContestantsFromXML(xmlContent);
-    
-    if (contestants.length === 0) {
-      throw new Error('No contestants found in the parsed XML');
-    }
-
-    console.log(`✅ Successfully parsed ${contestants.length} Big Brother 27 contestants`);
+    console.log(`✅ Loaded ${bb27FixedCast.length} Big Brother 27 contestants from fixed data`);
     
     // Log each contestant for verification
-    contestants.forEach((contestant, index) => {
+    bb27FixedCast.forEach((contestant, index) => {
       console.log(`${index + 1}. ${contestant.name} (${contestant.age}) - ${contestant.occupation} from ${contestant.location}`);
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        contestants,
+        contestants: bb27FixedCast,
         metadata: {
           season: 27,
-          source: 'parade.com',
+          source: 'fixed_xml_cast_data',
           scraped_at: new Date().toISOString(),
-          total_contestants: contestants.length,
-          scraping_method: 'gpt-4_xml_extraction'
+          total_contestants: bb27FixedCast.length,
+          scraping_method: 'fixed_data_no_ai'
         }
       }),
       {

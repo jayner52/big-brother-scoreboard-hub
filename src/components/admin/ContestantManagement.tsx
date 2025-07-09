@@ -71,12 +71,14 @@ export const ContestantManagement: React.FC = () => {
       <ContestantManagementHeader onAddClick={() => setShowAddForm(true)} />
 
       <Tabs defaultValue="manage" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${contestants.some(c => c.season_number === 27) ? 'grid-cols-1' : 'grid-cols-2'}`}>
           <TabsTrigger value="manage">Manage Contestants</TabsTrigger>
-          <TabsTrigger value="ai-generate" className="flex items-center gap-2">
-            <Bot className="h-4 w-4" />
-            AI Generator
-          </TabsTrigger>
+          {!contestants.some(c => c.season_number === 27) && (
+            <TabsTrigger value="ai-generate" className="flex items-center gap-2">
+              <Bot className="h-4 w-4" />
+              AI Generator
+            </TabsTrigger>
+          )}
         </TabsList>
         
         <TabsContent value="manage" className="space-y-6">
@@ -97,17 +99,19 @@ export const ContestantManagement: React.FC = () => {
           />
         </TabsContent>
         
-        <TabsContent value="ai-generate" className="space-y-6">
-          <AIGenerationTab
-            contestants={contestants}
-            onProfilesGenerated={handleAIProfilesGenerated}
-            onEdit={handleEdit}
-            onView={handleViewProfile}
-            onDelete={handleDelete}
-            onClearAll={handleClearAll}
-            onBioUpdate={loadContestants}
-          />
-        </TabsContent>
+        {!contestants.some(c => c.season_number === 27) && (
+          <TabsContent value="ai-generate" className="space-y-6">
+            <AIGenerationTab
+              contestants={contestants}
+              onProfilesGenerated={handleAIProfilesGenerated}
+              onEdit={handleEdit}
+              onView={handleViewProfile}
+              onDelete={handleDelete}
+              onClearAll={handleClearAll}
+              onBioUpdate={loadContestants}
+            />
+          </TabsContent>
+        )}
       </Tabs>
 
       <EnhancedContestantProfileModal

@@ -37,7 +37,7 @@ export const EvictedContestantTile: React.FC<EvictedContestantTileProps> = ({
     <div className={`
       relative p-3 rounded-lg border-2 
       bg-red-50/80 border-red-200/60 
-      opacity-75 transition-all duration-200
+      opacity-90 transition-all duration-200
       ${className}
     `}>
       {/* Evicted icon */}

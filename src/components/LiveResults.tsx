@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatEventType, getEventDisplayText } from '@/utils/eventFormatters';
 import { useCurrentWeek } from '@/contexts/CurrentWeekContext';
 import { useActivePool } from '@/hooks/useActivePool';
+import { CompactSpecialEventsDisplay } from '@/components/admin/CompactSpecialEventsDisplay';
 
 interface WeeklyResult {
   week_number: number;
@@ -365,31 +366,18 @@ export const LiveResults: React.FC = () => {
               </div>
             )}
 
-            {/* Special Events for Current Week */}
-            {(!currentWeekData.is_draft || showSpoilers) && specialEvents.filter(event => event.week_number === currentWeekData.week_number).length > 0 && (
-              <div className="mt-6">
-                <h4 className="font-semibold mb-2">Special Events This Week</h4>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                   {specialEvents
-                     .filter(event => event.week_number === currentWeekData.week_number)
-                     .map((event, index) => (
-                       <div key={index} className="bg-purple-50 p-2 rounded-md border border-purple-200">
-                         <div className="flex items-center justify-between mb-1">
-                           <span className="font-medium text-purple-900 text-sm">{event.houseguest_name}</span>
-                           <Badge 
-                             variant={event.points_awarded > 0 ? "default" : event.points_awarded < 0 ? "destructive" : "secondary"} 
-                             className="text-xs"
-                           >
-                             {event.points_awarded > 0 ? '+' : ''}{event.points_awarded} pts
-                           </Badge>
-                         </div>
-                         <div className="text-purple-700 text-xs">
-                           {getEventDisplayText(event.event_type, event.description)}
-                         </div>
-                       </div>
-                     ))}
-                 </div>
-              </div>
+            {/* Special Events for Current Week - Using CompactSpecialEventsDisplay */}
+            {(!currentWeekData.is_draft || showSpoilers) && (
+              <CompactSpecialEventsDisplay
+                events={specialEvents.map(event => ({
+                  week_number: event.week_number,
+                  contestant_name: event.houseguest_name,
+                  event_type: event.event_type,
+                  description: event.description,
+                  points_awarded: event.points_awarded
+                }))}
+                weekNumber={currentWeekData.week_number}
+              />
             )}
           </CardContent>
         </Card>
@@ -550,35 +538,17 @@ export const LiveResults: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Special Events for this week */}
-                    {specialEvents?.filter(event => event.week_number === week.week_number).length > 0 && (
-                      <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                        <h5 className="font-semibold mb-2 flex items-center gap-2 text-purple-800 text-sm">
-                          <span className="text-purple-600">⚡</span>
-                          Special Events
-                        </h5>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {specialEvents
-                            ?.filter(event => event.week_number === week.week_number)
-                            .map((event, index) => (
-                              <div key={index} className="bg-white/80 p-2 rounded-md border border-purple-200/50 shadow-sm">
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="font-medium text-purple-900 text-sm">{event.houseguest_name}</span>
-                                  <Badge 
-                                    variant={event.points_awarded > 0 ? "default" : event.points_awarded < 0 ? "destructive" : "secondary"} 
-                                    className="text-xs"
-                                  >
-                                    {event.points_awarded > 0 ? '+' : ''}{event.points_awarded} pts
-                                  </Badge>
-                                </div>
-                                <div className="text-purple-700 text-xs">
-                                  {getEventDisplayText(event.event_type, event.description)}
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
+                    {/* Special Events for this week - Using CompactSpecialEventsDisplay */}
+                    <CompactSpecialEventsDisplay
+                      events={specialEvents.map(event => ({
+                        week_number: event.week_number,
+                        contestant_name: event.houseguest_name,
+                        event_type: event.event_type,
+                        description: event.description,
+                        points_awarded: event.points_awarded
+                      }))}
+                      weekNumber={week.week_number}
+                    />
                   </div>
                 </div>
               ))}

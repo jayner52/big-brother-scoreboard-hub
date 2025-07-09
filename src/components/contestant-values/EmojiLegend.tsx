@@ -7,8 +7,22 @@ import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
 export const EmojiLegend: React.FC = () => {
   const { scoringRules } = useScoringRules();
 
-  // Group scoring rules by category for display
-  const activeScoringRules = scoringRules.filter(rule => rule.is_active);
+  // Filter out regular weekly events that are tracked elsewhere
+  const excludedEventTypes = [
+    'hoh_winner',
+    'pov_winner', 
+    'nominee',
+    'replacement_nominee',
+    'evicted',
+    'survival',
+    'pov_used_on',
+    'saved_by_veto'
+  ];
+
+  // Group scoring rules by category for display - only show special events
+  const activeScoringRules = scoringRules.filter(rule => 
+    rule.is_active && !excludedEventTypes.includes(rule.subcategory)
+  );
 
   return (
     <Card className="mt-4">

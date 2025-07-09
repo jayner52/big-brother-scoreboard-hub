@@ -1,6 +1,7 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestantsFiltered } from '@/hooks/useActiveContestantsFiltered';
 import { usePool } from '@/contexts/PoolContext';
@@ -70,12 +71,17 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
               </SelectItem>
             ))
            ) : (
-              // CRITICAL FIX: Only show active contestants (evicted contestants filtered out)
-              activeContestants.map(contestant => (
-                <SelectItem key={contestant.id} value={contestant.name}>
-                  {contestant.name}
-                </SelectItem>
-              ))
+               // CRITICAL FIX: Only show active contestants (evicted contestants filtered out)
+               activeContestants.map(contestant => (
+                 <SelectItem key={contestant.id} value={contestant.name}>
+                   <span className="flex items-center justify-between w-full">
+                     <span>{contestant.name}</span>
+                     {!contestant.isActive && (
+                       <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
+                     )}
+                   </span>
+                 </SelectItem>
+               ))
             )}
         </SelectContent>
       </Select>

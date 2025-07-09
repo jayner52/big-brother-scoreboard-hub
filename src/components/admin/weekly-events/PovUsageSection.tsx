@@ -69,7 +69,12 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
                   )
                   .map(contestant => (
                     <SelectItem key={contestant.id} value={contestant.name}>
-                      {contestant.name}
+                      <span className="flex items-center justify-between w-full">
+                        <span>{contestant.name}</span>
+                        {!contestant.isActive && (
+                          <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
+                        )}
+                      </span>
                     </SelectItem>
                   ))}
               </SelectContent>

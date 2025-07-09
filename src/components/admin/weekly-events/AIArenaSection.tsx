@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useScoringRules } from '@/hooks/useScoringRules';
 
@@ -104,11 +105,20 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   {currentNominees.length > 0 ? (
-                    currentNominees.map(nominee => (
-                      <SelectItem key={nominee} value={nominee}>
-                        {nominee}
-                      </SelectItem>
-                    ))
+                    currentNominees.map(nominee => {
+                      // Find the contestant object to check isActive status
+                      const contestant = activeContestants.find(c => c.name === nominee);
+                      return (
+                        <SelectItem key={nominee} value={nominee}>
+                          <span className="flex items-center justify-between w-full">
+                            <span>{nominee}</span>
+                            {contestant && !contestant.isActive && (
+                              <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
+                            )}
+                          </span>
+                        </SelectItem>
+                      );
+                    })
                   ) : (
                     <SelectItem value="" disabled>
                       No nominees available

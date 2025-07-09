@@ -53,7 +53,12 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
             <SelectContent>
               {activeContestants.map(contestant => (
                 <SelectItem key={contestant.id} value={contestant.name}>
-                  {contestant.name}
+                  <span className="flex items-center justify-between w-full">
+                    <span>{contestant.name}</span>
+                    {!contestant.isActive && (
+                      <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
+                    )}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -77,7 +82,12 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
             <SelectContent>
               {activeContestants.map(contestant => (
                 <SelectItem key={contestant.id} value={contestant.name}>
-                  {contestant.name}
+                  <span className="flex items-center justify-between w-full">
+                    <span>{contestant.name}</span>
+                    {!contestant.isActive && (
+                      <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
+                    )}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -103,7 +113,12 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
                 .filter(c => c.name !== eventForm.winner)
                 .map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
-                    {contestant.name}
+                    <span className="flex items-center justify-between w-full">
+                      <span>{contestant.name}</span>
+                      {!contestant.isActive && (
+                        <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
+                      )}
+                    </span>
                   </SelectItem>
                 ))}
             </SelectContent>
@@ -128,7 +143,12 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
               {/* AFP can be any contestant from the entire season - include all contestants */}
               {contestants.map(contestant => (
                 <SelectItem key={contestant.id} value={contestant.name}>
-                  {contestant.name} {!contestant.isActive && '(Evicted)'}
+                  <span className="flex items-center justify-between w-full">
+                    <span>{contestant.name}</span>
+                    {!contestant.isActive && (
+                      <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
+                    )}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>

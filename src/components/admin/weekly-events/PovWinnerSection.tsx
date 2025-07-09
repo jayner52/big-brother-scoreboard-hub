@@ -2,6 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
 import { usePool } from '@/contexts/PoolContext';
@@ -41,7 +42,12 @@ export const PovWinnerSection: React.FC<PovWinnerSectionProps> = ({
             <SelectItem value="no-winner">No winner</SelectItem>
             {activeContestants.map(contestant => (
               <SelectItem key={contestant.id} value={contestant.name}>
-                {contestant.name}
+                <span className="flex items-center justify-between w-full">
+                  <span>{contestant.name}</span>
+                  {!contestant.isActive && (
+                    <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
+                  )}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

@@ -3,8 +3,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
-// REMOVED: useActiveContestantsFiltered - eviction logic will be reimplemented from scratch
 import { usePool } from '@/contexts/PoolContext';
+import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 
 interface EvictionSectionProps {
@@ -19,8 +19,7 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
   evictionLabel = "Evicted Houseguest",
 }) => {
   const { activePool } = usePool();
-  // REMOVED: activeContestants filtering - will be reimplemented from scratch
-  const activeContestants: ContestantWithBio[] = []; // Temporary empty array
+  const { activeContestants } = useWeekAwareContestants(eventForm.week);
   // Calculate final nominees (after POV ceremony) and exclude BB Arena winner
   const getFinalNominees = () => {
     let finalNominees = [...eventForm.nominees.filter(n => n)];

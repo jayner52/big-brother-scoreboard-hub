@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
 import { usePool } from '@/contexts/PoolContext';
-// REMOVED: evictionDebugger - will be reimplemented from scratch
 
 export const useWeekAwareContestants = (weekNumber: number) => {
   const { activePool } = usePool();
@@ -21,26 +20,61 @@ export const useWeekAwareContestants = (weekNumber: number) => {
     try {
       console.log('🔄 Loading week-aware data for pool:', activePool.id, 'week:', weekNumber);
 
-      // REMOVED: All eviction status logic - will be reimplemented from scratch
+      // Get all contestants first
       const { data: contestantsData } = await supabase
         .from('contestants')
         .select('*')
         .eq('pool_id', activePool.id)
         .order('name');
 
-      const contestants = contestantsData?.map(c => ({
+      if (!contestantsData) {
+        setLoading(false);
+        return;
+      }
+
+      // Get contestants who were evicted in this specific week
+      const { data: evictedThisWeek } = await supabase
+        .rpc('get_contestants_evicted_in_week', {
+          target_pool_id: activePool.id,
+          target_week_number: weekNumber
+        });
+
+      // Get contestants who are active in this specific week
+      const { data: activeThisWeek } = await supabase
+        .rpc('get_contestants_active_in_week', {
+          target_pool_id: activePool.id,
+          target_week_number: weekNumber
+        });
+
+      console.log('📊 Week', weekNumber, 'evicted:', evictedThisWeek?.map(e => e.contestant_name));
+      console.log('📊 Week', weekNumber, 'active:', activeThisWeek?.filter(a => a.is_active_this_week).map(a => a.contestant_name));
+
+      // Map contestants with week-aware status
+      const contestants = contestantsData.map(c => ({
         id: c.id,
         name: c.name,
-        isActive: true, // REMOVED: eviction logic - always show as active
+        isActive: activeThisWeek?.find(a => a.contestant_id === c.id)?.is_active_this_week ?? true,
         group_id: c.group_id,
         sort_order: c.sort_order,
         bio: c.bio,
         photo_url: c.photo_url
-      })) || [];
+      }));
+
+      // Get names of contestants evicted this week
+      const evictedNames = evictedThisWeek?.map(e => e.contestant_name) || [];
+      
+      // Filter active contestants for this week
+      const activeContestantsList = contestants.filter(c => c.isActive);
 
       setAllContestants(contestants);
-      setEvictedContestants([]); // REMOVED: eviction logic - empty array
-      setActiveContestants(contestants); // REMOVED: eviction logic - all contestants are active
+      setEvictedContestants(evictedNames);
+      setActiveContestants(activeContestantsList);
+
+      console.log('✅ Week-aware data loaded:', {
+        allContestants: contestants.length,
+        evictedThisWeek: evictedNames.length,
+        activeThisWeek: activeContestantsList.length
+      });
     } catch (error) {
       console.error('Error loading week-aware contestant data:', error);
     } finally {

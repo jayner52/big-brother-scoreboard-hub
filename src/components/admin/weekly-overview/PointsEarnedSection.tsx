@@ -2,7 +2,8 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useScoringRules } from '@/hooks/useScoringRules';
-// REMOVED: contestantStatusUtils - eviction logic will be reimplemented from scratch
+import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
+import { usePool } from '@/contexts/PoolContext';
 
 interface ContestantScore {
   name: string;
@@ -47,6 +48,8 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
   evictedThisWeek = []
 }) => {
   const { scoringRules } = useScoringRules();
+  const { activePool } = usePool();
+  const { allContestants: weekAwareContestants, evictedContestants } = useWeekAwareContestants(weekNumber);
 
   // Helper function to check if an event is a quit event by looking up scoring rules
   const isQuitEvent = (eventType: string) => {
@@ -59,8 +62,8 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
     return rule && (rule.subcategory === 'self_evicted' || rule.subcategory === 'removed_production');
   };
 
-  // Apply eviction styling based on contestant status
-  const completeContestantScores = allContestants.map(contestant => {
+  // Apply eviction styling based on week-aware contestant status
+  const completeContestantScores = (weekAwareContestants.length > 0 ? weekAwareContestants : allContestants).map(contestant => {
     const existingScore = contestantScores.find(score => score.name === contestant.name);
     
     // Check if contestant has special events this week
@@ -68,11 +71,14 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
       event.week_number === weekNumber && event.contestant_name === contestant.name
     );
     
+    // Use week-aware eviction status
+    const isEvictedThisWeek = evictedContestants.includes(contestant.name);
+    
     return {
       name: contestant.name,
       weeklyTotal: existingScore?.weeklyTotal || 0,
       cumulativeTotal: existingScore?.cumulativeTotal || 0,
-      isEvicted: !contestant.is_active, // Use actual eviction status
+      isEvicted: isEvictedThisWeek,
       hasSpecialEvent
     };
   });

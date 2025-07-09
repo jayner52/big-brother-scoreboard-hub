@@ -28,10 +28,10 @@ export const useContestantData = (poolId?: string) => {
       if (weeklyEventsResult.error) throw weeklyEventsResult.error;
       if (specialEventsResult.error) throw specialEventsResult.error;
 
-      // REMOVED: eviction logic - will be reimplemented from scratch
+      // Use actual is_active status from database (updated by eviction logic)
       const mappedContestants = (contestantsResult.data || []).map(c => ({
         ...c,
-        isActive: true // REMOVED: eviction logic - always show as active
+        isActive: c.is_active
       }));
       
       setContestants(mappedContestants as Contestant[]);

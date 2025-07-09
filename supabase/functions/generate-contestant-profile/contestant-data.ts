@@ -161,7 +161,7 @@ export function getContestantDetails(name: string): Partial<ContestantProfile> {
   };
 }
 
-// Scrape Big Brother contestant data for Season 26
+// Scrape Big Brother contestant data for Season 26+
 export async function scrapeContestantData(seasonNumber: number): Promise<ContestantProfile[]> {
   console.log(`🔍 Starting comprehensive data processing for Big Brother Season ${seasonNumber}...`);
   
@@ -169,8 +169,10 @@ export async function scrapeContestantData(seasonNumber: number): Promise<Contes
     throw new Error(`Season ${seasonNumber} is not supported. Only Season 26+ contestants are processed.`);
   }
   
+  // Handle Season 27 via Parade scraping
   if (seasonNumber === 27) {
-    throw new Error('Big Brother 27 cast has not been announced yet. Please select a different season.');
+    console.log('📋 Processing Season 27 via Parade website scraping...');
+    return await scrapeBB27CastFromParade();
   }
   
   // For Season 26, process the complete cast list
@@ -237,5 +239,55 @@ export async function scrapeContestantData(seasonNumber: number): Promise<Contes
     return scrapedCast;
   }
   
-  throw new Error(`Season ${seasonNumber} processing not yet implemented. Only Season 26 is currently supported.`);
+  throw new Error(`Season ${seasonNumber} processing not yet implemented. Only Seasons 26 and 27 are currently supported.`);
+}
+
+// Scrape Big Brother 27 cast from Parade website
+async function scrapeBB27CastFromParade(): Promise<ContestantProfile[]> {
+  console.log('🔍 Fetching BB27 cast from Parade via scraping function...');
+  
+  try {
+    // Get Supabase URL for the edge function call
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    if (!supabaseUrl) {
+      throw new Error('Supabase URL not configured');
+    }
+    
+    // Call our BB27 scraping edge function
+    const response = await fetch(`${supabaseUrl}/functions/v1/scrape-bb27-cast`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
+      },
+      body: JSON.stringify({})
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch BB27 cast: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(`BB27 scraping failed: ${data.error}`);
+    }
+    
+    const contestants = data.contestants || [];
+    console.log(`✅ Successfully loaded ${contestants.length} BB27 contestants from Parade`);
+    
+    // Convert to ContestantProfile format
+    return contestants.map((contestant: any) => ({
+      name: contestant.name,
+      age: contestant.age,
+      hometown: contestant.location,
+      occupation: contestant.occupation,
+      bio: contestant.bio,
+      photo: contestant.imageUrl
+    }));
+    
+  } catch (error) {
+    console.error('❌ Error fetching BB27 cast from Parade:', error);
+    throw new Error(`Failed to load Big Brother 27 cast: ${error.message}`);
+  }
 }

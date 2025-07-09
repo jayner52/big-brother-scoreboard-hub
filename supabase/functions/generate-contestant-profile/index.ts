@@ -30,10 +30,8 @@ serve(async (req) => {
       throw new Error(`Season ${season_number} is not supported. Only Season 26+ contestants are processed.`);
     }
 
-    // Check for Season 27 (TBD)
-    if (season_number === 27) {
-      throw new Error('Big Brother 27 cast has not been announced yet. Please select a different season.');
-    }
+    // Season 27 is now supported via Parade scraping
+    console.log(`📋 Season ${season_number} requested - proceeding with data processing`);
 
     // Get Supabase credentials for database operations
     const supabaseUrl = Deno.env.get('SUPABASE_URL');

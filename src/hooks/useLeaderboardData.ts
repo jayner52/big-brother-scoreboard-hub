@@ -8,7 +8,31 @@ export const useLeaderboardData = () => {
   const { activePool, poolEntries } = usePool();
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [contestants, setContestants] = useState<Array<{ name: string; is_active: boolean }>>([]);
   const { snapshots, completedWeeks, loadSnapshotsForWeek } = useWeeklySnapshots();
+
+  // Fetch contestants data for eviction status
+  useEffect(() => {
+    const fetchContestants = async () => {
+      if (!activePool?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('contestants')
+          .select('name, is_active')
+          .eq('pool_id', activePool.id);
+        
+        if (error) throw error;
+        
+        setContestants(data || []);
+        console.log('🔍 LEADERBOARD DEBUG - Loaded contestants:', data?.length);
+      } catch (error) {
+        console.error('Error fetching contestants:', error);
+      }
+    };
+
+    fetchContestants();
+  }, [activePool?.id]);
 
   useEffect(() => {
     console.log('🔍 LEADERBOARD DEBUG - Pool context data:', {
@@ -16,10 +40,11 @@ export const useLeaderboardData = () => {
       activePoolName: activePool?.name,
       poolEntriesCount: poolEntries.length,
       completedWeeks: completedWeeks.length,
-      selectedWeek
+      selectedWeek,
+      contestantsCount: contestants.length
     });
     setLoading(false);
-  }, [activePool, poolEntries, completedWeeks.length, selectedWeek]);
+  }, [activePool, poolEntries, completedWeeks.length, selectedWeek, contestants.length]);
 
   const handleWeekChange = async (weekStr: string) => {
     if (!activePool) {
@@ -72,6 +97,7 @@ export const useLeaderboardData = () => {
     selectedWeek,
     completedWeeks,
     loading,
-    handleWeekChange
+    handleWeekChange,
+    contestants
   };
 };

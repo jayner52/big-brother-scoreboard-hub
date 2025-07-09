@@ -217,11 +217,13 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({
           <span>{pointsChange > 0 ? '+' : ''}{pointsChange}</span>
         </div>
       </TableCell>
-      <TableCell className="text-center">
-        <Badge variant={teamData.payment_confirmed ? "default" : "destructive"}>
-          {teamData.payment_confirmed ? "✓" : "Pending"}
-        </Badge>
-      </TableCell>
+      {activePool?.has_buy_in && (
+        <TableCell className="text-center">
+          <Badge variant={teamData.payment_confirmed ? "default" : "destructive"}>
+            {teamData.payment_confirmed ? "✓" : "Pending"}
+          </Badge>
+        </TableCell>
+      )}
     </TableRow>
   );
 };

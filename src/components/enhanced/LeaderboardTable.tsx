@@ -5,12 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LeaderboardRow } from './LeaderboardRow';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePool } from '@/contexts/PoolContext';
 import { Info } from 'lucide-react';
 
 interface LeaderboardTableProps {
   displayData: any[];
   showHistoricalColumns: boolean;
   selectedWeek?: number | null;
+  contestants?: Array<{ name: string; is_active: boolean }>;
 }
 
 // Mobile card component for individual entries
@@ -20,6 +22,7 @@ const MobileLeaderboardCard: React.FC<{
   showHistoricalColumns: boolean;
   selectedWeek?: number | null;
 }> = ({ entry, index, showHistoricalColumns, selectedWeek }) => {
+  const { activePool } = usePool();
   const rank = index + 1;
   
   return (
@@ -41,12 +44,14 @@ const MobileLeaderboardCard: React.FC<{
             <div className="text-2xl font-bold text-primary">
               {entry.total_points}
             </div>
-            <Badge 
-              variant={entry.payment_confirmed ? 'default' : 'secondary'}
-              className="text-xs"
-            >
-              {entry.payment_confirmed ? '✓ Paid' : 'Unpaid'}
-            </Badge>
+            {activePool?.has_buy_in && (
+              <Badge 
+                variant={entry.payment_confirmed ? 'default' : 'secondary'}
+                className="text-xs"
+              >
+                {entry.payment_confirmed ? '✓ Paid' : 'Unpaid'}
+              </Badge>
+            )}
           </div>
         </div>
         
@@ -88,9 +93,11 @@ const MobileLeaderboardCard: React.FC<{
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   displayData,
   showHistoricalColumns,
-  selectedWeek
+  selectedWeek,
+  contestants = []
 }) => {
   const isMobile = useIsMobile();
+  const { activePool } = usePool();
 
   if (isMobile) {
     return (
@@ -139,7 +146,10 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             <TableHead className="w-20 text-center font-bold">Bonus</TableHead>
             <TableHead className="w-24 text-center font-bold bg-gradient-to-r from-yellow-100 to-yellow-200">Total</TableHead>
             <TableHead className="w-20 text-center font-bold">Δ</TableHead>
-            <TableHead className="w-20 text-center font-bold">Payment</TableHead>
+            {/* Only show Payment column if pool has buy-in */}
+            {activePool?.has_buy_in && (
+              <TableHead className="w-20 text-center font-bold">Payment</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -150,6 +160,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
               index={index}
               showHistoricalColumns={showHistoricalColumns}
               selectedWeek={selectedWeek}
+              contestants={contestants}
             />
           ))}
         </TableBody>

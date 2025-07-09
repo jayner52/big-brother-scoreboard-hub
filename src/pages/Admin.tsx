@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
 import { AdminSetupWizardSimplified } from '@/components/admin/AdminSetupWizardSimplified';
@@ -33,6 +34,7 @@ const Admin = () => {
   // Redirect non-admin users after admin check completes
   useEffect(() => {
     if (!adminLoading && user && !isAdmin) {
+      console.log('User does not have admin access, redirecting...');
       navigate(user ? '/dashboard' : '/');
     }
   }, [adminLoading, user, isAdmin, navigate]);
@@ -71,6 +73,17 @@ const Admin = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-muted-foreground">Checking admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If not admin, don't render anything (will redirect)
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Redirecting...</p>
         </div>
       </div>
     );

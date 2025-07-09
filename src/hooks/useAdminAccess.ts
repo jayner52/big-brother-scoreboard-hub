@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,19 +14,26 @@ export const useAdminAccess = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('id')
+      // Use a more direct approach to avoid RLS recursion issues
+      // Check if the user has admin role in pool_memberships or is a pool owner
+      const { data: poolMemberships, error: membershipError } = await supabase
+        .from('pool_memberships')
+        .select('role, pool_id')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .eq('active', true);
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking admin status:', error);
+      if (membershipError) {
+        console.error('Error checking pool memberships:', membershipError);
         setIsAdmin(false);
         return;
       }
 
-      setIsAdmin(!!data);
+      // Check if user is admin/owner in any pool
+      const hasAdminAccess = poolMemberships?.some(membership => 
+        ['owner', 'admin'].includes(membership.role)
+      ) || false;
+
+      setIsAdmin(hasAdminAccess);
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);

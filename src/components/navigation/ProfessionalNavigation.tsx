@@ -9,18 +9,21 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  DropdownMenuGroup
 } from '@/components/ui/dropdown-menu';
-import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu, User, TrendingUp, Circle } from 'lucide-react';
+import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu, User, TrendingUp, Circle, Bug, Lightbulb } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { EnhancedChatIcon } from '@/components/chat/EnhancedChatIcon';
 import { ProfileModal } from '@/components/profile/ProfileModal';
+import { FeedbackForm } from '@/components/feedback/FeedbackForm';
 import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
 import { usePool } from '@/contexts/PoolContext';
 import { useUserPoolRole } from '@/hooks/useUserPoolRole';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePaymentNotifications } from '@/hooks/usePaymentNotifications';
+import { useFeedbackForm, FeedbackType } from '@/hooks/useFeedbackForm';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -48,6 +51,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
   const navigate = useNavigate();
   const { profile, refreshProfile } = useUserProfile(user);
   const { hasUnreadNotifications, hasOutstandingPayment, totalUnread } = usePaymentNotifications();
+  const { isOpen: isFeedbackOpen, feedbackType, openForm: openFeedbackForm, closeForm: closeFeedbackForm } = useFeedbackForm();
   
   React.useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -160,6 +164,23 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
             </DropdownMenuItem>
           </>
         )}
+        
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => openFeedbackForm('bug')} className="flex items-center gap-2 cursor-pointer">
+            <Bug className="h-4 w-4" />
+            Report Bug
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => openFeedbackForm('feature')} className="flex items-center gap-2 cursor-pointer">
+            <Lightbulb className="h-4 w-4" />
+            Request Feature
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => openFeedbackForm('comment')} className="flex items-center gap-2 cursor-pointer">
+            <MessageSquare className="h-4 w-4" />
+            General Feedback
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onSignOut} className="flex items-center gap-2 cursor-pointer text-destructive">
           <LogOut className="h-4 w-4" />
@@ -326,6 +347,14 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
           user={user}
           userProfile={profile || undefined}
           onProfileUpdate={refreshProfile}
+        />
+      )}
+
+      {/* Feedback Form Modal */}
+      {isFeedbackOpen && (
+        <FeedbackForm
+          type={feedbackType}
+          onClose={closeFeedbackForm}
         />
       )}
     </nav>

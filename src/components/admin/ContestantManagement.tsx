@@ -51,14 +51,14 @@ export const ContestantManagement: React.FC = () => {
         tabKey="houseguests"
       >
         <div className="space-y-2">
-          <p>Manage the Big Brother cast list. Add all houseguests before opening the draft. Mark as evicted as the season progresses.</p>
-          <p><strong>Setup steps:</strong></p>
+          <p>Manage the Big Brother 27 cast. All 16 houseguests are automatically loaded and ready to go!</p>
+          <p><strong>Management tasks:</strong></p>
           <ul className="list-disc list-inside ml-4 space-y-1">
-            <li>Add all houseguests before opening draft to participants</li>
-            <li>Organize into groups (like "men/women" or "old/new school")</li>
-            <li>Update evicted status as the season progresses</li>
-            <li>Use AI generation to create realistic profiles and photos</li>
-            <li>Verify all information is accurate before going live</li>
+            <li>Review the Season 27 cast - all contestants are pre-loaded with photos and bios</li>
+            <li>Update contestant status as evictions occur during the season</li>
+            <li>Edit contestant details if needed (photos, bios, personal info)</li>
+            <li>Manage group assignments if you want to customize the draft structure</li>
+            <li>Use the generate tools to enhance profiles with AI if desired</li>
           </ul>
         </div>
       </InstructionAccordion>

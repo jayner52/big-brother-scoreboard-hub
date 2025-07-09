@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Contestant, ContestantGroup } from '@/types/pool';
-import { useActiveContestants } from '@/hooks/useActiveContestants';
+
 
 interface ContestantGroupsOverviewProps {
   contestants: Contestant[];
@@ -13,7 +13,6 @@ export const ContestantGroupsOverview: React.FC<ContestantGroupsOverviewProps> =
   contestants,
   contestantGroups,
 }) => {
-  const { evictedContestants } = useActiveContestants();
 
   return (
     <Card>
@@ -24,7 +23,7 @@ export const ContestantGroupsOverview: React.FC<ContestantGroupsOverviewProps> =
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {contestantGroups.map(group => {
             const groupContestants = contestants.filter(c => c.group_id === group.id);
-            const activeCount = groupContestants.filter(c => !evictedContestants.includes(c.name)).length;
+            const activeCount = groupContestants.filter(c => c.is_active).length;
             
             return (
               <div key={group.id} className="border rounded-lg p-4">
@@ -34,10 +33,10 @@ export const ContestantGroupsOverview: React.FC<ContestantGroupsOverviewProps> =
                 </p>
                 <div className="space-y-1">
                   {groupContestants.map(contestant => {
-                    const isEvicted = evictedContestants.includes(contestant.name);
+                    const isEvicted = !contestant.is_active;
                     return (
                       <div key={contestant.id} className="flex justify-between items-center">
-                        <span className={isEvicted ? 'line-through text-gray-400' : ''}>
+                        <span className={isEvicted ? 'text-red-600 opacity-70' : ''}>
                           {contestant.name}
                         </span>
                         <Badge variant={isEvicted ? "destructive" : "default"} className="text-xs">

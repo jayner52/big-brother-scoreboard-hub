@@ -22,12 +22,9 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // Use week-aware contestant logic to show all previously evicted contestants
-  const { evictedContestants: allEvictedContestants } = useWeekAwareContestants(eventForm?.week || 1);
-  
-  // Separate active vs evicted (including all previously evicted)
-  const activeContestants = contestants.filter(c => !allEvictedContestants.includes(c.name));
-  const evictedContestants = contestants.filter(c => allEvictedContestants.includes(c.name));
+  // CRITICAL: Use is_active field as single source of truth (maintained by database triggers)
+  const activeContestants = contestants.filter(c => c.isActive);
+  const evictedContestants = contestants.filter(c => !c.isActive);
 
   return (
     <Card className="bg-muted/50">
@@ -69,8 +66,8 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
                 const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
                 return (
                   <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/30 rounded border border-dashed">
-                     <span className={`text-sm truncate pr-2 ${isEvictedThisWeek ? 'line-through text-red-500 font-medium' : 'font-medium text-muted-foreground'}`} title={contestant.name}>
-                      {contestant.name}:
+                     <span className={`text-sm truncate pr-2 ${isEvictedThisWeek ? 'text-red-600 font-medium' : 'font-medium text-muted-foreground'}`} title={contestant.name}>
+                       {contestant.name}:
                     </span>
                     <div className="flex flex-col items-end">
                       <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>

@@ -27,8 +27,8 @@ export const populateSeason27GlobalDefaults = async (): Promise<{ success: boole
 
     console.log('🏠 BB27: No existing defaults found, proceeding with population...');
     
-    // BYPASS RPC - Create default groups directly in TypeScript
-    console.log('🏠 BB27: Creating default groups directly...');
+    // Create default groups - RLS policy now allows global defaults (pool_id = NULL)
+    console.log('🏠 BB27: Creating default groups...');
     const defaultGroups = [
       { group_name: 'Group A', sort_order: 1 },
       { group_name: 'Group B', sort_order: 2 },
@@ -36,35 +36,27 @@ export const populateSeason27GlobalDefaults = async (): Promise<{ success: boole
       { group_name: 'Group D', sort_order: 4 }
     ];
     
-    // Insert groups if they don't exist - use simple insert with error handling
+    // Insert groups - simplified now that RLS allows global defaults
     for (const group of defaultGroups) {
-      try {
-        const { data: existingGroup } = await supabase
+      const { data: existingGroup } = await supabase
+        .from('contestant_groups')
+        .select('id')
+        .is('pool_id', null)
+        .eq('group_name', group.group_name)
+        .maybeSingle();
+        
+      if (!existingGroup) {
+        const { error: insertError } = await supabase
           .from('contestant_groups')
-          .select('id')
-          .is('pool_id', null)
-          .eq('group_name', group.group_name)
-          .single();
+          .insert({
+            pool_id: null,
+            group_name: group.group_name,
+            sort_order: group.sort_order
+          });
           
-        if (!existingGroup) {
-          const { error: insertError } = await supabase
-            .from('contestant_groups')
-            .insert({
-              pool_id: null,
-              group_name: group.group_name,
-              sort_order: group.sort_order
-            });
-            
-          if (insertError) {
-            console.error(`🏠 BB27: Error creating group ${group.group_name}:`, insertError);
-            throw insertError;
-          }
-        }
-      } catch (error) {
-        // If it's a duplicate key error, that's fine - group already exists
-        if (error.code !== '23505') {
-          console.error(`🏠 BB27: Error creating group ${group.group_name}:`, error);
-          throw error;
+        if (insertError) {
+          console.error(`🏠 BB27: Error creating group ${group.group_name}:`, insertError);
+          throw insertError;
         }
       }
     }

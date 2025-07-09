@@ -157,7 +157,7 @@ export const WeekByWeekOverview: React.FC = () => {
             contestant_name: (event.contestants as any)?.name || '',
             event_type: event.event_type,
             description: event.description || '',
-            points_awarded: event.points_awarded || 0
+            points_awarded: event.points_awarded // Keep original value (including 0) without forcing it to 0
           });
         });
       }
@@ -437,7 +437,15 @@ export const WeekByWeekOverview: React.FC = () => {
                           ?.filter(event => event.week_number === week.week_number)
                           .map((event, index) => {
                             const eventDetails = getEventDetails(event.event_type, event.description);
-                            const actualPoints = event.points_awarded !== undefined ? event.points_awarded : eventDetails.points;
+                            
+                            // Fix points calculation: only use event.points_awarded if it's not null/undefined
+                            // If it's 0, that's a valid value and should be used
+                            // If it's null/undefined, look up from scoring rules
+                            const actualPoints = event.points_awarded !== null && event.points_awarded !== undefined 
+                              ? event.points_awarded 
+                              : (eventDetails.points || 0);
+                            
+                            console.log(`Event: ${event.event_type}, DB Points: ${event.points_awarded}, Rule Points: ${eventDetails.points}, Using: ${actualPoints}`);
                             
                             return (
                               <div key={index} className="bg-white/80 p-2 rounded-md border border-purple-200/50 shadow-sm">

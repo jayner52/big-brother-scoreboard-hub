@@ -8,15 +8,23 @@ export const calculatePoints = (
   if (eventType === 'custom' && customPoints !== undefined) {
     return customPoints;
   }
-  const rule = scoringRules.find(r => 
-    r.subcategory === eventType || 
-    (r.category === 'competitions' && r.subcategory === eventType) ||
-    (r.category === 'weekly' && r.subcategory === eventType) ||
-    (r.category === 'final_placement' && r.subcategory === eventType) ||
-    (r.category === 'penalties' && r.subcategory === eventType) ||
-    (r.category === 'special_events' && r.subcategory === eventType) ||
-    (r.category === 'jury' && r.subcategory === eventType)
-  );
+  
+  // First try to find by ID (for new simplified special events)
+  let rule = scoringRules.find(r => r.id === eventType);
+  
+  // If not found, try to find by subcategory (for legacy events)
+  if (!rule) {
+    rule = scoringRules.find(r => 
+      r.subcategory === eventType || 
+      (r.category === 'competitions' && r.subcategory === eventType) ||
+      (r.category === 'weekly' && r.subcategory === eventType) ||
+      (r.category === 'final_placement' && r.subcategory === eventType) ||
+      (r.category === 'penalties' && r.subcategory === eventType) ||
+      (r.category === 'special_events' && r.subcategory === eventType) ||
+      (r.category === 'jury' && r.subcategory === eventType)
+    );
+  }
+  
   return rule?.points || 0;
 };
 

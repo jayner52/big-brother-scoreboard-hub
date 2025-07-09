@@ -36,17 +36,10 @@ export const CompanyAdminAccess: React.FC = () => {
 
     setLoading(true);
     try {
-      // Hash the input password using SHA-256
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      // Simple direct comparison for now (we can add hashing later)
+      const validPassword = 'EW7e1rM2WBs16TFyWJiP';
       
-      // Compare with the stored hash of "EW7e1rM2WBs16TFyWJiP"
-      const validPasswordHash = '48c8947f69c054a5caa934674ce8881d02bb18fb59d5a63eeaddff735b0e9801';
-      
-      if (hashHex === validPasswordHash) {
+      if (password === validPassword) {
         setIsUnlocked(true);
         sessionStorage.setItem('company_admin_unlocked', 'true');
         setPassword('');

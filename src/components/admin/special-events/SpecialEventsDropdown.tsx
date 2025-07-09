@@ -173,7 +173,8 @@ export const SpecialEventsDropdown: React.FC<SpecialEventsDropdownProps> = ({
     try {
       // Apply special events and calculate points
       for (const detail of eventDetails) {
-        const { error } = await supabase
+        // Save to special_events table
+        const { error: specialEventError } = await supabase
           .from('special_events')
           .upsert({
             pool_id: activePool.id,
@@ -184,7 +185,24 @@ export const SpecialEventsDropdown: React.FC<SpecialEventsDropdownProps> = ({
             points_awarded: detail.points
           });
 
-        if (error) throw error;
+        if (specialEventError) throw specialEventError;
+
+        // ALSO save to weekly_events table with the UUID event_type so the trigger can work
+        const eventRule = availableEvents.find(e => e.id === detail.eventId);
+        if (eventRule && ['self_evicted', 'removed_production', 'came_back_evicted'].includes(eventRule.type)) {
+          const { error: weeklyEventError } = await supabase
+            .from('weekly_events')
+            .upsert({
+              pool_id: activePool.id,
+              contestant_id: detail.contestantId,
+              event_type: detail.eventId, // Use the UUID from detailed_scoring_rules
+              week_number: week,
+              points_awarded: detail.points,
+              event_details: { special_event_type: eventRule.type }
+            });
+
+          if (weeklyEventError) throw weeklyEventError;
+        }
       }
 
       // Update parent with event IDs

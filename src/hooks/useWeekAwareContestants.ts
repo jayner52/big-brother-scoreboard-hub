@@ -16,7 +16,8 @@ export const useWeekAwareContestants = (weekNumber: number) => {
         .select('*')
         .order('name');
 
-      // Load evicted contestants up to (but not including) the current week
+      // Load evicted contestants up to AND INCLUDING the current week
+      // This ensures that contestants evicted in previous weeks show as evicted in the current week
       const { data: evictionData } = await supabase
         .from('weekly_events')
         .select(`
@@ -25,22 +26,30 @@ export const useWeekAwareContestants = (weekNumber: number) => {
           week_number
         `)
         .eq('event_type', 'evicted')
-        .lt('week_number', weekNumber);
+        .lte('week_number', weekNumber);
 
-      const evicted = evictionData?.map(event => event.contestants?.name).filter(Boolean) || [];
+      // Also check for contestants marked as inactive due to special events (self-evicted, removed by production)
+      const { data: inactiveContestants } = await supabase
+        .from('contestants')
+        .select('name, is_active')
+        .eq('is_active', false);
+
+      const evictedByVote = evictionData?.map(event => event.contestants?.name).filter(Boolean) || [];
+      const evictedBySpecialEvent = inactiveContestants?.map(c => c.name).filter(Boolean) || [];
+      const evicted = [...new Set([...evictedByVote, ...evictedBySpecialEvent])]; // Remove duplicates
       
       const contestants = contestantsData?.map(c => ({
         id: c.id,
         name: c.name,
-        isActive: true, // We'll determine this dynamically
+        isActive: c.is_active, // Use the actual database value
         group_id: c.group_id,
         sort_order: c.sort_order,
         bio: c.bio,
         photo_url: c.photo_url
       })) || [];
 
-      // Determine active contestants (not evicted up to this week)
-      const active = contestants.filter(c => !evicted.includes(c.name));
+      // Determine active contestants (not evicted and still active)
+      const active = contestants.filter(c => !evicted.includes(c.name) && c.isActive);
 
       setAllContestants(contestants);
       setEvictedContestants(evicted);

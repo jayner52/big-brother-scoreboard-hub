@@ -33,12 +33,16 @@ interface DoubleEvictionDisplayProps {
   week: WeekSummary;
   contestantScores?: ContestantScore[];
   specialEvents?: any[];
+  allContestants?: Array<{ name: string; is_active: boolean }>;
+  evictedThisWeek?: string[];
 }
 
 export const DoubleEvictionDisplay: React.FC<DoubleEvictionDisplayProps> = ({
   week,
   contestantScores = [],
-  specialEvents = []
+  specialEvents = [],
+  allContestants = [],
+  evictedThisWeek = []
 }) => {
   const formatNominees = (nominees: string[] | null, povUsed: boolean | null, povUsedOn: string | null) => {
     if (!nominees || nominees.length === 0) return "N/A";
@@ -151,6 +155,8 @@ export const DoubleEvictionDisplay: React.FC<DoubleEvictionDisplayProps> = ({
         povUsed={week.pov_used}
         povUsedOn={week.pov_used_on}
         specialEvents={specialEvents}
+        allContestants={allContestants}
+        evictedThisWeek={evictedThisWeek}
       />
     </div>
   );

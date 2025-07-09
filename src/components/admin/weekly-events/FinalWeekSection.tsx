@@ -6,12 +6,15 @@ import { Crown, Trophy, Heart, Zap } from 'lucide-react';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { SpecialEventsDropdown } from '../special-events/SpecialEventsDropdown';
+import { PointsEarnedSection } from '../weekly-overview/PointsEarnedSection';
 
 interface FinalWeekSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   activeContestants: ContestantWithBio[];
   contestants: ContestantWithBio[];
+  pointsPreview?: Record<string, number>;
+  evictedThisWeek?: string[];
 }
 
 export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
@@ -19,6 +22,8 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
   setEventForm,
   activeContestants,
   contestants,
+  pointsPreview = {},
+  evictedThisWeek = [],
 }) => {
   const { getWinnerPoints, getRunnerUpPoints, getHohPoints, getPointsForEvent } = useScoringRules();
   
@@ -152,6 +157,23 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
           contestants={activeContestants}
         />
       </div>
+
+      {/* Points Section for Final Week */}
+      <PointsEarnedSection 
+        weekNumber={eventForm.week}
+        contestantScores={Object.entries(pointsPreview).map(([name, points]) => ({
+          name,
+          weeklyTotal: points,
+          cumulativeTotal: points // For final week, weekly and cumulative are the same
+        }))}
+        nominees={[]}
+        replacementNominee={null}
+        povUsed={false}
+        povUsedOn={null}
+        specialEvents={[]}
+        allContestants={contestants.map(c => ({ name: c.name, is_active: c.isActive }))}
+        evictedThisWeek={evictedThisWeek}
+      />
     </div>
   );
 };

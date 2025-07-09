@@ -18,9 +18,11 @@ interface WeekSummary {
   pov_winner: string | null;
   evicted_contestant: string | null;
   is_double_eviction: boolean | null;
+  is_triple_eviction?: boolean | null;
   second_hoh_winner: string | null;
   second_pov_winner: string | null;
   second_evicted_contestant: string | null;
+  third_evicted_contestant?: string | null;
   pov_used: boolean | null;
   pov_used_on: string | null;
   nominees: string[] | null;
@@ -386,14 +388,44 @@ export const WeekByWeekOverview: React.FC = () => {
                     )}
                   </div>
                    
-                  {/* Display double eviction or regular week */}
-                  {week.is_double_eviction ? (
-                    <DoubleEvictionDisplay 
-                      week={week}
-                      contestantScores={contestantScores[week.week_number]}
-                      specialEvents={specialEvents}
-                    />
-                  ) : (
+                   {/* Display double/triple eviction or regular week */}
+                   {week.is_double_eviction ? (
+                     <DoubleEvictionDisplay 
+                       week={week}
+                       contestantScores={contestantScores[week.week_number]}
+                       specialEvents={specialEvents}
+                       allContestants={contestants?.map(c => ({ name: c.name, is_active: c.is_active })) || []}
+                       evictedThisWeek={[week.evicted_contestant, week.second_evicted_contestant].filter(Boolean)}
+                     />
+                   ) : week.is_triple_eviction ? (
+                     <div className="space-y-6">
+                       {/* Triple Eviction Banner */}
+                       <div className="text-center py-2 px-4 bg-gradient-to-r from-red-600 to-purple-600 text-white rounded-lg font-bold">
+                         ⚡⚡ TRIPLE EVICTION NIGHT ⚡⚡
+                       </div>
+                       
+                       {/* Triple eviction content would go here - for now show basic layout */}
+                       <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
+                         <p className="text-red-800 font-medium">Triple Eviction Week</p>
+                         <p className="text-sm text-red-600 mt-1">
+                           Evicted: {[week.evicted_contestant, week.second_evicted_contestant, week.third_evicted_contestant].filter(Boolean).join(', ') || 'N/A'}
+                         </p>
+                       </div>
+                       
+                       {/* Points Section for triple eviction */}
+                       <PointsEarnedSection 
+                         weekNumber={week.week_number}
+                         contestantScores={contestantScores[week.week_number]}
+                         nominees={week.nominees || []}
+                         replacementNominee={week.replacement_nominee}
+                         povUsed={week.pov_used}
+                         povUsedOn={week.pov_used_on}
+                         specialEvents={specialEvents}
+                         allContestants={contestants?.map(c => ({ name: c.name, is_active: c.is_active })) || []}
+                         evictedThisWeek={[week.evicted_contestant, week.second_evicted_contestant, week.third_evicted_contestant].filter(Boolean)}
+                       />
+                     </div>
+                   ) : (
                     <div className="space-y-4">
                       {/* Regular Week Summary with Nominees Tile */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

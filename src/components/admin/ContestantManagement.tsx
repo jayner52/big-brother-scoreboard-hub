@@ -67,7 +67,7 @@ export const ContestantManagement: React.FC = () => {
 
       <Tabs defaultValue="manage" className="w-full">
         <TabsList className="grid w-full grid-cols-1">
-          <TabsTrigger value="manage">Manage Contestants</TabsTrigger>
+          <TabsTrigger value="manage">Manage Season 27 Cast</TabsTrigger>
         </TabsList>
         
         <TabsContent value="manage" className="space-y-6">

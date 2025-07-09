@@ -43,6 +43,20 @@ const Index = () => {
 
   const { isAdmin } = useUserPoolRole(activePool?.id, user?.id);
 
+  // Check if this is the pool owner's first visit
+  useEffect(() => {
+    if (activePool && user && activePool.owner_id === user.id) {
+      const visitKey = `pool_${activePool.id}_admin_visited`;
+      const hasVisited = localStorage.getItem(visitKey);
+      
+      if (!hasVisited) {
+        // First time pool owner visit - mark as visited and redirect to admin
+        localStorage.setItem(visitKey, 'true');
+        navigate('/admin?firstVisit=true', { replace: true });
+      }
+    }
+  }, [activePool, user, navigate]);
+
   // Auto-open create pool modal for new users
   useEffect(() => {
     if (!authLoading && !poolsLoading && user && userPools.length === 0) {

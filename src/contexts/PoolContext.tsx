@@ -296,6 +296,8 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         picks_per_team: poolData.picks_per_team || 5,
         has_buy_in: poolData.has_buy_in !== false,
         buy_in_description: poolData.buy_in_description || null,
+        hide_picks_until_draft_closed: true, // Hide picks by default for new pools
+        allow_new_participants: true,
         jury_phase_started: false,
         jury_start_week: null,
         jury_start_timestamp: null,

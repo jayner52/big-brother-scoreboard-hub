@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Users, Trophy, Eye, BarChart2, DollarSign, ClipboardList, Lock } from 'lucide-react';
@@ -13,6 +14,7 @@ export interface TabConfig {
   component: React.ReactNode;
   hidden?: boolean;
   locked?: boolean;
+  lockTooltip?: string;
 }
 
 interface EnhancedTabSystemProps {
@@ -58,7 +60,10 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
                 )}
               >
                 <tab.icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                <span className="text-xs sm:text-sm leading-tight text-center font-medium">
+                <span 
+                  className="text-xs sm:text-sm leading-tight text-center font-medium"
+                  title={tab.locked && tab.lockTooltip ? tab.lockTooltip : undefined}
+                >
                   {tab.shortLabel}
                 </span>
                 {tab.locked && <Lock className="h-3 w-3 absolute top-2 right-2" />}
@@ -79,42 +84,61 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
   }
 
   return (
-    <div className={cn('w-full', className)}>
-      {/* Desktop Tab Navigation */}
-      <div className="sticky top-4 z-10 mb-8 bg-background/80 backdrop-blur-sm rounded-2xl border border-purple/20 p-2 shadow-lg">
-        <div className="grid grid-cols-6 gap-2">
-          {visibleTabs.length === 5 && <div></div>} {/* Spacer for 5 tabs */}
-          {visibleTabs.map((tab) => (
-            <Button
-              key={tab.id}
-              variant={activeTab === tab.id ? "default" : "ghost"}
-              onClick={() => handleTabClick(tab.id, tab)}
-              disabled={tab.locked}
-              className={cn(
-                "relative h-16 flex flex-col items-center gap-2 text-base font-medium transition-all duration-300 hover:scale-105",
-                activeTab === tab.id 
-                  ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg tab-active" 
-                  : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple",
-                tab.locked && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <tab.icon className="h-5 w-5" />
-                <span className="text-sm leading-tight text-center">
-                  {tab.shortLabel}
-                </span>
-                {tab.locked && <Lock className="h-3 w-3" />}
-              </div>
-            </Button>
-          ))}
-          {visibleTabs.length === 5 && <div></div>} {/* Spacer for 5 tabs */}
+    <TooltipProvider>
+      <div className={cn('w-full', className)}>
+        {/* Desktop Tab Navigation */}
+        <div className="sticky top-4 z-10 mb-8 bg-background/80 backdrop-blur-sm rounded-2xl border border-purple/20 p-2 shadow-lg">
+          <div className="grid grid-cols-6 gap-2">
+            {visibleTabs.length === 5 && <div></div>} {/* Spacer for 5 tabs */}
+            {visibleTabs.map((tab) => {
+              const TabButton = (
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.id ? "default" : "ghost"}
+                  onClick={() => handleTabClick(tab.id, tab)}
+                  disabled={tab.locked}
+                  className={cn(
+                    "relative h-16 flex flex-col items-center gap-2 text-base font-medium transition-all duration-300 hover:scale-105",
+                    activeTab === tab.id 
+                      ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg tab-active" 
+                      : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple",
+                    tab.locked && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <tab.icon className="h-5 w-5" />
+                    <span className="text-sm leading-tight text-center">
+                      {tab.shortLabel}
+                    </span>
+                    {tab.locked && <Lock className="h-3 w-3" />}
+                  </div>
+                </Button>
+              );
+
+              if (tab.locked && tab.lockTooltip) {
+                return (
+                  <Tooltip key={tab.id}>
+                    <TooltipTrigger asChild>
+                      {TabButton}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{tab.lockTooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return TabButton;
+            })}
+            {visibleTabs.length === 5 && <div></div>} {/* Spacer for 5 tabs */}
+          </div>
+        </div>
+
+        {/* Desktop Content */}
+        <div className="animate-fade-in">
+          {activeTabData?.component}
         </div>
       </div>
-
-      {/* Desktop Content */}
-      <div className="animate-fade-in">
-        {activeTabData?.component}
-      </div>
-    </div>
+    </TooltipProvider>
   );
 };

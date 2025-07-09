@@ -56,7 +56,8 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       shortLabel: 'Ranks',
       icon: Trophy,
       component: <EnhancedTeamLeaderboard />,
-      locked: shouldLockPicks
+      locked: shouldLockPicks,
+      lockTooltip: shouldLockPicks ? "Teams are hidden until drafting is finished. They will be revealed when the draft period ends." : undefined
     },
     {
       id: 'picks',
@@ -64,7 +65,8 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       shortLabel: 'Picks',
       icon: Eye,
       component: <EveryonesPicksMatrix />,
-      locked: shouldLockPicks
+      locked: shouldLockPicks,
+      lockTooltip: shouldLockPicks ? "Teams are hidden until drafting is finished. They will be revealed when the draft period ends." : undefined
     },
     {
       id: 'results',

@@ -87,6 +87,8 @@ export const usePoolCreation = () => {
         ...formData,
         picks_per_team: 5,
         enable_bonus_questions: true,
+        hide_picks_until_draft_closed: true,
+        allow_new_participants: true,
       };
       
       console.log('Creating pool with data:', poolData);

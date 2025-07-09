@@ -15,6 +15,7 @@ const Admin = () => {
   const [searchParams] = useSearchParams();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [isFirstVisit, setIsFirstVisit] = useState(false);
   const { activePool } = usePool();
 
   useEffect(() => {
@@ -23,10 +24,19 @@ const Admin = () => {
     });
   }, []);
 
-  // Check for new pool creation and show setup wizard
+  // Check for new pool creation and first visit
   useEffect(() => {
     const newPool = searchParams.get('newPool');
+    const firstVisit = searchParams.get('firstVisit');
+    
     if (newPool === 'true') {
+      setShowSetupWizard(true);
+      // Clear the URL parameter
+      navigate('/admin', { replace: true });
+    }
+    
+    if (firstVisit === 'true') {
+      setIsFirstVisit(true);
       setShowSetupWizard(true);
       // Clear the URL parameter
       navigate('/admin', { replace: true });
@@ -58,6 +68,21 @@ const Admin = () => {
           {/* Removed duplicate Setup Checklist button - it's shown in AdminSetupWizardSimplified */}
         </div>
 
+        {/* Welcome message for first-time admins */}
+        {isFirstVisit && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h2 className="text-2xl font-bold text-blue-900 mb-3 flex items-center gap-2">
+              🎉 Welcome to Your New Pool!
+            </h2>
+            <p className="text-blue-700 mb-2">
+              Congratulations on creating your pool! Follow the setup checklist below to get everything ready for your participants.
+            </p>
+            <p className="text-blue-600 text-sm">
+              <strong>Note:</strong> We've automatically hidden everyone's picks until the draft period ends to keep the competition fair.
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-6 px-8 rounded-lg shadow-lg mb-6">
           <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
@@ -70,7 +95,7 @@ const Admin = () => {
         </div>
 
         {/* Admin Setup Wizard */}
-        <AdminSetupWizardSimplified forceShow={showSetupWizard} />
+        <AdminSetupWizardSimplified forceShow={showSetupWizard || isFirstVisit} />
 
         {/* Admin Panels */}
         <div data-admin-panel>

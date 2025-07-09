@@ -22,7 +22,7 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // Separate contestants by eviction status
+  // Separate contestants by eviction status (using week-aware isActive)
   const activeContestants = contestants.filter(c => c.isActive);
   const evictedContestants = contestants.filter(c => !c.isActive);
 
@@ -66,9 +66,9 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
                 const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
                 return (
                    <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/30 rounded border border-dashed">
-                      <span className={`text-sm truncate pr-2 ${isEvictedThisWeek ? 'text-red-600 font-medium line-through' : 'text-red-600 font-medium'}`} title={contestant.name}>
+                      <span className="text-red-600 font-medium text-sm truncate pr-2" title={contestant.name}>
                         {contestant.name}:
-                        {!isEvictedThisWeek && <span className="text-red-500 text-xs ml-1">(Evicted)</span>}
+                        <span className="text-red-500 text-xs ml-1">(Evicted)</span>
                      </span>
                      <div className="flex flex-col items-end">
                        <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>

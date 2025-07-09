@@ -10,7 +10,7 @@ import { usePool } from '@/contexts/PoolContext';
 export const useWeeklyEvents = () => {
   const { activePool } = usePool();
   const {
-    contestants,
+    contestants: globalContestants,
     scoringRules,
     loading,
     currentGameWeek,
@@ -18,13 +18,16 @@ export const useWeeklyEvents = () => {
     loadData
   } = useWeeklyEventsData(activePool?.id);
 
-  const { handleSubmitWeek } = useWeeklyEventsSubmission(contestants, scoringRules, activePool?.id || '');
-  
   const [eventForm, setEventForm] = useState<WeeklyEventForm | null>(null);
+  
+  // Get week-aware contestants for the current editing week
+  const { allContestants: weekAwareContestants } = useWeekAwareContestants(eventForm?.week || editingWeek || 1);
+  
+  const { handleSubmitWeek } = useWeeklyEventsSubmission(weekAwareContestants, scoringRules, activePool?.id || '');
 
   // Load week data when editingWeek changes or on initial load
   useEffect(() => {
-    if (!loading && contestants.length > 0 && editingWeek) {
+    if (!loading && globalContestants.length > 0 && editingWeek) {
       console.log('🔄 Loading week data for week:', editingWeek);
       // Import the loadWeekData function
       const loadWeekData = async () => {
@@ -44,7 +47,7 @@ export const useWeeklyEvents = () => {
 
           // Get special events from both sources
           const dbSpecialEvents = (specialEventsData || []).map(event => {
-            const contestant = contestants.find(c => c.id === event.contestant_id);
+            const contestant = globalContestants.find(c => c.id === event.contestant_id);
             return {
               contestant: contestant?.name || '',
               eventType: event.event_type,
@@ -137,7 +140,7 @@ export const useWeeklyEvents = () => {
 
       loadWeekData();
     }
-  }, [editingWeek, loading, contestants]);
+  }, [editingWeek, loading, globalContestants]);
 
   // Get evicted contestants for current week context
   const { evictedContestants: allEvictedUpToThisWeek } = useWeekAwareContestants(eventForm?.week || 1);
@@ -146,7 +149,7 @@ export const useWeeklyEvents = () => {
     if (!eventForm) return {};
     
     // Calculate regular points
-    let pointsPreview = getPointsPreview(eventForm, contestants, allEvictedUpToThisWeek, scoringRules);
+    let pointsPreview = getPointsPreview(eventForm, weekAwareContestants, allEvictedUpToThisWeek, scoringRules);
     
     // Add final week points if it's final week
     if (eventForm.isFinalWeek) {
@@ -243,7 +246,7 @@ export const useWeeklyEvents = () => {
   };
 
   return {
-    contestants,
+    contestants: weekAwareContestants,
     scoringRules,
     loading,
     currentGameWeek,

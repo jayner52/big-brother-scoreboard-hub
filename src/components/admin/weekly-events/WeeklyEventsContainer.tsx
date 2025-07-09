@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useWeeklyEvents } from '@/hooks/useWeeklyEvents';
 import { useWeeklyEventsSave } from '@/hooks/useWeeklyEventsSave';
 import { useWeekManagement } from '@/hooks/useWeekManagement';
+import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 import { usePool } from '@/contexts/PoolContext';
 import { WeeklyEventsInstructions } from './WeeklyEventsInstructions';
 import { WeeklyEventsForm } from './WeeklyEventsForm';
@@ -65,13 +66,15 @@ export const WeeklyEventsContainer: React.FC = () => {
     handleClearWeek
   } = useWeekManagement(contestants, setEventForm, eventForm);
 
+  // Get week-aware evicted contestants for this specific week
+  const { evictedContestants } = useWeekAwareContestants(eventForm?.week || 1);
+
   if (loading || !eventForm) {
     return <div className="text-center py-8">Loading weekly events panel...</div>;
   }
 
   const pointsPreview = getPointsPreview();
-  const evictedThisWeek = [eventForm.evicted, eventForm.secondEvicted, eventForm.thirdEvicted]
-    .filter(evicted => evicted && evicted !== 'no-eviction');
+  const evictedThisWeek = evictedContestants;
 
   const handleSubmit = async () => {
     setIsSubmitting(true);

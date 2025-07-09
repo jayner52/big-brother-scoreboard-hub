@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserManagementTab } from './company-admin/UserManagementTab';
 import { PoolAnalyticsTab } from './company-admin/PoolAnalyticsTab';
-import { Users, Database } from 'lucide-react';
+import { FeedbackManagementTab } from './company-admin/FeedbackManagementTab';
+import { Users, Database, MessageSquare } from 'lucide-react';
 
 interface UserRegistration {
   id: string;
@@ -215,7 +216,6 @@ export const CompanyAdminDashboard: React.FC = () => {
     }
   };
 
-
   if (loading) {
     return <div className="text-center py-8">Loading company admin dashboard...</div>;
   }
@@ -227,7 +227,7 @@ export const CompanyAdminDashboard: React.FC = () => {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             User Management
@@ -235,6 +235,10 @@ export const CompanyAdminDashboard: React.FC = () => {
           <TabsTrigger value="pools" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
             Pool Analytics
+          </TabsTrigger>
+          <TabsTrigger value="feedback" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Feedback
           </TabsTrigger>
         </TabsList>
         
@@ -248,6 +252,10 @@ export const CompanyAdminDashboard: React.FC = () => {
         
         <TabsContent value="pools">
           <PoolAnalyticsTab />
+        </TabsContent>
+
+        <TabsContent value="feedback">
+          <FeedbackManagementTab />
         </TabsContent>
       </Tabs>
     </div>

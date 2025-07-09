@@ -1079,6 +1079,54 @@ export type Database = {
           },
         ]
       }
+      user_feedback: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string
+          feedback_type: string
+          id: string
+          priority: string | null
+          resolved_at: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_email: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description: string
+          feedback_type: string
+          id?: string
+          priority?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string
+          feedback_type?: string
+          id?: string
+          priority?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string | null

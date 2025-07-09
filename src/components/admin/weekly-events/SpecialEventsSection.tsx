@@ -110,6 +110,8 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     }
 
     // Validate contestant selection for specific events
+    let shouldProceed = true;
+    
     if (field === 'eventType') {
       const contestant = newEvents[index].contestant;
       if (value === 'came_back_evicted' && contestant) {
@@ -135,9 +137,15 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
             description: "Can only apply 'Came Back After Evicted' to contestants who were previously evicted",
             variant: "destructive"
           });
-          return; // Don't update if invalid
+          shouldProceed = false; // Don't update if invalid
         }
       }
+    }
+
+    // Only proceed with form update if validation passed
+    if (!shouldProceed) {
+      console.log('🔧 Validation failed, not updating form');
+      return;
     }
 
     console.log('🔧 About to setEventForm with newEvents:', newEvents);

@@ -92,6 +92,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
       currentEventType: eventForm.specialEvents[index]?.eventType,
       currentEventsArray: eventForm.specialEvents.map(e => ({ id: e.id, eventType: e.eventType }))
     });
+    
     const newEvents = [...eventForm.specialEvents];
     const oldEvent = newEvents[index];
     newEvents[index] = { ...oldEvent, [field]: value };
@@ -109,9 +110,10 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
       newEvents[index].customPoints = undefined; // Use default from scoring rules
     }
 
-    // Validate contestant selection for specific events
+    // Handle validation for specific scenarios
     let shouldProceed = true;
     
+    // Validation for eventType changes
     if (field === 'eventType') {
       const contestant = newEvents[index].contestant;
       if (value === 'came_back_evicted' && contestant) {
@@ -122,11 +124,14 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
             description: "Can only apply 'Came Back After Evicted' to contestants who were previously evicted",
             variant: "destructive"
           });
+          // Clear the contestant but still update the event type
           newEvents[index].contestant = '';
         }
       }
+      // Event type changes are always allowed - no need to block
     }
 
+    // Validation for contestant changes
     if (field === 'contestant') {
       const eventType = newEvents[index].eventType;
       if (eventType === 'came_back_evicted') {
@@ -137,14 +142,14 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
             description: "Can only apply 'Came Back After Evicted' to contestants who were previously evicted",
             variant: "destructive"
           });
-          shouldProceed = false; // Don't update if invalid
+          shouldProceed = false; // Don't update contestant if invalid
         }
       }
     }
 
     // Only proceed with form update if validation passed
     if (!shouldProceed) {
-      console.log('🔧 Validation failed, not updating form');
+      console.log('🔧 Validation failed for contestant selection, not updating form');
       return;
     }
 

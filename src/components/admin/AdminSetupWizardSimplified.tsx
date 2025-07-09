@@ -1,5 +1,5 @@
 import React from 'react';
-import { PoolSetupChecklist } from './PoolSetupChecklist';
+import { SimplifiedPoolSetupChecklist } from './SimplifiedPoolSetupChecklist';
 
 interface AdminSetupWizardSimplifiedProps {
   forceShow?: boolean;
@@ -8,5 +8,5 @@ interface AdminSetupWizardSimplifiedProps {
 export const AdminSetupWizardSimplified: React.FC<AdminSetupWizardSimplifiedProps> = ({ 
   forceShow = false 
 }) => {
-  return <PoolSetupChecklist forceShow={forceShow} />;
+  return <SimplifiedPoolSetupChecklist forceShow={forceShow} />;
 };

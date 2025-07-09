@@ -7,14 +7,14 @@ import { usePool } from '@/contexts/PoolContext';
 
 interface TeamCardProps {
   entry: PoolEntry;
-  evictedContestants: string[];
+  contestants: Array<{ name: string; is_active: boolean }>;
   houseguestPoints: Record<string, number>;
   teamIndex: number;
 }
 
 export const TeamCard: React.FC<TeamCardProps> = ({
   entry,
-  evictedContestants,
+  contestants,
   houseguestPoints,
   teamIndex,
 }) => {
@@ -69,7 +69,8 @@ export const TeamCard: React.FC<TeamCardProps> = ({
             return player;
           }).filter(Boolean).map((player, index) => {
             const points = houseguestPoints[player] || 0;
-            const isEvicted = evictedContestants.includes(player);
+            const contestant = contestants.find(c => c.name === player);
+            const isEvicted = contestant ? !contestant.is_active : false;
             const statusIcon = renderStatusIcon(player);
             
             return (
@@ -77,14 +78,14 @@ export const TeamCard: React.FC<TeamCardProps> = ({
                 key={index} 
                 className={`flex flex-col items-center justify-center p-2 w-32 h-20 rounded-md border transition-all duration-150 hover:shadow-sm ${
                   isEvicted 
-                    ? 'bg-red-50/80 border-red-200/60 opacity-60' 
+                    ? 'bg-red-50/80 border-red-200/60 opacity-70' 
                     : 'bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300/80'
                 }`}
               >
                 {/* Player name with status icon */}
                 <div className="flex items-center gap-1 mb-1">
                   <span className={`text-sm font-medium text-center leading-tight ${
-                    isEvicted ? 'line-through text-red-600' : 'text-slate-700'
+                    isEvicted ? 'text-red-600' : 'text-slate-700'
                   }`} title={player}>
                     {player}
                   </span>

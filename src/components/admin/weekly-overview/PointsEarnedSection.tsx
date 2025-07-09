@@ -50,12 +50,27 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
     
     // Check if contestant is evicted - either passed in evictedThisWeek or marked inactive due to special events
     const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
+    
+    // Check if contestant quit this week (self_evicted or removed_production)
+    const quitThisWeek = specialEvents.some(event => 
+      event.week_number === weekNumber && 
+      event.contestant_name === contestant.name &&
+      (event.event_type === 'self_evicted' || event.event_type === 'removed_production')
+    );
+    
+    // Check if contestant has quit in any previous week (should also be marked as evicted)
     const hasQuitEvent = specialEvents.some(event => 
       event.week_number <= weekNumber && 
       event.contestant_name === contestant.name &&
       (event.event_type === 'self_evicted' || event.event_type === 'removed_production')
     );
-    const isEvicted = isEvictedThisWeek || hasQuitEvent || !contestant.is_active;
+    
+    // A contestant is considered evicted if:
+    // 1. They were evicted this week (traditional eviction)
+    // 2. They quit this week (self_evicted or removed_production)
+    // 3. They quit in a previous week
+    // 4. They are marked as inactive in the database
+    const isEvicted = isEvictedThisWeek || quitThisWeek || hasQuitEvent || !contestant.is_active;
     
     // Check if contestant has special events this week
     const hasSpecialEvent = specialEvents.some(event => 

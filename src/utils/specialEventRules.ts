@@ -1,14 +1,4 @@
-import { ContestantWithBio } from '@/types/admin';
-
-interface ScoringRule {
-  id: string;
-  category: string;
-  subcategory?: string;
-  points: number;
-  description: string;
-  is_active: boolean;
-  emoji?: string | null;
-}
+import { ContestantWithBio, DetailedScoringRule } from '@/types/admin';
 
 export interface SpecialEventData {
   id?: string;
@@ -48,7 +38,7 @@ export interface ValidationError {
  * Core Rule: Event Type to Status Mapping
  * Determines if an event type causes eviction based on subcategory
  */
-export const isEvictionEvent = (eventType: string, scoringRules: ScoringRule[]): boolean => {
+export const isEvictionEvent = (eventType: string, scoringRules: DetailedScoringRule[]): boolean => {
   const rule = scoringRules.find(r => r.id === eventType);
   if (!rule) return false;
   
@@ -59,7 +49,7 @@ export const isEvictionEvent = (eventType: string, scoringRules: ScoringRule[]):
 /**
  * Determines if an event type is a revival event
  */
-export const isRevivalEvent = (eventType: string, scoringRules: ScoringRule[]): boolean => {
+export const isRevivalEvent = (eventType: string, scoringRules: DetailedScoringRule[]): boolean => {
   const rule = scoringRules.find(r => r.id === eventType);
   return rule?.subcategory === 'came_back_evicted';
 };
@@ -92,7 +82,7 @@ export const deduplicateEvents = (events: SpecialEventData[]): SpecialEventData[
 export const validateSpecialEvents = (
   events: SpecialEventData[], 
   contestants: ContestantWithBio[],
-  scoringRules: ScoringRule[]
+  scoringRules: DetailedScoringRule[]
 ): ValidationError[] => {
   const errors: ValidationError[] = [];
   const seen = new Set<string>();
@@ -179,7 +169,7 @@ export const validateSpecialEvents = (
 export const processWeeklyEvents = (
   events: SpecialEventData[], 
   contestants: ContestantWithBio[],
-  scoringRules: ScoringRule[]
+  scoringRules: DetailedScoringRule[]
 ): WeeklyOverview => {
   // First deduplicate
   const uniqueEvents = deduplicateEvents(events);
@@ -219,7 +209,7 @@ export const processWeeklyEvents = (
 export const getAvailableContestantsForEvent = (
   eventType: string,
   contestants: ContestantWithBio[],
-  scoringRules: ScoringRule[]
+  scoringRules: DetailedScoringRule[]
 ): ContestantWithBio[] => {
   if (!eventType) return [];
   

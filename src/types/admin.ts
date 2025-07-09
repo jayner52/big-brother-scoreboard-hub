@@ -27,6 +27,7 @@ export interface DetailedScoringRule {
   description?: string;
   is_active: boolean;
   created_at: Date;
+  emoji?: string | null;
 }
 
 export interface ContestantWithBio {

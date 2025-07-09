@@ -1,18 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface ScoringRule {
-  id: string;
-  category: string;
-  subcategory: string;
-  points: number;
-  description: string;
-  is_active: boolean;
-  emoji?: string | null;
-}
+import { DetailedScoringRule } from '@/types/admin';
 
 export const useScoringRules = () => {
-  const [scoringRules, setScoringRules] = useState<ScoringRule[]>([]);
+  const [scoringRules, setScoringRules] = useState<DetailedScoringRule[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadScoringRules = async () => {
@@ -24,7 +15,14 @@ export const useScoringRules = () => {
         .order('category', { ascending: true });
 
       if (error) throw error;
-      setScoringRules(data || []);
+      
+      // Transform database data to match DetailedScoringRule interface
+      const transformedData = (data || []).map(item => ({
+        ...item,
+        created_at: new Date(item.created_at)
+      }));
+      
+      setScoringRules(transformedData);
     } catch (error) {
       console.error('Error loading scoring rules:', error);
     } finally {

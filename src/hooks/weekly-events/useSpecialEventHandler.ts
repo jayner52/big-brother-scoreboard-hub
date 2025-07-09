@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { calculatePoints } from '@/utils/weeklyEventsUtils';
 import { 
   validateSpecialEvents, 
@@ -11,21 +11,11 @@ import {
   type ValidationError 
 } from '@/utils/specialEventRules';
 
-interface ScoringRule {
-  id: string;
-  category: string;
-  subcategory?: string;
-  points: number;
-  description: string;
-  is_active: boolean;
-  emoji?: string | null;
-}
-
 export const useSpecialEventHandler = () => {
   const validateSpecialEventsForm = (
     eventForm: WeeklyEventForm,
     contestants: ContestantWithBio[],
-    scoringRules: ScoringRule[]
+    scoringRules: DetailedScoringRule[]
   ): ValidationError[] => {
     const specialEventData: SpecialEventData[] = eventForm.specialEvents.map(se => ({
       contestant: se.contestant,
@@ -43,7 +33,7 @@ export const useSpecialEventHandler = () => {
   const processSpecialEvents = (
     eventForm: WeeklyEventForm,
     contestants: ContestantWithBio[],
-    scoringRules: ScoringRule[],
+    scoringRules: DetailedScoringRule[],
     poolId: string
   ) => {
     // Convert to SpecialEventData format for processing

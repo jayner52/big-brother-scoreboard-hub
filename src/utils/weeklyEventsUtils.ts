@@ -1,19 +1,9 @@
-import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
-
-interface ScoringRule {
-  id: string;
-  category: string;
-  subcategory?: string;
-  points: number;
-  description: string;
-  is_active: boolean;
-  emoji?: string | null;
-}
+import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 
 export const calculatePoints = (
   eventType: string, 
   customPoints: number | undefined, 
-  scoringRules: ScoringRule[]
+  scoringRules: DetailedScoringRule[]
 ) => {
   if (eventType === 'custom' && customPoints !== undefined) {
     return customPoints;
@@ -42,7 +32,7 @@ export const getPointsPreview = (
   eventForm: WeeklyEventForm,
   contestants: ContestantWithBio[],
   allEvictedUpToThisWeek: string[],
-  scoringRules: ScoringRule[]
+  scoringRules: DetailedScoringRule[]
 ) => {
   const preview: Record<string, number> = {};
   

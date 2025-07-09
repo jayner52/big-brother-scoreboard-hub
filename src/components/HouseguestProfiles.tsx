@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Users, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
-// REMOVED: All eviction status logic - will be reimplemented from scratch
+import { useEvictionData } from '@/hooks/useEvictionData';
 import { useUserPaymentUpdate } from '@/hooks/useUserPaymentUpdate';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -23,7 +23,7 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   const [loading, setLoading] = useState(true);
   const activePool = useActivePool();
   const { houseguestPoints } = useHouseguestPoints();
-  // REMOVED: eviction logic - will be reimplemented from scratch
+  const { isEvicted } = useEvictionData();
   const { updatePaymentStatus, updating } = useUserPaymentUpdate();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -171,7 +171,7 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
 
   const renderPlayerName = (playerName: string) => {
     const contestant = contestants.find(c => c.name === playerName);
-    const isEliminated = false; // REMOVED: eviction logic - always show as active
+    const isEliminated = isEvicted(playerName);
     const points = houseguestPoints[playerName] || 0;
     
     return (

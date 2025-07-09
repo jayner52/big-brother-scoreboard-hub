@@ -5,7 +5,7 @@ import { Crown, Target, Shield } from 'lucide-react';
 import { ContestantStats } from '@/types/contestant-stats';
 import { Contestant } from '@/types/pool';
 import { SpecialEventsBadges } from '@/components/admin/SpecialEventsBadges';
-// REMOVED: useEvictionWeeks - eviction logic will be reimplemented from scratch
+import { useEvictionData } from '@/hooks/useEvictionData';
 
 interface ContestantStatsTableProps {
   contestantStats: ContestantStats[];
@@ -24,7 +24,7 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
   povWinner,
   nominees,
 }) => {
-  // REMOVED: evictionWeeks - will be reimplemented from scratch
+  const { getEvictionStatus } = useEvictionData();
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -45,17 +45,15 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
         </TableHeader>
         <TableBody>
         {contestantStats.map((stat, index) => {
-            const contestant = contestants.find(c => c.name === stat.contestant_name);
-            const isEvicted = contestant && !contestant.isActive; // Use actual eviction status
+            const evictionStatus = getEvictionStatus(stat.contestant_name);
             
             return (
               <TableRow key={stat.contestant_name}>
                 <TableCell className="text-center font-bold">
                   {index + 1}
                 </TableCell>
-                <TableCell className={`text-center font-semibold ${isEvicted ? 'text-red-600 line-through' : ''}`}>
+                <TableCell className="text-center font-semibold">
                   {stat.contestant_name}
-                  {isEvicted && <span className="text-red-500 text-xs ml-1">(Evicted)</span>}
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge variant="outline" className="text-xs">
@@ -65,8 +63,9 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                 {showSpoilers && (
                   <TableCell>
                     <div className="flex flex-wrap gap-1 justify-center">
-                      <Badge variant="default">Active</Badge>
-                      {/* REMOVED: Eviction status and current game status - will be reimplemented */}
+                      <Badge variant={evictionStatus === 'Active' ? 'default' : 'destructive'}>
+                        {evictionStatus}
+                      </Badge>
                       {hohWinner === stat.contestant_name && (
                         <Badge variant="secondary" className="flex items-center gap-1">
                           <Crown className="h-3 w-3" />

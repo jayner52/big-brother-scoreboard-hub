@@ -56,7 +56,10 @@ Deno.serve(async (req) => {
       hasStoredPassword: !!storedPassword,
       storedPasswordLength: storedPassword?.length || 0,
       receivedPasswordLength: password.length,
-      environmentKeys: Object.keys(Deno.env.toObject()).filter(key => key.includes('COMPANY'))
+      environmentKeys: Object.keys(Deno.env.toObject()).filter(key => key.includes('COMPANY')),
+      // Show first/last chars for debugging (NOT the full password)
+      storedPasswordPreview: storedPassword ? `${storedPassword.slice(0, 3)}...${storedPassword.slice(-3)}` : 'null',
+      receivedPasswordPreview: `${password.slice(0, 3)}...${password.slice(-3)}`
     })
     
     if (!storedPassword) {

@@ -1534,6 +1534,14 @@ export type Database = {
         Args: { week_num: number }
         Returns: undefined
       }
+      get_evicted_contestants: {
+        Args: { target_pool_id: string }
+        Returns: {
+          evicted_contestant_id: string
+          eviction_source: string
+          eviction_week: number
+        }[]
+      }
       get_user_admin_status: {
         Args: { target_user_id?: string }
         Returns: boolean
@@ -1577,6 +1585,14 @@ export type Database = {
       seed_pool_contestants: {
         Args: { target_pool_id: string }
         Returns: undefined
+      }
+      update_contestant_eviction_status: {
+        Args: { target_pool_id: string }
+        Returns: {
+          contestant_id: string
+          name: string
+          was_evicted: boolean
+        }[]
       }
       update_current_game_week: {
         Args: { new_week_number: number }

@@ -14,6 +14,19 @@ export const useWeeklyEventsSubmission = (
 
   const handleSubmitWeek = async (eventForm: WeeklyEventForm, loadData: () => void) => {
     try {
+      // Get event type UUID mappings from detailed_scoring_rules
+      const { data: scoringRulesData } = await supabase
+        .from('detailed_scoring_rules')
+        .select('id, subcategory')
+        .eq('is_active', true);
+
+      const eventTypeMapping = new Map();
+      scoringRulesData?.forEach(rule => {
+        if (rule.subcategory) {
+          eventTypeMapping.set(rule.subcategory, rule.id);
+        }
+      });
+
       // First delete existing data for this week to avoid duplicates
       await Promise.all([
         supabase.from('weekly_events').delete().eq('week_number', eventForm.week).eq('pool_id', poolId),
@@ -28,7 +41,7 @@ export const useWeeklyEventsSubmission = (
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.hohWinner)?.id,
-          event_type: 'hoh_winner',
+          event_type: eventTypeMapping.get('hoh_winner'),
           points_awarded: calculatePoints('hoh_winner', undefined, scoringRules),
           pool_id: poolId
         });
@@ -39,7 +52,7 @@ export const useWeeklyEventsSubmission = (
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.povWinner)?.id,
-          event_type: 'pov_winner',
+          event_type: eventTypeMapping.get('pov_winner'),
           points_awarded: calculatePoints('pov_winner', undefined, scoringRules),
           pool_id: poolId
         });
@@ -50,7 +63,7 @@ export const useWeeklyEventsSubmission = (
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.povUsedOn)?.id,
-          event_type: 'pov_used_on',
+          event_type: eventTypeMapping.get('pov_used_on'),
           points_awarded: 1,
           pool_id: poolId
         });
@@ -61,7 +74,7 @@ export const useWeeklyEventsSubmission = (
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === nominee)?.id,
-          event_type: 'nominee',
+          event_type: eventTypeMapping.get('nominee'),
           points_awarded: calculatePoints('nominee', undefined, scoringRules),
           pool_id: poolId
         });
@@ -72,7 +85,7 @@ export const useWeeklyEventsSubmission = (
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.replacementNominee)?.id,
-          event_type: 'replacement_nominee',
+          event_type: eventTypeMapping.get('replacement_nominee'),
           points_awarded: calculatePoints('replacement_nominee', undefined, scoringRules),
           pool_id: poolId
         });
@@ -83,7 +96,7 @@ export const useWeeklyEventsSubmission = (
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.evicted)?.id,
-          event_type: 'evicted',
+          event_type: eventTypeMapping.get('evicted'),
           points_awarded: 0, // No points for being evicted
           pool_id: poolId
         });
@@ -94,10 +107,11 @@ export const useWeeklyEventsSubmission = (
       .filter(name => name && name !== 'no-eviction');
     
     // Get all evicted contestants from database to determine who's active
+    const evictedEventTypeId = eventTypeMapping.get('evicted');
     const { data: allEvictedData } = await supabase
       .from('weekly_events')
       .select('contestants!inner(name)')
-      .eq('event_type', 'evicted')
+      .eq('event_type', evictedEventTypeId)
       .eq('pool_id', poolId);
     
     const allEvictedNames = allEvictedData?.map(event => (event.contestants as any).name) || [];
@@ -109,7 +123,7 @@ export const useWeeklyEventsSubmission = (
         events.push({
           week_number: eventForm.week,
           contestant_id: contestant.id,
-          event_type: 'survival',
+          event_type: eventTypeMapping.get('survival'),
           points_awarded: calculatePoints('survival', undefined, scoringRules),
           pool_id: poolId
         });
@@ -120,7 +134,7 @@ export const useWeeklyEventsSubmission = (
         events.push({
           week_number: eventForm.week,
           contestant_id: contestants.find(c => c.name === eventForm.aiArenaWinner)?.id,
-          event_type: 'bb_arena_winner',
+          event_type: eventTypeMapping.get('bb_arena_winner'),
           points_awarded: calculatePoints('bb_arena_winner', undefined, scoringRules),
           pool_id: poolId
         });
@@ -132,7 +146,7 @@ export const useWeeklyEventsSubmission = (
           events.push({
             week_number: eventForm.week,
             contestant_id: contestant.id,
-            event_type: 'jury_member',
+            event_type: eventTypeMapping.get('jury_member'),
             points_awarded: calculatePoints('jury_member', undefined, scoringRules),
             pool_id: poolId
           });
@@ -146,7 +160,7 @@ export const useWeeklyEventsSubmission = (
           events.push({
             week_number: eventForm.week,
             contestant_id: contestants.find(c => c.name === eventForm.winner)?.id,
-            event_type: 'winner',
+            event_type: eventTypeMapping.get('winner'),
             points_awarded: calculatePoints('winner', undefined, scoringRules),
             pool_id: poolId
           });
@@ -156,7 +170,7 @@ export const useWeeklyEventsSubmission = (
           events.push({
             week_number: eventForm.week,
             contestant_id: contestants.find(c => c.name === eventForm.runnerUp)?.id,
-            event_type: 'runner_up',
+            event_type: eventTypeMapping.get('runner_up'),
             points_awarded: calculatePoints('runner_up', undefined, scoringRules),
             pool_id: poolId
           });
@@ -166,7 +180,7 @@ export const useWeeklyEventsSubmission = (
           events.push({
             week_number: eventForm.week,
             contestant_id: contestants.find(c => c.name === eventForm.americasFavorite)?.id,
-            event_type: 'americas_favorite',
+            event_type: eventTypeMapping.get('americas_favorite'),
             points_awarded: calculatePoints('americas_favorite', undefined, scoringRules),
             pool_id: poolId
           });

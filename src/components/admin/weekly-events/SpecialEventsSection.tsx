@@ -2,16 +2,19 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Zap } from 'lucide-react';
+import { Plus, Zap, AlertTriangle } from 'lucide-react';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { usePool } from '@/contexts/PoolContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { CustomEventSelector } from './CustomEventSelector';
 import { CustomEventsLibrary } from './special-events/CustomEventsLibrary';
 import { SpecialEventCard } from './special-events/SpecialEventCard';
 import { StatusChangeInfo } from './special-events/StatusChangeInfo';
 import { supabase } from '@/integrations/supabase/client';
+import { useSpecialEventHandler } from '@/hooks/weekly-events/useSpecialEventHandler';
+import { getAvailableContestantsForEvent } from '@/utils/specialEventRules';
 
 type SpecialEventFormData = {
   id?: string;
@@ -37,7 +40,11 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   const { activePool } = usePool();
   const { toast } = useToast();
   const { scoringRules } = useScoringRules();
+  const { validateSpecialEventsForm } = useSpecialEventHandler();
   const [showCustomEventForm, setShowCustomEventForm] = useState(false);
+  
+  // Validate special events using the rules system
+  const validationErrors = validateSpecialEventsForm(eventForm, activeContestants, scoringRules);
   // Get available special events from active scoring rules (including custom permanent)
   const availableEvents = scoringRules.filter(rule => 
     rule.category === 'special_events' && 
@@ -238,28 +245,9 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     }
   };
 
-  // Get available contestants for each event type
+  // Get available contestants for each event type using the rules system
   const getAvailableContestants = (eventType: string) => {
-    console.log('🔍 getAvailableContestants called with:', { eventType });
-    
-    if (!eventType || eventType === '') {
-      console.log('🔍 No eventType provided, returning empty array');
-      return [];
-    }
-    
-    switch (eventType) {
-      case 'came_back_evicted':
-        console.log('🔍 Returning evicted contestants for came_back_evicted:', evictedContestants.length);
-        return evictedContestants; // Only show evicted contestants
-      case 'self_evicted':
-      case 'removed_production':
-        const activeOnly = activeContestants.filter(c => c.isActive);
-        console.log('🔍 Returning active contestants for self/removed eviction:', activeOnly.length);
-        return activeOnly; // Only active contestants can be evicted
-      default:
-        console.log('🔍 Returning all active contestants for default case:', activeContestants.length);
-        return activeContestants; // All contestants
-    }
+    return getAvailableContestantsForEvent(eventType, activeContestants, scoringRules);
   };
 
   const getEventDisplayName = (event: SpecialEventFormData) => {
@@ -316,6 +304,22 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <Alert variant={validationErrors.some(e => e.severity === 'error') ? 'destructive' : 'default'}>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-1">
+                {validationErrors.map((error, index) => (
+                  <div key={index} className="text-sm">
+                    <strong>Event {error.eventIndex + 1}:</strong> {error.message}
+                  </div>
+                ))}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Custom Events Library - Hidden in Weekly Events Logging per LovableConfig */}
 
         {/* Special Events for this week */}
@@ -340,7 +344,13 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
           variant="outline"
           onClick={addSpecialEvent}
           className="w-full"
-          disabled={eventForm.specialEvents.length > 0 && eventForm.specialEvents[eventForm.specialEvents.length - 1] && (!eventForm.specialEvents[eventForm.specialEvents.length - 1].contestant || !eventForm.specialEvents[eventForm.specialEvents.length - 1].eventType)}
+          disabled={
+            (eventForm.specialEvents.length > 0 && 
+             eventForm.specialEvents[eventForm.specialEvents.length - 1] && 
+             (!eventForm.specialEvents[eventForm.specialEvents.length - 1].contestant || 
+              !eventForm.specialEvents[eventForm.specialEvents.length - 1].eventType)) ||
+            validationErrors.some(e => e.severity === 'error')
+          }
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Special Event

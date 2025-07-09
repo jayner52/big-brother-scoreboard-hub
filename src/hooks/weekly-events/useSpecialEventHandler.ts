@@ -1,16 +1,66 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
+import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { calculatePoints } from '@/utils/weeklyEventsUtils';
+import { 
+  validateSpecialEvents, 
+  deduplicateEvents, 
+  isEvictionEvent, 
+  isRevivalEvent,
+  type SpecialEventData,
+  type ValidationError 
+} from '@/utils/specialEventRules';
+
+interface ScoringRule {
+  id: string;
+  category: string;
+  subcategory?: string;
+  points: number;
+  description: string;
+  is_active: boolean;
+  emoji?: string | null;
+}
 
 export const useSpecialEventHandler = () => {
+  const validateSpecialEventsForm = (
+    eventForm: WeeklyEventForm,
+    contestants: ContestantWithBio[],
+    scoringRules: ScoringRule[]
+  ): ValidationError[] => {
+    const specialEventData: SpecialEventData[] = eventForm.specialEvents.map(se => ({
+      contestant: se.contestant,
+      eventType: se.eventType,
+      weekNumber: eventForm.week,
+      description: se.description,
+      customPoints: se.customPoints,
+      customDescription: se.customDescription,
+      customEmoji: se.customEmoji
+    }));
+    
+    return validateSpecialEvents(specialEventData, contestants, scoringRules);
+  };
+
   const processSpecialEvents = (
     eventForm: WeeklyEventForm,
     contestants: ContestantWithBio[],
-    scoringRules: DetailedScoringRule[],
+    scoringRules: ScoringRule[],
     poolId: string
   ) => {
-    return eventForm.specialEvents
+    // Convert to SpecialEventData format for processing
+    const specialEventData: SpecialEventData[] = eventForm.specialEvents.map(se => ({
+      contestant: se.contestant,
+      eventType: se.eventType,
+      weekNumber: eventForm.week,
+      description: se.description,
+      customPoints: se.customPoints,
+      customDescription: se.customDescription,
+      customEmoji: se.customEmoji
+    }));
+    
+    // Deduplicate events using the rules system
+    const deduplicatedEvents = deduplicateEvents(specialEventData);
+    
+    return deduplicatedEvents
       .filter(se => se.contestant && se.eventType)
       .map(se => ({
         week_number: eventForm.week,
@@ -115,6 +165,7 @@ export const useSpecialEventHandler = () => {
   return { 
     processSpecialEvents, 
     handleAutoEvictionForQuitEvents, 
-    handleSpecialEventStatusChanges 
+    handleSpecialEventStatusChanges,
+    validateSpecialEventsForm
   };
 };

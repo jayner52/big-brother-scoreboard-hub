@@ -94,25 +94,24 @@ export const useWeekAwareContestants = (weekNumber: number) => {
 
       console.log('❌ All evicted contestants:', allEvicted);
       
-      const contestants = contestantsData?.map(c => ({
-        id: c.id,
-        name: c.name,
-        isActive: c.is_active,
-        group_id: c.group_id,
-        sort_order: c.sort_order,
-        bio: c.bio,
-        photo_url: c.photo_url
-      })) || [];
+      const contestants = contestantsData?.map(c => {
+        const isEvicted = allEvicted.includes(c.name);
+        return {
+          id: c.id,
+          name: c.name,
+          isActive: !isEvicted, // Set based on legitimate eviction status only
+          group_id: c.group_id,
+          sort_order: c.sort_order,
+          bio: c.bio,
+          photo_url: c.photo_url
+        };
+      }) || [];
 
       // Determine active contestants for this week
-      // A contestant is active if they haven't been evicted by this week AND are still marked active in DB
+      // A contestant is active if they haven't been legitimately evicted
       const active = contestants.filter(c => {
-        const isEvicted = allEvicted.includes(c.name);
-        const isActiveInDB = c.isActive;
-        const shouldBeActive = !isEvicted && isActiveInDB;
-        
-        console.log(`👤 ${c.name}:`, { isEvicted, isActiveInDB, shouldBeActive });
-        return shouldBeActive;
+        console.log(`👤 ${c.name}:`, { isEvicted: !c.isActive, shouldBeActive: c.isActive });
+        return c.isActive;
       });
 
       console.log('✅ Active contestants for week', weekNumber, ':', active.map(c => c.name));

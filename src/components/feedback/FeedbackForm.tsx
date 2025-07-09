@@ -18,6 +18,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ type, onClose }) => 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [bugLocation, setBugLocation] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,6 +42,20 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ type, onClose }) => 
     }
   };
 
+  const siteLocations = [
+    'Dashboard',
+    'Draft/Team Selection',
+    'Leaderboard',
+    'Admin Panel',
+    'Pool Settings',
+    'Navigation',
+    'Chat',
+    'User Profile',
+    'Payment/Billing',
+    'Mobile View',
+    'Other'
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -53,10 +68,25 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ type, onClose }) => 
       return;
     }
 
+    if (type === 'bug' && !bugLocation) {
+      toast({
+        title: "Location required",
+        description: "Please specify where on the site the bug occurred",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+
+      // Prepare the description with bug location if it's a bug report
+      let finalDescription = description.trim();
+      if (type === 'bug' && bugLocation) {
+        finalDescription = `Location: ${bugLocation}\n\n${finalDescription}`;
+      }
 
       const { error } = await supabase
         .from('user_feedback')
@@ -66,7 +96,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ type, onClose }) => 
           user_name: userName || user?.user_metadata?.display_name || null,
           feedback_type: type,
           title: title.trim(),
-          description: description.trim(),
+          description: finalDescription,
           priority,
         });
 
@@ -121,6 +151,26 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ type, onClose }) => 
                 required
               />
             </div>
+
+            {type === 'bug' && (
+              <div className="space-y-2">
+                <label htmlFor="bugLocation" className="text-sm font-medium">
+                  Where on the site did this occur? *
+                </label>
+                <Select value={bugLocation} onValueChange={setBugLocation} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select page/section..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {siteLocations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <label htmlFor="description" className="text-sm font-medium">

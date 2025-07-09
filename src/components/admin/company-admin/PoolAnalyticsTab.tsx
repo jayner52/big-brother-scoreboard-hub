@@ -1,0 +1,523 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Download, 
+  Search, 
+  Crown,
+  Users, 
+  DollarSign,
+  Trophy,
+  Calendar,
+  TrendingUp,
+  Database
+} from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
+
+interface PoolData {
+  id: string;
+  name: string;
+  owner_display_name: string;
+  owner_id: string;
+  member_count: number;
+  entry_count: number;
+  prize_pool_total: number;
+  entry_fee_amount: number;
+  entry_fee_currency: string;
+  created_at: string;
+  draft_open: boolean;
+  draft_locked: boolean;
+  season_complete: boolean;
+  has_buy_in: boolean;
+}
+
+interface PoolStats {
+  total_pools: number;
+  active_pools: number;
+  total_members: number;
+  total_prize_money: number;
+  total_entries: number;
+  avg_pool_size: number;
+}
+
+export const PoolAnalyticsTab: React.FC = () => {
+  const [pools, setPools] = useState<PoolData[]>([]);
+  const [filteredPools, setFilteredPools] = useState<PoolData[]>([]);
+  const [stats, setStats] = useState<PoolStats>({
+    total_pools: 0,
+    active_pools: 0,
+    total_members: 0,
+    total_prize_money: 0,
+    total_entries: 0,
+    avg_pool_size: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadPoolData();
+  }, []);
+
+  useEffect(() => {
+    filterPools();
+  }, [pools, searchTerm, filterStatus]);
+
+  const loadPoolData = async () => {
+    try {
+      console.log('COMPANY_ADMIN: Loading pool analytics...');
+      
+      // Get pools with owner info
+      const { data: poolsData, error: poolsError } = await supabase
+        .from('pools')
+        .select(`
+          id,
+          name,
+          owner_id,
+          entry_fee_amount,
+          entry_fee_currency,
+          created_at,
+          draft_open,
+          draft_locked,
+          season_complete,
+          has_buy_in,
+          profiles!pools_owner_id_fkey (
+            display_name
+          )
+        `);
+
+      if (poolsError) {
+        console.error('COMPANY_ADMIN: Error loading pools:', poolsError);
+        throw poolsError;
+      }
+
+      console.log('COMPANY_ADMIN: Loaded pools:', poolsData?.length || 0);
+
+      // Get member counts for each pool
+      const { data: memberData, error: memberError } = await supabase
+        .from('pool_memberships')
+        .select('pool_id')
+        .eq('active', true);
+
+      if (memberError) {
+        console.warn('COMPANY_ADMIN: Error loading memberships:', memberError);
+      }
+
+      // Get entry counts for each pool
+      const { data: entryData, error: entryError } = await supabase
+        .from('pool_entries')
+        .select('pool_id, payment_confirmed');
+
+      if (entryError) {
+        console.warn('COMPANY_ADMIN: Error loading entries:', entryError);
+      }
+
+      // Process the data
+      const processedPools: PoolData[] = (poolsData || []).map((pool: any) => {
+        const memberCount = memberData?.filter(m => m.pool_id === pool.id).length || 0;
+        const entryCount = entryData?.filter(e => e.pool_id === pool.id).length || 0;
+        const confirmedEntries = entryData?.filter(e => e.pool_id === pool.id && e.payment_confirmed).length || 0;
+        
+        // Calculate total prize pool (confirmed entries * entry fee)
+        const prizePoolTotal = pool.has_buy_in ? (confirmedEntries * pool.entry_fee_amount) : 0;
+
+        return {
+          id: pool.id,
+          name: pool.name,
+          owner_display_name: pool.profiles?.display_name || 'Unknown Owner',
+          owner_id: pool.owner_id,
+          member_count: memberCount,
+          entry_count: entryCount,
+          prize_pool_total: prizePoolTotal,
+          entry_fee_amount: pool.entry_fee_amount,
+          entry_fee_currency: pool.entry_fee_currency,
+          created_at: pool.created_at,
+          draft_open: pool.draft_open,
+          draft_locked: pool.draft_locked,
+          season_complete: pool.season_complete,
+          has_buy_in: pool.has_buy_in,
+        };
+      });
+
+      setPools(processedPools);
+
+      // Calculate stats
+      const totalPools = processedPools.length;
+      const activePools = processedPools.filter(p => !p.season_complete).length;
+      const totalMembers = processedPools.reduce((sum, p) => sum + p.member_count, 0);
+      const totalPrizeMoney = processedPools.reduce((sum, p) => sum + p.prize_pool_total, 0);
+      const totalEntries = processedPools.reduce((sum, p) => sum + p.entry_count, 0);
+      const avgPoolSize = totalPools > 0 ? totalMembers / totalPools : 0;
+
+      setStats({
+        total_pools: totalPools,
+        active_pools: activePools,
+        total_members: totalMembers,
+        total_prize_money: totalPrizeMoney,
+        total_entries: totalEntries,
+        avg_pool_size: Math.round(avgPoolSize * 100) / 100,
+      });
+
+      console.log('COMPANY_ADMIN: Pool analytics loaded successfully');
+
+    } catch (error: any) {
+      console.error('Error loading pool analytics:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load pool analytics",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterPools = () => {
+    let filtered = pools;
+
+    if (searchTerm) {
+      filtered = filtered.filter(pool => 
+        pool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pool.owner_display_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterStatus) {
+      switch (filterStatus) {
+        case 'active':
+          filtered = filtered.filter(p => !p.season_complete && p.draft_open);
+          break;
+        case 'draft_locked':
+          filtered = filtered.filter(p => p.draft_locked);
+          break;
+        case 'completed':
+          filtered = filtered.filter(p => p.season_complete);
+          break;
+        case 'has_buy_in':
+          filtered = filtered.filter(p => p.has_buy_in);
+          break;
+        case 'free':
+          filtered = filtered.filter(p => !p.has_buy_in);
+          break;
+      }
+    }
+
+    setFilteredPools(filtered);
+  };
+
+  const exportPoolsToCsv = () => {
+    const headers = [
+      'Pool Name', 'Owner', 'Members', 'Entries', 'Prize Pool', 'Entry Fee', 
+      'Currency', 'Status', 'Created Date', 'Draft Open', 'Draft Locked', 'Season Complete'
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...filteredPools.map(pool => [
+        `"${pool.name}"`,
+        `"${pool.owner_display_name}"`,
+        pool.member_count,
+        pool.entry_count,
+        pool.prize_pool_total,
+        pool.entry_fee_amount,
+        pool.entry_fee_currency,
+        pool.season_complete ? 'Completed' : pool.draft_locked ? 'Draft Locked' : 'Active',
+        new Date(pool.created_at).toLocaleDateString(),
+        pool.draft_open ? 'Yes' : 'No',
+        pool.draft_locked ? 'Yes' : 'No',
+        pool.season_complete ? 'Yes' : 'No'
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pool-analytics-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Export Successful",
+      description: `Exported ${filteredPools.length} pools to CSV`,
+    });
+  };
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+    }).format(amount);
+  };
+
+  const getPoolStatus = (pool: PoolData) => {
+    if (pool.season_complete) return { label: 'Completed', variant: 'secondary' as const };
+    if (pool.draft_locked) return { label: 'Draft Locked', variant: 'destructive' as const };
+    if (pool.draft_open) return { label: 'Active', variant: 'default' as const };
+    return { label: 'Unknown', variant: 'outline' as const };
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading pool analytics...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header with Actions */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Pool Analytics</h3>
+        <div className="flex gap-2">
+          <Button onClick={exportPoolsToCsv} variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
+      </div>
+
+      {/* Overview Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Total Pools</p>
+                <p className="text-2xl font-bold">{stats.total_pools}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Active Pools</p>
+                <p className="text-2xl font-bold text-green-600">{stats.active_pools}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Total Members</p>
+                <p className="text-2xl font-bold text-purple-600">{stats.total_members}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-orange-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Total Entries</p>
+                <p className="text-2xl font-bold text-orange-600">{stats.total_entries}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-green-700" />
+              <div>
+                <p className="text-sm text-muted-foreground">Total Prize Money</p>
+                <p className="text-2xl font-bold text-green-700">
+                  {formatCurrency(stats.total_prize_money, 'CAD')}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-indigo-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">Avg Pool Size</p>
+                <p className="text-2xl font-bold text-indigo-600">{stats.avg_pool_size}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              <Input
+                placeholder="Search pools by name or owner..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64"
+              />
+            </div>
+            
+            <Separator orientation="vertical" className="h-6" />
+            
+            <div className="flex gap-2">
+              <Button
+                variant={filterStatus === 'active' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterStatus(filterStatus === 'active' ? null : 'active')}
+              >
+                Active Pools
+              </Button>
+              <Button
+                variant={filterStatus === 'draft_locked' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterStatus(filterStatus === 'draft_locked' ? null : 'draft_locked')}
+              >
+                Draft Locked
+              </Button>
+              <Button
+                variant={filterStatus === 'completed' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterStatus(filterStatus === 'completed' ? null : 'completed')}
+              >
+                Completed
+              </Button>
+            </div>
+
+            <Separator orientation="vertical" className="h-6" />
+
+            <div className="flex gap-2">
+              <Button
+                variant={filterStatus === 'has_buy_in' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterStatus(filterStatus === 'has_buy_in' ? null : 'has_buy_in')}
+              >
+                Buy-in Pools
+              </Button>
+              <Button
+                variant={filterStatus === 'free' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterStatus(filterStatus === 'free' ? null : 'free')}
+              >
+                Free Pools
+              </Button>
+            </div>
+
+            {(searchTerm || filterStatus) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterStatus(null);
+                }}
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pools Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Pool Details ({filteredPools.length} of {pools.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filteredPools.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No pools found.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-4">Pool Name</th>
+                    <th className="text-left py-2 px-4">Owner</th>
+                    <th className="text-left py-2 px-4">Members</th>
+                    <th className="text-left py-2 px-4">Entries</th>
+                    <th className="text-left py-2 px-4">Entry Fee</th>
+                    <th className="text-left py-2 px-4">Prize Pool</th>
+                    <th className="text-left py-2 px-4">Status</th>
+                    <th className="text-left py-2 px-4">Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPools.map((pool) => {
+                    const status = getPoolStatus(pool);
+                    return (
+                      <tr key={pool.id} className="border-b hover:bg-muted/50">
+                        <td className="py-2 px-4 font-medium">{pool.name}</td>
+                        <td className="py-2 px-4">
+                          <div className="flex items-center gap-1">
+                            <Crown className="h-3 w-3 text-yellow-600" />
+                            {pool.owner_display_name}
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {pool.member_count}
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="flex items-center gap-1">
+                            <Trophy className="h-3 w-3" />
+                            {pool.entry_count}
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          {pool.has_buy_in ? (
+                            <span className="font-mono text-sm">
+                              {formatCurrency(pool.entry_fee_amount, pool.entry_fee_currency)}
+                            </span>
+                          ) : (
+                            <Badge variant="secondary">Free</Badge>
+                          )}
+                        </td>
+                        <td className="py-2 px-4">
+                          {pool.has_buy_in ? (
+                            <span className="font-mono text-sm font-semibold text-green-700">
+                              {formatCurrency(pool.prize_pool_total, pool.entry_fee_currency)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-4">
+                          <Badge variant={status.variant}>{status.label}</Badge>
+                        </td>
+                        <td className="py-2 px-4 text-sm text-muted-foreground">
+                          {new Date(pool.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useScoringRules } from '@/hooks/useScoringRules';
+import { getContestantStatusStyling } from '@/utils/contestantStatusUtils';
 
 interface ContestantScore {
   name: string;
@@ -59,32 +60,13 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
   };
 
   // Create a complete list showing all contestants with their points or 0
+  // CRITICAL FIX: Use the centralized is_active field as the single source of truth
   const completeContestantScores = allContestants.map(contestant => {
     const existingScore = contestantScores.find(score => score.name === contestant.name);
     
-    // Check if contestant is evicted - either passed in evictedThisWeek or marked inactive due to special events
-    const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
-    
-    // Check if contestant quit this week using the proper event type checking
-    const quitThisWeek = specialEvents.some(event => 
-      event.week_number === weekNumber && 
-      event.contestant_name === contestant.name &&
-      isQuitEvent(event.event_type)
-    );
-    
-    // Check if contestant has quit in any previous week using the proper event type checking
-    const hasQuitEvent = specialEvents.some(event => 
-      event.week_number <= weekNumber && 
-      event.contestant_name === contestant.name &&
-      isQuitEvent(event.event_type)
-    );
-    
-    // A contestant is considered evicted if:
-    // 1. They were evicted this week (traditional eviction)
-    // 2. They quit this week (self_evicted or removed_production)
-    // 3. They quit in a previous week
-    // 4. They are marked as inactive in the database
-    const isEvicted = isEvictedThisWeek || quitThisWeek || hasQuitEvent || !contestant.is_active;
+    // SIMPLIFIED LOGIC: Use the database is_active field as the single source of truth
+    // The database trigger already handles all eviction scenarios correctly
+    const isEvicted = !contestant.is_active;
     
     // Check if contestant has special events this week
     const hasSpecialEvent = specialEvents.some(event => 
@@ -110,7 +92,7 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
             <div key={contestant.name} className={`flex flex-col justify-between bg-gray-50 p-2 rounded relative ${
               contestant.hasSpecialEvent ? 'ring-2 ring-purple-200 bg-purple-50' : ''
             }`}>
-              <span className={`truncate text-xs ${contestant.isEvicted ? 'text-red-600 line-through' : ''}`}>
+              <span className={`truncate text-xs ${getContestantStatusStyling(contestant.isEvicted)}`}>
                 {contestant.name}
                 {contestant.hasSpecialEvent && <span className="text-purple-600 ml-1">⚡</span>}
               </span>

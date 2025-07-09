@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio } from '@/types/admin';
 import { usePool } from '@/contexts/PoolContext';
+import { debugContestantEvictionStatus } from '@/utils/evictionDebugger';
 
 export const useWeekAwareContestants = (weekNumber: number) => {
   const { activePool } = usePool();
@@ -19,105 +21,48 @@ export const useWeekAwareContestants = (weekNumber: number) => {
     try {
       console.log('🔄 Loading week-aware data for pool:', activePool.id, 'week:', weekNumber);
 
-      // Load all contestants from the current pool only
+      // CRITICAL FIX: Load contestants with their current is_active status from database
+      // This is the single source of truth maintained by the database trigger
       const { data: contestantsData } = await supabase
         .from('contestants')
         .select('*')
         .eq('pool_id', activePool.id)
         .order('name');
 
-      console.log('📊 Loaded contestants:', contestantsData?.length);
+      console.log('📊 Loaded contestants with is_active status:', contestantsData?.map(c => ({ name: c.name, is_active: c.is_active })));
 
-      // Load evicted contestants from weekly_results table for this pool
-      const { data: weeklyResultsData } = await supabase
-        .from('weekly_results')
-        .select(`
-          week_number,
-          evicted_contestant,
-          second_evicted_contestant,
-          third_evicted_contestant
-        `)
-        .eq('pool_id', activePool.id)
-        .lte('week_number', weekNumber)
-        .eq('is_draft', false)
-        .order('week_number');
-
-      console.log('📈 Weekly results data:', weeklyResultsData);
-
-      // Build cumulative eviction list up to current week
-      const evictedByVote = weeklyResultsData?.reduce((acc, result) => {
-        console.log(`Week ${result.week_number} evictions:`, {
-          first: result.evicted_contestant,
-          second: result.second_evicted_contestant,
-          third: result.third_evicted_contestant
-        });
-        
-        if (result.evicted_contestant) acc.push(result.evicted_contestant);
-        if (result.second_evicted_contestant) acc.push(result.second_evicted_contestant);
-        if (result.third_evicted_contestant) acc.push(result.third_evicted_contestant);
-        return acc;
-      }, [] as string[]) || [];
-
-      // Check for contestants evicted by special events (self_evicted, removed_production)
-      const { data: specialEvictionData } = await supabase
-        .from('weekly_events')
-        .select(`
-          contestants(name),
-          event_type
-        `)
-        .eq('pool_id', activePool.id)
-        .lte('week_number', weekNumber);
-
-      console.log('🚫 Special eviction data:', specialEvictionData);
-
-      // Filter for only legitimate eviction special events
-      const evictedBySpecialEvent = [];
-      if (specialEvictionData) {
-        for (const event of specialEvictionData) {
-          if (event.event_type && event.contestants?.name) {
-            // Check if this event type is a legitimate eviction event
-            const { data: scoringRule } = await supabase
-              .from('detailed_scoring_rules')
-              .select('subcategory')
-              .eq('id', event.event_type)
-              .single();
-            
-            if (scoringRule && (scoringRule.subcategory === 'self_evicted' || scoringRule.subcategory === 'removed_production')) {
-              evictedBySpecialEvent.push(event.contestants.name);
-              console.log(`🚪 Special eviction: ${event.contestants.name} (${scoringRule.subcategory})`);
-            }
-          }
+      if (contestantsData) {
+        // Debug Isaiah specifically if he's in the list
+        const isaiah = contestantsData.find(c => c.name.toLowerCase().includes('isaiah'));
+        if (isaiah) {
+          console.log(`🎯 ISAIAH DEBUG - is_active: ${isaiah.is_active}`);
+          await debugContestantEvictionStatus(isaiah.name, activePool.id);
         }
       }
 
-      const allEvicted = [...new Set([...evictedByVote, ...evictedBySpecialEvent])];
+      // Build evicted list from database is_active field (single source of truth)
+      const evictedByDatabase = contestantsData?.filter(c => !c.is_active).map(c => c.name) || [];
 
-      console.log('❌ All evicted contestants:', allEvicted);
+      console.log('❌ Contestants marked as evicted in database:', evictedByDatabase);
       
-      const contestants = contestantsData?.map(c => {
-        const isEvicted = allEvicted.includes(c.name);
-        return {
-          id: c.id,
-          name: c.name,
-          isActive: !isEvicted, // Set based on legitimate eviction status only
-          group_id: c.group_id,
-          sort_order: c.sort_order,
-          bio: c.bio,
-          photo_url: c.photo_url
-        };
-      }) || [];
+      const contestants = contestantsData?.map(c => ({
+        id: c.id,
+        name: c.name,
+        isActive: c.is_active, // Use database value directly
+        group_id: c.group_id,
+        sort_order: c.sort_order,
+        bio: c.bio,
+        photo_url: c.photo_url
+      })) || [];
 
-      // Determine active contestants for this week
-      // A contestant is active if they haven't been legitimately evicted
-      const active = contestants.filter(c => {
-        console.log(`👤 ${c.name}:`, { isEvicted: !c.isActive, shouldBeActive: c.isActive });
-        return c.isActive;
-      });
+      // Active contestants are those with is_active = true in database
+      const active = contestants.filter(c => c.isActive);
 
       console.log('✅ Active contestants for week', weekNumber, ':', active.map(c => c.name));
+      console.log('❌ Evicted contestants for week', weekNumber, ':', contestants.filter(c => !c.isActive).map(c => c.name));
 
       setAllContestants(contestants);
-      setEvictedContestants(allEvicted);
+      setEvictedContestants(evictedByDatabase);
       setActiveContestants(active);
     } catch (error) {
       console.error('Error loading week-aware contestant data:', error);

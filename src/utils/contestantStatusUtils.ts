@@ -1,3 +1,4 @@
+
 import { ContestantWithBio } from '@/types/admin';
 
 /**
@@ -5,12 +6,12 @@ import { ContestantWithBio } from '@/types/admin';
  * Single source of truth: contestants.is_active field
  */
 
-export const getContestantStatusStyling = (isActive: boolean): string => {
-  return isActive ? '' : 'text-red-500 line-through';
+export const getContestantStatusStyling = (isEvicted: boolean): string => {
+  return isEvicted ? 'text-red-500 line-through' : '';
 };
 
-export const getAdminStatusStyling = (isActive: boolean): string => {
-  return isActive ? '' : 'text-red-600';
+export const getAdminStatusStyling = (isEvicted: boolean): string => {
+  return isEvicted ? 'text-red-600' : '';
 };
 
 export const getContestantStatusLabel = (isActive: boolean): string => {
@@ -62,3 +63,19 @@ export const isContestantAvailableForEvent = (
   
   return contestant.isActive; // Default: only active contestants
 };
+
+/**
+ * CRITICAL EVICTION DETECTION RULES
+ * 
+ * A contestant is considered evicted (is_active = false) when ANY of these occur:
+ * 1. They appear in weekly_results.evicted_contestant for any week
+ * 2. They appear in weekly_results.second_evicted_contestant for any week  
+ * 3. They appear in weekly_results.third_evicted_contestant for any week
+ * 4. They have a weekly_events entry with event_type matching a scoring rule where subcategory = 'self_evicted'
+ * 5. They have a weekly_events entry with event_type matching a scoring rule where subcategory = 'removed_production'
+ * 
+ * A contestant can ONLY be reactivated (is_active = true) when:
+ * 1. They have a special_events entry with event_type matching a scoring rule where subcategory = 'came_back_evicted'
+ * 
+ * The database trigger maintain_contestant_status() automatically enforces these rules.
+ */

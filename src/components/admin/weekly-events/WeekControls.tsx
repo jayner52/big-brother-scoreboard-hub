@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Save, Trash2, CheckCircle, Clock, Sparkles } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WeekControlsProps {
   weekNumber: number;
@@ -29,16 +30,17 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
   isFinalWeek = false,
   isDraft = true
 }) => {
+  const isMobile = useIsMobile();
   return (
     <div className="space-y-4">
       {/* Week Status */}
-      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 bg-muted/30 rounded-lg">
         <div className="flex items-center gap-3">
           <Switch
             checked={isComplete}
             onCheckedChange={onMarkComplete}
           />
-          <Label className="flex items-center gap-2">
+          <Label className="flex items-center gap-2 text-sm sm:text-base">
             {isComplete ? (
               <>
                 <CheckCircle className="h-4 w-4 text-green-600" />
@@ -53,16 +55,16 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
           </Label>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-end sm:justify-start">
           {isComplete && (
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
+            <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
               Completed
             </Badge>
           )}
           {isAutoSaving && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <Save className="h-4 w-4 animate-pulse" />
-              <span className="text-sm">Auto-saving...</span>
+              <span className="text-xs sm:text-sm">Auto-saving...</span>
             </div>
           )}
         </div>
@@ -71,38 +73,47 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
       {/* Action Buttons */}
       <div className="space-y-3">
         {/* Primary Action Row */}
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <Button 
             onClick={onSaveProgress}
             variant="outline"
-            className="flex-1 border-2 hover:bg-muted/50"
+            className="flex-1 border-2 hover:bg-muted/50 text-sm sm:text-base"
             disabled={isAutoSaving}
-            size="lg"
+            size={isMobile ? "default" : "lg"}
           >
-            <Save className="h-4 w-4 mr-2" />
-            {isAutoSaving ? 'Auto-saving...' : 'Save Progress'}
+            <Save className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">{isAutoSaving ? 'Auto-saving...' : 'Save Progress'}</span>
+            <span className="sm:hidden">{isAutoSaving ? 'Saving...' : 'Save'}</span>
           </Button>
         </div>
 
         {/* Secondary Action Row - Management */}
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear Week Data
+              <Button 
+                variant="outline" 
+                className="w-full sm:flex-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground text-sm sm:text-base"
+                size={isMobile ? "default" : "default"}
+              >
+                <Trash2 className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Clear Week Data</span>
+                <span className="sm:hidden">Clear Data</span>
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="mx-4 sm:mx-0 max-w-md sm:max-w-lg">
               <AlertDialogHeader>
-                <AlertDialogTitle>Clear Week {weekNumber} Data?</AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogTitle className="text-base sm:text-lg">Clear Week {weekNumber} Data?</AlertDialogTitle>
+                <AlertDialogDescription className="text-sm">
                   This will permanently delete all data for Week {weekNumber}, including competitions, nominations, evictions, and special events. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onClearWeek} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={onClearWeek} 
+                  className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
                   Clear All Data
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -118,22 +129,28 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
                 }, 1000);
               }
             }} 
-            className={`flex-1 shadow-md ${
+            className={`w-full sm:flex-1 shadow-md text-sm sm:text-base ${
               isFinalWeek && isDraft
                 ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white animate-pulse'
                 : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white'
             }`}
-            size="lg"
+            size={isMobile ? "default" : "lg"}
           >
             {isFinalWeek && isDraft ? (
               <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                🏆 SUBMIT FINAL WEEK RESULTS
+                <Sparkles className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">🏆 SUBMIT FINAL WEEK RESULTS</span>
+                <span className="sm:hidden">🏆 SUBMIT FINAL</span>
               </>
             ) : (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {isComplete ? 'Finalize & Advance' : `Complete Week ${weekNumber}`}
+                <CheckCircle className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">
+                  {isComplete ? 'Finalize & Advance' : `Complete Week ${weekNumber}`}
+                </span>
+                <span className="sm:hidden">
+                  {isComplete ? 'Finalize' : `Complete W${weekNumber}`}
+                </span>
               </>
             )}
           </Button>

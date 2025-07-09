@@ -186,6 +186,40 @@ All colors MUST be HSL.
     @apply cursor-pointer select-none rounded-md p-3 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none;
   }
 
+  /* Mobile-optimized text utilities */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Mobile table improvements */
+  .mobile-table-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+  }
+
+  .mobile-table-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .mobile-table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .mobile-table-scroll::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground));
+    border-radius: 3px;
+  }
+
   /* Dashboard animations */
   .animate-glow {
     animation: glow 2s ease-in-out infinite alternate;

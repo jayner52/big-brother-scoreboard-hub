@@ -20,16 +20,16 @@ export const TeamDisplaySection: React.FC<TeamDisplaySectionProps> = ({
   
   return (
     <Card>
-      <CardHeader className={isMobile ? "pb-3" : ""}>
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          Team Selections
-          <Badge variant="secondary" className="text-xs sm:text-sm">
+      <CardHeader className="pb-3 sm:pb-6 px-3 sm:px-6 pt-4 sm:pt-6">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-lg sm:text-xl">
+          <span>Team Selections</span>
+          <Badge variant="secondary" className="text-xs sm:text-sm w-fit">
             {poolEntries.length} Teams
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className={isMobile ? "px-3 pb-3" : ""}>
-        <div className={isMobile ? "space-y-3" : "space-y-2"}>
+      <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+        <div className="space-y-2 sm:space-y-3">
           {poolEntries.map((entry, index) => (
             <TeamCard
               key={entry.id}

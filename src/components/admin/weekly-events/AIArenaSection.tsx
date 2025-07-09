@@ -4,21 +4,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
-import { useScoringRules } from '@/hooks/useScoringRules';
+import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
+import { PointsTooltip } from '@/components/ui/points-tooltip';
 
 interface AIArenaSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   activeContestants: ContestantWithBio[];
+  scoringRules?: DetailedScoringRule[];
 }
 
 export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
   eventForm,
   setEventForm,
   activeContestants,
+  scoringRules = [],
 }) => {
-  const { getPointsForEvent } = useScoringRules();
+  const getPointsForEvent = (subcategory: string) => {
+    const rule = scoringRules.find(r => r.category === 'weekly_events' && r.subcategory === subcategory && r.is_active);
+    return rule?.points || 0;
+  };
   
   // Check if POV ceremony is complete (required before AI Arena)
   const povCompleted = eventForm.povWinner && eventForm.povWinner !== 'no-winner';
@@ -96,10 +101,15 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
           <CardContent className="space-y-4">
             <div>
               <Label className="font-semibold">BB Arena Winner</Label>
-              <Select 
-                value={eventForm.aiArenaWinner || ''} 
-                onValueChange={handleAIArenaWinner}
+              <PointsTooltip 
+                scoringRules={scoringRules} 
+                category="weekly_events" 
+                subcategory="bb_arena_winner"
               >
+                <Select 
+                  value={eventForm.aiArenaWinner || ''} 
+                  onValueChange={handleAIArenaWinner}
+                >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select BB Arena winner" />
                 </SelectTrigger>
@@ -125,7 +135,8 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
                     </SelectItem>
                   )}
                 </SelectContent>
-              </Select>
+                </Select>
+              </PointsTooltip>
               {currentNominees.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Set nominees first to select BB Arena winner

@@ -3,19 +3,22 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
 import { usePool } from '@/contexts/PoolContext';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
+import { PointsTooltip } from '@/components/ui/points-tooltip';
 
 interface CompetitionWinnersProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
+  scoringRules?: DetailedScoringRule[];
 }
 
 export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
   eventForm,
   setEventForm,
+  scoringRules = [],
 }) => {
   const { activePool } = usePool();
   const { activeContestants } = useActiveContestants(activePool?.id);
@@ -26,9 +29,14 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
         <BigBrotherIcon type="hoh" />
         Head of Household Winner
       </Label>
-      <Select value={eventForm.hohWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, hohWinner: value }))}>
-        <SelectTrigger className="mt-1">
-          <SelectValue placeholder="Select HOH winner" />
+      <PointsTooltip 
+        scoringRules={scoringRules} 
+        category="competitions" 
+        subcategory="hoh_winner"
+      >
+        <Select value={eventForm.hohWinner} onValueChange={(value) => setEventForm(prev => ({ ...prev, hohWinner: value }))}>
+          <SelectTrigger className="mt-1">
+            <SelectValue placeholder="Select HOH winner" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="no-winner">No winner</SelectItem>
@@ -43,7 +51,8 @@ export const CompetitionWinners: React.FC<CompetitionWinnersProps> = ({
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
+        </Select>
+      </PointsTooltip>
     </div>
   );
 };

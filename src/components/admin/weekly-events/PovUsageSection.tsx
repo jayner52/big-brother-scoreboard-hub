@@ -3,18 +3,21 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
 import { usePool } from '@/contexts/PoolContext';
+import { PointsTooltip } from '@/components/ui/points-tooltip';
 
 interface PovUsageSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
+  scoringRules?: DetailedScoringRule[];
 }
 
 export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
   eventForm,
   setEventForm,
+  scoringRules = [],
 }) => {
   const { activePool } = usePool();
   const { activeContestants } = useActiveContestants(activePool?.id);
@@ -29,12 +32,16 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
           <div>
             <Label className="font-semibold flex items-center gap-2">
               POV Used On
-              <Badge variant="secondary">+1 pt (saved by veto)</Badge>
             </Label>
-            <Select 
-              value={eventForm.povUsedOn || ''} 
-              onValueChange={(value) => setEventForm(prev => ({ ...prev, povUsedOn: value }))}
+            <PointsTooltip 
+              scoringRules={scoringRules} 
+              category="weekly_events" 
+              subcategory="pov_used_on"
             >
+              <Select 
+                value={eventForm.povUsedOn || ''} 
+                onValueChange={(value) => setEventForm(prev => ({ ...prev, povUsedOn: value }))}
+              >
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Who was saved by POV?" />
               </SelectTrigger>
@@ -47,15 +54,21 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
                     </SelectItem>
                   ))}
               </SelectContent>
-            </Select>
+              </Select>
+            </PointsTooltip>
           </div>
 
           <div>
             <Label className="font-semibold">Replacement Houseguest</Label>
-            <Select 
-              value={eventForm.replacementNominee || ''} 
-              onValueChange={(value) => setEventForm(prev => ({ ...prev, replacementNominee: value }))}
+            <PointsTooltip 
+              scoringRules={scoringRules} 
+              category="weekly_events" 
+              subcategory="replacement_nominee"
             >
+              <Select 
+                value={eventForm.replacementNominee || ''} 
+                onValueChange={(value) => setEventForm(prev => ({ ...prev, replacementNominee: value }))}
+              >
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select replacement houseguest" />
               </SelectTrigger>
@@ -78,7 +91,8 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
                     </SelectItem>
                   ))}
               </SelectContent>
-            </Select>
+              </Select>
+            </PointsTooltip>
             <p className="text-xs text-muted-foreground mt-1">
               Cannot be HOH winner, POV winner, or person saved by POV
             </p>

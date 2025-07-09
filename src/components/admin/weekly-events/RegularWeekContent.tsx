@@ -10,6 +10,7 @@ import { SecondEvictionSection } from './SecondEvictionSection';
 import { ThirdEvictionSection } from './ThirdEvictionSection';
 import { AIArenaSection } from './AIArenaSection';
 import { StepByStepFlow } from './StepByStepFlow';
+import { SurvivalPointsSection } from './SurvivalPointsSection';
 
 interface RegularWeekContentProps {
   eventForm: WeeklyEventForm;
@@ -46,6 +47,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
           <CompetitionWinners
             eventForm={eventForm}
             setEventForm={setEventForm}
+            scoringRules={scoringRules}
           />
         </div>
 
@@ -59,6 +61,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
             <NomineesSection
               eventForm={eventForm}
               setEventForm={setEventForm}
+              scoringRules={scoringRules}
             />
 
             <PovWinnerSection
@@ -69,6 +72,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
             <PovUsageSection
               eventForm={eventForm}
               setEventForm={setEventForm}
+              scoringRules={scoringRules}
             />
           </div>
         </div>
@@ -83,6 +87,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
             eventForm={eventForm}
             setEventForm={setEventForm}
             activeContestants={activeContestants}
+            scoringRules={scoringRules}
           />
         </div>
 
@@ -98,6 +103,15 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
             evictionLabel={eventForm.isDoubleEviction ? "First Evicted Houseguest" : "Evicted Houseguest"}
           />
         </div>
+
+        {/* Survival Points - Emerald Theme */}
+        <SurvivalPointsSection
+          eventForm={eventForm}
+          contestants={contestants}
+          evictedThisWeek={[eventForm.evicted].filter(Boolean)}
+          allEvictedUpToThisWeek={activeContestants.filter(c => !c.isActive).map(c => c.name)}
+          scoringRules={scoringRules}
+        />
       </div>
       </div>
 

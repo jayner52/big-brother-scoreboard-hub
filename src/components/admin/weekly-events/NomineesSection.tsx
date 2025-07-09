@@ -4,19 +4,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Minus } from 'lucide-react';
-import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
 import { usePool } from '@/contexts/PoolContext';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
+import { PointsTooltip } from '@/components/ui/points-tooltip';
 
 interface NomineesSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
+  scoringRules?: DetailedScoringRule[];
 }
 
 export const NomineesSection: React.FC<NomineesSectionProps> = ({
   eventForm,
   setEventForm,
+  scoringRules = [],
 }) => {
   const { activePool } = usePool();
   const { activeContestants } = useActiveContestants(activePool?.id);
@@ -97,15 +100,20 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
       </div>
       <div className="grid grid-cols-2 gap-2">
         {eventForm.nominees.map((nominee, index) => (
-            <Select 
+          <PointsTooltip 
             key={index}
-            value={nominee || 'no-nominee'} 
-            onValueChange={(value) => updateNominee(index, value)}
-            disabled={!hohSelected}
+            scoringRules={scoringRules} 
+            category="weekly_events" 
+            subcategory="nominee"
           >
-            <SelectTrigger>
-              <SelectValue placeholder={`Houseguest ${index + 1}`} />
-            </SelectTrigger>
+            <Select 
+              value={nominee || 'no-nominee'} 
+              onValueChange={(value) => updateNominee(index, value)}
+              disabled={!hohSelected}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={`Houseguest ${index + 1}`} />
+              </SelectTrigger>
             <SelectContent>
               <SelectItem value="no-nominee">No houseguest</SelectItem>
             {eligibleNominees
@@ -120,7 +128,8 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
                   </SelectItem>
                 ))}
             </SelectContent>
-          </Select>
+            </Select>
+          </PointsTooltip>
         ))}
       </div>
     </div>

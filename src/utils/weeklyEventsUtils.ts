@@ -41,15 +41,8 @@ export const getPointsPreview = (
     preview[contestant.name] = 0;
   });
   
-  // HOH points
-  if (eventForm.hohWinner && eventForm.hohWinner !== 'no-winner') {
-    preview[eventForm.hohWinner] = (preview[eventForm.hohWinner] || 0) + calculatePoints('hoh_winner', undefined, scoringRules);
-  }
-  
-  // POV points
-  if (eventForm.povWinner && eventForm.povWinner !== 'no-winner') {
-    preview[eventForm.povWinner] = (preview[eventForm.povWinner] || 0) + calculatePoints('pov_winner', undefined, scoringRules);
-  }
+  // HOH and POV points are handled by the 'competitions' category scoring rules
+  // No need to duplicate them here since they're calculated separately
   
   // POV used on someone points (from scoring rules)
   if (eventForm.povUsed && eventForm.povUsedOn) {
@@ -83,12 +76,8 @@ export const getPointsPreview = (
     preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('survival', undefined, scoringRules);
   });
   
-  // Jury phase points (dynamic scoring from rules)
-  if (eventForm.isJuryPhase) {
-    survivingContestants.forEach(contestant => {
-      preview[contestant.name] = (preview[contestant.name] || 0) + calculatePoints('jury_member', undefined, scoringRules);
-    });
-  }
+  // Jury phase tracking is handled by separate 'jury' category scoring rules
+  // No weekly_events jury points needed
   
   // Special events points
   eventForm.specialEvents.forEach(se => {
@@ -99,15 +88,7 @@ export const getPointsPreview = (
   
   // Double eviction second round points
   if (eventForm.isDoubleEviction) {
-    // Second HOH points
-    if (eventForm.secondHohWinner && eventForm.secondHohWinner !== 'no-winner') {
-      preview[eventForm.secondHohWinner] = (preview[eventForm.secondHohWinner] || 0) + calculatePoints('hoh_winner', undefined, scoringRules);
-    }
-    
-    // Second POV points
-    if (eventForm.secondPovWinner && eventForm.secondPovWinner !== 'no-winner') {
-      preview[eventForm.secondPovWinner] = (preview[eventForm.secondPovWinner] || 0) + calculatePoints('pov_winner', undefined, scoringRules);
-    }
+    // Second HOH and POV points are handled by 'competitions' category scoring rules
     
     // Second POV used on someone
     if (eventForm.secondPovUsed && eventForm.secondPovUsedOn) {

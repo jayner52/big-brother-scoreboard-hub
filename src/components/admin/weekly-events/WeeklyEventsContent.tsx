@@ -4,6 +4,7 @@ import { FinalWeekSection } from './FinalWeekSection';
 import { RegularWeekContent } from './RegularWeekContent';
 import { PointsPreview } from './PointsPreview';
 import { SeasonCompletionSection } from './SeasonCompletionSection';
+import { TriggerRecalculation } from './TriggerRecalculation';
 
 interface WeeklyEventsContentProps {
   eventForm: WeeklyEventForm;
@@ -26,6 +27,9 @@ export const WeeklyEventsContent: React.FC<WeeklyEventsContentProps> = ({
 }) => {
   return (
     <>
+      {/* Show recalculation trigger */}
+      <TriggerRecalculation />
+      
       {/* Final Week Section (replaces regular week content) */}
       {eventForm.isFinalWeek ? (
         <FinalWeekSection

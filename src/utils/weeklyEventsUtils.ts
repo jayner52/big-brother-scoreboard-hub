@@ -41,8 +41,15 @@ export const getPointsPreview = (
     preview[contestant.name] = 0;
   });
   
-  // HOH and POV points are handled by the 'competitions' category scoring rules
-  // No need to duplicate them here since they're calculated separately
+  // HOH Winner points
+  if (eventForm.hohWinner) {
+    preview[eventForm.hohWinner] = (preview[eventForm.hohWinner] || 0) + calculatePoints('hoh_winner', undefined, scoringRules);
+  }
+  
+  // POV Winner points
+  if (eventForm.povWinner) {
+    preview[eventForm.povWinner] = (preview[eventForm.povWinner] || 0) + calculatePoints('pov_winner', undefined, scoringRules);
+  }
   
   // POV used on someone points (from scoring rules)
   if (eventForm.povUsed && eventForm.povUsedOn) {
@@ -88,7 +95,15 @@ export const getPointsPreview = (
   
   // Double eviction second round points
   if (eventForm.isDoubleEviction) {
-    // Second HOH and POV points are handled by 'competitions' category scoring rules
+    // Second HOH Winner points
+    if (eventForm.secondHohWinner) {
+      preview[eventForm.secondHohWinner] = (preview[eventForm.secondHohWinner] || 0) + calculatePoints('hoh_winner', undefined, scoringRules);
+    }
+    
+    // Second POV Winner points
+    if (eventForm.secondPovWinner) {
+      preview[eventForm.secondPovWinner] = (preview[eventForm.secondPovWinner] || 0) + calculatePoints('pov_winner', undefined, scoringRules);
+    }
     
     // Second POV used on someone
     if (eventForm.secondPovUsed && eventForm.secondPovUsedOn) {
@@ -103,6 +118,19 @@ export const getPointsPreview = (
     // Second replacement nominee points
     if (eventForm.secondReplacementNominee) {
       preview[eventForm.secondReplacementNominee] = (preview[eventForm.secondReplacementNominee] || 0) + calculatePoints('replacement_nominee', undefined, scoringRules);
+    }
+  }
+  
+  // Triple eviction third round points
+  if (eventForm.isTripleEviction) {
+    // Third HOH Winner points
+    if (eventForm.thirdHohWinner) {
+      preview[eventForm.thirdHohWinner] = (preview[eventForm.thirdHohWinner] || 0) + calculatePoints('hoh_winner', undefined, scoringRules);
+    }
+    
+    // Third POV Winner points
+    if (eventForm.thirdPovWinner) {
+      preview[eventForm.thirdPovWinner] = (preview[eventForm.thirdPovWinner] || 0) + calculatePoints('pov_winner', undefined, scoringRules);
     }
   }
   

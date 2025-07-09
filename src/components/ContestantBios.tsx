@@ -9,12 +9,14 @@ import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
 import { useEvictionWeeks } from '@/hooks/useEvictionWeeks';
 import { ContestantProfileModal } from '@/components/admin/contestants/ContestantProfileModal';
 import { useActivePool } from '@/hooks/useActivePool';
+import { ContestantStatusProvider } from '@/contexts/ContestantStatusContext';
+import { getContestantStatusStyling, getContestantStatusBadge } from '@/utils/contestantStatusUtils';
 
 interface ContestantWithGroup extends ContestantWithBio {
   group_name?: string;
 }
 
-export const ContestantBios: React.FC = () => {
+const ContestantBiosContent: React.FC = () => {
   const [contestants, setContestants] = useState<ContestantWithGroup[]>([]);
   const [selectedContestant, setSelectedContestant] = useState<ContestantWithGroup | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -168,7 +170,7 @@ export const ContestantBios: React.FC = () => {
                   )}
                 </div>
               <div className="absolute top-2 right-2 flex flex-col gap-1">
-                <Badge variant={contestant.isActive ? "default" : "destructive"}>
+                <Badge variant={getContestantStatusBadge(contestant.isActive).variant}>
                   {contestant.isActive 
                     ? 'Active' 
                     : evictionWeeks[contestant.name] 
@@ -202,7 +204,9 @@ export const ContestantBios: React.FC = () => {
             </div>
             
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">{contestant.name}</CardTitle>
+              <CardTitle className={`text-lg ${getContestantStatusStyling(contestant.isActive)}`}>
+                {!contestant.isActive ? `Evicted: ${contestant.name}` : contestant.name}
+              </CardTitle>
               {contestant.bio && (
                 <CardDescription className="text-xs line-clamp-2">
                   {contestant.bio}
@@ -242,5 +246,13 @@ export const ContestantBios: React.FC = () => {
         onClose={() => setShowProfileModal(false)}
       />
     </div>
+  );
+};
+
+export const ContestantBios: React.FC = () => {
+  return (
+    <ContestantStatusProvider>
+      <ContestantBiosContent />
+    </ContestantStatusProvider>
   );
 };

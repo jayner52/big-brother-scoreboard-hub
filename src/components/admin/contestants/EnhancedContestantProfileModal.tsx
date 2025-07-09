@@ -14,6 +14,7 @@ import { User, Camera, Info, Target, Trophy } from 'lucide-react';
 import { ContestantWithBio } from '@/types/admin';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getContestantStatusBadge } from '@/utils/contestantStatusUtils';
 
 interface EnhancedContestantProfileModalProps {
   contestant: ContestantWithBio | null;
@@ -116,8 +117,8 @@ export const EnhancedContestantProfileModal: React.FC<EnhancedContestantProfileM
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Status:</span>
-                    <Badge variant={contestant.isActive ? "default" : "destructive"}>
-                      {contestant.isActive ? 'Active' : 'Inactive'}
+                    <Badge variant={getContestantStatusBadge(contestant.isActive).variant}>
+                      {getContestantStatusBadge(contestant.isActive).text}
                     </Badge>
                   </div>
                 </CardContent>

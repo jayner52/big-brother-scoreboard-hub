@@ -80,8 +80,10 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
             <SelectContent>
               {availableEvents.map(eventRule => {
                 const emoji = getScoringRuleEmoji(eventRule.category, eventRule.subcategory, eventRule.emoji);
+                // Use unique ID for custom permanent events, subcategory for others
+                const itemValue = eventRule.subcategory === 'custom_permanent' ? eventRule.id : eventRule.subcategory;
                 return (
-                  <SelectItem key={eventRule.subcategory || eventRule.id} value={eventRule.subcategory || eventRule.id}>
+                  <SelectItem key={eventRule.id || eventRule.subcategory} value={itemValue}>
                     <span className="flex items-center gap-2">
                       <span className="text-sm">{emoji}</span>
                       <span>{eventRule.description}</span>

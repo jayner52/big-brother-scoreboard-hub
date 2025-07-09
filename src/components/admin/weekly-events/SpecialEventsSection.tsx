@@ -248,7 +248,10 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     if (event.eventType === 'custom_event' && event.customDescription) {
       return `${event.customEmoji} ${event.customDescription}`;
     }
-    const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType || rule.id === event.eventType);
+    // Match by ID first (for custom permanent events), then by subcategory
+    const eventRule = availableEvents.find(rule => 
+      rule.id === event.eventType || rule.subcategory === event.eventType
+    );
     if (eventRule) {
       // For custom permanent rules, show emoji + description
       if (eventRule.subcategory === 'custom_permanent' && eventRule.emoji) {
@@ -266,7 +269,10 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     if (event.customPoints !== undefined) {
       return event.customPoints;
     }
-    const eventRule = availableEvents.find(rule => rule.subcategory === event.eventType || rule.id === event.eventType);
+    // Match by ID first (for custom permanent events), then by subcategory
+    const eventRule = availableEvents.find(rule => 
+      rule.id === event.eventType || rule.subcategory === event.eventType
+    );
     return eventRule?.points || 1;
   };
 

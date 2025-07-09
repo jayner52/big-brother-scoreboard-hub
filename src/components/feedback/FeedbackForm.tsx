@@ -10,8 +10,6 @@ import {
 import { FeedbackFormFields } from './FeedbackFormFields';
 import { FeedbackFormActions } from './FeedbackFormActions';
 import { useFeedbackSubmit } from '@/hooks/useFeedbackSubmit';
-import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { getFormTitle, getFormDescription } from './feedbackFormConfig';
 
 interface FeedbackFormProps {
@@ -31,34 +29,31 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ type, onClose }) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await submitFeedback(
-      type,
-      title,
-      description,
-      bugLocation,
-      priority,
-      userName,
-      userEmail,
-      onClose
-    );
+    console.log('Feedback form submission started:', { type, title, description, bugLocation, priority, userName, userEmail });
+    
+    try {
+      await submitFeedback(
+        type,
+        title,
+        description,
+        bugLocation,
+        priority,
+        userName,
+        userEmail,
+        onClose
+      );
+      console.log('Feedback form submission completed successfully');
+    } catch (error) {
+      console.error('Feedback form submission failed:', error);
+    }
   };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <div>
-            <DialogTitle>{getFormTitle(type)}</DialogTitle>
-            <DialogDescription>{getFormDescription(type)}</DialogDescription>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <DialogHeader>
+          <DialogTitle>{getFormTitle(type)}</DialogTitle>
+          <DialogDescription>{getFormDescription(type)}</DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

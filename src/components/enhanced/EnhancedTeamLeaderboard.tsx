@@ -15,8 +15,7 @@ export const EnhancedTeamLeaderboard: React.FC = () => {
     selectedWeek,
     completedWeeks,
     loading,
-    handleWeekChange,
-    contestants
+    handleWeekChange
   } = useLeaderboardData();
   
   const [viewMode, setViewMode] = useState<'traditional' | 'weekByWeek'>('traditional');
@@ -115,7 +114,6 @@ export const EnhancedTeamLeaderboard: React.FC = () => {
           displayData={displayData}
           showHistoricalColumns={showHistoricalColumns}
           selectedWeek={selectedWeek}
-          contestants={contestants}
         />
       </CardContent>
     </Card>

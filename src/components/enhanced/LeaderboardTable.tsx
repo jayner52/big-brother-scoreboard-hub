@@ -5,14 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LeaderboardRow } from './LeaderboardRow';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { usePool } from '@/contexts/PoolContext';
 import { Info } from 'lucide-react';
 
 interface LeaderboardTableProps {
   displayData: any[];
   showHistoricalColumns: boolean;
   selectedWeek?: number | null;
-  contestants?: Array<{ name: string; is_active: boolean }>;
 }
 
 // Mobile card component for individual entries
@@ -21,9 +19,7 @@ const MobileLeaderboardCard: React.FC<{
   index: number;
   showHistoricalColumns: boolean;
   selectedWeek?: number | null;
-  contestants?: Array<{ name: string; is_active: boolean }>;
-  activePool?: any;
-}> = ({ entry, index, showHistoricalColumns, selectedWeek, contestants = [], activePool }) => {
+}> = ({ entry, index, showHistoricalColumns, selectedWeek }) => {
   const rank = index + 1;
   
   return (
@@ -45,18 +41,12 @@ const MobileLeaderboardCard: React.FC<{
             <div className="text-2xl font-bold text-primary">
               {entry.total_points}
             </div>
-            {activePool?.has_buy_in ? (
-              <Badge 
-                variant={entry.payment_confirmed ? 'default' : 'secondary'}
-                className="text-xs"
-              >
-                {entry.payment_confirmed ? '✓ Paid' : 'Unpaid'}
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-xs">
-                N/A
-              </Badge>
-            )}
+            <Badge 
+              variant={entry.payment_confirmed ? 'default' : 'secondary'}
+              className="text-xs"
+            >
+              {entry.payment_confirmed ? '✓ Paid' : 'Unpaid'}
+            </Badge>
           </div>
         </div>
         
@@ -88,11 +78,7 @@ const MobileLeaderboardCard: React.FC<{
             entry.player_3,
             entry.player_4,
             entry.player_5
-          ].filter(Boolean).map((playerName: string) => {
-            const contestant = contestants.find(c => c.name === playerName);
-            const isEvicted = !contestant?.is_active;
-            return isEvicted ? `${playerName} (evicted)` : playerName;
-          }).join(', ')}
+          ].filter(Boolean).join(', ')}
         </div>
       </CardContent>
     </Card>
@@ -102,11 +88,9 @@ const MobileLeaderboardCard: React.FC<{
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   displayData,
   showHistoricalColumns,
-  selectedWeek,
-  contestants = []
+  selectedWeek
 }) => {
   const isMobile = useIsMobile();
-  const { activePool } = usePool();
 
   if (isMobile) {
     return (
@@ -118,8 +102,6 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             index={index}
             showHistoricalColumns={showHistoricalColumns}
             selectedWeek={selectedWeek}
-            contestants={contestants}
-            activePool={activePool}
           />
         ))}
       </div>
@@ -168,7 +150,6 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
               index={index}
               showHistoricalColumns={showHistoricalColumns}
               selectedWeek={selectedWeek}
-              contestants={contestants}
             />
           ))}
         </TableBody>

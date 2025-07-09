@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 type SpecialEventFormData = {
   id?: string;
   contestant: string;
-  eventType: string | undefined;
+  eventType: string;
   description?: string;
   customPoints?: number;
   customDescription?: string;
@@ -54,7 +54,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     const newEvent: SpecialEventFormData = {
       id: Date.now().toString(),
       contestant: '',
-      eventType: undefined,
+      eventType: '',
       customPoints: undefined,
       customDescription: '',
       customEmoji: '✨'
@@ -206,7 +206,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   };
 
   // Get available contestants for each event type
-  const getAvailableContestants = (eventType: string | undefined) => {
+  const getAvailableContestants = (eventType: string) => {
     console.log('🔍 getAvailableContestants called with:', { eventType });
     
     if (!eventType || eventType === '') {

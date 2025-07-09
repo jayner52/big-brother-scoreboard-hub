@@ -11,7 +11,7 @@ import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
 type SpecialEventFormData = {
   id?: string;
   contestant: string;
-  eventType: string | undefined;
+  eventType: string;
   description?: string;
   customPoints?: number;
   customDescription?: string;
@@ -65,7 +65,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
         <div>
           <Label>Event Type</Label>
           <Select
-            value={event.eventType || undefined}
+            value={event.eventType || ''}
             onValueChange={(value) => {
               console.log('🔍 Select onValueChange:', { 
                 selectedValue: value, 
@@ -130,13 +130,13 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
               console.log('🔍 Contestant selected:', { value, eventType: event.eventType, index });
               updateSpecialEvent(index, 'contestant', value);
             }}
-            disabled={!event.eventType}
+            disabled={!event.eventType || event.eventType === ''}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select contestant" />
             </SelectTrigger>
             <SelectContent>
-              {event.eventType && getAvailableContestants(event.eventType).map(contestant => (
+              {event.eventType && event.eventType !== '' && getAvailableContestants(event.eventType).map(contestant => (
                 <SelectItem key={contestant.name} value={contestant.name}>
                   <span className="flex items-center justify-between w-full">
                     <span>{contestant.name}</span>

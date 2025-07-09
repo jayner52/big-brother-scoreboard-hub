@@ -46,7 +46,6 @@ export const FeedbackFormFields: React.FC<FeedbackFormFieldsProps> = ({
           placeholder={`Brief ${type} title...`}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          required
         />
       </div>
 
@@ -80,7 +79,6 @@ export const FeedbackFormFields: React.FC<FeedbackFormFieldsProps> = ({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
-          required
         />
       </div>
 

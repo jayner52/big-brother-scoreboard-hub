@@ -8,6 +8,7 @@ interface SpecialEventsBadgesProps {
     event_type: string;
     description?: string;
     points_awarded?: number;
+    emoji?: string;
   }>;
 }
 
@@ -24,7 +25,9 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
     <TooltipProvider>
       <div className="flex flex-wrap gap-1">
         {Object.entries(eventCounts).map(([eventType, count]) => {
-          const emoji = getSpecialEventIcon(eventType);
+          // Prioritize custom emoji from database over default icons
+          const eventWithEmoji = events.find(e => e.event_type === eventType && e.emoji);
+          const emoji = eventWithEmoji?.emoji || getSpecialEventIcon(eventType);
           const tooltip = getEventTooltip(eventType);
           
           return (

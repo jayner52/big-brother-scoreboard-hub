@@ -68,7 +68,8 @@ export const CustomScoringPanel: React.FC = () => {
         .insert({
           category: 'special_events',
           subcategory: 'custom_permanent',
-          description: `${eventData.emoji} ${eventData.description}`,
+          description: eventData.description,
+          emoji: eventData.emoji,
           points: eventData.points,
           is_active: true
         });

@@ -298,11 +298,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Custom Events Library */}
-        <CustomEventsLibrary 
-          customEvents={customScoringRules}
-          onDeleteEvent={deleteCustomScoringRule}
-        />
+        {/* Custom Events Library - Hidden in Weekly Events Logging per LovableConfig */}
 
         {/* Special Events for this week */}
         {eventForm.specialEvents.map((event, index) => (

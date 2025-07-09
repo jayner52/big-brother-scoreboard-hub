@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useWeeklyEvents } from '@/hooks/useWeeklyEvents';
 import { useWeeklyEventsSave } from '@/hooks/useWeeklyEventsSave';
@@ -25,6 +25,8 @@ export const WeeklyEventsPanel: React.FC = () => {
     handleSubmitWeek,
     loadData
   } = useWeeklyEvents();
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { activePool } = usePool();
   const { isAutoSaving, saveCurrentWeekDraft } = useWeeklyEventsSave(eventForm || {
@@ -279,10 +281,18 @@ export const WeeklyEventsPanel: React.FC = () => {
             onMarkComplete={handleMarkComplete}
             onClearWeek={() => handleClearWeek(eventForm.week)}
             onSaveProgress={saveCurrentWeekDraft}
-            onSubmitWeek={handleSubmitWeek}
+            onSubmitWeek={async () => {
+              setIsSubmitting(true);
+              try {
+                await handleSubmitWeek();
+              } finally {
+                setIsSubmitting(false);
+              }
+            }}
             isAutoSaving={isAutoSaving}
             isFinalWeek={eventForm.isFinalWeek}
             isDraft={!isWeekComplete}
+            isSubmitting={isSubmitting}
           />
 
           {/* Special Week Toggles */}

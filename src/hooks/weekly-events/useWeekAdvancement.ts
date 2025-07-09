@@ -19,52 +19,32 @@ export const useWeekAdvancement = () => {
       
       console.log(`Advancing from Week ${completedWeek} to Week ${nextWeek}`);
       
-      // Try to update current game week with retry
-      let retryCount = 0;
-      const maxRetries = 3;
-      let weekUpdateError = null;
+      // Update current game week with a single attempt
+      const { error } = await supabase.rpc('update_current_game_week', { 
+        new_week_number: nextWeek 
+      });
       
-      while (retryCount < maxRetries) {
-        const { error } = await supabase.rpc('update_current_game_week', { 
-          new_week_number: nextWeek 
-        });
-        
-        if (!error) {
-          weekUpdateError = null;
-          break;
-        }
-        
-        weekUpdateError = error;
-        retryCount++;
-        console.warn(`Week advancement attempt ${retryCount} failed:`, error);
-        
-        if (retryCount < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-        }
-      }
-      
-      if (weekUpdateError) {
-        console.error('Failed to update current game week after retries:', weekUpdateError);
+      if (error) {
+        console.error('Failed to update current game week:', error);
         toast({
           title: "Week Advancement Failed",
-          description: `Week ${completedWeek} submitted successfully, but failed to advance to Week ${nextWeek}. Please refresh and check current week.`,
+          description: `Week ${completedWeek} submitted successfully, but failed to advance to Week ${nextWeek}. The week data was saved correctly.`,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Week Completed!",
-          description: `Week ${completedWeek} completed! Advanced to Week ${nextWeek}`,
-        });
-        console.log(`✅ Successfully advanced: Week ${completedWeek} → Week ${nextWeek}`);
+        return false;
       }
+      
+      console.log(`✅ Successfully advanced: Week ${completedWeek} → Week ${nextWeek}`);
+      return true;
       
     } catch (error) {
       console.error('Unexpected error during week advancement:', error);
       toast({
         title: "Week Advancement Error",
-        description: `Week ${completedWeek} submitted but week advancement failed. Please refresh the page.`,
+        description: `Week ${completedWeek} submitted but week advancement failed. The week data was saved correctly.`,
         variant: "destructive",
       });
+      return false;
     }
   };
 

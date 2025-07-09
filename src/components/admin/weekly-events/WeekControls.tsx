@@ -17,6 +17,7 @@ interface WeekControlsProps {
   isAutoSaving: boolean;
   isFinalWeek?: boolean;
   isDraft?: boolean;
+  isSubmitting?: boolean;
 }
 
 export const WeekControls: React.FC<WeekControlsProps> = ({
@@ -28,7 +29,8 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
   onSubmitWeek,
   isAutoSaving,
   isFinalWeek = false,
-  isDraft = true
+  isDraft = true,
+  isSubmitting = false
 }) => {
   const isMobile = useIsMobile();
   return (
@@ -121,14 +123,8 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
           </AlertDialog>
           
           <Button 
-            onClick={() => {
-              onSubmitWeek();
-              if (isComplete) {
-                setTimeout(() => {
-                  window.location.reload();
-                }, 1000);
-              }
-            }} 
+            onClick={onSubmitWeek}
+            disabled={isSubmitting || isAutoSaving}
             className={`w-full sm:flex-1 shadow-md text-sm sm:text-base ${
               isFinalWeek && isDraft
                 ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white animate-pulse'
@@ -136,7 +132,13 @@ export const WeekControls: React.FC<WeekControlsProps> = ({
             }`}
             size={isMobile ? "default" : "lg"}
           >
-            {isFinalWeek && isDraft ? (
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-1 sm:mr-2"></div>
+                <span className="hidden sm:inline">Processing...</span>
+                <span className="sm:hidden">Processing...</span>
+              </>
+            ) : isFinalWeek && isDraft ? (
               <>
                 <Sparkles className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">🏆 SUBMIT FINAL WEEK RESULTS</span>

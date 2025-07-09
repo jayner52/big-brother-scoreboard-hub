@@ -160,7 +160,14 @@ export const useWeeklyEventsSubmission = (
         });
 
         // Only advance week for non-final weeks
-        await advanceWeek(eventForm.week, poolId);
+        const advancementSuccess = await advanceWeek(eventForm.week, poolId);
+        
+        if (advancementSuccess) {
+          toast({
+            title: "Week Completed!",
+            description: `Week ${eventForm.week} completed! Advanced to Week ${eventForm.week + 1}`,
+          });
+        }
       }
 
       // Reload data and trigger automatic recalculation

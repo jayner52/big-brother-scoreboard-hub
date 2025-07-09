@@ -132,8 +132,9 @@ export const WeekByWeekOverview: React.FC = () => {
         created_at: new Date(rule.created_at)
       }));
 
-      // Load ALL special events for this pool
+      // Load ALL special events for this pool with proper deduplication
       const allSpecialEvents: SpecialEvent[] = [];
+      const eventKeys = new Set<string>(); // Track unique events with week_number:contestant_name:event_type
 
       // 1. Load completed special events from special_events table
       const { data: dbSpecialEvents, error: dbSpecialError } = await supabase
@@ -151,16 +152,22 @@ export const WeekByWeekOverview: React.FC = () => {
 
       if (dbSpecialError) throw dbSpecialError;
 
-      // Add database special events
+      // Add database special events with deduplication
       if (dbSpecialEvents) {
         dbSpecialEvents.forEach(event => {
-          allSpecialEvents.push({
-            week_number: event.week_number,
-            contestant_name: (event.contestants as any)?.name || '',
-            event_type: event.event_type,
-            description: event.description || '',
-            points_awarded: event.points_awarded // Keep original value (including 0) without forcing it to 0
-          });
+          const contestantName = (event.contestants as any)?.name || '';
+          const eventKey = `${event.week_number}:${contestantName}:${event.event_type}`;
+          
+          if (!eventKeys.has(eventKey)) {
+            eventKeys.add(eventKey);
+            allSpecialEvents.push({
+              week_number: event.week_number,
+              contestant_name: contestantName,
+              event_type: event.event_type,
+              description: event.description || '',
+              points_awarded: event.points_awarded || 0
+            });
+          }
         });
       }
 
@@ -175,46 +182,55 @@ export const WeekByWeekOverview: React.FC = () => {
       // Process each week's results
       if (allWeeklyResults) {
         allWeeklyResults.forEach(week => {
-          // Add BB Arena winner as special event
+          // Add BB Arena winner as special event with deduplication
           if (week.ai_arena_winner) {
-            const bbArenaRule = rawScoringRules?.find(r => r.subcategory === 'bb_arena_winner');
-            allSpecialEvents.push({
-              week_number: week.week_number,
-              contestant_name: week.ai_arena_winner,
-              event_type: 'bb_arena_winner',
-              description: 'BB Arena Winner',
-              points_awarded: bbArenaRule?.points || 0
-            });
+            const eventKey = `${week.week_number}:${week.ai_arena_winner}:bb_arena_winner`;
+            if (!eventKeys.has(eventKey)) {
+              eventKeys.add(eventKey);
+              const bbArenaRule = rawScoringRules?.find(r => r.subcategory === 'bb_arena_winner');
+              allSpecialEvents.push({
+                week_number: week.week_number,
+                contestant_name: week.ai_arena_winner,
+                event_type: 'bb_arena_winner',
+                description: 'BB Arena Winner',
+                points_awarded: bbArenaRule?.points || 0
+              });
+            }
           }
 
-          // Parse and add draft special events
+          // Parse and add draft special events with deduplication
           if (week.draft_special_events) {
             try {
               const draftEvents = JSON.parse(week.draft_special_events);
               if (Array.isArray(draftEvents)) {
                 draftEvents.forEach((event: any) => {
                   if (event.contestant && event.eventType) {
-                    // Get points from scoring rules - check both ID and subcategory
-                    let eventPoints = event.customPoints;
-                    if (eventPoints === undefined || eventPoints === null) {
-                      // First try to find by ID (for new events)
-                      let rule = rawScoringRules?.find(r => r.id === event.eventType);
-                      // If not found, try subcategory (for legacy events)
-                      if (!rule) {
-                        rule = rawScoringRules?.find(r => r.subcategory === event.eventType);
+                    const eventKey = `${week.week_number}:${event.contestant}:${event.eventType}`;
+                    
+                    // Only add if we haven't seen this exact combination
+                    if (!eventKeys.has(eventKey)) {
+                      eventKeys.add(eventKey);
+                      
+                      // Get points from scoring rules - check both ID and subcategory
+                      let eventPoints = event.customPoints;
+                      if (eventPoints === undefined || eventPoints === null) {
+                        // First try to find by ID (for new events)
+                        let rule = rawScoringRules?.find(r => r.id === event.eventType);
+                        // If not found, try subcategory (for legacy events)
+                        if (!rule) {
+                          rule = rawScoringRules?.find(r => r.subcategory === event.eventType);
+                        }
+                        eventPoints = rule?.points || 0;
                       }
-                      eventPoints = rule?.points || 0;
+
+                      allSpecialEvents.push({
+                        week_number: week.week_number,
+                        contestant_name: event.contestant,
+                        event_type: event.eventType,
+                        description: event.eventType === 'custom_event' ? event.customDescription : event.description,
+                        points_awarded: eventPoints
+                      });
                     }
-
-                    console.log(`Draft event: ${event.eventType}, customPoints: ${event.customPoints}, resolved points: ${eventPoints}`);
-
-                    allSpecialEvents.push({
-                      week_number: week.week_number,
-                      contestant_name: event.contestant,
-                      event_type: event.eventType,
-                      description: event.eventType === 'custom_event' ? event.customDescription : event.description,
-                      points_awarded: eventPoints
-                    });
                   }
                 });
               }
@@ -225,7 +241,7 @@ export const WeekByWeekOverview: React.FC = () => {
         });
       }
 
-      // 3. Load BB Arena events from weekly_events
+      // 3. Load BB Arena events from weekly_events with deduplication
       const { data: bbArenaEvents, error: bbArenaError } = await supabase
         .from('weekly_events')
         .select(`
@@ -241,20 +257,26 @@ export const WeekByWeekOverview: React.FC = () => {
 
       if (bbArenaError) throw bbArenaError;
 
-      // Add BB Arena events
+      // Add BB Arena events with deduplication
       if (bbArenaEvents) {
         bbArenaEvents.forEach(event => {
-          allSpecialEvents.push({
-            week_number: event.week_number,
-            contestant_name: (event.contestants as any)?.name || '',
-            event_type: 'bb_arena_winner',
-            description: 'BB Arena Winner',
-            points_awarded: event.points_awarded || 0
-          });
+          const contestantName = (event.contestants as any)?.name || '';
+          const eventKey = `${event.week_number}:${contestantName}:bb_arena_winner`;
+          
+          if (!eventKeys.has(eventKey)) {
+            eventKeys.add(eventKey);
+            allSpecialEvents.push({
+              week_number: event.week_number,
+              contestant_name: contestantName,
+              event_type: 'bb_arena_winner',
+              description: 'BB Arena Winner',
+              points_awarded: event.points_awarded || 0
+            });
+          }
         });
       }
 
-      console.log('All special events loaded:', allSpecialEvents);
+      console.log('All special events loaded with deduplication:', allSpecialEvents);
       setSpecialEvents(allSpecialEvents);
 
       // Calculate scores by week using the same logic as Weekly Events Preview

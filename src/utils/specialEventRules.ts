@@ -78,6 +78,7 @@ export const deduplicateEvents = (events: SpecialEventData[]): SpecialEventData[
 
 /**
  * Validates special events against the rules
+ * This validation runs on the ORIGINAL events list to catch duplicates
  */
 export const validateSpecialEvents = (
   events: SpecialEventData[], 
@@ -171,11 +172,11 @@ export const processWeeklyEvents = (
   contestants: ContestantWithBio[],
   scoringRules: DetailedScoringRule[]
 ): WeeklyOverview => {
-  // First deduplicate
-  const uniqueEvents = deduplicateEvents(events);
-  
-  // Validate events
+  // CRITICAL FIX: Validate BEFORE deduplication to catch duplicates
   const validationErrors = validateSpecialEvents(events, contestants, scoringRules);
+  
+  // Then deduplicate for processing
+  const uniqueEvents = deduplicateEvents(events);
   
   // Process each event
   const evictedGuests: string[] = [];

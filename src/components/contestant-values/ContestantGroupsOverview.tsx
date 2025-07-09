@@ -32,19 +32,33 @@ export const ContestantGroupsOverview: React.FC<ContestantGroupsOverviewProps> =
                   {activeCount} of {groupContestants.length} still active
                 </p>
                 <div className="space-y-1">
-                  {groupContestants.map(contestant => {
-                    const isEvicted = !contestant.isActive;
-                    return (
+                  {/* Active contestants first */}
+                  {groupContestants
+                    .filter(contestant => contestant.isActive)
+                    .map(contestant => (
                       <div key={contestant.id} className="flex justify-between items-center">
-                        <span className={isEvicted ? 'text-red-600 opacity-70' : ''}>
+                        <span className="text-green-700 font-medium">
                           {contestant.name}
                         </span>
-                        <Badge variant={isEvicted ? "destructive" : "default"} className="text-xs">
-                          {isEvicted ? "Out" : "Active"}
+                        <Badge variant="default" className="text-xs">
+                          Active
                         </Badge>
                       </div>
-                    );
-                  })}
+                    ))}
+                  
+                  {/* Evicted contestants with enhanced styling */}
+                  {groupContestants
+                    .filter(contestant => !contestant.isActive)
+                    .map(contestant => (
+                      <div key={contestant.id} className="flex justify-between items-center">
+                        <span className="text-red-600 line-through opacity-75">
+                          {contestant.name} (Evicted)
+                        </span>
+                        <Badge variant="destructive" className="text-xs">
+                          Evicted
+                        </Badge>
+                      </div>
+                    ))}
                 </div>
               </div>
             );

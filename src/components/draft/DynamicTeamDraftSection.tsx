@@ -136,15 +136,33 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
                       : `Select from ${slot.group.group_name}`
                   } />
                   </SelectTrigger>
-                  <SelectContent className="z-50">
-                    {availableContestants.map(contestant => (
-                      <SelectItem 
-                        key={`${contestant.id}-${slot.playerKey}`}
-                        value={contestant.name}
-                      >
-                        {contestant.name}
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="z-50 bg-background">
+                    {/* Active contestants first */}
+                    {availableContestants
+                      .filter(contestant => contestant.isActive)
+                      .map(contestant => (
+                        <SelectItem 
+                          key={`${contestant.id}-${slot.playerKey}`}
+                          value={contestant.name}
+                        >
+                          {contestant.name}
+                        </SelectItem>
+                      ))}
+                    
+                    {/* Evicted contestants at bottom with styling */}
+                    {availableContestants
+                      .filter(contestant => !contestant.isActive)
+                      .map(contestant => (
+                        <SelectItem 
+                          key={`${contestant.id}-${slot.playerKey}-evicted`}
+                          value={contestant.name}
+                          className="text-red-600"
+                        >
+                          <span className="line-through">
+                            {contestant.name} (Evicted)
+                          </span>
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </CardContent>

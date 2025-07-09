@@ -15,80 +15,133 @@ export const populateSeason27GlobalDefaults = async (): Promise<{ success: boole
       .eq('season_number', 27)
       .limit(1);
     
-    if (checkError) throw checkError;
+    if (checkError) {
+      console.error('🏠 BB27: Error checking existing defaults:', checkError);
+      throw checkError;
+    }
     
     if (existingDefaults && existingDefaults.length > 0) {
       console.log('🏠 BB27: Global defaults already exist');
       return { success: true, count: 0, error: 'BB27 global defaults already exist' };
     }
+
+    console.log('🏠 BB27: No existing defaults found, proceeding with population...');
+    
+    // Ensure default groups exist FIRST - this is critical
+    console.log('🏠 BB27: Ensuring default groups exist...');
+    try {
+      await supabase.rpc('populate_bb27_global_defaults');
+      console.log('🏠 BB27: Default groups creation completed');
+    } catch (groupError) {
+      console.error('🏠 BB27: Error creating default groups:', groupError);
+      throw new Error(`Failed to create default groups: ${groupError.message}`);
+    }
+    
+    // Verify default groups exist with retry logic
+    let groups = null;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (!groups && retryCount < maxRetries) {
+      console.log(`🏠 BB27: Attempt ${retryCount + 1} to fetch default groups...`);
+      
+      const { data: groupsData, error: groupsError } = await supabase
+        .from('contestant_groups')
+        .select('id, group_name, sort_order')
+        .is('pool_id', null)
+        .order('sort_order', { ascending: true });
+      
+      if (groupsError) {
+        console.error('🏠 BB27: Error fetching groups:', groupsError);
+        if (retryCount === maxRetries - 1) throw groupsError;
+      } else {
+        groups = groupsData;
+        console.log('🏠 BB27: Found groups:', groups?.map(g => g.group_name) || 'none');
+      }
+      
+      retryCount++;
+      if (!groups && retryCount < maxRetries) {
+        console.log('🏠 BB27: Waiting 1 second before retry...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    
+    if (!groups || groups.length === 0) {
+      throw new Error('No default groups found after population and retries');
+    }
+    
+    console.log('🏠 BB27: Using groups:', groups.map(g => g.group_name));
     
     // Call our scraping function to get BB27 contestants
     console.log('🏠 BB27: Calling scraping function...');
     const { data: scrapingResult, error: scrapingError } = await supabase.functions.invoke('scrape-bb27-cast');
     
-    if (scrapingError) throw scrapingError;
+    if (scrapingError) {
+      console.error('🏠 BB27: Scraping function error:', scrapingError);
+      throw scrapingError;
+    }
     
-    if (!scrapingResult.success) {
-      throw new Error(scrapingResult.error || 'Failed to scrape BB27 cast');
+    if (!scrapingResult || !scrapingResult.success) {
+      console.error('🏠 BB27: Scraping failed:', scrapingResult);
+      throw new Error(scrapingResult?.error || 'Failed to scrape BB27 cast');
     }
     
     const contestants = scrapingResult.contestants || [];
     console.log('🏠 BB27: Scraped', contestants.length, 'contestants');
+    console.log('🏠 BB27: First contestant sample:', contestants[0]);
     
     if (contestants.length === 0) {
       throw new Error('No contestants found in scraping results');
     }
-    
-    // Ensure default groups exist
-    await supabase.rpc('populate_bb27_global_defaults');
-    
-    // Get default groups
-    const { data: groups, error: groupsError } = await supabase
-      .from('contestant_groups')
-      .select('id, group_name, sort_order')
-      .is('pool_id', null)
-      .order('sort_order', { ascending: true });
-    
-    if (groupsError) throw groupsError;
-    
-    if (!groups || groups.length === 0) {
-      throw new Error('No default groups found after population');
-    }
-    
-    console.log('🏠 BB27: Using groups:', groups.map(g => g.group_name));
     
     // Convert scraped contestants to database format and distribute across groups
     const contestantsToInsert = contestants.map((contestant: any, index: number) => {
       const groupIndex = index % groups.length;
       const assignedGroup = groups[groupIndex];
       
-      return {
+      // Special handling for Mystery Houseguest - start as inactive
+      const isActive = contestant.name !== 'Mystery Houseguest';
+      
+      const contestantData = {
         pool_id: null, // Global default
         group_id: assignedGroup.id,
         name: contestant.name,
-        age: contestant.age,
-        hometown: contestant.location,
-        occupation: contestant.occupation,
-        bio: contestant.bio,
+        age: contestant.age || 0,
+        hometown: contestant.location || 'Unknown',
+        occupation: contestant.occupation || 'Unknown',
+        bio: contestant.bio || `${contestant.name} is a contestant on Big Brother 27.`,
         photo_url: contestant.imageUrl || 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face',
-        is_active: true,
+        is_active: isActive,
         season_number: 27,
         sort_order: index + 1,
         ai_generated: false,
         data_source: 'bb27_fixed_cast'
       };
+      
+      console.log(`🏠 BB27: Preparing contestant ${index + 1}:`, {
+        name: contestantData.name,
+        group: assignedGroup.group_name,
+        active: isActive
+      });
+      
+      return contestantData;
     });
     
     console.log('🏠 BB27: Inserting', contestantsToInsert.length, 'global default contestants');
+    console.log('🏠 BB27: Sample data for first contestant:', contestantsToInsert[0]);
     
     const { data: insertedContestants, error: insertError } = await supabase
       .from('contestants')
       .insert(contestantsToInsert)
-      .select('id, name');
+      .select('id, name, season_number');
     
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error('🏠 BB27: Insertion error details:', insertError);
+      throw insertError;
+    }
     
     console.log('🏠 BB27: Successfully created', insertedContestants?.length || 0, 'global defaults');
+    console.log('🏠 BB27: Inserted contestants:', insertedContestants?.map(c => `${c.name} (S${c.season_number})`));
     
     return { 
       success: true, 
@@ -96,7 +149,8 @@ export const populateSeason27GlobalDefaults = async (): Promise<{ success: boole
     };
     
   } catch (error) {
-    console.error('🏠 BB27: Error populating global defaults:', error);
+    console.error('🏠 BB27: Critical error populating global defaults:', error);
+    console.error('🏠 BB27: Error stack:', error.stack);
     return { 
       success: false, 
       count: 0, 

@@ -43,27 +43,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
   getEventPoints,
   onShowCustomEventForm
 }) => {
-  // Calculate points based on event type and custom points
-  const calculateEventPoints = (eventData: SpecialEventFormData): number => {
-    // If custom points are explicitly set, use them
-    if (eventData.customPoints !== undefined && eventData.customPoints !== null) {
-      return eventData.customPoints;
-    }
-    
-    // For custom events, use customPoints or default to 1
-    if (eventData.eventType === 'custom_event') {
-      return eventData.customPoints || 1;
-    }
-    
-    // Find the scoring rule for this event type
-    const eventRule = availableEvents.find(rule => 
-      rule.subcategory === eventData.eventType || rule.id === eventData.eventType
-    );
-    
-    return eventRule?.points || 1;
-  };
-
-  const displayPoints = calculateEventPoints(event);
+  const displayPoints = getEventPoints(event);
 
   return (
     <div className="flex flex-col gap-3 p-4 border rounded-lg">

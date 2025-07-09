@@ -60,8 +60,9 @@ export const useWeeklyEvents = () => {
               const parsedEvents = JSON.parse(weekData.draft_special_events);
               console.log('Parsed draft special events:', parsedEvents);
               
-              // Map the saved format to the expected form format with proper customPoints preservation
-              draftSpecialEvents = parsedEvents.map((event: any) => ({
+              // Map the saved format to the expected form format with proper field preservation
+              draftSpecialEvents = parsedEvents.map((event: any, index: number) => ({
+                id: event.id || `draft-event-${index}`, // Preserve or generate stable ID
                 contestant: event.contestant || '',
                 eventType: event.eventType || event.event_type || '',
                 description: event.description || '',

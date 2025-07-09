@@ -9,6 +9,8 @@ import { ResultTile } from './weekly-overview/ResultTile';
 import { PointsEarnedSection } from './weekly-overview/PointsEarnedSection';
 import { DoubleEvictionDisplay } from './weekly-overview/DoubleEvictionDisplay';
 import { InstructionAccordion } from './InstructionAccordion';
+import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
+import { useScoringRules } from '@/hooks/useScoringRules';
 
 interface WeekSummary {
   week_number: number;
@@ -45,11 +47,47 @@ interface SpecialEvent {
 
 export const WeekByWeekOverview: React.FC = () => {
   const { activePool } = usePool();
+  const { scoringRules } = useScoringRules();
   const [weeklyResults, setWeeklyResults] = useState<WeekSummary[]>([]);
   const [contestantScores, setContestantScores] = useState<Record<number, ContestantScore[]>>({});
   const [specialEvents, setSpecialEvents] = useState<SpecialEvent[]>([]);
   const [contestants, setContestants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Helper function to get proper event details from scoring rules
+  const getEventDetails = (eventType: string, customDescription?: string) => {
+    // For custom events, use the custom description
+    if (eventType === 'custom_event' || eventType === 'custom') {
+      return {
+        name: customDescription || 'Custom Event',
+        emoji: '✨',
+        points: null // Will use the actual points from the event
+      };
+    }
+
+    // Find the scoring rule for this event type
+    const rule = scoringRules.find(r => 
+      r.id === eventType || 
+      r.subcategory === eventType || 
+      (r.category === 'special_events' && r.subcategory === eventType)
+    );
+
+    if (rule) {
+      const emoji = getScoringRuleEmoji(rule.category, rule.subcategory, rule.emoji);
+      return {
+        name: rule.description || rule.subcategory?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        emoji,
+        points: rule.points
+      };
+    }
+
+    // Fallback for unknown event types
+    return {
+      name: eventType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      emoji: '📝',
+      points: null
+    };
+  };
 
   useEffect(() => {
     loadWeekByWeekData();
@@ -397,22 +435,28 @@ export const WeekByWeekOverview: React.FC = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {specialEvents
                           ?.filter(event => event.week_number === week.week_number)
-                          .map((event, index) => (
-                            <div key={index} className="bg-white/80 p-2 rounded-md border border-purple-200/50 shadow-sm">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-purple-900 text-sm">{event.contestant_name}</span>
-                                <Badge 
-                                  variant={event.points_awarded > 0 ? "default" : event.points_awarded < 0 ? "destructive" : "secondary"} 
-                                  className="text-xs"
-                                >
-                                  {event.points_awarded > 0 ? '+' : ''}{event.points_awarded} pts
-                                </Badge>
+                          .map((event, index) => {
+                            const eventDetails = getEventDetails(event.event_type, event.description);
+                            const actualPoints = event.points_awarded !== undefined ? event.points_awarded : eventDetails.points;
+                            
+                            return (
+                              <div key={index} className="bg-white/80 p-2 rounded-md border border-purple-200/50 shadow-sm">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-medium text-purple-900 text-sm">{event.contestant_name}</span>
+                                  <Badge 
+                                    variant={actualPoints > 0 ? "default" : actualPoints < 0 ? "destructive" : "secondary"} 
+                                    className="text-xs"
+                                  >
+                                    {actualPoints > 0 ? '+' : ''}{actualPoints} pts
+                                  </Badge>
+                                </div>
+                                <div className="text-purple-700 text-xs flex items-center gap-1">
+                                  <span>{eventDetails.emoji}</span>
+                                  <span>{eventDetails.name}</span>
+                                </div>
                               </div>
-                              <div className="text-purple-700 text-xs">
-                                {event.description || event.event_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                       </div>
                     </div>
                   )}

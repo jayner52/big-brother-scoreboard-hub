@@ -67,7 +67,7 @@ export const ManageContestantsTab: React.FC<ManageContestantsTabProps> = ({
     <div className="space-y-6">
       
       {/* Action Buttons */}
-      <div className="flex gap-4 flex-wrap">
+      <div className="flex gap-4 flex-wrap hidden">
         <GenerateFullCastButton onRefresh={onRefresh} seasonNumber={27} />
         
         <Button 

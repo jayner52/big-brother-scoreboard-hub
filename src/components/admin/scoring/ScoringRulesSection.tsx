@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Plus, Zap } from 'lucide-react';
+import { Plus, Zap, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 import { getScoringRuleEmoji, getCategoryHeaderEmoji } from '@/utils/scoringCategoryEmojis';
 
@@ -17,6 +20,7 @@ interface ScoringRule {
   points: number;
   description: string;
   is_active: boolean;
+  emoji?: string;
 }
 
 interface ScoringRulesSectionProps {
@@ -30,6 +34,34 @@ export const ScoringRulesSection: React.FC<ScoringRulesSectionProps> = ({
   onUpdateRule,
   onShowCustomEventForm
 }) => {
+  const { toast } = useToast();
+
+  const handleDeleteCustomEvent = async (ruleId: string) => {
+    try {
+      const { error } = await supabase
+        .from('detailed_scoring_rules')
+        .update({ is_active: false })
+        .eq('id', ruleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Custom special event deleted",
+      });
+
+      // Force a page reload to refresh the data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting custom event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete custom event",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Accordion type="multiple" defaultValue={Object.keys(groupedRules)} className="space-y-4">
       {Object.entries(groupedRules).map(([category, rules]) => {
@@ -66,7 +98,8 @@ export const ScoringRulesSection: React.FC<ScoringRulesSectionProps> = ({
               {/* Scoring Rules Grid */}
               <div className="space-y-3">
                 {rules.map((rule) => {
-                  const ruleEmoji = getScoringRuleEmoji(rule.category, rule.subcategory);
+                  const ruleEmoji = rule.emoji || getScoringRuleEmoji(rule.category, rule.subcategory);
+                  const isCustomEvent = rule.subcategory === 'custom_permanent';
                   
                   return (
                     <div key={rule.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
@@ -74,6 +107,11 @@ export const ScoringRulesSection: React.FC<ScoringRulesSectionProps> = ({
                         <span className="text-lg">{ruleEmoji}</span>
                         <div className="flex-1">
                           <Label className="font-medium">{rule.description}</Label>
+                          {isCustomEvent && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              Custom
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       
@@ -94,6 +132,16 @@ export const ScoringRulesSection: React.FC<ScoringRulesSectionProps> = ({
                             className="w-20"
                           />
                         </div>
+                        {isCustomEvent && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteCustomEvent(rule.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );

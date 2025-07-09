@@ -1,22 +1,14 @@
 
 import React, { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { CUSTOM_EVENT_EMOJIS } from '@/constants/specialEvents';
-import { Plus, X } from 'lucide-react';
-
-interface CustomEventData {
-  description: string;
-  emoji: string;
-  points: number;
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { X, Sparkles } from 'lucide-react';
+import { getAvailableEmojis } from '@/utils/availableEmojis';
 
 interface CustomEventSelectorProps {
-  onAddCustomEvent: (eventData: CustomEventData) => void;
+  onAddCustomEvent: (eventData: { description: string; emoji: string; points: number }) => void;
   onCancel: () => void;
 }
 
@@ -25,123 +17,94 @@ export const CustomEventSelector: React.FC<CustomEventSelectorProps> = ({
   onCancel
 }) => {
   const [description, setDescription] = useState('');
-  const [selectedEmoji, setSelectedEmoji] = useState('✨');
+  const [selectedEmoji, setSelectedEmoji] = useState('');
   const [points, setPoints] = useState(1);
 
-  const handleSubmit = () => {
-    if (!description.trim()) return;
-    
-    // Don't include emoji in description - it will be handled separately
-    onAddCustomEvent({
-      description: description.trim(),
-      emoji: selectedEmoji,
-      points
-    });
-    
-    // Reset form
-    setDescription('');
-    setSelectedEmoji('✨');
-    setPoints(1);
-  };
+  const availableEmojis = getAvailableEmojis();
 
-  const handlePointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === '' || value === '-') {
-      setPoints(0);
-      return;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (description.trim() && selectedEmoji && points > 0) {
+      onAddCustomEvent({
+        description: description.trim(),
+        emoji: selectedEmoji,
+        points
+      });
+      setDescription('');
+      setSelectedEmoji('');
+      setPoints(1);
     }
-    const numValue = parseInt(value);
-    setPoints(isNaN(numValue) ? 0 : numValue);
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Plus className="h-5 w-5" />
-          Create Custom Event
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4" />
+          Create Custom Special Event
         </CardTitle>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          <X className="h-4 w-4" />
+        </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="description">Event Description</Label>
-          <Textarea
-            id="description"
-            placeholder="Describe the special event (don't include emoji here)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="mt-1"
-            rows={2}
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Just describe the event - the emoji will be added automatically
-          </p>
-        </div>
-
-        <div>
-          <Label htmlFor="emoji">Event Emoji</Label>
-          <Select value={selectedEmoji} onValueChange={setSelectedEmoji}>
-            <SelectTrigger className="mt-1">
-              <SelectValue>
-                <span className="text-lg">{selectedEmoji}</span>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="max-h-48 z-[1000] bg-background border border-border shadow-lg">
-              {CUSTOM_EVENT_EMOJIS.map(emoji => (
-                 <SelectItem key={emoji} value={emoji} className="cursor-pointer hover:bg-accent">
-                   <span className="text-lg">{emoji}</span>
-                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="points">Point Value</Label>
-          <Input
-            id="points"
-            type="number"
-            value={points}
-            onChange={handlePointsChange}
-            className="mt-1"
-            placeholder="Enter points (can be negative)"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Enter positive or negative number (e.g., -5 for penalty)
-          </p>
-        </div>
-
-        {/* Preview */}
-        {description.trim() && (
-          <div className="p-3 bg-muted/20 rounded border">
-            <p className="text-sm font-medium text-muted-foreground mb-1">Preview:</p>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{selectedEmoji}</span>
-              <span className="text-sm">{description.trim()}</span>
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                {points > 0 ? '+' : ''}{points} pts
-              </span>
-            </div>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="description">Event Description</Label>
+            <Input
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g., Won luxury vacation"
+              required
+            />
           </div>
-        )}
 
-        <div className="flex gap-2 pt-2">
-          <Button 
-            onClick={handleSubmit}
-            disabled={!description.trim()}
-            className="flex-1"
-          >
-            Add Event
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={onCancel}
-            className="flex-1"
-          >
-            <X className="h-4 w-4 mr-1" />
-            Cancel
-          </Button>
-        </div>
+          <div>
+            <Label>Choose Emoji</Label>
+            <div className="grid grid-cols-8 gap-2 mt-2 max-h-32 overflow-y-auto border rounded-md p-2">
+              {availableEmojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setSelectedEmoji(emoji)}
+                  className={`p-2 text-lg hover:bg-muted rounded transition-colors ${
+                    selectedEmoji === emoji ? 'bg-primary text-primary-foreground' : ''
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+            {selectedEmoji && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Selected: {selectedEmoji}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="points">Points Value</Label>
+            <Input
+              id="points"
+              type="number"
+              value={points}
+              onChange={(e) => setPoints(parseInt(e.target.value) || 1)}
+              min="1"
+              max="100"
+              required
+            />
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button type="submit" className="flex-1" disabled={!description.trim() || !selectedEmoji}>
+              Create Event
+            </Button>
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   );

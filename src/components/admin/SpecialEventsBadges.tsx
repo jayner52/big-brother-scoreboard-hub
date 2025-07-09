@@ -25,9 +25,11 @@ export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events
     <TooltipProvider>
       <div className="flex flex-wrap gap-1">
         {Object.entries(eventCounts).map(([eventType, count]) => {
-          // Prioritize custom emoji from database over default icons
-          const eventWithEmoji = events.find(e => e.event_type === eventType && e.emoji);
-          const emoji = eventWithEmoji?.emoji || getSpecialEventIcon(eventType);
+          // Find the first event with this type to get the emoji
+          const eventData = events.find(e => e.event_type === eventType);
+          
+          // Use custom emoji if available, otherwise fall back to default icon
+          const emoji = eventData?.emoji || getSpecialEventIcon(eventType);
           const tooltip = getEventTooltip(eventType);
           
           return (

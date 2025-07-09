@@ -38,16 +38,18 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
         {/* Active Contestants */}
         {activeContestants.length > 0 && (
           <div>
-            <h4 className="font-semibold text-sm text-muted-foreground mb-2">Active Contestants</h4>
-            <div className="grid grid-cols-3 gap-2">
+            <h4 className="font-semibold text-sm text-muted-foreground mb-3">Active Contestants</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {activeContestants
                 .sort((a, b) => (allContestantsPreview[b.name] || 0) - (allContestantsPreview[a.name] || 0))
                 .map((contestant) => {
                   const points = allContestantsPreview[contestant.name] || 0;
                   return (
-                    <div key={contestant.name} className="flex justify-between">
-                      <span className="font-medium">{contestant.name}:</span>
-                      <span className={points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}>
+                    <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/50 rounded border">
+                      <span className="font-medium text-sm truncate pr-2" title={contestant.name}>
+                        {contestant.name}:
+                      </span>
+                      <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
                         {points > 0 ? '+' : ''}{points}pts
                       </span>
                     </div>
@@ -60,19 +62,24 @@ export const PointsPreview: React.FC<PointsPreviewProps> = ({
         {/* Evicted Contestants */}
         {evictedContestants.length > 0 && (
           <div>
-            <h4 className="font-semibold text-sm text-muted-foreground mb-2">Evicted Contestants</h4>
-            <div className="grid grid-cols-3 gap-2">
+            <h4 className="font-semibold text-sm text-muted-foreground mb-3">Evicted Contestants</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {evictedContestants.map((contestant) => {
                 const points = allContestantsPreview[contestant.name] || 0;
                 const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
                 return (
-                  <div key={contestant.name} className="flex justify-between">
-                     <span className={`font-medium ${isEvictedThisWeek ? 'line-through text-red-500' : 'font-medium'}`}>
+                  <div key={contestant.name} className="flex justify-between items-center p-2 bg-background/30 rounded border border-dashed">
+                     <span className={`text-sm truncate pr-2 ${isEvictedThisWeek ? 'line-through text-red-500 font-medium' : 'font-medium text-muted-foreground'}`} title={contestant.name}>
                       {contestant.name}:
                     </span>
-                    <span className={points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}>
-                      {points > 0 ? '+' : ''}{points}pts {isEvictedThisWeek && ' (evicted this week)'}
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className={`text-sm font-semibold ${points > 0 ? 'text-green-600' : points < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
+                        {points > 0 ? '+' : ''}{points}pts
+                      </span>
+                      {isEvictedThisWeek && (
+                        <span className="text-xs text-red-500">evicted this week</span>
+                      )}
+                    </div>
                   </div>
                 );
               })}

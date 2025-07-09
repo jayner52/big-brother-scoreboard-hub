@@ -21,165 +21,50 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🏠 Loading Big Brother 27 fixed cast data...');
+    console.log('🏠 SCRAPING REAL Big Brother 27 cast from Parade...');
     
-    // Fixed Season 27 cast data - no more dynamic scraping
-    const bb27FixedCast: ContestantData[] = [
-      {
-        name: "Adrian Rocha",
-        age: 23,
-        location: "San Antonio, TX",
-        occupation: "Carpenter",
-        bio: "A skilled carpenter from San Antonio who has been training extensively for Big Brother, building his own competition setups and studying social psychology to become the greatest player of all time.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/adrian-rocha/"
-      },
-      {
-        name: "Amy Bingham",
-        age: 43,
-        location: "Stockton, CA",
-        occupation: "Insurance Agent",
-        bio: "An insurance agent from California bringing maturity and life experience to the game, ready to navigate the social dynamics of the Big Brother house.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/amy-bingham/"
-      },
-      {
-        name: "Ava Pearl",
-        age: 24,
-        location: "New York, NY",
-        occupation: "Aura Painter",
-        bio: "A creative aura painter from New York City who brings unique perspective and artistic energy to the house, ready to read the competition in more ways than one.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/ava-pearl/"
-      },
-      {
-        name: "Ashley Hollis",
-        age: 25,
-        location: "New York, NY",
-        occupation: "Attorney",
-        bio: "A sharp attorney from Chicago now living in New York, bringing legal strategy and analytical thinking to the Big Brother game.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/ashley-hollis/"
-      },
-      {
-        name: "Cliffton \"Will\" Williams",
-        age: 50,
-        location: "Charlotte, NC",
-        occupation: "College Sports Podcaster",
-        bio: "A 22-year Army veteran and college sports podcaster who brings energy, joy, and life experience as 'Captain Will' with five kids and nine grandkids.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/will-williams/"
-      },
-      {
-        name: "Isaiah \"Zae\" Frederich",
-        age: 23,
-        location: "Provo, UT",
-        occupation: "Salesperson",
-        bio: "A young salesperson from Kentucky now living in Utah, ready to use his sales skills to navigate the social game of Big Brother.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/zae-frederich/"
-      },
-      {
-        name: "Jimmy Heagerty",
-        age: 25,
-        location: "Washington, DC",
-        occupation: "AI Consultant",
-        bio: "An AI consultant from DC who brings tech-savvy strategy to the game, ready to analyze and adapt to any situation in the Big Brother house.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/jimmy-heagerty/"
-      },
-      {
-        name: "Katherine Woodman",
-        age: 23,
-        location: "Columbia, SC",
-        occupation: "Fine Dining Server",
-        bio: "A fine dining server from Georgia who knows how to read people and serve up strategy, ready to play a strong social game.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/katherine-woodman/"
-      },
-      {
-        name: "Keanu Soto",
-        age: 33,
-        location: "McKinney, TX",
-        occupation: "Personal Trainer/Dungeon Master",
-        bio: "A personal trainer and dungeon master from Texas who brings both physical prowess and strategic gameplay from his D&D experience.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/keanu-soto/"
-      },
-      {
-        name: "Lance Rylie",
-        age: 29,
-        location: "Burbank, SD",
-        occupation: "Web Designer",
-        bio: "A web designer from South Dakota who brings technical skills and creative problem-solving to the Big Brother competition.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/lance-rylie/"
-      },
-      {
-        name: "Madison Ivy",
-        age: 22,
-        location: "Lafayette, LA",
-        occupation: "Bridal Consultant",
-        bio: "The youngest houseguest at 22, a bridal consultant from Louisiana ready to say 'I do' to winning the $750,000 grand prize.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/madison-ivy/"
-      },
-      {
-        name: "Rylie Jeffries",
-        age: 27,
-        location: "Luther, OK",
-        occupation: "Professional Bull Rider",
-        bio: "A professional bull rider from Oklahoma who's used to holding on for dear life and ready to ride out any storm in the Big Brother house.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/rylie-jeffries/"
-      },
-      {
-        name: "Serenity Mason",
-        age: 27,
-        location: "Cartersville, GA",
-        occupation: "Marketing Manager",
-        bio: "A marketing manager from Georgia who knows how to sell herself and her ideas, ready to market her way to the final two.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/serenity-mason/"
-      },
-      {
-        name: "Tiffany Johnson",
-        age: 35,
-        location: "Atlanta, GA",
-        occupation: "Event Curator",
-        bio: "An event curator from Atlanta who knows how to plan and execute, ready to orchestrate her way through the Big Brother game.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/tiffany-johnson/"
-      },
-      {
-        name: "Vince Panaro",
-        age: 32,
-        location: "New York, NY",
-        occupation: "Gamer",
-        bio: "A professional gamer from New York who brings competitive gaming strategy and quick reflexes to the Big Brother competition.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/vince-panaro/"
-      },
-      {
-        name: "Zach Cornell",
-        age: 28,
-        location: "Houston, TX",
-        occupation: "Former Professional Baseball Player",
-        bio: "A former professional baseball player who's ready to hit a home run in the Big Brother house with his competitive spirit and athletic prowess.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/cast/zach-cornell/"
-      },
-      {
-        name: "Mystery Houseguest",
-        age: 0,
-        location: "Unknown",
-        occupation: "To Be Revealed",
-        bio: "The 17th houseguest whose identity remains a mystery. Will be revealed during the premiere episode on July 10, 2025.",
-        imageUrl: "https://www.cbs.com/shows/big_brother/mystery-houseguest/"
+    // Fetch the REAL cast data from Parade's exclusive article
+    const paradeUrl = 'https://parade.com/tv/big-brother-27-cast-photos-interview-2025';
+    console.log(`🔍 Fetching: ${paradeUrl}`);
+    
+    const response = await fetch(paradeUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       }
-    ];
+    });
 
-    console.log(`✅ Loaded ${bb27FixedCast.length} Big Brother 27 contestants from fixed data`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Parade article: ${response.status} ${response.statusText}`);
+    }
+
+    const html = await response.text();
+    console.log(`📄 Fetched HTML content (${html.length} characters)`);
     
-    // Log each contestant for verification
-    bb27FixedCast.forEach((contestant, index) => {
+    // Parse the HTML to extract real contestant data
+    const contestants = parseParadeHTML(html);
+    
+    if (contestants.length === 0) {
+      throw new Error('No contestants found in Parade article - parsing may have failed');
+    }
+
+    console.log(`✅ Successfully parsed ${contestants.length} REAL Big Brother 27 contestants from Parade`);
+    
+    // Log each real contestant for verification
+    contestants.forEach((contestant, index) => {
       console.log(`${index + 1}. ${contestant.name} (${contestant.age}) - ${contestant.occupation} from ${contestant.location}`);
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        contestants: bb27FixedCast,
+        contestants,
         metadata: {
           season: 27,
-          source: 'fixed_xml_cast_data',
+          source: 'parade_exclusive_article',
           scraped_at: new Date().toISOString(),
-          total_contestants: bb27FixedCast.length,
-          scraping_method: 'fixed_data_no_ai'
+          total_contestants: contestants.length,
+          scraping_method: 'real_parade_scraping',
+          source_url: paradeUrl
         }
       }),
       {
@@ -206,50 +91,144 @@ serve(async (req) => {
   }
 });
 
-function parseContestantsFromXML(xmlContent: string): ContestantData[] {
+function parseParadeHTML(html: string): ContestantData[] {
   const contestants: ContestantData[] = [];
   
   try {
-    // Clean up the XML content
-    const cleanXml = xmlContent.trim();
+    console.log('🔍 Parsing Parade HTML for real Big Brother 27 cast...');
     
-    // Extract contestants using regex patterns
-    const contestantMatches = cleanXml.matchAll(/<contestant>(.*?)<\/contestant>/gs);
+    // Parade typically structures cast articles with specific patterns
+    // Look for common patterns in cast reveal articles
     
-    for (const match of contestantMatches) {
-      const contestantXml = match[1];
+    // Try to find contestant names - they're usually in h2, h3, or strong tags
+    const namePatterns = [
+      /<h[2-4][^>]*>([^<]+(?:Big Brother|BB27|cast|houseguest)[^<]*)<\/h[2-4]>/gi,
+      /<h[2-4][^>]*>([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)<\/h[2-4]>/gi,
+      /<strong[^>]*>([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)<\/strong>/gi,
+      /<p[^>]*><strong[^>]*>([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)<\/strong>/gi
+    ];
+    
+    // Look for age patterns - typically "age XX" or "XX years old"
+    const agePattern = /(\d+)(?:\s*years?\s*old|(?=\s*from|\s*,))/gi;
+    
+    // Look for location patterns - typically "from City, State"
+    const locationPattern = /from\s+([A-Z][a-z]+(?:\s[A-Z][a-z]+)?,\s*[A-Z]{2}|[A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/gi;
+    
+    // Look for occupation patterns
+    const occupationPattern = /(?:occupation|job|works?\s+as|profession):\s*([^.]+)/gi;
+    
+    // Look for images - Parade uses specific CDN patterns
+    const imagePattern = /<img[^>]+src="([^"]*parade[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/gi;
+    
+    // Split HTML into sections that might contain individual contestants
+    const sections = html.split(/<h[2-4][^>]*>/i);
+    
+    for (let i = 1; i < sections.length; i++) {
+      const section = sections[i];
       
-      const name = extractXMLValue(contestantXml, 'name');
-      const ageStr = extractXMLValue(contestantXml, 'age');
-      const location = extractXMLValue(contestantXml, 'location');
-      const occupation = extractXMLValue(contestantXml, 'occupation');
-      const bio = extractXMLValue(contestantXml, 'bio');
-      const imageUrl = extractXMLValue(contestantXml, 'imageUrl');
+      // Extract potential name from the header
+      const headerMatch = section.match(/^([^<]+)/);
+      if (!headerMatch) continue;
       
-      if (name && ageStr && location && occupation) {
-        const age = parseInt(ageStr);
-        if (!isNaN(age)) {
-          contestants.push({
-            name: name.trim(),
-            age,
-            location: location.trim(),
-            occupation: occupation.trim(),
-            bio: bio ? bio.trim() : `${name} is a ${age}-year-old ${occupation} from ${location} competing on Big Brother 27.`,
-            imageUrl: imageUrl || 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face'
-          });
+      const potentialName = headerMatch[1].trim();
+      
+      // Check if this looks like a contestant name (2-3 words, proper case)
+      const nameMatch = potentialName.match(/^([A-Z][a-z]+(?:\s"[^"]+")?\s[A-Z][a-z]+(?:\s[A-Z][a-z]+)?)(?:\s*[,-].*)?$/);
+      if (!nameMatch) continue;
+      
+      const name = nameMatch[1].trim();
+      
+      // Extract age
+      const ageMatch = section.match(agePattern);
+      const age = ageMatch ? parseInt(ageMatch[1]) : 0;
+      
+      // Extract location
+      const locationMatch = section.match(locationPattern);
+      const location = locationMatch ? locationMatch[1].trim() : 'Unknown';
+      
+      // Extract occupation from bio text
+      const bioText = section.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      let occupation = 'Houseguest';
+      
+      // Common occupation keywords
+      const occupationKeywords = [
+        'teacher', 'nurse', 'doctor', 'lawyer', 'engineer', 'manager', 'consultant',
+        'student', 'artist', 'designer', 'writer', 'actor', 'musician', 'chef',
+        'trainer', 'coach', 'therapist', 'analyst', 'developer', 'entrepreneur',
+        'salesperson', 'realtor', 'photographer', 'influencer', 'model'
+      ];
+      
+      for (const keyword of occupationKeywords) {
+        if (bioText.toLowerCase().includes(keyword)) {
+          occupation = keyword.charAt(0).toUpperCase() + keyword.slice(1);
+          break;
+        }
+      }
+      
+      // Extract image URL
+      const imageMatch = section.match(imagePattern);
+      let imageUrl = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face';
+      if (imageMatch) {
+        imageUrl = imageMatch[1];
+        // Ensure it's a full URL
+        if (imageUrl.startsWith('//')) {
+          imageUrl = 'https:' + imageUrl;
+        } else if (imageUrl.startsWith('/')) {
+          imageUrl = 'https://parade.com' + imageUrl;
+        }
+      }
+      
+      // Create bio from available text
+      const bio = bioText.length > 50 ? 
+        bioText.substring(0, 200) + '...' : 
+        `${name} is a ${age}-year-old ${occupation} from ${location} competing on Big Brother 27.`;
+      
+      contestants.push({
+        name,
+        age,
+        location,
+        occupation,
+        bio,
+        imageUrl
+      });
+      
+      console.log(`📋 Parsed: ${name}, ${age}, ${location}, ${occupation}`);
+    }
+    
+    // If we didn't find enough contestants, try a different parsing approach
+    if (contestants.length < 10) {
+      console.log('⚠️ Not enough contestants found with primary method, trying alternative parsing...');
+      
+      // Fallback: Look for any strong candidate patterns in the entire HTML
+      const fullText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+      const lines = fullText.split(/[.!?]/).filter(line => line.length > 30);
+      
+      for (const line of lines) {
+        const nameMatch = line.match(/([A-Z][a-z]+\s[A-Z][a-z]+(?:\s[A-Z][a-z]+)?)[,\s]+(\d+)[,\s]+(.*?)(?:from|of)\s+([A-Z][a-z]+(?:\s[A-Z][a-z]+)?,\s*[A-Z]{2})/);
+        if (nameMatch && contestants.length < 20) {
+          const [, name, ageStr, occText, location] = nameMatch;
+          const age = parseInt(ageStr);
+          const occupation = occText.trim().split(/\s+/).slice(0, 3).join(' ') || 'Houseguest';
+          
+          if (!contestants.some(c => c.name === name)) {
+            contestants.push({
+              name: name.trim(),
+              age,
+              location: location.trim(),
+              occupation: occupation.charAt(0).toUpperCase() + occupation.slice(1).toLowerCase(),
+              bio: `${name} is a ${age}-year-old ${occupation} from ${location} competing on Big Brother 27.`,
+              imageUrl: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=300&h=300&fit=crop&crop=face'
+            });
+            
+            console.log(`📋 Alternative parse: ${name}, ${age}, ${location}`);
+          }
         }
       }
     }
     
   } catch (error) {
-    console.error('Error parsing XML:', error);
+    console.error('❌ Error parsing Parade HTML:', error);
   }
   
   return contestants;
-}
-
-function extractXMLValue(xml: string, tagName: string): string {
-  const regex = new RegExp(`<${tagName}>(.*?)<\/${tagName}>`, 's');
-  const match = xml.match(regex);
-  return match ? match[1].trim() : '';
 }

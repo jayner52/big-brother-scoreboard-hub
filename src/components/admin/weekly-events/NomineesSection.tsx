@@ -1,5 +1,4 @@
 import React from 'react';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +8,7 @@ import { useActiveContestants } from '@/hooks/useActiveContestants';
 import { usePool } from '@/contexts/PoolContext';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
 import { PointsTooltip } from '@/components/ui/points-tooltip';
+import { ScoringLabel } from './ScoringLabel';
 
 interface NomineesSectionProps {
   eventForm: WeeklyEventForm;
@@ -22,10 +22,10 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
   scoringRules = [],
 }) => {
   const { activePool } = usePool();
-  const { activeContestants } = useActiveContestants(activePool?.id);
+  const { allContestants } = useActiveContestants(activePool?.id);
   
-  // Get contestants who are still in the game and not HoH
-  const eligibleNominees = activeContestants.filter(c => 
+  // Get contestants who are not HoH (include both active and evicted for historical data)
+  const eligibleNominees = allContestants.filter(c => 
     c.name !== eventForm.hohWinner || eventForm.hohWinner === 'no-winner' || !eventForm.hohWinner
   );
 
@@ -75,10 +75,14 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <Label className="font-semibold flex items-center gap-2">
+        <ScoringLabel 
+          scoringRules={scoringRules} 
+          category="weekly_events" 
+          subcategory="nominee"
+        >
           <BigBrotherIcon type="nominees" className="h-4 w-4" />
           Nominated Houseguests {!hohSelected && <span className="text-gray-400 text-sm">(Select HOH first)</span>}
-        </Label>
+        </ScoringLabel>
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -120,10 +124,9 @@ export const NomineesSection: React.FC<NomineesSectionProps> = ({
                 .map(contestant => (
                   <SelectItem key={contestant.id} value={contestant.name}>
                     <span className="flex items-center justify-between w-full">
-                      <span>{contestant.name}</span>
-                      {!contestant.isActive && (
-                        <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
-                      )}
+                      <span className={!contestant.isActive ? 'text-red-600' : ''}>
+                        {contestant.name} {contestant.isActive ? '(Active)' : '(Evicted)'}
+                      </span>
                     </span>
                   </SelectItem>
                 ))}

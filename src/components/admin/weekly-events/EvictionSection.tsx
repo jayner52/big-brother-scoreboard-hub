@@ -1,25 +1,27 @@
 import React from 'react';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
+import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { usePool } from '@/contexts/PoolContext';
 import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 import { BigBrotherIcon } from '@/components/BigBrotherIcons';
+import { ScoringLabel } from './ScoringLabel';
 
 interface EvictionSectionProps {
   eventForm: WeeklyEventForm;
   setEventForm: React.Dispatch<React.SetStateAction<WeeklyEventForm>>;
   evictionLabel?: string;
+  scoringRules?: DetailedScoringRule[];
 }
 
 export const EvictionSection: React.FC<EvictionSectionProps> = ({
   eventForm,
   setEventForm,
   evictionLabel = "Evicted Houseguest",
+  scoringRules = [],
 }) => {
   const { activePool } = usePool();
-  const { activeContestants } = useWeekAwareContestants(eventForm.week);
+  const { allContestants } = useWeekAwareContestants(eventForm.week);
   // Calculate final nominees (after POV ceremony) and exclude BB Arena winner
   const getFinalNominees = () => {
     let finalNominees = [...eventForm.nominees.filter(n => n)];
@@ -49,10 +51,14 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
 
   return (
     <div>
-      <Label className="font-semibold flex items-center gap-2">
+      <ScoringLabel 
+        scoringRules={scoringRules} 
+        category="weekly_events" 
+        subcategory="evicted"
+      >
         <BigBrotherIcon type="evicted" />
         {evictionLabel} {arenaRequired && <span className="text-gray-400 text-sm">(Complete AI Arena first)</span>}
-      </Label>
+      </ScoringLabel>
       <Select 
         value={eventForm.evicted} 
         onValueChange={(value) => setEventForm(prev => ({ ...prev, evicted: value }))}
@@ -71,17 +77,16 @@ export const EvictionSection: React.FC<EvictionSectionProps> = ({
               </SelectItem>
             ))
            ) : (
-               // CRITICAL FIX: Only show active contestants (evicted contestants filtered out)
-               activeContestants.map(contestant => (
-                 <SelectItem key={contestant.id} value={contestant.name}>
-                   <span className="flex items-center justify-between w-full">
-                     <span>{contestant.name}</span>
-                     {!contestant.isActive && (
-                       <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
-                     )}
-                   </span>
-                 </SelectItem>
-               ))
+                // Show all contestants with status indicator
+                allContestants.map(contestant => (
+                  <SelectItem key={contestant.id} value={contestant.name}>
+                    <span className="flex items-center justify-between w-full">
+                      <span className={!contestant.isActive ? 'text-red-600' : ''}>
+                        {contestant.name} {contestant.isActive ? '(Active)' : '(Evicted)'}
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))
             )}
         </SelectContent>
       </Select>

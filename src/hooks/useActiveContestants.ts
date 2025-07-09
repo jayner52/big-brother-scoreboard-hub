@@ -12,7 +12,6 @@ export const useActiveContestants = (poolId?: string) => {
     if (!poolId) return;
     
     try {
-      // REMOVED: All eviction status logic - will be reimplemented from scratch
       const { data: contestantsData } = await supabase
         .from('contestants')
         .select('*')
@@ -22,16 +21,20 @@ export const useActiveContestants = (poolId?: string) => {
       const contestants = contestantsData?.map(c => ({
         id: c.id,
         name: c.name,
-        isActive: true, // REMOVED: eviction logic - always show as active
+        isActive: c.is_active, // Use actual is_active status from database
         group_id: c.group_id,
         sort_order: c.sort_order,
         bio: c.bio,
         photo_url: c.photo_url
       })) || [];
 
+      // Separate active and evicted contestants
+      const activeList = contestants.filter(c => c.isActive);
+      const evictedNames = contestants.filter(c => !c.isActive).map(c => c.name);
+
       setAllContestants(contestants);
-      setEvictedContestants([]); // REMOVED: eviction logic - empty array
-      setActiveContestants(contestants); // REMOVED: eviction logic - all contestants are active
+      setEvictedContestants(evictedNames);
+      setActiveContestants(activeList);
     } catch (error) {
       console.error('Error loading contestant data:', error);
     } finally {

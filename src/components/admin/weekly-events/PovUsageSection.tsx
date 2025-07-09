@@ -1,12 +1,11 @@
 import React from 'react';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { useActiveContestants } from '@/hooks/useActiveContestants';
 import { usePool } from '@/contexts/PoolContext';
 import { PointsTooltip } from '@/components/ui/points-tooltip';
+import { ScoringLabel } from './ScoringLabel';
 
 interface PovUsageSectionProps {
   eventForm: WeeklyEventForm;
@@ -20,7 +19,7 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
   scoringRules = [],
 }) => {
   const { activePool } = usePool();
-  const { activeContestants } = useActiveContestants(activePool?.id);
+  const { allContestants } = useActiveContestants(activePool?.id);
   if (!eventForm.povWinner || eventForm.povWinner === 'no-winner') {
     return null;
   }
@@ -30,9 +29,13 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
       {eventForm.povUsed && (
         <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <div>
-            <Label className="font-semibold flex items-center gap-2">
+            <ScoringLabel 
+              scoringRules={scoringRules} 
+              category="weekly_events" 
+              subcategory="pov_used_on"
+            >
               POV Used On
-            </Label>
+            </ScoringLabel>
             <PointsTooltip 
               scoringRules={scoringRules} 
               category="weekly_events" 
@@ -59,7 +62,13 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
           </div>
 
           <div>
-            <Label className="font-semibold">Replacement Houseguest</Label>
+            <ScoringLabel 
+              scoringRules={scoringRules} 
+              category="weekly_events" 
+              subcategory="replacement_nominee"
+            >
+              Replacement Houseguest
+            </ScoringLabel>
             <PointsTooltip 
               scoringRules={scoringRules} 
               category="weekly_events" 
@@ -73,7 +82,7 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
                 <SelectValue placeholder="Select replacement houseguest" />
               </SelectTrigger>
               <SelectContent>
-                {activeContestants
+                {allContestants
                   .filter(c => 
                     !eventForm.nominees.includes(c.name) && 
                     c.name !== eventForm.povWinner &&
@@ -83,10 +92,9 @@ export const PovUsageSection: React.FC<PovUsageSectionProps> = ({
                   .map(contestant => (
                     <SelectItem key={contestant.id} value={contestant.name}>
                       <span className="flex items-center justify-between w-full">
-                        <span>{contestant.name}</span>
-                        {!contestant.isActive && (
-                          <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
-                        )}
+                        <span className={!contestant.isActive ? 'text-red-600' : ''}>
+                          {contestant.name} {contestant.isActive ? '(Active)' : '(Evicted)'}
+                        </span>
                       </span>
                     </SelectItem>
                   ))}

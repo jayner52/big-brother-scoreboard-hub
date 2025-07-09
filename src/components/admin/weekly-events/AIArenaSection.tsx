@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { PointsTooltip } from '@/components/ui/points-tooltip';
+import { ScoringLabel } from './ScoringLabel';
 
 interface AIArenaSectionProps {
   eventForm: WeeklyEventForm;
@@ -100,7 +101,13 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="font-semibold">BB Arena Winner</Label>
+              <ScoringLabel 
+                scoringRules={scoringRules} 
+                category="weekly_events" 
+                subcategory="bb_arena_winner"
+              >
+                BB Arena Winner
+              </ScoringLabel>
               <PointsTooltip 
                 scoringRules={scoringRules} 
                 category="weekly_events" 
@@ -121,10 +128,9 @@ export const AIArenaSection: React.FC<AIArenaSectionProps> = ({
                       return (
                         <SelectItem key={nominee} value={nominee}>
                           <span className="flex items-center justify-between w-full">
-                            <span>{nominee}</span>
-                            {contestant && !contestant.isActive && (
-                              <Badge variant="outline" className="text-xs ml-2">Evicted</Badge>
-                            )}
+                            <span className={contestant && !contestant.isActive ? 'text-red-600' : ''}>
+                              {nominee} {contestant ? (contestant.isActive ? '(Active)' : '(Evicted)') : ''}
+                            </span>
                           </span>
                         </SelectItem>
                       );

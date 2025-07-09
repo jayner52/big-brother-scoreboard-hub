@@ -64,10 +64,11 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
               scoringRules={scoringRules}
             />
 
-            <PovWinnerSection
-              eventForm={eventForm}
-              setEventForm={setEventForm}
-            />
+        <PovWinnerSection 
+          eventForm={eventForm} 
+          setEventForm={setEventForm} 
+          scoringRules={scoringRules}
+        />
 
             <PovUsageSection
               eventForm={eventForm}
@@ -101,6 +102,7 @@ export const RegularWeekContent: React.FC<RegularWeekContentProps> = ({
             eventForm={eventForm}
             setEventForm={setEventForm}
             evictionLabel={eventForm.isDoubleEviction ? "First Evicted Houseguest" : "Evicted Houseguest"}
+            scoringRules={scoringRules}
           />
         </div>
 

@@ -233,10 +233,8 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     if (event.eventType === 'custom_event' && event.customDescription) {
       return `${event.customEmoji} ${event.customDescription}`;
     }
-    // Match by ID first (for custom permanent events), then by subcategory
-    const eventRule = availableEvents.find(rule => 
-      rule.id === event.eventType || rule.subcategory === event.eventType
-    );
+    // Find rule by ID (consistent with new approach)
+    const eventRule = availableEvents.find(rule => rule.id === event.eventType);
     if (eventRule) {
       // For custom permanent rules, show emoji + description
       if (eventRule.subcategory === 'custom_permanent' && eventRule.emoji) {
@@ -254,10 +252,8 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
     if (event.customPoints !== undefined) {
       return event.customPoints;
     }
-    // Match by ID first (for custom permanent events), then by subcategory
-    const eventRule = availableEvents.find(rule => 
-      rule.id === event.eventType || rule.subcategory === event.eventType
-    );
+    // Find rule by ID (consistent with new approach)
+    const eventRule = availableEvents.find(rule => rule.id === event.eventType);
     return eventRule?.points || 1;
   };
 
@@ -294,7 +290,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
         {/* Special Events for this week */}
         {eventForm.specialEvents.map((event, index) => (
           <SpecialEventCard
-            key={`${event.id}-${index}-${event.eventType || 'empty'}`}
+            key={event.id || `temp-${index}`}
             event={event}
             index={index}
             availableEvents={availableEvents}

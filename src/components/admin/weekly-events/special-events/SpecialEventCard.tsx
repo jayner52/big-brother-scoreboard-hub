@@ -70,12 +70,7 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
               console.log('🔍 Select onValueChange:', { 
                 selectedValue: value, 
                 eventIndex: index, 
-                currentEventType: event.eventType,
-                availableEvents: availableEvents.map(e => ({
-                  id: e.id, 
-                  subcategory: e.subcategory, 
-                  itemValue: e.subcategory === 'custom_permanent' ? e.id : e.subcategory
-                }))
+                currentEventType: event.eventType
               });
               updateSpecialEvent(index, 'eventType', value);
               console.log('🔍 After updateSpecialEvent, eventType should be:', value);
@@ -91,17 +86,14 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
             <SelectContent>
               {availableEvents.map(eventRule => {
                 const emoji = getScoringRuleEmoji(eventRule.category, eventRule.subcategory, eventRule.emoji);
-                // Use unique ID for custom permanent events, subcategory for others
-                const itemValue = eventRule.subcategory === 'custom_permanent' ? eventRule.id : eventRule.subcategory;
                 console.log('🔍 SelectItem:', { 
                   ruleId: eventRule.id, 
                   subcategory: eventRule.subcategory, 
-                  itemValue, 
                   currentEventType: event.eventType,
-                  matches: itemValue === event.eventType
+                  matches: eventRule.id === event.eventType
                 });
                 return (
-                  <SelectItem key={eventRule.id || eventRule.subcategory} value={itemValue}>
+                  <SelectItem key={eventRule.id} value={eventRule.id}>
                     <span className="flex items-center gap-2">
                       <span className="text-sm">{emoji}</span>
                       <span>{eventRule.description}</span>

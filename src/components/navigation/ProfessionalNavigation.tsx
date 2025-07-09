@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu, User, TrendingUp } from 'lucide-react';
+import { Info, Users, MessageSquare, Settings, LogOut, ChevronDown, Menu, User, TrendingUp, Circle } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { EnhancedChatIcon } from '@/components/chat/EnhancedChatIcon';
 import { ProfileModal } from '@/components/profile/ProfileModal';
@@ -20,6 +20,7 @@ import { usePool } from '@/contexts/PoolContext';
 import { useUserPoolRole } from '@/hooks/useUserPoolRole';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePaymentNotifications } from '@/hooks/usePaymentNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -46,6 +47,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, refreshProfile } = useUserProfile(user);
+  const { hasUnreadNotifications, hasOutstandingPayment, totalUnread } = usePaymentNotifications();
   
   React.useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -66,12 +68,13 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
     icon: React.ComponentType<{ className?: string }>;
     label: string;
     badge?: number;
+    hasNotification?: boolean;
     onClick?: () => void;
-  }> = ({ to, icon: Icon, label, badge, onClick }) => (
+  }> = ({ to, icon: Icon, label, badge, hasNotification, onClick }) => (
     <Link to={to} onClick={onClick}>
       <button
         className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 font-medium text-sm",
+          "flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 font-medium text-sm relative",
           "hover:bg-brand-teal/10 hover:text-brand-teal hover:scale-105",
           "focus:outline-none focus:ring-2 focus:ring-coral/50",
           isActiveRoute(to) 
@@ -85,6 +88,9 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
           <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
             {badge}
           </Badge>
+        )}
+        {hasNotification && (
+          <Circle className="absolute -top-1 -right-1 h-3 w-3 fill-red-500 text-red-500" />
         )}
       </button>
     </Link>
@@ -186,10 +192,13 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
               <Link to="/my-teams" onClick={() => setMobileMenuOpen(false)}>
                 <Button
                   variant={isActiveRoute('/my-teams') ? 'default' : 'ghost'}
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 relative"
                 >
                   <Users className="h-4 w-4" />
                   My Team(s)
+                  {(hasUnreadNotifications || hasOutstandingPayment) && (
+                    <Circle className="absolute -top-1 -right-1 h-3 w-3 fill-red-500 text-red-500" />
+                  )}
                 </Button>
               </Link>
             )}
@@ -270,6 +279,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
             to="/my-teams"
             icon={Users}
             label="My Team(s)"
+            hasNotification={hasUnreadNotifications || hasOutstandingPayment}
           />
           
           <div className="relative">

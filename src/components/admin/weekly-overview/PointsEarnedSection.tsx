@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useScoringRules } from '@/hooks/useScoringRules';
 
 interface ContestantScore {
   name: string;
@@ -44,6 +45,19 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
   allContestants = [],
   evictedThisWeek = []
 }) => {
+  const { scoringRules } = useScoringRules();
+
+  // Helper function to check if an event is a quit event by looking up scoring rules
+  const isQuitEvent = (eventType: string) => {
+    // First try to find by subcategory (for legacy string-based events)
+    let rule = scoringRules.find(r => r.subcategory === eventType);
+    // If not found, try to find by ID (for UUID-based events)
+    if (!rule) {
+      rule = scoringRules.find(r => r.id === eventType);
+    }
+    return rule && (rule.subcategory === 'self_evicted' || rule.subcategory === 'removed_production');
+  };
+
   // Create a complete list showing all contestants with their points or 0
   const completeContestantScores = allContestants.map(contestant => {
     const existingScore = contestantScores.find(score => score.name === contestant.name);
@@ -51,18 +65,18 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
     // Check if contestant is evicted - either passed in evictedThisWeek or marked inactive due to special events
     const isEvictedThisWeek = evictedThisWeek.includes(contestant.name);
     
-    // Check if contestant quit this week (self_evicted or removed_production)
+    // Check if contestant quit this week using the proper event type checking
     const quitThisWeek = specialEvents.some(event => 
       event.week_number === weekNumber && 
       event.contestant_name === contestant.name &&
-      (event.event_type === 'self_evicted' || event.event_type === 'removed_production')
+      isQuitEvent(event.event_type)
     );
     
-    // Check if contestant has quit in any previous week (should also be marked as evicted)
+    // Check if contestant has quit in any previous week using the proper event type checking
     const hasQuitEvent = specialEvents.some(event => 
       event.week_number <= weekNumber && 
       event.contestant_name === contestant.name &&
-      (event.event_type === 'self_evicted' || event.event_type === 'removed_production')
+      isQuitEvent(event.event_type)
     );
     
     // A contestant is considered evicted if:

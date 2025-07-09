@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ContestantWithBio, WeeklyEventForm, DetailedScoringRule } from '@/types/admin';
 import { calculatePoints } from '@/utils/weeklyEventsUtils';
@@ -31,8 +32,15 @@ export const useSpecialEventHandler = () => {
     const autoEvictionEvents = [];
 
     for (const se of specialEvents) {
-      if ((se.event_type === 'self_evicted' || se.event_type === 'removed_production') && se.contestant_id) {
-        console.log('🚪 WeeklyEvents - Auto-evicting contestant due to quit:', se.contestant_id, se.event_type);
+      // Check if this is a quit event by looking up the scoring rule
+      const { data: scoringRule } = await supabase
+        .from('detailed_scoring_rules')
+        .select('subcategory')
+        .eq('id', se.event_type)
+        .single();
+
+      if (scoringRule && (scoringRule.subcategory === 'self_evicted' || scoringRule.subcategory === 'removed_production') && se.contestant_id) {
+        console.log('🚪 WeeklyEvents - Auto-evicting contestant due to quit:', se.contestant_id, scoringRule.subcategory);
         
         // Create an eviction event for this contestant
         const evictionEvent = {
@@ -59,8 +67,17 @@ export const useSpecialEventHandler = () => {
     poolId: string
   ) => {
     for (const se of specialEvents) {
+      // Get the subcategory for this event type UUID
+      const { data: scoringRule } = await supabase
+        .from('detailed_scoring_rules')
+        .select('subcategory')
+        .eq('id', se.event_type)
+        .single();
+
+      if (!scoringRule) continue;
+
       // Handle special houseguest revival automatically
-      if (se.event_type === 'came_back_after_evicted' && se.contestant_id) {
+      if (scoringRule.subcategory === 'came_back_evicted' && se.contestant_id) {
         console.log('🔄 WeeklyEvents - Auto-reviving houseguest:', se.contestant_id);
         const { error: revivalError } = await supabase
           .from('contestants')
@@ -76,8 +93,8 @@ export const useSpecialEventHandler = () => {
       }
 
       // Handle automatic evictions for quit events - mark contestants as inactive
-      if ((se.event_type === 'self_evicted' || se.event_type === 'removed_production') && se.contestant_id) {
-        console.log('🚪 WeeklyEvents - Marking contestant inactive due to quit:', se.contestant_id, se.event_type);
+      if ((scoringRule.subcategory === 'self_evicted' || scoringRule.subcategory === 'removed_production') && se.contestant_id) {
+        console.log('🚪 WeeklyEvents - Marking contestant inactive due to quit:', se.contestant_id, scoringRule.subcategory);
         
         // Mark contestant as inactive
         const { error: inactiveError } = await supabase

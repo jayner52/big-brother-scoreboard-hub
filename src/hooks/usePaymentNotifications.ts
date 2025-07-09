@@ -19,6 +19,7 @@ export const usePaymentNotifications = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.log('PAYMENT_NOTIFICATIONS: No user found');
         setStatus({
           hasUnreadNotifications: false,
           hasOutstandingPayment: false,
@@ -26,6 +27,8 @@ export const usePaymentNotifications = () => {
         });
         return;
       }
+
+      console.log('PAYMENT_NOTIFICATIONS: Checking for user:', user.id);
 
       // Check for unread winner notifications
       const { data: notifications, error: notificationsError } = await supabase
@@ -49,6 +52,14 @@ export const usePaymentNotifications = () => {
       const hasOutstandingPayment = (entries?.length || 0) > 0;
       const totalUnread = (notifications?.length || 0) + (entries?.length || 0);
 
+      console.log('PAYMENT_NOTIFICATIONS: Results:', {
+        notifications: notifications?.length || 0,
+        outstandingEntries: entries?.length || 0,
+        hasUnreadNotifications,
+        hasOutstandingPayment,
+        totalUnread
+      });
+
       setStatus({
         hasUnreadNotifications,
         hasOutstandingPayment,
@@ -64,41 +75,56 @@ export const usePaymentNotifications = () => {
   useEffect(() => {
     checkNotifications();
 
-    // Set up real-time subscription for winner notifications
-    const notificationsChannel = supabase
-      .channel('winner_notifications_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'winner_notifications'
-        },
-        () => {
-          checkNotifications();
-        }
-      )
-      .subscribe();
+    const setupSubscriptions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    // Set up real-time subscription for pool entries payment status
-    const entriesChannel = supabase
-      .channel('pool_entries_payment_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'pool_entries'
-        },
-        () => {
-          checkNotifications();
-        }
-      )
-      .subscribe();
+      // Set up real-time subscription for winner notifications (user-specific)
+      const notificationsChannel = supabase
+        .channel('winner_notifications_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'winner_notifications',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('PAYMENT_NOTIFICATIONS: Winner notification change:', payload);
+            checkNotifications();
+          }
+        )
+        .subscribe();
 
+      // Set up real-time subscription for pool entries payment status (user-specific)
+      const entriesChannel = supabase
+        .channel('pool_entries_payment_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'pool_entries',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('PAYMENT_NOTIFICATIONS: Pool entry payment change:', payload);
+            checkNotifications();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(notificationsChannel);
+        supabase.removeChannel(entriesChannel);
+      };
+    };
+
+    const cleanup = setupSubscriptions();
+    
     return () => {
-      supabase.removeChannel(notificationsChannel);
-      supabase.removeChannel(entriesChannel);
+      cleanup.then(cleanupFn => cleanupFn?.());
     };
   }, []);
 

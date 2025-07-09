@@ -90,7 +90,9 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
           </Badge>
         )}
         {hasNotification && (
-          <Circle className="absolute -top-1 -right-1 h-3 w-3 fill-red-500 text-red-500" />
+          <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
+            !
+          </div>
         )}
       </button>
     </Link>
@@ -196,9 +198,11 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
                 >
                   <Users className="h-4 w-4" />
                   My Team(s)
-                  {(hasUnreadNotifications || hasOutstandingPayment) && (
-                    <Circle className="absolute -top-1 -right-1 h-3 w-3 fill-red-500 text-red-500" />
-                  )}
+                   {(hasUnreadNotifications || hasOutstandingPayment) && (
+                     <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
+                       !
+                     </div>
+                   )}
                 </Button>
               </Link>
             )}

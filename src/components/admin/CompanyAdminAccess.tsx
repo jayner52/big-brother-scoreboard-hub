@@ -3,10 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CompanyAdminDashboard } from './CompanyAdminDashboard';
-import { Building2, Lock, Unlock, Eye, EyeOff } from 'lucide-react';
+import { Building2, Lock, Unlock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 export const CompanyAdminAccess: React.FC = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -15,6 +14,7 @@ export const CompanyAdminAccess: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Check if already unlocked in session
   useEffect(() => {
@@ -97,7 +97,7 @@ export const CompanyAdminAccess: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
                   <Unlock className="h-3 w-3 mr-1" />
-                  Unlocked
+                  Access Unlocked
                 </Badge>
               </div>
             </div>
@@ -113,7 +113,22 @@ export const CompanyAdminAccess: React.FC = () => {
           </Button>
         </div>
         
-        <CompanyAdminDashboard />
+        <div className="bg-card rounded-lg border p-6 text-center">
+          <div className="bg-emerald-100 p-3 rounded-lg w-fit mx-auto mb-4">
+            <Building2 className="h-8 w-8 text-emerald-600" />
+          </div>
+          <h4 className="text-xl font-semibold mb-2">Company Admin Dashboard Ready</h4>
+          <p className="text-muted-foreground mb-6">
+            Access comprehensive user registration data, analytics, and site management tools.
+          </p>
+          <Button 
+            onClick={() => navigate('/company-admin')}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            Go to Company Admin Dashboard
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
       </div>
     );
   }

@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { Download, Copy, Users, UserCheck, UserX, Search, CheckCircle, XCircle, Mail, Crown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
@@ -50,13 +49,10 @@ export const CompanyAdminDashboard: React.FC = () => {
   const [filterTermsAccepted, setFilterTermsAccepted] = useState<boolean | null>(null);
   const [filterEmailOptIn, setFilterEmailOptIn] = useState<boolean | null>(null);
   const { toast } = useToast();
-  const { isAdmin, loading: adminLoading } = useAdminAccess();
 
   useEffect(() => {
-    if (!adminLoading && isAdmin) {
-      loadUserRegistrations();
-    }
-  }, [isAdmin, adminLoading]);
+    loadUserRegistrations();
+  }, []);
 
   useEffect(() => {
     filterUsers();
@@ -228,18 +224,6 @@ export const CompanyAdminDashboard: React.FC = () => {
       description: `Copied ${filteredUsers.filter(u => u.email).length} email addresses to clipboard`,
     });
   };
-
-  if (adminLoading) {
-    return <div className="text-center py-8">Checking admin access...</div>;
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">You don't have permission to access this page.</p>
-      </div>
-    );
-  }
 
   if (loading) {
     return <div className="text-center py-8">Loading user registrations...</div>;

@@ -162,31 +162,49 @@ export const WeekByWeekOverview: React.FC = () => {
         });
       }
 
-      // 2. Load draft special events from weekly_results
-      const { data: draftWeeks, error: draftError } = await supabase
+      // 2. Load all weekly results to extract BB Arena winners and draft special events
+      const { data: allWeeklyResults, error: allWeeklyError } = await supabase
         .from('weekly_results')
-        .select('week_number, draft_special_events')
-        .eq('pool_id', activePool.id)
-        .eq('is_draft', true)
-        .not('draft_special_events', 'is', null);
+        .select('week_number, ai_arena_winner, draft_special_events')
+        .eq('pool_id', activePool.id);
 
-      if (draftError) throw draftError;
+      if (allWeeklyError) throw allWeeklyError;
 
-      // Parse and add draft special events
-      if (draftWeeks) {
-        draftWeeks.forEach(week => {
+      // Process each week's results
+      if (allWeeklyResults) {
+        allWeeklyResults.forEach(week => {
+          // Add BB Arena winner as special event
+          if (week.ai_arena_winner) {
+            const bbArenaRule = rawScoringRules?.find(r => r.subcategory === 'bb_arena_winner');
+            allSpecialEvents.push({
+              week_number: week.week_number,
+              contestant_name: week.ai_arena_winner,
+              event_type: 'bb_arena_winner',
+              description: 'BB Arena Winner',
+              points_awarded: bbArenaRule?.points || 0
+            });
+          }
+
+          // Parse and add draft special events
           if (week.draft_special_events) {
             try {
               const draftEvents = JSON.parse(week.draft_special_events);
               if (Array.isArray(draftEvents)) {
                 draftEvents.forEach((event: any) => {
                   if (event.contestant && event.eventType) {
-                    // Get points from scoring rules or use custom points
-                    let eventPoints = event.customPoints || 0;
-                    if (!eventPoints && event.eventType !== 'custom_event') {
-                      const rule = rawScoringRules?.find(r => r.subcategory === event.eventType);
+                    // Get points from scoring rules - check both ID and subcategory
+                    let eventPoints = event.customPoints;
+                    if (eventPoints === undefined || eventPoints === null) {
+                      // First try to find by ID (for new events)
+                      let rule = rawScoringRules?.find(r => r.id === event.eventType);
+                      // If not found, try subcategory (for legacy events)
+                      if (!rule) {
+                        rule = rawScoringRules?.find(r => r.subcategory === event.eventType);
+                      }
                       eventPoints = rule?.points || 0;
                     }
+
+                    console.log(`Draft event: ${event.eventType}, customPoints: ${event.customPoints}, resolved points: ${eventPoints}`);
 
                     allSpecialEvents.push({
                       week_number: week.week_number,

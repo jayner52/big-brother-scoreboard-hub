@@ -18,26 +18,57 @@ const Admin = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [showSetupWizard, setShowSetupWizard] = useState(false);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const { activePool } = usePool();
   const { isAdmin, loading: adminLoading } = useAdminAccess();
 
+  // Handle authentication state changes
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      // Only redirect if user is not authenticated at all
-      if (!user) {
-        navigate('/auth');
+    let mounted = true;
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (mounted) {
+          setUser(session?.user ?? null);
+          setAuthLoading(false);
+        }
+      }
+    );
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted) {
+        setUser(session?.user ?? null);
+        setAuthLoading(false);
       }
     });
-  }, [navigate]);
 
-  // Redirect non-admin users after admin check completes
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Handle redirects only after both auth and admin checks are complete
   useEffect(() => {
-    if (!adminLoading && user && !isAdmin) {
-      console.log('User does not have admin access, redirecting...');
-      navigate(user ? '/dashboard' : '/');
+    // Wait for both auth and admin loading to complete
+    if (authLoading || adminLoading) {
+      return;
     }
-  }, [adminLoading, user, isAdmin, navigate]);
+
+    // If user is not authenticated, redirect to auth
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    // If user is authenticated but not admin, redirect to dashboard
+    if (user && !isAdmin) {
+      console.log('User does not have admin access, redirecting...');
+      navigate('/dashboard');
+    }
+  }, [authLoading, adminLoading, user, isAdmin, navigate]);
 
   // Check for new pool creation and first visit
   useEffect(() => {
@@ -66,20 +97,22 @@ const Admin = () => {
     }
   }, [showSetupWizard]);
 
-  // Show loading while checking admin access
-  if (adminLoading) {
+  // Show loading while checking authentication and admin access
+  if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Checking admin access...</p>
+          <p className="text-muted-foreground">
+            {authLoading ? 'Authenticating...' : 'Checking admin access...'}
+          </p>
         </div>
       </div>
     );
   }
 
-  // If not admin, don't render anything (will redirect)
-  if (!isAdmin) {
+  // If not authenticated or not admin, don't render anything (will redirect)
+  if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">

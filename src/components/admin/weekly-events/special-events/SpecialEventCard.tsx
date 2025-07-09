@@ -126,14 +126,17 @@ export const SpecialEventCard: React.FC<SpecialEventCardProps> = ({
           <Label>Contestant</Label>
           <Select
             value={event.contestant}
-            onValueChange={(value) => updateSpecialEvent(index, 'contestant', value)}
-            disabled={!event.eventType || event.eventType === ''}
+            onValueChange={(value) => {
+              console.log('🔍 Contestant selected:', { value, eventType: event.eventType, index });
+              updateSpecialEvent(index, 'contestant', value);
+            }}
+            disabled={!event.eventType}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select contestant" />
             </SelectTrigger>
             <SelectContent>
-              {getAvailableContestants(event.eventType).map(contestant => (
+              {event.eventType && getAvailableContestants(event.eventType).map(contestant => (
                 <SelectItem key={contestant.name} value={contestant.name}>
                   <span className="flex items-center justify-between w-full">
                     <span>{contestant.name}</span>

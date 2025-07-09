@@ -206,14 +206,25 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
   };
 
   // Get available contestants for each event type
-  const getAvailableContestants = (eventType: string) => {
+  const getAvailableContestants = (eventType: string | undefined) => {
+    console.log('🔍 getAvailableContestants called with:', { eventType });
+    
+    if (!eventType || eventType === '') {
+      console.log('🔍 No eventType provided, returning empty array');
+      return [];
+    }
+    
     switch (eventType) {
       case 'came_back_evicted':
+        console.log('🔍 Returning evicted contestants for came_back_evicted:', evictedContestants.length);
         return evictedContestants; // Only show evicted contestants
       case 'self_evicted':
       case 'removed_production':
-        return activeContestants.filter(c => c.isActive); // Only active contestants can be evicted
+        const activeOnly = activeContestants.filter(c => c.isActive);
+        console.log('🔍 Returning active contestants for self/removed eviction:', activeOnly.length);
+        return activeOnly; // Only active contestants can be evicted
       default:
+        console.log('🔍 Returning all active contestants for default case:', activeContestants.length);
         return activeContestants; // All contestants
     }
   };

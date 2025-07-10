@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import CompanyAdmin from "./pages/CompanyAdmin";
 import HiddenCompanyAdmin from "./pages/HiddenCompanyAdmin";
 import About from "./pages/About";
+import PoolConfig from "./pages/PoolConfig";
 import Auth from "./pages/Auth";
 import Draft from "./pages/Draft";
 import MyTeams from "./pages/MyTeams";
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/company-admin" element={<CompanyAdmin />} />
               <Route path="/hidden-company-admin" element={<HiddenCompanyAdmin />} />
               <Route path="/about" element={<About />} />
+              <Route path="/pool-config" element={<PoolConfig />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/draft" element={<Draft />} />
               <Route path="/my-teams" element={<MyTeams />} />

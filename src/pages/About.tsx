@@ -1,520 +1,230 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Trophy, Users, Target, DollarSign, AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { usePool } from '@/contexts/PoolContext';
-import { supabase } from '@/integrations/supabase/client';
-import { User as SupabaseUser } from '@supabase/supabase-js';
-import { EnhancedPrizeDisplay } from '@/components/EnhancedPrizeDisplay';
-import { formatPrize } from '@/utils/prizeCalculation';
-import { Pool } from '@/types/pool';
-import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
-
-interface ScoringRule {
-  id: string;
-  category: string;
-  subcategory: string;
-  points: number;
-  description: string;
-  is_active: boolean;
-}
-
-interface BonusQuestion {
-  id: string;
-  question_text: string;
-  question_type: string;
-  points_value: number;
-}
+import { ArrowLeft, Sparkles, Users, Target, Award, Trophy, MessageCircle, Tv } from 'lucide-react';
+import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
+import { PoolFloat } from '@/components/brand/PoolFloat';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const About = () => {
   const navigate = useNavigate();
-  const { activePool } = usePool();
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [isPoolAdmin, setIsPoolAdmin] = useState(false);
-  const [poolConfig, setPoolConfig] = useState<Pool | null>(null);
-  const [scoringRules, setScoringRules] = useState<ScoringRule[]>([]);
-  const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
-  const [totalEntries, setTotalEntries] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (activePool?.id) {
-      fetchPoolConfiguration();
-      checkAdminStatus();
-    } else {
-      // For non-authenticated users, fetch default rules
-      fetchDefaultConfiguration();
-    }
-  }, [activePool?.id, user]);
-
-  const checkAdminStatus = async () => {
-    if (!activePool?.id || !user) return;
-    
-    try {
-      const { data: membership } = await supabase
-        .from('pool_memberships')
-        .select('role')
-        .eq('pool_id', activePool.id)
-        .eq('user_id', user.id)
-        .single();
-      
-      setIsPoolAdmin(membership?.role === 'owner' || membership?.role === 'admin');
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-    }
-  };
-
-  const fetchPoolConfiguration = async () => {
-    if (!activePool?.id) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Fetch pool details
-      const { data: pool, error: poolError } = await supabase
-        .from('pools')
-        .select('*')
-        .eq('id', activePool.id)
-        .single();
-
-      if (poolError) throw poolError;
-
-      // Fetch scoring rules
-      const { data: rules, error: rulesError } = await supabase
-        .from('detailed_scoring_rules')
-        .select('*')
-        .eq('is_active', true)
-        .order('category', { ascending: true });
-
-      if (rulesError) throw rulesError;
-
-      // Fetch bonus questions for this pool
-      const { data: questions, error: questionsError } = await supabase
-        .from('bonus_questions')
-        .select('*')
-        .eq('pool_id', activePool.id)
-        .eq('is_active', true)
-        .order('sort_order');
-
-      if (questionsError) throw questionsError;
-
-      // Fetch entry count
-      const { count, error: countError } = await supabase
-        .from('pool_entries')
-        .select('id', { count: 'exact' })
-        .eq('pool_id', activePool.id);
-
-      if (countError) throw countError;
-
-      setPoolConfig(pool);
-      setScoringRules(rules || []);
-      setBonusQuestions(questions || []);
-      setTotalEntries(count || 0);
-    } catch (err) {
-      console.error('Error fetching pool configuration:', err);
-      setError('Failed to load pool configuration');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDefaultConfiguration = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Fetch scoring rules for general display
-      const { data: rules, error: rulesError } = await supabase
-        .from('detailed_scoring_rules')
-        .select('*')
-        .eq('is_active', true)
-        .order('category', { ascending: true });
-
-      if (rulesError) throw rulesError;
-
-      setScoringRules(rules || []);
-      // Set default values for general display
-      setPoolConfig({
-        picks_per_team: 5,
-        enable_bonus_questions: true,
-        has_buy_in: false,
-      } as Pool);
-      setBonusQuestions([]);
-      setTotalEntries(0);
-    } catch (err) {
-      console.error('Error fetching default configuration:', err);
-      setError('Failed to load configuration');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Group scoring rules by category
-  const getRulesByCategory = (category: string) =>
-    scoringRules.filter(rule => rule.category === category);
-
-  const weeklyRules = getRulesByCategory('weekly');
-  const competitionRules = getRulesByCategory('competition');
-  const specialRules = getRulesByCategory('special_events');
-  const finalRules = getRulesByCategory('final_placement');
-  const juryRules = getRulesByCategory('jury');
-  const achievementRules = getRulesByCategory('special_achievements');
-
-  // Show prize section if admin allows it and pool has buy-in
-  const showPrizeSection = poolConfig?.has_buy_in && poolConfig?.show_prize_amounts;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center py-32">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-coral"></div>
-            <span className="ml-3 text-lg text-muted-foreground">Loading pool information...</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !poolConfig) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center py-32 text-destructive">
-            <AlertCircle className="h-12 w-12 mr-3" />
-            <span className="text-lg">{error || 'Configuration not found'}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Navigation */}
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-cream relative overflow-hidden">
+      {/* Floating Pool Elements */}
+      <div className="absolute top-20 left-10 opacity-40 animate-bounce">
+        <PoolFloat className="w-16 h-16" color="teal" />
+      </div>
+      <div className="absolute top-40 right-20 opacity-30 animate-bounce" style={{ animationDelay: '1s' }}>
+        <PoolFloat className="w-12 h-12" color="yellow" />
+      </div>
+      <div className="absolute bottom-32 left-20 opacity-50 animate-bounce" style={{ animationDelay: '2s' }}>
+        <PoolFloat className="w-20 h-20" color="orange" />
+      </div>
+
+      {/* Navigation */}
+      <nav className="relative z-10 p-6">
+        <div className="container mx-auto flex justify-between items-center">
           <Button 
             variant="outline" 
-            onClick={() => navigate(user ? '/dashboard' : '/')}
+            onClick={() => navigate('/')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            {user ? 'Back to Dashboard' : 'Back to Home'}
+            Back to Home
           </Button>
+          <PoolsidePicksLogo size="sm" />
         </div>
+      </nav>
 
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent leading-tight py-2">
-            Big Brother Fantasy Pool
+        <div className="text-center mb-16">
+          <h1 className={`${isMobile ? 'text-4xl' : 'text-6xl'} font-bold text-dark mb-6`}>
+            What is Poolside Picks?
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Draft your favorite houseguests, make predictions, and compete with friends in the ultimate Big Brother fantasy experience!
-          </p>
+          <div className="max-w-4xl mx-auto">
+            <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-8 leading-relaxed`}>
+              Poolside Picks is a free fantasy league platform built for Big Brother fans and reality TV obsessives. 
+              Instead of just picking one winner, you draft a full team of houseguests and score points each week based 
+              on what happens in the show—HOH wins, nominations, evictions, twists, and more.
+            </p>
+            
+            <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-8 leading-relaxed`}>
+              Unlike traditional snake drafts or simple vote predictions, Poolside Picks lets you fully customize your fantasy league:
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-4 mb-8 text-left max-w-3xl mx-auto">
+              <div className="flex items-center gap-3">
+                <Users className="h-5 w-5 text-brand-teal" />
+                <span className="text-dark">Choose how many contestants are drafted per team</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Target className="h-5 w-5 text-coral" />
+                <span className="text-dark">Set your own point system (25+ trackable events)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <MessageCircle className="h-5 w-5 text-yellow" />
+                <span className="text-dark">Create weekly bonus questions or predictions</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Award className="h-5 w-5 text-orange" />
+                <span className="text-dark">Invite friends to join with a custom link</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Trophy className="h-5 w-5 text-brand-teal" />
+                <span className="text-dark">Set a prize pool or play for fun</span>
+              </div>
+            </div>
+
+            <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 leading-relaxed`}>
+              Whether you're a spreadsheet legend or a casual viewer, it's the easiest way to turn your summer 
+              Big Brother obsession into something competitive, fun, and (yes) slightly chaotic.
+            </p>
+            
+            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} text-brand-teal font-bold mt-8`}>
+              Create your league, draft your team, and let the drama begin.
+            </p>
+          </div>
         </div>
 
         {/* How It Works Section */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="text-center">
-            <CardHeader>
-              <div className="text-4xl mb-4">🎉</div>
-              <CardTitle>Join the Fun</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Get your invite code and jump into the ultimate Big Brother fantasy experience with friends!
-              </p>
-            </CardContent>
-          </Card>
+        <div className="mb-16">
+          <h2 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-bold text-center text-dark mb-4`}>
+            How It Works
+          </h2>
+          <p className="text-xl text-center text-dark/70 mb-12 max-w-3xl mx-auto">
+            Poolside Picks is a customizable fantasy league platform designed for fans of Big Brother and other reality TV shows. Here's how it works:
+          </p>
 
-          <Card className="text-center">
-            <CardHeader>
-              <div className="text-4xl mb-4">👑</div>
-              <CardTitle>Build Your Dream Team</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Choose your champions! Draft {poolConfig.picks_per_team} houseguests and put your Big Brother knowledge to the test.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Step 1 */}
+            <Card className="text-center hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-coral)' }}>
+                  <Users className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Step 1: Create Your League</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-dark/70">
+                  Start by setting up a league for you and your friends. You can play with as few as 2 people or as many as you want. 
+                  Choose whether to play for fun or set your own buy-in and prizes.
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card className="text-center">
-            <CardHeader>
-              <div className="text-4xl mb-4">🏆</div>
-              <CardTitle>Win Glory (& Maybe Cash!)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Earn points all season long as your picks dominate competitions. Bragging rights guaranteed, prizes possible!
-              </p>
-            </CardContent>
-          </Card>
+            {/* Step 2 */}
+            <Card className="text-center hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-teal)' }}>
+                  <Target className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Step 2: Customize Your Rules</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-dark/70">
+                  Decide how many houseguests each team should draft, how many teams each person can make, and which events should be tracked. 
+                  You can assign point values to 25+ different outcomes—everything from comp wins to getting into a showmance.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Step 3 */}
+            <Card className="text-center hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-yellow)' }}>
+                  <Tv className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Step 3: Draft Your Teams</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-dark/70">
+                  Each player builds a fantasy team by choosing real Big Brother houseguests. Everyone can use the same pool of players, 
+                  or you can set restrictions. Think of it like fantasy football… but for reality chaos.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Step 4 */}
+            <Card className="text-center hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-orange)' }}>
+                  <MessageCircle className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Step 4: Make Weekly Picks</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-dark/70">
+                  Each week, you can set bonus questions—like "Who will win Veto?" or "Will anyone cry in the DR?"—and your league members 
+                  can submit their predictions for extra points.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Step 5 */}
+            <Card className="text-center hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-summer)' }}>
+                  <Award className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Step 5: Score Automatically</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-dark/70">
+                  You or an admin user inputs the week's real-life results (for now), and scores are updated based on the custom rules you chose. 
+                  In the future, this will be automated with AI scoring.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Step 6 */}
+            <Card className="text-center hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-coral)' }}>
+                  <Trophy className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Step 6: Track the Leaderboard</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-dark/70">
+                  Real-time scores, team rankings, and bonus point breakdowns are all available on the dashboard. Talk trash, make trades 
+                  (if you allow them), and compete for the crown.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        {/* Scoring System */}
-        <Card className="mb-12">
-          <CardHeader>
-            <CardTitle className="text-2xl">Scoring System</CardTitle>
-            <CardDescription>{activePool ? `How your houseguests earn points in ${poolConfig.name || 'this pool'}` : 'How your houseguests earn points each week'}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {competitionRules.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <span>🏆</span>
-                  Competition Events
-                </h3>
-                <div className="grid md:grid-cols-3 gap-3">
-                  {competitionRules.map((rule) => {
-                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
-                    return (
-                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-                        <span className="text-lg">{emoji}</span>
-                        <div className="flex-1">
-                          <span className="text-sm">{rule.description}</span>
-                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {weeklyRules.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <span>📅</span>
-                  Weekly Events
-                </h3>
-                <div className="grid md:grid-cols-3 gap-3">
-                  {weeklyRules.map((rule) => {
-                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
-                    return (
-                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-                        <span className="text-lg">{emoji}</span>
-                        <div className="flex-1">
-                          <span className="text-sm">{rule.description}</span>
-                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {achievementRules.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <span>💪</span>
-                  Special Achievements
-                </h3>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {achievementRules.map((rule) => {
-                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
-                    return (
-                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-                        <span className="text-lg">{emoji}</span>
-                        <div className="flex-1">
-                          <span className="text-sm">{rule.description}</span>
-                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {specialRules.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <span>⚡</span>
-                  Special Events
-                </h3>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {specialRules.map((rule) => {
-                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
-                    return (
-                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-                        <span className="text-lg">{emoji}</span>
-                        <div className="flex-1">
-                          <span className="text-sm">{rule.description}</span>
-                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {juryRules.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <span>⚖️</span>
-                  Jury Phase
-                </h3>
-                <div className="grid md:grid-cols-3 gap-3">
-                  {juryRules.map((rule) => {
-                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
-                    return (
-                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-                        <span className="text-lg">{emoji}</span>
-                        <div className="flex-1">
-                          <span className="text-sm">{rule.description}</span>
-                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {finalRules.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <span>👑</span>
-                  Final Placement
-                </h3>
-                <div className="grid md:grid-cols-3 gap-3">
-                  {finalRules.map((rule) => {
-                    const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
-                    return (
-                      <div key={rule.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-                        <span className="text-lg">{emoji}</span>
-                        <div className="flex-1">
-                          <span className="text-sm">{rule.description}</span>
-                          <span className={`ml-2 text-xs font-medium ${rule.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {rule.points >= 0 ? '+' : ''}{rule.points} pts
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {bonusQuestions.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Bonus Questions ({bonusQuestions.length} questions)</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {bonusQuestions.slice(0, 6).map((question) => (
-                    <div key={question.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                      <span className="text-sm">{question.question_text}</span>
-                      <Badge variant="secondary">
-                        +{question.points_value} point{question.points_value !== 1 ? 's' : ''}
-                      </Badge>
-                    </div>
-                  ))}
-                  {bonusQuestions.length > 6 && (
-                    <div className="text-center p-3 text-muted-foreground text-sm">
-                      ... and {bonusQuestions.length - 6} more questions
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {scoringRules.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No scoring rules configured yet.</p>
-                <p className="text-sm mt-2">Contact your pool administrator to set up scoring rules.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Rules Section */}
-        <Card className="mb-12">
-          <CardHeader>
-            <CardTitle className="text-2xl">Pool Rules</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h3 className="font-semibold mb-2">Team Building</h3>
-              <ul className="list-disc list-inside text-gray-600 space-y-1">
-                <li>Draft exactly {poolConfig.picks_per_team} houseguests for your team</li>
-                <li>You must select one houseguest from each of the groups, plus additional picks as configured</li>
-                <li>{poolConfig.allow_duplicate_picks ? 'Duplicate picks are allowed' : 'No duplicate picks - each houseguest can only be on one team'}</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">Bonus Questions</h3>
-              <ul className="list-disc list-inside text-gray-600 space-y-1">
-                <li>Answer bonus prediction questions for extra points</li>
-                <li>Points are awarded when answers are revealed during the season</li>
-                <li>Some questions have higher point values based on difficulty</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">Scoring</h3>
-              <ul className="list-disc list-inside text-gray-600 space-y-1">
-                <li>Points are calculated weekly based on your houseguests' performance</li>
-                <li>Your total score includes weekly points + bonus question points</li>
-                <li>Rankings are updated after each episode</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Prize Pool Section - Only show if admin allows it */}
-        {showPrizeSection && (
-          <div className="mb-12">
-            <EnhancedPrizeDisplay isAdmin={isPoolAdmin} />
-          </div>
-        )}
-
-        {/* Call to Action */}
-        <div className="text-center">
-          <Card className="inline-block p-8">
-            <CardContent className="space-y-4">
-              <h2 className="text-2xl font-bold">Ready to Play?</h2>
-              <p className="text-gray-600">
-                Join the pool and start building your championship team!
+        {/* Final Message */}
+        <div className="text-center mb-16">
+          <Card className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-8 leading-relaxed`}>
+                Built by a reality TV fan (with no coding background), Poolside Picks is designed to be flexible, fun, 
+                and totally shareable. Whether you want a quick 1-on-1 competition or a full-season game with your group chat, 
+                we've got you covered.
               </p>
-              <Button 
-                onClick={() => navigate(user ? '/dashboard' : '/')}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                size="lg"
+              
+              <Button
+                onClick={() => navigate('/')}
+                size={isMobile ? "default" : "lg"}
+                className={`${isMobile ? 'w-full text-lg' : 'px-12 py-6 text-xl'} font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105`}
+                style={{ 
+                  background: 'var(--gradient-coral)',
+                  color: 'hsl(var(--coral-foreground))'
+                }}
               >
-                {user ? 'Go to Dashboard' : 'Start Drafting Your Team'}
+                <Sparkles className="mr-3 h-6 w-6" />
+                Ready to Play? Get Started
               </Button>
             </CardContent>
           </Card>
         </div>
-
-        {/* Footer */}
-        <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">
-          <p>© 2025 Big Brother Fantasy Pool • May the odds be ever in your favor!</p>
-        </footer>
       </div>
     </div>
   );

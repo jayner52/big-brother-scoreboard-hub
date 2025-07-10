@@ -93,21 +93,30 @@ const PoolsidePicks = () => {
           <div className="flex items-center gap-3">
             <PoolsidePicksLogo size="md" />
           </div>
-          {user ? (
+          <div className="flex items-center gap-3">
             <Button
-              onClick={() => navigate('/dashboard')}
-              className="bg-coral hover:bg-coral/90 text-white"
+              onClick={() => navigate('/about')}
+              variant="outline"
+              className="border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white"
             >
-              Dashboard
+              About
             </Button>
-          ) : (
-            <Button
-              onClick={() => navigate('/auth')}
-              className="bg-brand-teal hover:bg-brand-teal/90 text-white"
-            >
-              Sign In
-            </Button>
-          )}
+            {user ? (
+              <Button
+                onClick={() => navigate('/dashboard')}
+                className="bg-coral hover:bg-coral/90 text-white"
+              >
+                Dashboard
+              </Button>
+            ) : (
+              <Button
+                onClick={() => navigate('/auth')}
+                className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+              >
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -388,6 +397,12 @@ const PoolsidePicks = () => {
             © 2025 Poolside Picks | The Smartest Way to Watch Dumb TV
           </p>
           <div className="flex justify-center gap-8 text-cream/60">
+            <button 
+              onClick={() => navigate('/about')}
+              className="hover:text-coral transition-colors"
+            >
+              About
+            </button>
             <button 
               onClick={handleBigBrotherLaunch}
               className="hover:text-coral transition-colors"

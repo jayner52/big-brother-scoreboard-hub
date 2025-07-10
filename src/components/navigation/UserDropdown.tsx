@@ -62,7 +62,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
                 )}
               </AvatarFallback>
             </Avatar>
-            {!isMobile && (
+            {!isMobile ? (
               <>
                 <div className="flex flex-col text-left">
                   <span className="text-sm font-medium text-foreground truncate max-w-32">
@@ -76,6 +76,8 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
                 </div>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </>
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground ml-1" />
             )}
           </Button>
         </DropdownMenuTrigger>

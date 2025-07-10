@@ -72,7 +72,7 @@ const About = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className={`${isMobile ? 'text-4xl' : 'text-6xl'} font-bold text-dark mb-6`}>
-            About Poolside Picks
+            How It Works
           </h1>
           <div className="max-w-4xl mx-auto">
             <p className={`${isMobile ? 'text-2xl' : 'text-3xl'} text-brand-teal font-bold mb-8`}>

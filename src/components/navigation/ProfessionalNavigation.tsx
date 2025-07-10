@@ -74,7 +74,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
               className="flex items-center gap-2"
             >
               <Info className="h-4 w-4" />
-              How to Play
+              How It Works
             </Button>
           </Link>
           

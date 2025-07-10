@@ -309,6 +309,17 @@ const Index = () => {
                 
                 {activePool && (
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowRules(!showRules)}
+                      className="border-brand-teal/30 text-brand-teal hover:bg-brand-teal hover:text-white transition-all duration-200 text-xs sm:text-sm"
+                      title={showRules ? "Hide Pool Rules" : "Show Pool Rules & Scoring"}
+                    >
+                      <Trophy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">{showRules ? 'Hide Rules' : 'Pool Rules'}</span>
+                    </Button>
+                    
                     <InviteFriendsButton />
                     
                     {isAdmin && (

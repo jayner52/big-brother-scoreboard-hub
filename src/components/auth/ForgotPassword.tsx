@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Mail, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { generateAuthRedirectUrl } from '@/utils/domains';
 
 interface ForgotPasswordProps {
   onBack: () => void;
@@ -33,7 +34,7 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: generateAuthRedirectUrl('/reset-password'),
       });
 
       if (error) {

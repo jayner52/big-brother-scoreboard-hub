@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { ForgotPassword } from '@/components/auth/ForgotPassword';
 import { TermsModal } from '@/components/auth/TermsModal';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { generateAuthRedirectUrl } from '@/utils/domains';
 
 const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -150,7 +151,7 @@ const Auth = () => {
         email: signUpEmail,
         password: signUpPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: generateAuthRedirectUrl('/'),
           data: {
             display_name: signUpName
           }
@@ -220,7 +221,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { 
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: generateAuthRedirectUrl('/'),
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'

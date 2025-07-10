@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
+import { generateInviteLink } from '@/utils/domains';
 
 interface ChecklistStep {
   key: string;
@@ -162,7 +163,7 @@ export const useSimplifiedSetupChecklist = () => {
     } else if (navigation.modal === 'invite-copy') {
       // Handle invite copy action
       if (activePool?.invite_code) {
-        const inviteLink = `${window.location.origin}/invite/${activePool.invite_code}`;
+        const inviteLink = generateInviteLink(activePool.invite_code);
         navigator.clipboard.writeText(inviteLink);
         toast({
           title: "Invite Link Copied!",

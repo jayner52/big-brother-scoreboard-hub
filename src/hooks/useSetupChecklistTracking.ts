@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
+import { generateInviteLink } from '@/utils/domains';
 
 interface SetupStep {
   id: string;
@@ -76,7 +77,7 @@ export const useSetupChecklistTracking = () => {
   // Copy invite link function
   const copyInviteLink = () => {
     if (activePool?.invite_code) {
-      const inviteLink = `${window.location.origin}/invite/${activePool.invite_code}`;
+      const inviteLink = generateInviteLink(activePool.invite_code);
       navigator.clipboard.writeText(inviteLink);
       toast({
         title: "Invite link copied!",

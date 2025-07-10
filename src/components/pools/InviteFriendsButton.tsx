@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { usePool } from '@/contexts/PoolContext';
+import { generateInviteLink } from '@/utils/domains';
 
 export const InviteFriendsButton = () => {
   const { activePool } = usePool();
@@ -22,7 +23,7 @@ export const InviteFriendsButton = () => {
   if (!activePool) return null;
 
   const inviteCode = activePool.invite_code;
-  const shareLink = `${window.location.origin}/invite/${inviteCode}`;
+  const shareLink = generateInviteLink(inviteCode);
 
   const copyToClipboard = async (text: string, type: 'code' | 'link') => {
     try {

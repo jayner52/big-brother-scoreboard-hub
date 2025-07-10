@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { usePool } from '@/contexts/PoolContext';
+import { generateInviteLink } from '@/utils/domains';
 
 export const PoolInviteShare = () => {
   const { activePool } = usePool();
@@ -15,7 +16,7 @@ export const PoolInviteShare = () => {
   if (!activePool) return null;
 
   const inviteCode = activePool.invite_code;
-  const shareLink = `${window.location.origin}/welcome?code=${inviteCode}`;
+  const shareLink = generateInviteLink(inviteCode);
 
   const copyToClipboard = async (text: string, type: 'code' | 'link') => {
     try {

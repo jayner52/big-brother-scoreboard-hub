@@ -2,14 +2,16 @@ import React, { Suspense } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
-// Lazy load components for better performance
-const ContestantManagement = React.lazy(() => import('@/components/admin/ContestantManagement'));
-const WeekByWeekOverview = React.lazy(() => import('@/components/admin/WeekByWeekOverview'));
-const EnhancedBonusQuestionsPanel = React.lazy(() => import('@/components/admin/EnhancedBonusQuestionsPanel'));
+// Direct imports to avoid dynamic loading issues
+import ContestantManagement from '@/components/admin/ContestantManagement';
+import WeekByWeekOverview from '@/components/admin/WeekByWeekOverview';
+import EnhancedBonusQuestionsPanel from '@/components/admin/EnhancedBonusQuestionsPanel';
+import PoolEntriesManagement from '@/components/PoolEntriesManagement';
+import WeeklyEventsPanel from '@/components/admin/WeeklyEventsPanel';
+import RoleManagementPanel from '@/components/admin/RoleManagementPanel';
+
+// Keep only PoolSettingsPanel as lazy-loaded since it works
 const PoolSettingsPanel = React.lazy(() => import('@/components/admin/PoolSettingsPanel'));
-const PoolEntriesManagement = React.lazy(() => import('@/components/PoolEntriesManagement'));
-const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEventsPanel'));
-const RoleManagementPanel = React.lazy(() => import('@/components/admin/RoleManagementPanel'));
 
 interface AdminTabsContentProps {
   canManageRoles: boolean;
@@ -28,50 +30,38 @@ export const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ canManageRol
 
       <TabsContent value="events" className="space-y-4 mt-0">
         <ErrorBoundary>
-          <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading weekly events...</div>}>
-            <WeeklyEventsPanel />
-          </Suspense>
+          <WeeklyEventsPanel />
         </ErrorBoundary>
       </TabsContent>
 
       <TabsContent value="legacy" className="space-y-4 mt-0">
         <ErrorBoundary>
-          <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading week overview...</div>}>
-            <WeekByWeekOverview />
-          </Suspense>
+          <WeekByWeekOverview />
         </ErrorBoundary>
       </TabsContent>
 
       <TabsContent value="bonus" className="space-y-6 mt-0">
         <ErrorBoundary>
-          <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading bonus questions...</div>}>
-            <EnhancedBonusQuestionsPanel />
-          </Suspense>
+          <EnhancedBonusQuestionsPanel />
         </ErrorBoundary>
       </TabsContent>
 
       <TabsContent value="entries" className="space-y-4 mt-0">
         <ErrorBoundary>
-          <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading pool entries...</div>}>
-            <PoolEntriesManagement />
-          </Suspense>
+          <PoolEntriesManagement />
         </ErrorBoundary>
       </TabsContent>
 
       <TabsContent value="contestants" className="space-y-4 mt-0">
         <ErrorBoundary>
-          <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading houseguest management...</div>}>
-            <ContestantManagement />
-          </Suspense>
+          <ContestantManagement />
         </ErrorBoundary>
       </TabsContent>
 
       {canManageRoles && (
         <TabsContent value="roles" className="space-y-4 mt-0">
           <ErrorBoundary>
-            <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading role management...</div>}>
-              <RoleManagementPanel />
-            </Suspense>
+            <RoleManagementPanel />
           </ErrorBoundary>
         </TabsContent>
       )}

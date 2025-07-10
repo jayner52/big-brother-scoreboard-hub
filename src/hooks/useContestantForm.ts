@@ -7,8 +7,9 @@ export const useContestantForm = (groups: ContestantGroup[] = []) => {
   const [showAddForm, setShowAddForm] = useState(false);
 
   const getDefaultGroupId = () => {
+    if (groups.length === 0) return null;
     const groupA = groups.find(g => g.sort_order === 1);
-    return groupA?.id || groups[0]?.id || null;
+    return groupA?.id || groups[0]?.id;
   };
 
   const handleEdit = (contestant: ContestantWithBio) => {
@@ -23,8 +24,12 @@ export const useContestantForm = (groups: ContestantGroup[] = []) => {
   };
 
   const handleShowAddForm = () => {
+    const defaultGroupId = getDefaultGroupId();
     setShowAddForm(true);
-    setEditForm({ group_id: getDefaultGroupId() });
+    setEditForm({ 
+      group_id: defaultGroupId,
+      isActive: true 
+    });
   };
 
   const handleFormChange = (updates: Partial<ContestantWithBio>) => {

@@ -43,21 +43,25 @@ export const ContestantForm: React.FC<ContestantFormProps> = ({
           </div>
           <div>
             <Label htmlFor="group_assignment">Group Assignment</Label>
-            <Select 
-              value={editForm.group_id || groups.find(g => g.sort_order === 1)?.id || groups[0]?.id || ''} 
-              onValueChange={(value) => onFormChange({ group_id: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select group" />
-              </SelectTrigger>
-              <SelectContent>
-                {groups.map(group => (
-                  <SelectItem key={group.id} value={group.id}>
-                    {group.group_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {groups.length > 0 ? (
+              <Select 
+                value={editForm.group_id || ''} 
+                onValueChange={(value) => onFormChange({ group_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map(group => (
+                    <SelectItem key={group.id} value={group.id}>
+                      {group.group_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="text-muted-foreground text-sm">No groups available</div>
+            )}
           </div>
         </div>
         
@@ -122,7 +126,10 @@ export const ContestantForm: React.FC<ContestantFormProps> = ({
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={onSave}>
+          <Button 
+            onClick={onSave}
+            disabled={!editForm.name || !editForm.group_id}
+          >
             {isEditing ? 'Update Contestant' : 'Add Contestant'}
           </Button>
           <Button variant="outline" onClick={onCancel}>Cancel</Button>

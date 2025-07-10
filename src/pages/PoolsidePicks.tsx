@@ -22,6 +22,10 @@ const PoolsidePicks = () => {
 
   return (
     <div className="min-h-screen bg-cream relative">
+      {/* TEST BANNER - DELETE AFTER CONFIRMING CHANGES DEPLOY */}
+      <h1 style={{fontSize: '72px', color: 'red', textAlign: 'center', backgroundColor: 'yellow', padding: '20px', zIndex: 9999}}>
+        TEST - CAN YOU SEE THIS?
+      </h1>
       <FloatingPoolElements />
       <HomepageNavigation user={user} />
       

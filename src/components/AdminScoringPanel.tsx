@@ -23,7 +23,7 @@ export const AdminScoringPanel: React.FC = () => {
   const activePool = useActivePool();
   const [activeTab, setActiveTab] = useState('settings');
   
-  const userRole = getUserRole();
+  const userRole = getUserRole(activePool?.id || '');
   const isOwner = userRole === 'owner';
   const isAdmin = userRole === 'admin';
 

@@ -459,7 +459,7 @@ export const PoolSettingsPanel: React.FC = () => {
 
       console.log('🔧 Update result:', result);
 
-      if (result.success) {
+      if (result) {
         toast({
           title: allowDuplicates ? "Duplicate Picks Allowed" : "Duplicate Picks Disabled",
           description: allowDuplicates 
@@ -467,7 +467,7 @@ export const PoolSettingsPanel: React.FC = () => {
             : "Each houseguest can only be drafted once per team",
         });
       } else {
-        throw new Error(result.error || 'Failed to update duplicate picks setting');
+        throw new Error('Failed to update duplicate picks setting');
       }
     } catch (error) {
       console.error('🔧 Error updating duplicate picks:', error);

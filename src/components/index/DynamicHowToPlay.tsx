@@ -159,9 +159,12 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
   const getRulesByCategory = (category: string) =>
     scoringRules.filter(rule => rule.category === category);
 
-  const weeklyRules = getRulesByCategory('weekly');
-  const specialRules = getRulesByCategory('special_events');
-  const finalRules = getRulesByCategory('final_results');
+  const competitionRules = getRulesByCategory('competition');
+  const weeklyRules = getRulesByCategory('weekly_events');
+  const specialAchievementRules = getRulesByCategory('special_achievements');
+  const juryRules = getRulesByCategory('jury');
+  const finalPlacementRules = getRulesByCategory('final_placement');
+  const specialEventRules = getRulesByCategory('special_events');
 
   // Calculate prize pool if applicable
   const prizeCalculation = poolConfig.has_buy_in ? calculatePrizes(poolConfig, totalEntries) : null;
@@ -262,9 +265,27 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
               <p className="text-sm text-muted-foreground">How your houseguests earn points in this pool</p>
             </CardHeader>
             <CardContent className="space-y-6">
+              {competitionRules.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Competition Wins</h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {competitionRules.map((rule) => (
+                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
+                        <span>{rule.description || rule.subcategory}</span>
+                        <Badge 
+                          variant={rule.points >= 0 ? "secondary" : "destructive"}
+                        >
+                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {weeklyRules.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Weekly Competition Points</h3>
+                  <h3 className="text-lg font-semibold mb-3">Weekly Events</h3>
                   <div className="grid md:grid-cols-3 gap-4">
                     {weeklyRules.map((rule) => (
                       <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
@@ -280,11 +301,11 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
                 </div>
               )}
 
-              {specialRules.length > 0 && (
+              {specialAchievementRules.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Special Events & Achievements</h3>
+                  <h3 className="text-lg font-semibold mb-3">Special Achievements</h3>
                   <div className="grid md:grid-cols-2 gap-4">
-                    {specialRules.map((rule) => (
+                    {specialAchievementRules.map((rule) => (
                       <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
                         <span>{rule.description || rule.subcategory}</span>
                         <Badge 
@@ -298,11 +319,47 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
                 </div>
               )}
 
-              {finalRules.length > 0 && (
+              {juryRules.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Final Results</h3>
+                  <h3 className="text-lg font-semibold mb-3">Jury Phase</h3>
                   <div className="grid md:grid-cols-3 gap-4">
-                    {finalRules.map((rule) => (
+                    {juryRules.map((rule) => (
+                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
+                        <span>{rule.description || rule.subcategory}</span>
+                        <Badge 
+                          variant={rule.points >= 0 ? "secondary" : "destructive"}
+                        >
+                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {finalPlacementRules.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Final Placement</h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {finalPlacementRules.map((rule) => (
+                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
+                        <span>{rule.description || rule.subcategory}</span>
+                        <Badge 
+                          variant={rule.points >= 0 ? "secondary" : "destructive"}
+                        >
+                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {specialEventRules.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Special Events</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {specialEventRules.map((rule) => (
                       <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
                         <span>{rule.description || rule.subcategory}</span>
                         <Badge 
@@ -337,7 +394,7 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
                 </div>
               )}
 
-              {weeklyRules.length === 0 && specialRules.length === 0 && finalRules.length === 0 && (
+              {competitionRules.length === 0 && weeklyRules.length === 0 && specialAchievementRules.length === 0 && juryRules.length === 0 && finalPlacementRules.length === 0 && specialEventRules.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>No scoring rules configured for this pool yet.</p>
                   <p className="text-sm mt-2">Contact your pool administrator to set up scoring rules.</p>

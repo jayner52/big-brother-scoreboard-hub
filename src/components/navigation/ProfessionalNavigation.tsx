@@ -15,6 +15,8 @@ import { usePool } from '@/contexts/PoolContext';
 import { useUserPoolRole } from '@/hooks/useUserPoolRole';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { BottomNav } from '@/components/ui/bottom-nav';
+import { InstallPrompt } from '@/components/ui/install-prompt';
 import { usePaymentNotifications } from '@/hooks/usePaymentNotifications';
 import { useFeedbackForm } from '@/hooks/useFeedbackForm';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,71 +89,86 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
   }
 
   return (
-    <nav className="sticky top-0 z-40 flex items-center justify-between py-3 px-6 bg-background/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
-      {/* LEFT SECTION - Pool Identity */}
-      <div className="flex items-center gap-2 min-w-0">
-        <button 
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          <PoolsidePicksLogo size="sm" />
-        </button>
-        <h3 className="text-lg font-semibold text-foreground truncate">
-          {activePool?.name || 'Poolside Picks'}
-        </h3>
-      </div>
+    <>
+      {/* Install Prompt for PWA */}
+      {isMobile && <InstallPrompt />}
+      
+      <nav className="sticky top-0 z-40 flex items-center justify-between py-3 px-6 bg-background/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
+        {/* LEFT SECTION - Pool Identity */}
+        <div className="flex items-center gap-2 min-w-0">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <PoolsidePicksLogo size="sm" />
+          </button>
+          <h3 className="text-lg font-semibold text-foreground truncate">
+            {activePool?.name || 'Poolside Picks'}
+          </h3>
+        </div>
 
-      {/* CENTER SECTION - Core Actions (Hidden on mobile) */}
-      {!isMobile && (
-        <NavigationButtons
-          hasUnreadNotifications={hasUnreadNotifications}
-          hasOutstandingPayment={hasOutstandingPayment}
-        />
-      )}
-
-      {/* RIGHT SECTION - User Menu */}
-      <div className="flex items-center gap-2">
-        {isMobile && <EnhancedChatIcon />}
-        
-        {!isMobile ? (
-          <UserDropdown
-            user={user}
-            profile={profile}
-            displayName={displayName}
-            initials={initials}
-            userRank={userRank}
-            isAdmin={isAdmin}
-            onSignOut={onSignOut}
-            onProfileModalOpen={() => setProfileModalOpen(true)}
-          />
-        ) : (
-          <MobileMenu
-            user={user}
-            isAdmin={isAdmin}
+        {/* CENTER SECTION - Core Actions (Hidden on mobile) */}
+        {!isMobile && (
+          <NavigationButtons
             hasUnreadNotifications={hasUnreadNotifications}
             hasOutstandingPayment={hasOutstandingPayment}
           />
         )}
-      </div>
-      
-      {/* Profile Modal */}
-      {user && (
-        <ProfileModal
-          isOpen={profileModalOpen}
-          onClose={() => setProfileModalOpen(false)}
-          user={user}
-          userProfile={profile || undefined}
-          onProfileUpdate={refreshProfile}
-        />
-      )}
 
-      {/* Feedback Form Modal */}
-      {isFeedbackOpen && (
-        <FeedbackForm
-          type={feedbackType}
-          onClose={closeFeedbackForm}
+        {/* RIGHT SECTION - User Menu */}
+        <div className="flex items-center gap-2">
+          {isMobile && <EnhancedChatIcon />}
+          
+          {!isMobile ? (
+            <UserDropdown
+              user={user}
+              profile={profile}
+              displayName={displayName}
+              initials={initials}
+              userRank={userRank}
+              isAdmin={isAdmin}
+              onSignOut={onSignOut}
+              onProfileModalOpen={() => setProfileModalOpen(true)}
+            />
+          ) : (
+            <MobileMenu
+              user={user}
+              isAdmin={isAdmin}
+              hasUnreadNotifications={hasUnreadNotifications}
+              hasOutstandingPayment={hasOutstandingPayment}
+            />
+          )}
+        </div>
+        
+        {/* Profile Modal */}
+        {user && (
+          <ProfileModal
+            isOpen={profileModalOpen}
+            onClose={() => setProfileModalOpen(false)}
+            user={user}
+            userProfile={profile || undefined}
+            onProfileUpdate={refreshProfile}
+          />
+        )}
+
+        {/* Feedback Form Modal */}
+        {isFeedbackOpen && (
+          <FeedbackForm
+            type={feedbackType}
+            onClose={closeFeedbackForm}
+          />
+        )}
+      </nav>
+      
+      {/* Bottom Navigation for Mobile */}
+      {isMobile && (
+        <BottomNav 
+          badgeCount={{
+            standings: hasUnreadNotifications ? 1 : 0,
+            picks: hasOutstandingPayment ? 1 : 0,
+          }}
         />
       )}
-    </nav>
+    </>
   );
 };

@@ -70,6 +70,14 @@ const Landing = () => {
           
           {user ? (
             <div className="flex items-center gap-4">
+              <Button 
+                onClick={() => navigate('/about')}
+                variant="outline" 
+                size="sm"
+                className="border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white font-semibold"
+              >
+                ℹ️ About & FAQ
+              </Button>
               <div className="flex items-center gap-2 bg-brand-teal/10 border border-brand-teal/30 rounded-lg px-3 py-2">
                 <User className="h-4 w-4 text-brand-teal" />
                 <span className="text-sm text-dark">
@@ -81,12 +89,22 @@ const Landing = () => {
               </Button>
             </div>
           ) : (
-            <Button 
-              onClick={() => navigate('/auth')}
-              className="bg-coral hover:bg-coral/90 text-coral-foreground font-semibold px-6 py-2 rounded-lg"
-            >
-              Sign In
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button 
+                onClick={() => navigate('/about')}
+                variant="outline" 
+                size="sm"
+                className="border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white font-semibold"
+              >
+                ℹ️ About & FAQ
+              </Button>
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="bg-coral hover:bg-coral/90 text-coral-foreground font-semibold px-6 py-2 rounded-lg"
+              >
+                Sign In
+              </Button>
+            </div>
           )}
         </div>
       </nav>
@@ -300,6 +318,20 @@ const Landing = () => {
 
         {/* Footer */}
         <footer className="text-center text-dark/60 text-sm mt-16 py-8 border-t border-brand-teal/20">
+          <div className="flex justify-center gap-8 mb-4">
+            <button 
+              onClick={() => navigate('/about')}
+              className="hover:text-coral transition-colors text-lg font-semibold bg-coral/20 px-4 py-2 rounded-lg hover:bg-coral hover:text-white"
+            >
+              📖 About & FAQ
+            </button>
+            <button 
+              onClick={() => navigate('/')}
+              className="hover:text-brand-teal transition-colors"
+            >
+              Home
+            </button>
+          </div>
           <p>© 2025 Poolside Picks | May the best picks win! 🏆</p>
         </footer>
 

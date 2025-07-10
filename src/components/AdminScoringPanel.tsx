@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState, memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
@@ -18,7 +18,7 @@ const RoleManagementPanel = React.lazy(() => import('@/components/admin/RoleMana
 const PrizePoolManagement = React.lazy(() => import('@/components/admin/PrizePoolManagement').then(m => ({ default: m.PrizePoolManagement })));
 
 
-export const AdminScoringPanel: React.FC = () => {
+export const AdminScoringPanel: React.FC = memo(() => {
   const { canManagePool, canManageRoles, getUserRole } = usePoolPermissions();
   const activePool = useActivePool();
   const [activeTab, setActiveTab] = useState('settings');
@@ -60,13 +60,13 @@ export const AdminScoringPanel: React.FC = () => {
     }
   }, [canManageRoles, activePool?.id]);
 
-  // Save tab changes to localStorage
-  const handleTabChange = (tab: string) => {
+  // Save tab changes to localStorage (memoized)
+  const handleTabChange = React.useCallback((tab: string) => {
     setActiveTab(tab);
     if (activePool?.id) {
       localStorage.setItem(`admin_panel_active_tab_${activePool.id}`, tab);
     }
-  };
+  }, [activePool?.id]);
 
   if (!canManagePool()) {
     return (
@@ -244,4 +244,4 @@ export const AdminScoringPanel: React.FC = () => {
       </div>
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poolside-picks-v1';
+const CACHE_NAME = 'poolside-picks-v2';
 const urlsToCache = [
   '/',
   '/manifest.json',

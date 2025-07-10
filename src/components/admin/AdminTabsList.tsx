@@ -41,8 +41,8 @@ export const AdminTabsList: React.FC<AdminTabsListProps> = ({ canManageRoles }) 
             Bonus Questions
           </TabsTrigger>
           <TabsTrigger 
-            value="entries" 
-            data-value="entries"
+            value="entries-new" 
+            data-value="entries-new"
             className={tabClassName}
           >
             Pool Entries

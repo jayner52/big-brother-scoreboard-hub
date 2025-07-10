@@ -46,7 +46,7 @@ export const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ canManageRol
         </ErrorBoundary>
       </TabsContent>
 
-      <TabsContent value="entries" className="space-y-4 mt-0">
+      <TabsContent value="entries-new" className="space-y-4 mt-0">
         <ErrorBoundary>
           <OptimizedPoolEntriesManagement />
         </ErrorBoundary>

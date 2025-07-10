@@ -20,7 +20,7 @@ export const useAdminTabPersistence = ({
     if (poolId) {
       const savedTab = localStorage.getItem(`admin_panel_active_tab_${poolId}`);
       if (savedTab) {
-        const validTabs = ['settings', 'events', 'legacy', 'bonus', 'entries', 'contestants'];
+        const validTabs = ['settings', 'events', 'legacy', 'bonus', 'entries-new', 'contestants'];
         if (canManageRoles()) validTabs.push('roles');
         
         if (validTabs.includes(savedTab)) {
@@ -33,7 +33,7 @@ export const useAdminTabPersistence = ({
     // Fall back to URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
-    const validTabs = ['settings', 'events', 'legacy', 'bonus', 'entries', 'contestants'];
+    const validTabs = ['settings', 'events', 'legacy', 'bonus', 'entries-new', 'contestants'];
     if (canManageRoles()) validTabs.push('roles');
     
     if (tab && validTabs.includes(tab)) {

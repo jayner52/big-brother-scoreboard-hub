@@ -62,7 +62,7 @@ const About = () => {
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
-          <PoolsidePicksLogo size="md" />
+          <PoolsidePicksLogo size="xxl" />
         </div>
       </nav>
 

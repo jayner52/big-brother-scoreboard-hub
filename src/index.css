@@ -71,6 +71,8 @@ All colors MUST be HSL.
     --gradient-coral: linear-gradient(135deg, hsl(0 70% 69%), hsl(23 100% 66%));
     --gradient-teal: linear-gradient(135deg, hsl(174 60% 61%), hsl(180 100% 35%));
     --gradient-summer: linear-gradient(135deg, hsl(46 100% 70%), hsl(174 60% 61%));
+    --gradient-yellow: linear-gradient(135deg, hsl(46 100% 70%), hsl(50 100% 60%));
+    --gradient-orange: linear-gradient(135deg, hsl(23 100% 66%), hsl(30 100% 60%));
 
     --sidebar-background: 0 0% 98%;
 

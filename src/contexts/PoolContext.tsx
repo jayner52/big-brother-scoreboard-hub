@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Pool } from '@/types/pool';
 import { supabase } from '@/integrations/supabase/client';
-import { useSpecialEventStatusSync } from '@/hooks/useSpecialEventStatusSync';
+
 
 interface PoolMembership {
   id: string;
@@ -63,8 +63,6 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Add status sync to ensure consistency across the application
-  useSpecialEventStatusSync();
 
   const setActivePool = (pool: Pool | null) => {
     setActivePoolState(pool);

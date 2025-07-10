@@ -4,9 +4,15 @@ import { ContestantGroupsOverview } from './contestant-values/ContestantGroupsOv
 import { useContestantStats } from '@/hooks/useContestantStats';
 import { useCurrentWeekStatus } from '@/hooks/useCurrentWeekStatus';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { useSpecialEventStatusSync } from '@/hooks/useSpecialEventStatusSync';
+import { useActivePool } from '@/hooks/useActivePool';
 
 export const ContestantValues: React.FC = () => {
+  const activePool = useActivePool();
   const { contestants, contestantGroups, contestantStats, loading } = useContestantStats();
+  
+  // Add status sync for real-time updates
+  useSpecialEventStatusSync(activePool?.id);
 
   if (loading) {
     return (

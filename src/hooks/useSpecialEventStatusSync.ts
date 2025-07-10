@@ -1,20 +1,18 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { usePool } from '@/contexts/PoolContext';
 
-export const useSpecialEventStatusSync = () => {
-  const { activePool } = usePool();
 
+export const useSpecialEventStatusSync = (poolId?: string) => {
   const syncContestantStatuses = async () => {
-    if (!activePool?.id) return;
+    if (!poolId) return;
 
     try {
-      console.log('🔄 Syncing contestant statuses for pool:', activePool.id);
+      console.log('🔄 Syncing contestant statuses for pool:', poolId);
       
       // Call the database function to update eviction statuses
       const { error } = await supabase.rpc('update_contestant_eviction_status', {
-        target_pool_id: activePool.id
+        target_pool_id: poolId
       });
 
       if (error) {
@@ -29,7 +27,7 @@ export const useSpecialEventStatusSync = () => {
 
   // Listen for changes to special events and trigger sync
   useEffect(() => {
-    if (!activePool?.id) return;
+    if (!poolId) return;
 
     const channel = supabase
       .channel('special-events-status-sync')
@@ -39,7 +37,7 @@ export const useSpecialEventStatusSync = () => {
           event: '*',
           schema: 'public',
           table: 'special_events',
-          filter: `pool_id=eq.${activePool.id}`
+          filter: `pool_id=eq.${poolId}`
         },
         (payload) => {
           console.log('🔄 Special event change detected, syncing statuses:', payload);
@@ -52,7 +50,7 @@ export const useSpecialEventStatusSync = () => {
           event: '*',
           schema: 'public',
           table: 'weekly_events',
-          filter: `pool_id=eq.${activePool.id}`
+          filter: `pool_id=eq.${poolId}`
         },
         (payload) => {
           console.log('🔄 Weekly event change detected, syncing statuses:', payload);
@@ -64,7 +62,7 @@ export const useSpecialEventStatusSync = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activePool?.id]);
+  }, [poolId]);
 
   return { syncContestantStatuses };
 };

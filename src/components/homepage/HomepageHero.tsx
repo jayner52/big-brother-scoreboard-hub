@@ -151,10 +151,9 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
               <Button
                 onClick={() => navigate('/about')}
                 variant="outline"
-                size={isMobile ? "default" : "lg"}
-                className={`${isMobile ? 'w-full text-lg' : 'px-12 py-6 text-xl'} font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white`}
+                className="bg-white text-dark"
               >
-                ℹ️ Learn How It Works
+                Learn How It Works
               </Button>
             </div>
           </>

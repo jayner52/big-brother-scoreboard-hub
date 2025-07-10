@@ -31,7 +31,7 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
     navigate('/landing');
   };
 
-  // Debug logging for mobile testing
+  // Debug logging for mobile testing and About button visibility
   console.log('PoolsidePicks Debug:', { 
     user: !!user, 
     userEmail: user?.email, 
@@ -39,7 +39,8 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
     profileName: profile?.display_name,
     activePool: !!activePool, 
     poolName: activePool?.name,
-    isMobile 
+    isMobile,
+    showingAboutButton: !user
   });
 
   return (

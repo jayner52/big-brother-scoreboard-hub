@@ -20,10 +20,10 @@ export const HomepageNavigation: React.FC<HomepageNavigationProps> = ({ user }) 
         <div className="flex items-center gap-3">
           <Button
             onClick={() => navigate('/about')}
-            variant="outline"
-            className="border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white"
+            size="lg"
+            className="bg-coral hover:bg-coral/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-semibold px-6"
           >
-            About
+            ℹ️ About Poolside Picks
           </Button>
           {user ? (
             <Button

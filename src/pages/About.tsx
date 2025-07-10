@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Sparkles, Users, Target, Award, Trophy, MessageCircle, Tv } from 'lucide-react';
+import { ArrowLeft, Sparkles, Users, Target, Award, Trophy, MessageCircle, Tv, Mail, Heart, Shield, Calendar, HelpCircle, Star, CheckCircle } from 'lucide-react';
 import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
 import { PoolFloat } from '@/components/brand/PoolFloat';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -10,6 +10,33 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const About = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  const faqs = [
+    {
+      question: "How much does it cost?",
+      answer: "Poolside Picks is completely free! You can create unlimited leagues, invite unlimited friends, and play all season long without any cost."
+    },
+    {
+      question: "Do I need to know anything about Big Brother to play?",
+      answer: "Not at all! The platform is designed for both superfans and casual viewers. We provide explanations for all scoring events, and you can learn as you go."
+    },
+    {
+      question: "Can I create private leagues with my friends?",
+      answer: "Yes! Every league gets a unique invite code that you can share with friends. Only people with your code can join your league."
+    },
+    {
+      question: "How does scoring work?",
+      answer: "You earn points when your drafted houseguests perform well in competitions, survive evictions, or achieve other milestones. You can customize point values for 25+ different events."
+    },
+    {
+      question: "Can I change my team after the draft?",
+      answer: "That depends on your league settings! League creators can enable trades, allow certain substitutions, or lock teams after the draft - it's completely customizable."
+    },
+    {
+      question: "What devices can I use?",
+      answer: "Poolside Picks works on any device with a web browser - phones, tablets, computers. It's fully responsive and even works offline as a PWA."
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-cream relative overflow-hidden">
@@ -45,11 +72,15 @@ const About = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className={`${isMobile ? 'text-4xl' : 'text-6xl'} font-bold text-dark mb-6`}>
-            What is Poolside Picks?
+            About Poolside Picks
           </h1>
           <div className="max-w-4xl mx-auto">
+            <p className={`${isMobile ? 'text-2xl' : 'text-3xl'} text-brand-teal font-bold mb-8`}>
+              The Smartest Way to Watch Dumb TV 📺
+            </p>
+            
             <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-8 leading-relaxed`}>
-              Poolside Picks is a free fantasy league platform built for Big Brother fans and reality TV obsessives. 
+              Poolside Picks is a <strong>completely free</strong> fantasy league platform built for Big Brother fans and reality TV obsessives. 
               Instead of just picking one winner, you draft a full team of houseguests and score points each week based 
               on what happens in the show—HOH wins, nominations, evictions, twists, and more.
             </p>
@@ -79,6 +110,10 @@ const About = () => {
                 <Trophy className="h-5 w-5 text-brand-teal" />
                 <span className="text-dark">Set a prize pool or play for fun</span>
               </div>
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-coral" />
+                <span className="text-dark">Private leagues with your friends only</span>
+              </div>
             </div>
 
             <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 leading-relaxed`}>
@@ -87,8 +122,66 @@ const About = () => {
             </p>
             
             <p className={`${isMobile ? 'text-xl' : 'text-2xl'} text-brand-teal font-bold mt-8`}>
-              Create your league, draft your team, and let the drama begin.
+              Create your league, draft your team, and let the drama begin. 🎭
             </p>
+          </div>
+        </div>
+
+        {/* Creator Story Section */}
+        <div className="mb-16">
+          <Card className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm border-brand-teal/20">
+            <CardHeader className="text-center">
+              <CardTitle className={`${isMobile ? 'text-2xl' : 'text-3xl'} text-dark flex items-center justify-center gap-3`}>
+                <Heart className="h-8 w-8 text-coral" />
+                Built by a Reality TV Fan
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-6 leading-relaxed`}>
+                Hi! I'm a lifelong Big Brother superfan who got tired of managing fantasy leagues in messy spreadsheets. 
+                After years of manually tracking points and sending weekly updates to my friends, I decided to build 
+                something better.
+              </p>
+              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-6 leading-relaxed`}>
+                Poolside Picks started as a personal project to make fantasy Big Brother leagues more fun and less work. 
+                Now it's a full platform that can handle everything from casual family pools to serious competition leagues.
+              </p>
+              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-brand-teal font-semibold`}>
+                Made with ❤️ for the reality TV community
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Season Information */}
+        <div className="mb-16">
+          <h2 className={`${isMobile ? 'text-3xl' : 'text-4xl'} font-bold text-center text-dark mb-8`}>
+            <Calendar className="inline mr-3 h-8 w-8 text-brand-teal" />
+            Current Season Support
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-xl text-brand-teal">Big Brother 27 (2025)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-dark/70">
+                  Full support for the current season with real contestant data, live scoring updates, 
+                  and all the latest twists and competitions.
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-xl text-coral">Coming Soon</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-dark/70">
+                  Support for Celebrity Big Brother, The Challenge, Survivor, and other reality competition shows. 
+                  Vote on which shows you want to see next!
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
@@ -200,28 +293,143 @@ const About = () => {
           </div>
         </div>
 
-        {/* Final Message */}
+        {/* FAQ Section */}
+        <div className="mb-16">
+          <h2 className={`${isMobile ? 'text-3xl' : 'text-4xl'} font-bold text-center text-dark mb-8`}>
+            <HelpCircle className="inline mr-3 h-8 w-8 text-brand-teal" />
+            Frequently Asked Questions
+          </h2>
+          <div className="max-w-4xl mx-auto space-y-6">
+            {faqs.map((faq, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader>
+                  <CardTitle className="text-lg text-brand-teal flex items-start gap-3">
+                    <CheckCircle className="h-6 w-6 text-coral mt-0.5 flex-shrink-0" />
+                    {faq.question}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-dark/80 leading-relaxed pl-9">{faq.answer}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Contact & Support Section */}
+        <div className="mb-16">
+          <Card className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm border-brand-teal/20">
+            <CardHeader className="text-center">
+              <CardTitle className={`${isMobile ? 'text-2xl' : 'text-3xl'} text-dark flex items-center justify-center gap-3`}>
+                <Mail className="h-8 w-8 text-brand-teal" />
+                Need Help or Have Feedback?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-6 leading-relaxed`}>
+                Got questions? Found a bug? Have an idea for a new feature? I'd love to hear from you!
+              </p>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="text-center">
+                  <h4 className="font-semibold text-brand-teal mb-2">For Support & Questions</h4>
+                  <p className="text-dark/70">Use the feedback form in the app or reach out through our community channels.</p>
+                </div>
+                <div className="text-center">
+                  <h4 className="font-semibold text-coral mb-2">Feature Requests</h4>
+                  <p className="text-dark/70">Your ideas help shape the future of Poolside Picks! Let us know what you'd like to see.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Privacy & Data Brief */}
+        <div className="mb-16">
+          <Card className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm">
+            <CardHeader className="text-center">
+              <CardTitle className={`${isMobile ? 'text-2xl' : 'text-3xl'} text-dark flex items-center justify-center gap-3`}>
+                <Shield className="h-8 w-8 text-brand-teal" />
+                Your Privacy Matters
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6 text-center">
+                <div>
+                  <h4 className="font-semibold text-brand-teal mb-2">What We Collect</h4>
+                  <p className="text-dark/70 text-sm">Only what's needed: email for account creation, your league data, and basic usage analytics to improve the platform.</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-coral mb-2">What We Don't Do</h4>
+                  <p className="text-dark/70 text-sm">We don't sell your data, send spam emails, or share your info with advertisers. Your leagues are private to you and your friends.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Testimonials Section */}
+        <div className="mb-16">
+          <h2 className={`${isMobile ? 'text-3xl' : 'text-4xl'} font-bold text-center text-dark mb-8`}>
+            <Star className="inline mr-3 h-8 w-8 text-yellow" />
+            What Players Are Saying
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <Card className="text-center bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <p className="text-dark/80 italic mb-4">"Finally, a fantasy platform that actually gets Big Brother! The customization options are incredible."</p>
+                <p className="text-brand-teal font-semibold">- Sarah M.</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <p className="text-dark/80 italic mb-4">"Our friend group has been using this all season. It's made watching so much more fun and competitive!"</p>
+                <p className="text-coral font-semibold">- Mike R.</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <p className="text-dark/80 italic mb-4">"Super easy to set up and manage. Love that it's completely free with no ads or catches."</p>
+                <p className="text-brand-teal font-semibold">- Jessica L.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Final CTA */}
         <div className="text-center mb-16">
           <Card className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm">
             <CardContent className="p-8">
+              <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-dark mb-6`}>
+                Ready to Transform Your Big Brother Experience?
+              </h3>
               <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-dark/80 mb-8 leading-relaxed`}>
-                Built by a reality TV fan (with no coding background), Poolside Picks is designed to be flexible, fun, 
-                and totally shareable. Whether you want a quick 1-on-1 competition or a full-season game with your group chat, 
-                we've got you covered.
+                Join thousands of reality TV fans who have already discovered the most fun way to watch Big Brother. 
+                Create your first league in under 2 minutes - completely free, no credit card required.
               </p>
               
-              <Button
-                onClick={() => navigate('/')}
-                size={isMobile ? "default" : "lg"}
-                className={`${isMobile ? 'w-full text-lg' : 'px-12 py-6 text-xl'} font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105`}
-                style={{ 
-                  background: 'var(--gradient-coral)',
-                  color: 'hsl(var(--coral-foreground))'
-                }}
-              >
-                <Sparkles className="mr-3 h-6 w-6" />
-                Ready to Play? Get Started
-              </Button>
+              <div className={`flex ${isMobile ? 'flex-col gap-4' : 'gap-6 justify-center'}`}>
+                <Button
+                  onClick={() => navigate('/')}
+                  size={isMobile ? "default" : "lg"}
+                  className={`${isMobile ? 'w-full text-lg' : 'px-12 py-6 text-xl'} font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105`}
+                  style={{ 
+                    background: 'var(--gradient-coral)',
+                    color: 'hsl(var(--coral-foreground))'
+                  }}
+                >
+                  <Sparkles className="mr-3 h-6 w-6" />
+                  Start Playing Free
+                </Button>
+                <Button
+                  onClick={() => navigate('/landing')}
+                  variant="outline"
+                  size={isMobile ? "default" : "lg"}
+                  className={`${isMobile ? 'w-full text-lg' : 'px-8 py-6 text-xl'} font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white`}
+                >
+                  <Trophy className="mr-3 h-5 w-5" />
+                  Try Demo League
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

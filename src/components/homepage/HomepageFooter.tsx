@@ -21,9 +21,9 @@ export const HomepageFooter: React.FC = () => {
         <div className="flex justify-center gap-8 text-cream/60">
           <button 
             onClick={() => navigate('/about')}
-            className="hover:text-coral transition-colors"
+            className="hover:text-coral transition-colors text-lg font-semibold bg-coral/20 px-4 py-2 rounded-lg hover:bg-coral hover:text-white"
           >
-            About
+            📖 About & FAQ
           </button>
           <button 
             onClick={handleBigBrotherLaunch}

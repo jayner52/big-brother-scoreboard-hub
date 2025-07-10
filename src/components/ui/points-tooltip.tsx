@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { DetailedScoringRule } from '@/types/admin';
 
 interface PointsTooltipProps {
@@ -33,17 +33,15 @@ export const PointsTooltip: React.FC<PointsTooltipProps> = ({
   const sign = pointValue >= 0 ? '+' : '';
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {children}
-        </TooltipTrigger>
-        <TooltipContent side="top" className="bg-slate-900 text-white border-slate-700">
-          <p className="text-sm font-medium">
-            Worth: {sign}{pointValue} point{Math.abs(pointValue) !== 1 ? 's' : ''}
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {children}
+      </TooltipTrigger>
+      <TooltipContent side="top" className="bg-slate-900 text-white border-slate-700">
+        <p className="text-sm font-medium">
+          Worth: {sign}{pointValue} point{Math.abs(pointValue) !== 1 ? 's' : ''}
+        </p>
+      </TooltipContent>
+    </Tooltip>
   );
 };

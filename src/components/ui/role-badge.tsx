@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Crown, Shield, User } from 'lucide-react';
 
 interface RoleBadgeProps {
@@ -63,15 +63,13 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
   }
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {badgeContent}
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="text-sm max-w-xs">{config.tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {badgeContent}
+      </TooltipTrigger>
+      <TooltipContent>
+        <p className="text-sm max-w-xs">{config.tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };

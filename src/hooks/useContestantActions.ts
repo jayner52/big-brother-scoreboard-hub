@@ -31,23 +31,31 @@ export const useContestantActions = (
   const handleSave = async () => {
     const success = await saveContestant(editForm, editingId!);
     if (success) {
-      resetForm();
+      await loadContestants();
+      setTimeout(() => resetForm(), 100);
     }
   };
 
   const handleAddContestant = async () => {
     const success = await addContestant(editForm);
     if (success) {
-      resetForm();
+      await loadContestants();
+      setTimeout(() => resetForm(), 100);
     }
   };
 
   const handleDelete = async (contestantId: string) => {
-    await deleteContestant(contestantId);
+    const success = await deleteContestant(contestantId);
+    if (success) {
+      await loadContestants();
+    }
   };
 
   const handleClearAll = async () => {
-    await clearAllContestants();
+    const success = await clearAllContestants();
+    if (success) {
+      await loadContestants();
+    }
   };
 
   return {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { useBonusQuestions } from '@/hooks/useBonusQuestions';
 
@@ -18,6 +18,13 @@ export const ScoringBadges: React.FC = () => {
   const finalRules = scoringRules.filter(r => r.category === 'final_placement' && r.is_active);
   const achievementRules = scoringRules.filter(r => r.category === 'special_achievements' && r.is_active);
   
+  // Calculate category totals for badge display
+  const weeklyPoints = weeklyRules.reduce((sum, rule) => sum + Math.abs(rule.points), 0);
+  const bonusPoints = bonusQuestions.reduce((sum, q) => sum + q.points_value, 0);
+  const achievementPoints = achievementRules.reduce((sum, rule) => sum + Math.abs(rule.points), 0);
+  const endgamePoints = [...juryRules, ...finalRules].reduce((sum, rule) => sum + Math.abs(rule.points), 0);
+  const specialEventPoints = specialRules.reduce((sum, rule) => sum + Math.abs(rule.points), 0);
+
   // Add main competition badges with direct points display
   competitionRules.forEach(rule => {
     if (rule.subcategory === 'hoh_winner') {
@@ -44,127 +51,100 @@ export const ScoringBadges: React.FC = () => {
   // Add Weekly Gameplay Points badge with tooltip
   if (weeklyRules.length > 0) {
     badges.push(
-      <TooltipProvider key="weekly-gameplay">
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-blue-800 border border-blue-200 cursor-help">
-              Weekly Gameplay Points
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-1">
-              <div className="font-semibold text-sm mb-1">Weekly Points:</div>
-              {weeklyRules.map(rule => (
-                <div key={rule.id} className="text-xs">
-                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
-                </div>
-              ))}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip key="weekly-gameplay">
+        <TooltipTrigger asChild>
+          <Badge 
+            variant="outline" 
+            className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors cursor-help"
+          >
+            🎯 {weeklyPoints}
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-semibold">Weekly Gameplay Points</p>
+          <p className="text-sm text-muted-foreground">Points from competitions, nominations, and gameplay events</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
-  // Add simplified bonus badge with hover tooltip
+  // Add bonus questions badge
   if (bonusQuestions.length > 0) {
     badges.push(
-      <TooltipProvider key="bonus">
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-purple-800 border border-purple-200 cursor-help">
-              Bonus Questions
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-1">
-              <div className="font-semibold text-sm mb-1">Bonus Questions:</div>
-              {bonusQuestions.map(q => (
-                <div key={q.id} className="text-xs">
-                  <span className="font-medium">{q.points_value} pts:</span> {q.question_text}
-                </div>
-              ))}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip key="bonus">
+        <TooltipTrigger asChild>
+          <Badge 
+            variant="outline" 
+            className="bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 transition-colors cursor-help"
+          >
+            ⭐ {bonusPoints}
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-semibold">Bonus Question Points</p>
+          <p className="text-sm text-muted-foreground">Points from correctly answered bonus questions</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
-
 
   // Add achievements badge
   if (achievementRules.length > 0) {
     badges.push(
-      <TooltipProvider key="achievements">
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-orange-800 border border-orange-200 cursor-help">
-              Achievements
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-1">
-              <div className="font-semibold text-sm mb-1">Special Achievements:</div>
-              {achievementRules.map(rule => (
-                <div key={rule.id} className="text-xs">
-                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
-                </div>
-              ))}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip key="achievements">
+        <TooltipTrigger asChild>
+          <Badge 
+            variant="outline" 
+            className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 transition-colors cursor-help"
+          >
+            🏆 {achievementPoints}
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-semibold">Achievement Points</p>
+          <p className="text-sm text-muted-foreground">Points from special achievements and milestones</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
   // Add jury/finale badge
   if (juryRules.length > 0 || finalRules.length > 0) {
-    const allEndgameRules = [...juryRules, ...finalRules];
     badges.push(
-      <TooltipProvider key="endgame">
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-amber-800 border border-amber-200 cursor-help">
-              Endgame & Finals
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-1">
-              <div className="font-semibold text-sm mb-1">Endgame Points:</div>
-              {allEndgameRules.map(rule => (
-                <div key={rule.id} className="text-xs">
-                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
-                </div>
-              ))}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip key="endgame">
+        <TooltipTrigger asChild>
+          <Badge 
+            variant="outline" 
+            className="bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 transition-colors cursor-help"
+          >
+            🎪 {endgamePoints}
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-semibold">Endgame Points</p>
+          <p className="text-sm text-muted-foreground">Points from jury phase and finale placement</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
-  // Add special events badge with consolidated hover tooltip
+  // Add special events badge
   if (specialRules.length > 0) {
     badges.push(
-      <TooltipProvider key="special-events">
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant="secondary" className="bg-white/80 backdrop-blur-sm text-indigo-800 border border-indigo-200 cursor-help">
-              Special Events
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <div className="space-y-1">
-              <div className="font-semibold text-sm mb-1">Special Events:</div>
-              {specialRules.map(rule => (
-                <div key={rule.id} className="text-xs">
-                  <span className="font-medium">{rule.points} pts:</span> {rule.description}
-                </div>
-              ))}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip key="special-events">
+        <TooltipTrigger asChild>
+          <Badge 
+            variant="outline" 
+            className="bg-red-50 border-red-200 text-red-700 hover:bg-red-100 transition-colors cursor-help"
+          >
+            ⚡ {specialEventPoints}
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-semibold">Special Event Points</p>
+          <p className="text-sm text-muted-foreground">Points from unique events and twists</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 

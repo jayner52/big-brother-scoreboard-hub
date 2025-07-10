@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -61,11 +62,12 @@ export const StatsBar: React.FC = () => {
   const { activePool, poolEntries } = usePool();
   const { currentWeek } = useCurrentWeek();
   const [totalEntries, setTotalEntries] = useState(0);
-  const [dynamicCountdown, setDynamicCountdown] = useState<{
+  const [draftCountdown, setDraftCountdown] = useState<{
     label: string;
     value: string;
     icon: React.ComponentType<{ className?: string }>;
     color: string;
+    expired: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -75,88 +77,61 @@ export const StatsBar: React.FC = () => {
   }, [activePool?.id, poolEntries]);
 
   useEffect(() => {
-    const calculateDynamicCountdown = () => {
-      if (!activePool) return null;
+    const calculateDraftCountdown = () => {
+      if (!activePool?.registration_deadline) return null;
       
       const now = new Date();
+      const deadline = new Date(activePool.registration_deadline);
       
-      // Priority 1: Registration deadline countdown (if draft is open and deadline exists)
-      if (activePool.draft_open && activePool.registration_deadline) {
-        const deadline = new Date(activePool.registration_deadline);
-        if (deadline > now) {
-          const diff = deadline.getTime() - now.getTime();
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          
-          let displayValue = "";
-          if (days > 0) {
-            displayValue = `${days} day${days !== 1 ? 's' : ''}`;
-          } else if (hours > 0) {
-            displayValue = `${hours} hour${hours !== 1 ? 's' : ''}`;
-          } else {
-            displayValue = "< 1 hour";
-          }
-          
-          return {
-            label: "Draft Closes In",
-            value: displayValue,
-            icon: Users,
-            color: days < 1 ? 'text-red-600' : 'text-orange-600'
-          };
-        }
-      }
-      
-      // Priority 2: Next eviction countdown (Thursdays at 8pm ET)
-      if (!activePool.season_complete && !activePool.draft_open) {
-        const nextThursday = new Date();
-        const daysUntilThursday = (4 - nextThursday.getDay() + 7) % 7;
-        if (daysUntilThursday === 0 && nextThursday.getHours() >= 20) {
-          // It's already Thursday after 8pm, so next Thursday
-          nextThursday.setDate(nextThursday.getDate() + 7);
-        } else {
-          nextThursday.setDate(nextThursday.getDate() + daysUntilThursday);
-        }
-        nextThursday.setHours(20, 0, 0, 0); // 8pm ET
-        
-        const diff = nextThursday.getTime() - now.getTime();
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        
+      if (deadline <= now) {
+        // Deadline has passed
         return {
-          label: "Next Eviction",
-          value: days === 0 ? "Tonight" : `${days} day${days !== 1 ? 's' : ''}`,
+          label: "Draft Deadline",
+          value: "Expired",
           icon: Clock,
-          color: 'text-purple-600'
+          color: 'text-red-600',
+          expired: true
         };
       }
       
-      // Priority 3: Season status
-      if (activePool.season_complete) {
-        return {
-          label: "Season Status",
-          value: "Complete",
-          icon: Trophy,
-          color: 'text-green-600'
-        };
+      // Calculate time remaining
+      const diff = deadline.getTime() - now.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      let displayValue = "";
+      let color = "text-blue-600";
+      
+      if (days > 0) {
+        displayValue = `${days} day${days !== 1 ? 's' : ''}`;
+        if (days <= 1) color = "text-orange-600";
+      } else if (hours > 0) {
+        displayValue = `${hours}h ${minutes}m`;
+        color = "text-orange-600";
+      } else {
+        displayValue = `${minutes} min${minutes !== 1 ? 's' : ''}`;
+        color = "text-red-600";
       }
       
-      // Default: Current week
       return {
-        label: "Current Week",
-        value: `Week ${currentWeek || 1}`,
-        icon: Calendar,
-        color: 'text-blue-600'
+        label: "Draft Closes In",
+        value: displayValue,
+        icon: Clock,
+        color,
+        expired: false
       };
     };
     
-    setDynamicCountdown(calculateDynamicCountdown());
+    setDraftCountdown(calculateDraftCountdown());
     
     // Update every minute for real-time countdown
     const interval = setInterval(() => {
-      setDynamicCountdown(calculateDynamicCountdown());
+      setDraftCountdown(calculateDraftCountdown());
     }, 60000);
     
     return () => clearInterval(interval);
-  }, [activePool, currentWeek]);
+  }, [activePool]);
 
   const loadEntryCount = async () => {
     if (!activePool?.id) return;
@@ -180,7 +155,8 @@ export const StatsBar: React.FC = () => {
   const totalPrizePool = prizeCalculation.totalPrizePool;
   const currency = activePool?.entry_fee_currency || 'CAD';
 
-  const stats = [
+  // Build the stats array based on countdown status
+  const baseStats = [
     ...(totalEntries >= 5 ? [{
       icon: Trophy,
       label: 'Prize Pool',
@@ -198,30 +174,33 @@ export const StatsBar: React.FC = () => {
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200'
-    },
+    }
+  ];
+
+  // Only show countdown if deadline exists and hasn't expired
+  const showCountdown = draftCountdown && !draftCountdown.expired;
+  
+  const stats = showCountdown ? [
+    ...baseStats,
     {
-      icon: Calendar,
-      label: 'Current Week',
-      value: currentWeek || 1,
-      displayValue: `Week ${currentWeek || 1}`,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200'
-    },
-    ...(dynamicCountdown ? [{
-      icon: dynamicCountdown.icon,
-      label: dynamicCountdown.label,
-      value: dynamicCountdown.value,
-      displayValue: dynamicCountdown.value,
-      color: dynamicCountdown.color,
+      icon: draftCountdown.icon,
+      label: draftCountdown.label,
+      value: draftCountdown.value,
+      displayValue: draftCountdown.value,
+      color: draftCountdown.color,
       bgColor: 'bg-teal-50',
       borderColor: 'border-teal-200'
-    }] : [])
-  ];
+    }
+  ] : baseStats;
+
+  // Determine grid layout: 3 columns when countdown shows, 2 centered when it doesn't
+  const gridClasses = showCountdown 
+    ? `grid gap-4 ${stats.length === 3 ? 'grid-cols-1 md:grid-cols-3' : stats.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`
+    : 'grid gap-4 grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto';
 
   return (
     <div className="mb-8 animate-fade-in">
-      <div className={`grid gap-4 ${stats.length === 4 ? 'grid-cols-2 lg:grid-cols-4' : stats.length === 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
+      <div className={gridClasses}>
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -240,7 +219,7 @@ export const StatsBar: React.FC = () => {
                       {stat.label}
                     </p>
                      <div className={`text-xl font-bold ${stat.color} truncate`}>
-                       {typeof stat.value === 'number' && stat.label !== 'Current Week' && !stat.label.includes('Draft') && !stat.label.includes('Eviction') && !stat.label.includes('Season') ? (
+                       {typeof stat.value === 'number' && stat.label !== 'Participants' ? (
                          <AnimatedNumber 
                            value={stat.value} 
                            prefix={stat.label === 'Prize Pool' ? currency === 'USD' ? '$' : '$' : ''}

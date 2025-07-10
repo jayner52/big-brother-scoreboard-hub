@@ -136,6 +136,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
               isAdmin={isAdmin}
               hasUnreadNotifications={hasUnreadNotifications}
               hasOutstandingPayment={hasOutstandingPayment}
+              onProfileModalOpen={() => setProfileModalOpen(true)}
             />
           )}
         </div>

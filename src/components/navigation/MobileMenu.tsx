@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, Info, Users, Settings } from 'lucide-react';
+import { Menu, Info, Users, Settings, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -9,6 +9,7 @@ interface MobileMenuProps {
   isAdmin: boolean;
   hasUnreadNotifications: boolean;
   hasOutstandingPayment: boolean;
+  onProfileModalOpen?: () => void;
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -16,6 +17,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   isAdmin,
   hasUnreadNotifications,
   hasOutstandingPayment,
+  onProfileModalOpen,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -47,23 +49,37 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             </Link>
             
             {user && (
-              <Link to="/my-teams" onClick={() => setMobileMenuOpen(false)}>
+              <>
+                <Link to="/my-teams" onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant={isActiveRoute('/my-teams') ? 'default' : 'ghost'}
+                    className="w-full justify-start gap-2 relative"
+                  >
+                    <Users className="h-4 w-4" />
+                    My Team(s)
+                     {(hasUnreadNotifications || hasOutstandingPayment) && (
+                       <div 
+                         className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white cursor-help"
+                         title="Buy In Outstanding"
+                       >
+                         !
+                       </div>
+                     )}
+                  </Button>
+                </Link>
+                
                 <Button
-                  variant={isActiveRoute('/my-teams') ? 'default' : 'ghost'}
-                  className="w-full justify-start gap-2 relative"
+                  variant="ghost"
+                  className="w-full justify-start gap-2"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onProfileModalOpen?.();
+                  }}
                 >
-                  <Users className="h-4 w-4" />
-                  My Team(s)
-                   {(hasUnreadNotifications || hasOutstandingPayment) && (
-                     <div 
-                       className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white cursor-help"
-                       title="Buy In Outstanding"
-                     >
-                       !
-                     </div>
-                   )}
+                  <User className="h-4 w-4" />
+                  Edit Profile
                 </Button>
-              </Link>
+              </>
             )}
             
             {user && isAdmin && (

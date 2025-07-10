@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Target, Trophy, DollarSign, AlertCircle } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Users, Target, Trophy, DollarSign, AlertCircle, Crown, Calendar, Star, Scale, Gavel, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { calculatePrizes, formatPrize, getPlaceText } from '@/utils/prizeCalculation';
 
@@ -261,142 +262,381 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
           {/* Scoring System */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl">Scoring System for {poolConfig.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">How your houseguests earn points in this pool</p>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <Target className="h-6 w-6 text-primary" />
+                Scoring System for {poolConfig.name}
+              </CardTitle>
+              <p className="text-muted-foreground">How your houseguests earn points in this pool</p>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {competitionRules.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Competition Wins</h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {competitionRules.map((rule) => (
-                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                        <span>{rule.description || rule.subcategory}</span>
-                        <Badge 
-                          variant={rule.points >= 0 ? "secondary" : "destructive"}
-                        >
-                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    ))}
+            <CardContent>
+              {/* Desktop Layout */}
+              <div className="hidden md:block space-y-8">
+                {competitionRules.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Crown className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-xl font-semibold">Competition Wins</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {competitionRules.map((rule) => (
+                        <div key={rule.id} className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 flex flex-col justify-between">
+                          <span className="font-medium text-gray-800 mb-2">{rule.description || rule.subcategory}</span>
+                          <Badge 
+                            variant={rule.points >= 0 ? "default" : "destructive"}
+                            className="self-start"
+                          >
+                            {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {weeklyRules.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Weekly Events</h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {weeklyRules.map((rule) => (
-                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                        <span>{rule.description || rule.subcategory}</span>
-                        <Badge 
-                          variant={rule.points >= 0 ? "secondary" : "destructive"}
-                        >
-                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    ))}
+                {weeklyRules.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Calendar className="h-5 w-5 text-green-600" />
+                      <h3 className="text-xl font-semibold">Weekly Events</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {weeklyRules.map((rule) => (
+                        <div key={rule.id} className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4 flex flex-col justify-between">
+                          <span className="font-medium text-gray-800 mb-2">{rule.description || rule.subcategory}</span>
+                          <Badge 
+                            variant={rule.points >= 0 ? "default" : "destructive"}
+                            className="self-start"
+                          >
+                            {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {specialAchievementRules.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Special Achievements</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {specialAchievementRules.map((rule) => (
-                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                        <span>{rule.description || rule.subcategory}</span>
-                        <Badge 
-                          variant={rule.points >= 0 ? "secondary" : "destructive"}
-                        >
-                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    ))}
+                {specialAchievementRules.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Star className="h-5 w-5 text-purple-600" />
+                      <h3 className="text-xl font-semibold">Special Achievements</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {specialAchievementRules.map((rule) => (
+                        <div key={rule.id} className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 flex flex-col justify-between">
+                          <span className="font-medium text-gray-800 mb-2">{rule.description || rule.subcategory}</span>
+                          <Badge 
+                            variant={rule.points >= 0 ? "default" : "destructive"}
+                            className="self-start"
+                          >
+                            {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {juryRules.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Jury Phase</h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {juryRules.map((rule) => (
-                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                        <span>{rule.description || rule.subcategory}</span>
-                        <Badge 
-                          variant={rule.points >= 0 ? "secondary" : "destructive"}
-                        >
-                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    ))}
+                {juryRules.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Scale className="h-5 w-5 text-orange-600" />
+                      <h3 className="text-xl font-semibold">Jury Phase</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {juryRules.map((rule) => (
+                        <div key={rule.id} className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 flex flex-col justify-between">
+                          <span className="font-medium text-gray-800 mb-2">{rule.description || rule.subcategory}</span>
+                          <Badge 
+                            variant={rule.points >= 0 ? "default" : "destructive"}
+                            className="self-start"
+                          >
+                            {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {finalPlacementRules.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Final Placement</h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {finalPlacementRules.map((rule) => (
-                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                        <span>{rule.description || rule.subcategory}</span>
-                        <Badge 
-                          variant={rule.points >= 0 ? "secondary" : "destructive"}
-                        >
-                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    ))}
+                {finalPlacementRules.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Trophy className="h-5 w-5 text-yellow-600" />
+                      <h3 className="text-xl font-semibold">Final Placement</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {finalPlacementRules.map((rule) => (
+                        <div key={rule.id} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl p-4 flex flex-col justify-between">
+                          <span className="font-medium text-gray-800 mb-2">{rule.description || rule.subcategory}</span>
+                          <Badge 
+                            variant={rule.points >= 0 ? "default" : "destructive"}
+                            className="self-start"
+                          >
+                            {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {specialEventRules.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Special Events</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {specialEventRules.map((rule) => (
-                      <div key={rule.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                        <span>{rule.description || rule.subcategory}</span>
-                        <Badge 
-                          variant={rule.points >= 0 ? "secondary" : "destructive"}
-                        >
-                          {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    ))}
+                {specialEventRules.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Zap className="h-5 w-5 text-red-600" />
+                      <h3 className="text-xl font-semibold">Special Events</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {specialEventRules.map((rule) => (
+                        <div key={rule.id} className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-xl p-4 flex flex-col justify-between">
+                          <span className="font-medium text-gray-800 mb-2">{rule.description || rule.subcategory}</span>
+                          <Badge 
+                            variant={rule.points >= 0 ? "default" : "destructive"}
+                            className="self-start"
+                          >
+                            {rule.points >= 0 ? '+' : ''}{rule.points} point{Math.abs(rule.points) !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {bonusQuestions.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Bonus Questions ({bonusQuestions.length} questions)</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {bonusQuestions.slice(0, 6).map((question) => (
-                      <div key={question.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg border">
-                        <span className="text-sm">{question.question_text}</span>
-                        <Badge variant="secondary">
-                          +{question.points_value} point{question.points_value !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    ))}
-                    {bonusQuestions.length > 6 && (
-                      <div className="text-center p-3 text-muted-foreground text-sm">
-                        ... and {bonusQuestions.length - 6} more questions
-                      </div>
-                    )}
+                {bonusQuestions.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Gavel className="h-5 w-5 text-indigo-600" />
+                      <h3 className="text-xl font-semibold">Bonus Questions ({bonusQuestions.length} questions)</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {bonusQuestions.slice(0, 6).map((question) => (
+                        <div key={question.id} className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-4 flex flex-col justify-between">
+                          <span className="font-medium text-gray-800 mb-2 text-sm">{question.question_text}</span>
+                          <Badge variant="default" className="self-start">
+                            +{question.points_value} point{question.points_value !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      ))}
+                      {bonusQuestions.length > 6 && (
+                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 flex items-center justify-center text-muted-foreground text-sm">
+                          ... and {bonusQuestions.length - 6} more questions
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+
+              {/* Mobile Layout - Accordion */}
+              <div className="md:hidden">
+                <Accordion type="multiple" className="space-y-2">
+                  {competitionRules.length > 0 && (
+                    <AccordionItem value="competition" className="border rounded-xl px-1">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <Crown className="h-4 w-4 text-blue-600" />
+                          <span className="font-semibold">Competition Wins</span>
+                          <Badge variant="outline" className="ml-auto">{competitionRules.length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-3">
+                          {competitionRules.map((rule) => (
+                            <div key={rule.id} className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="font-medium text-gray-800 text-sm">{rule.description || rule.subcategory}</span>
+                                <Badge 
+                                  variant={rule.points >= 0 ? "default" : "destructive"}
+                                  className="shrink-0"
+                                >
+                                  {rule.points >= 0 ? '+' : ''}{rule.points}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+
+                  {weeklyRules.length > 0 && (
+                    <AccordionItem value="weekly" className="border rounded-xl px-1">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-green-600" />
+                          <span className="font-semibold">Weekly Events</span>
+                          <Badge variant="outline" className="ml-auto">{weeklyRules.length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-3">
+                          {weeklyRules.map((rule) => (
+                            <div key={rule.id} className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="font-medium text-gray-800 text-sm">{rule.description || rule.subcategory}</span>
+                                <Badge 
+                                  variant={rule.points >= 0 ? "default" : "destructive"}
+                                  className="shrink-0"
+                                >
+                                  {rule.points >= 0 ? '+' : ''}{rule.points}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+
+                  {specialAchievementRules.length > 0 && (
+                    <AccordionItem value="achievements" className="border rounded-xl px-1">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <Star className="h-4 w-4 text-purple-600" />
+                          <span className="font-semibold">Special Achievements</span>
+                          <Badge variant="outline" className="ml-auto">{specialAchievementRules.length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-3">
+                          {specialAchievementRules.map((rule) => (
+                            <div key={rule.id} className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="font-medium text-gray-800 text-sm">{rule.description || rule.subcategory}</span>
+                                <Badge 
+                                  variant={rule.points >= 0 ? "default" : "destructive"}
+                                  className="shrink-0"
+                                >
+                                  {rule.points >= 0 ? '+' : ''}{rule.points}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+
+                  {juryRules.length > 0 && (
+                    <AccordionItem value="jury" className="border rounded-xl px-1">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <Scale className="h-4 w-4 text-orange-600" />
+                          <span className="font-semibold">Jury Phase</span>
+                          <Badge variant="outline" className="ml-auto">{juryRules.length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-3">
+                          {juryRules.map((rule) => (
+                            <div key={rule.id} className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-3">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="font-medium text-gray-800 text-sm">{rule.description || rule.subcategory}</span>
+                                <Badge 
+                                  variant={rule.points >= 0 ? "default" : "destructive"}
+                                  className="shrink-0"
+                                >
+                                  {rule.points >= 0 ? '+' : ''}{rule.points}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+
+                  {finalPlacementRules.length > 0 && (
+                    <AccordionItem value="final" className="border rounded-xl px-1">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="h-4 w-4 text-yellow-600" />
+                          <span className="font-semibold">Final Placement</span>
+                          <Badge variant="outline" className="ml-auto">{finalPlacementRules.length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-3">
+                          {finalPlacementRules.map((rule) => (
+                            <div key={rule.id} className="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-3">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="font-medium text-gray-800 text-sm">{rule.description || rule.subcategory}</span>
+                                <Badge 
+                                  variant={rule.points >= 0 ? "default" : "destructive"}
+                                  className="shrink-0"
+                                >
+                                  {rule.points >= 0 ? '+' : ''}{rule.points}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+
+                  {specialEventRules.length > 0 && (
+                    <AccordionItem value="special" className="border rounded-xl px-1">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-red-600" />
+                          <span className="font-semibold">Special Events</span>
+                          <Badge variant="outline" className="ml-auto">{specialEventRules.length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-3">
+                          {specialEventRules.map((rule) => (
+                            <div key={rule.id} className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg p-3">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="font-medium text-gray-800 text-sm">{rule.description || rule.subcategory}</span>
+                                <Badge 
+                                  variant={rule.points >= 0 ? "default" : "destructive"}
+                                  className="shrink-0"
+                                >
+                                  {rule.points >= 0 ? '+' : ''}{rule.points}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+
+                  {bonusQuestions.length > 0 && (
+                    <AccordionItem value="bonus" className="border rounded-xl px-1">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <Gavel className="h-4 w-4 text-indigo-600" />
+                          <span className="font-semibold">Bonus Questions</span>
+                          <Badge variant="outline" className="ml-auto">{bonusQuestions.length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-3">
+                          {bonusQuestions.map((question) => (
+                            <div key={question.id} className="bg-gradient-to-r from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-3">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="font-medium text-gray-800 text-sm">{question.question_text}</span>
+                                <Badge variant="default" className="shrink-0">
+                                  +{question.points_value}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+                </Accordion>
+              </div>
 
               {competitionRules.length === 0 && weeklyRules.length === 0 && specialAchievementRules.length === 0 && juryRules.length === 0 && finalPlacementRules.length === 0 && specialEventRules.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No scoring rules configured for this pool yet.</p>
+                  <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">No scoring rules configured for this pool yet.</p>
                   <p className="text-sm mt-2">Contact your pool administrator to set up scoring rules.</p>
                 </div>
               )}

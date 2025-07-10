@@ -18,6 +18,14 @@ export const HomepageFooter: React.FC = () => {
         <p className="text-cream/60 mb-4">
           © 2025 Poolside Picks | The Smartest Way to Watch Dumb TV
         </p>
+        <div className="text-center mb-4">
+          <button 
+            onClick={() => navigate('/privacy-policy')}
+            className="text-cream/50 hover:text-cream/80 transition-colors text-sm underline"
+          >
+            Privacy Policy
+          </button>
+        </div>
         <div className="flex justify-center gap-8 text-cream/60">
           <button 
             onClick={() => navigate('/about')}

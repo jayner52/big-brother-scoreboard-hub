@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { FloatingPoolElements } from '@/components/homepage/FloatingPoolElements';
 import { HomepageNavigation } from '@/components/homepage/HomepageNavigation';
@@ -23,6 +24,17 @@ const PoolsidePicks = () => {
     <div className="min-h-screen bg-cream relative">
       <FloatingPoolElements />
       <HomepageNavigation user={user} />
+      
+      {/* Simple About Link - Always Visible */}
+      <div className="fixed top-4 right-4 z-50">
+        <Link 
+          to="/about" 
+          className="bg-white text-dark px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-brand-teal"
+        >
+          Learn How It Works
+        </Link>
+      </div>
+      
       <HomepageHero user={user} />
       <AvailableShowsSection />
       <HowItWorksSection />

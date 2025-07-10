@@ -93,19 +93,20 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
         <div className="mb-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {visibleTabs.map((tab) => (
-              <Button
-                key={tab.id}
-                variant={activeTab === tab.id ? "default" : "outline"}
-                onClick={() => handleTabClick(tab.id, tab)}
-                disabled={tab.locked}
-                className={cn(
-                  "h-24 flex flex-col items-center justify-center gap-2 text-sm font-medium transition-all duration-300 relative",
-                  activeTab === tab.id 
-                    ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg scale-105" 
-                    : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple border-purple/20 hover:scale-102",
-                  tab.locked && "opacity-50 cursor-not-allowed"
-                )}
-              >
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.id ? "default" : "outline"}
+                  onClick={() => handleTabClick(tab.id, tab)}
+                  disabled={tab.locked}
+                  className={cn(
+                    "h-24 min-h-[6rem] flex flex-col items-center justify-center gap-2 text-sm font-medium transition-all duration-300 relative touch-action-manipulation active:scale-95",
+                    activeTab === tab.id 
+                      ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg scale-105" 
+                      : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple border-purple/20 hover:scale-102",
+                    tab.locked && "opacity-50 cursor-not-allowed"
+                  )}
+                  style={{ minHeight: '44px' }} // Ensure touch target meets accessibility guidelines
+                >
                 <tab.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 <span 
                   className="text-xs sm:text-sm leading-tight text-center font-medium"
@@ -123,7 +124,7 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
         </div>
 
         {/* Mobile Content */}
-        <div className="animate-fade-in">
+        <div className="animate-fade-in touch-action-manipulation">
           {activeTabData?.component}
         </div>
       </div>

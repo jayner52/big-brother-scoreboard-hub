@@ -9,6 +9,10 @@ interface SessionState {
     filterBy?: string;
     viewMode?: 'grid' | 'list';
   };
+  toastPreferences?: {
+    showSuccessToasts?: boolean;
+    showProgressIndicators?: boolean;
+  };
 }
 
 const SESSION_KEY = 'poolside-picks-session';

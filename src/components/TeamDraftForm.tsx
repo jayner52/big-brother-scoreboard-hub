@@ -16,6 +16,7 @@ import { useDynamicDraftValidation } from '@/hooks/useDynamicDraftValidation';
 import { useDynamicDraftSubmission } from '@/hooks/useDynamicDraftSubmission';
 import { useRandomPicks } from '@/hooks/useRandomPicks';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToastFeedback } from '@/hooks/useToastFeedback';
 import { Shuffle, AlertCircle, Trash2 } from 'lucide-react';
 
 export const TeamDraftForm: React.FC = () => {
@@ -30,7 +31,9 @@ export const TeamDraftForm: React.FC = () => {
   const { submitDraft } = useDynamicDraftSubmission();
   const { validateDraftForm } = useDynamicDraftValidation();
   const { randomizeTeam, randomizeBonusAnswers } = useRandomPicks();
+  const { showSuccess, showError } = useToastFeedback();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Enhanced form data change handler that clears validation errors
   const handleFormDataChange = (updates: any) => {

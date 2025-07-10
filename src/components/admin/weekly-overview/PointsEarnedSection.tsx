@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 import { usePool } from '@/contexts/PoolContext';
 import { EvictedContestantTile } from '@/components/ui/evicted-contestant-tile';
+import { useSpecialEventStatusSync } from '@/hooks/useSpecialEventStatusSync';
 
 interface ContestantScore {
   name: string;
@@ -51,6 +51,9 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
   const { scoringRules } = useScoringRules();
   const { activePool } = usePool();
   const { allContestants: weekAwareContestants, evictedContestants } = useWeekAwareContestants(weekNumber);
+  
+  // Add status sync hook to ensure consistency
+  const { syncContestantStatuses } = useSpecialEventStatusSync();
 
   // Helper function to check if an event is a quit event by looking up scoring rules
   const isQuitEvent = (eventType: string) => {
@@ -63,7 +66,7 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
     return rule && (rule.subcategory === 'self_evicted' || rule.subcategory === 'removed_production');
   };
 
-  // Apply eviction styling based on week-aware contestant status
+  // CRITICAL FIX: Use week-aware contestants that properly reflect eviction status
   const completeContestantScores = (weekAwareContestants.length > 0 ? weekAwareContestants : allContestants).map(contestant => {
     const existingScore = contestantScores.find(score => score.name === contestant.name);
     
@@ -72,8 +75,13 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
       event.week_number === weekNumber && event.contestant_name === contestant.name
     );
     
-    // Use week-aware eviction status
-    const isEvictedThisWeek = evictedContestants.includes(contestant.name);
+    // CRITICAL FIX: Use week-aware eviction status that accounts for special events
+    const isEvictedThisWeek = evictedContestants.includes(contestant.name) || 
+      specialEvents.some(event => 
+        event.week_number === weekNumber && 
+        event.contestant_name === contestant.name &&
+        isQuitEvent(event.event_type)
+      );
     
     return {
       name: contestant.name,

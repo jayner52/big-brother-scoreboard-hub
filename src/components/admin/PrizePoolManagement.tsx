@@ -40,7 +40,7 @@ export const PrizePoolManagement: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [showPrizeTotal, setShowPrizeTotal] = useState(true);
   const [showPrizeAmounts, setShowPrizeAmounts] = useState(true);
-  const [tipJarProcessing, setTipJarProcessing] = useState(false);
+  const [lemonsqueezyLoaded, setLemonsqueezyLoaded] = useState(false);
   
   const [config, setConfig] = useState<PrizeConfiguration>({
     mode: 'percentage',
@@ -62,6 +62,17 @@ export const PrizePoolManagement: React.FC = () => {
   useEffect(() => {
     if (activePool?.id) {
       loadData();
+    }
+    
+    // Load LemonSqueezy script
+    if (!document.querySelector('script[src*="lemon.js"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://assets.lemonsqueezy.com/lemon.js';
+      script.async = true;
+      script.onload = () => setLemonsqueezyLoaded(true);
+      document.head.appendChild(script);
+    } else {
+      setLemonsqueezyLoaded(true);
     }
   }, [activePool?.id]);
 
@@ -380,78 +391,9 @@ export const PrizePoolManagement: React.FC = () => {
     return Math.round((totalExpected * tipPercentage) / 100);
   };
 
-  const handleTipJarPayment = async () => {
-    if (!activePool) return;
-
-    setTipJarProcessing(true);
-    try {
-      const tipAmount = calculateTipJarAmount();
-      const tipPercentage = (activePool as any).tip_jar_percentage || 10;
-
-      console.log('🚀 STRIPE DEBUG: Starting tip payment process', { 
-        poolId: activePool.id, 
-        tipPercentage, 
-        tipAmount,
-        activePoolName: activePool.name
-      });
-
-      // First, test if the function is accessible
-      const { data: testData, error: testError } = await supabase.functions.invoke('create-tip-payment', {
-        body: {
-          test: true,
-          poolId: activePool.id,
-          tipPercentage,
-          tipAmount
-        }
-      });
-
-      console.log('🔍 STRIPE DEBUG: Function test response', { testData, testError });
-
-      if (testError) {
-        console.error('❌ STRIPE DEBUG: Test function error', testError);
-        throw new Error(`Test function error: ${testError.message || JSON.stringify(testError)}`);
-      }
-
-      // If test passed, proceed with actual payment
-      const { data, error } = await supabase.functions.invoke('create-tip-payment', {
-        body: {
-          poolId: activePool.id,
-          tipPercentage,
-          tipAmount
-        }
-      });
-
-      console.log('💳 STRIPE DEBUG: Payment function response', { data, error });
-
-      if (error) {
-        console.error('❌ STRIPE DEBUG: Payment function error', error);
-        throw new Error(`Function error: ${error.message || JSON.stringify(error)}`);
-      }
-
-      if (data?.error) {
-        console.error('❌ STRIPE DEBUG: Function returned error', data);
-        throw new Error(`Payment error: ${data.error} (${data.errorCode || 'Unknown'})`);
-      }
-
-      if (data?.url) {
-        console.log('✅ STRIPE DEBUG: Opening Stripe checkout URL', data.url);
-        // Open Stripe checkout in a new tab
-        window.open(data.url, '_blank');
-      } else {
-        throw new Error('No checkout URL received from payment service');
-      }
-    } catch (error) {
-      console.error('Error creating tip payment:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      toast({
-        title: "Payment Error",
-        description: `Failed to create tip payment: ${errorMessage}`,
-        variant: "destructive",
-      });
-    } finally {
-      setTipJarProcessing(false);
-    }
+  const handleTipJarPayment = () => {
+    // Open LemonSqueezy store in new tab
+    window.open('https://store.poolside-picks.com/buy/87195c18-1f73-4e1d-8ef7-2057c8c6c27d', '_blank');
   };
 
   const handleTipJarPercentageChange = async (newPercentage: number) => {
@@ -612,20 +554,24 @@ export const PrizePoolManagement: React.FC = () => {
               </div>
               
               {!tipJarPaid && tipJarPercentage > 0 && (
-                <Button
-                  onClick={handleTipJarPayment}
-                  disabled={tipJarProcessing || totalEntries === 0}
-                  className="bg-purple-600 hover:bg-purple-700"
+                <a
+                  href="https://store.poolside-picks.com/buy/87195c18-1f73-4e1d-8ef7-2057c8c6c27d"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="lemonsqueezy-button inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-purple-600 text-white hover:bg-purple-700"
+                  style={{
+                    display: totalEntries === 0 ? 'none' : 'inline-flex',
+                    backgroundColor: '#7c3aed',
+                    color: 'white',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontWeight: '600'
+                  }}
                 >
-                  {tipJarProcessing ? (
-                    <>Processing...</>
-                  ) : (
-                    <>
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      Pay Support ({currency} ${tipJarAmount})
-                    </>
-                  )}
-                </Button>
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Support Poolside Picks →
+                </a>
               )}
             </div>
 

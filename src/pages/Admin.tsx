@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminScoringPanel } from '@/components/AdminScoringPanel';
 import { AdminSetupWizardSimplified } from '@/components/admin/AdminSetupWizardSimplified';
+import { CompanyAdminAccess } from '@/components/admin/CompanyAdminAccess';
 
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Settings, CheckSquare } from 'lucide-react';
@@ -173,7 +174,8 @@ const Admin = () => {
           <AdminScoringPanel />
         </div>
 
-        {/* Company Admin Access removed for security */}
+        {/* Company Admin Access */}
+        <CompanyAdminAccess />
 
         {/* Footer */}
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">

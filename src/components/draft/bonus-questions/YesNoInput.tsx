@@ -13,6 +13,7 @@ export const YesNoInput: React.FC<YesNoInputProps> = ({
   return (
     <div className="flex items-center space-x-2">
       <Button
+        type="button"
         variant={value === 'yes' ? 'default' : 'outline'}
         size="sm"
         onClick={() => onChange('yes')}
@@ -21,6 +22,7 @@ export const YesNoInput: React.FC<YesNoInputProps> = ({
         Yes
       </Button>
       <Button
+        type="button"
         variant={value === 'no' ? 'default' : 'outline'}
         size="sm"
         onClick={() => onChange('no')}

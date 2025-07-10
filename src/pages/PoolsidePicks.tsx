@@ -20,7 +20,7 @@ const PoolsidePicks = () => {
   }
 
   return (
-    <div className="min-h-screen bg-cream relative overflow-hidden">
+    <div className="min-h-screen bg-cream relative">
       <FloatingPoolElements />
       <HomepageNavigation user={user} />
       <HomepageHero user={user} />

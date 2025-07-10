@@ -4,7 +4,7 @@
 export const getDomainConfig = () => {
   return {
     // Custom domain for invite links and external sharing
-    baseUrl: 'https://poolside-picks-play.com',
+    baseUrl: 'https://poolside-picks.com',
     // Use current domain for internal navigation and auth redirects
     currentDomain: window.location.origin,
   };

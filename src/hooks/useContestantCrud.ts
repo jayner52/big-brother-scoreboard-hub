@@ -55,10 +55,15 @@ export const useContestantCrud = (
   const addContestant = async (editForm: Partial<ContestantWithBio>) => {
     if (!editForm.name) return false;
 
+    // Debug logging to track pool context issues
+    console.log('Adding contestant - activePool:', activePool);
+    console.log('Adding contestant - activePool.id:', activePool?.id);
+
     if (!activePool?.id) {
+      console.error('CONTESTANT_ADD_ERROR: No active pool ID available', { activePool });
       toast({
         title: "Error",
-        description: "No active pool found for adding contestant",
+        description: "No active pool found for adding contestant. Please refresh the page and try again.",
         variant: "destructive",
       });
       return false;

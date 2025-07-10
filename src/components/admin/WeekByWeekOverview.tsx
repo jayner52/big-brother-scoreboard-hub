@@ -198,46 +198,8 @@ export const WeekByWeekOverview: React.FC = () => {
             }
           }
 
-          // Parse and add draft special events with deduplication
-          if (week.draft_special_events) {
-            try {
-              const draftEvents = JSON.parse(week.draft_special_events);
-              if (Array.isArray(draftEvents)) {
-                draftEvents.forEach((event: any) => {
-                  if (event.contestant && event.eventType) {
-                    const eventKey = `${week.week_number}:${event.contestant}:${event.eventType}`;
-                    
-                    // Only add if we haven't seen this exact combination
-                    if (!eventKeys.has(eventKey)) {
-                      eventKeys.add(eventKey);
-                      
-                      // Get points from scoring rules - check both ID and subcategory
-                      let eventPoints = event.customPoints;
-                      if (eventPoints === undefined || eventPoints === null) {
-                        // First try to find by ID (for new events)
-                        let rule = rawScoringRules?.find(r => r.id === event.eventType);
-                        // If not found, try subcategory (for legacy events)
-                        if (!rule) {
-                          rule = rawScoringRules?.find(r => r.subcategory === event.eventType);
-                        }
-                        eventPoints = rule?.points || 0;
-                      }
-
-                      allSpecialEvents.push({
-                        week_number: week.week_number,
-                        contestant_name: event.contestant,
-                        event_type: event.eventType,
-                        description: event.eventType === 'custom_event' ? event.customDescription : event.description,
-                        points_awarded: eventPoints
-                      });
-                    }
-                  }
-                });
-              }
-            } catch (error) {
-              console.error('Error parsing draft special events for week', week.week_number, error);
-            }
-          }
+          // NOTE: Draft special events are intentionally NOT displayed in Week Overview
+          // Only confirmed/finalized events should appear here
         });
       }
 

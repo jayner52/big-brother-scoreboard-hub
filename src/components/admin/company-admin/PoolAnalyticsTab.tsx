@@ -364,6 +364,52 @@ export const PoolAnalyticsTab: React.FC = () => {
     }
   };
 
+  const deleteAllPools = async () => {
+    if (!confirm('⚠️ DANGER: Are you sure you want to delete ALL pools? This will delete every single pool in the database and cannot be undone!')) {
+      return;
+    }
+
+    if (!confirm('This is your final warning. Type "DELETE ALL" in the next prompt to confirm.')) {
+      return;
+    }
+
+    const confirmText = prompt('Type "DELETE ALL" to confirm:');
+    if (confirmText !== 'DELETE ALL') {
+      toast({
+        title: "Deletion Cancelled",
+        description: "Confirmation text did not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('company-admin-data', {
+        body: { action: 'delete_all_pools' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "All Pools Deleted",
+        description: data.message,
+      });
+
+      // Reload pool data
+      await loadPoolData();
+    } catch (error: any) {
+      console.error('Error deleting all pools:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete all pools",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading pool analytics...</div>;
   }
@@ -386,6 +432,15 @@ export const PoolAnalyticsTab: React.FC = () => {
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete Test Pools
+          </Button>
+          <Button 
+            onClick={deleteAllPools} 
+            variant="destructive" 
+            size="sm"
+            disabled={isDeleting}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete ALL Pools
           </Button>
         </div>
       </div>

@@ -6,7 +6,7 @@ const corsHeaders = {
 }
 
 interface CompanyAdminDataRequest {
-  action: 'get_user_data' | 'get_pool_analytics' | 'delete_user' | 'delete_pool' | 'delete_test_pools';
+  action: 'get_user_data' | 'get_pool_analytics' | 'delete_user' | 'delete_pool' | 'delete_test_pools' | 'delete_all_pools';
   user_id?: string;
   pool_id?: string;
 }
@@ -92,6 +92,8 @@ Deno.serve(async (req) => {
       return await handleDeletePool(supabase, pool_id)
     } else if (action === 'delete_test_pools') {
       return await handleDeleteTestPools(supabase)
+    } else if (action === 'delete_all_pools') {
+      return await handleDeleteAllPools(supabase)
     } else {
       return new Response(
         JSON.stringify({ error: 'Invalid action' }),
@@ -278,7 +280,7 @@ async function handleGetPoolAnalytics(supabase: any) {
   console.log('COMPANY_ADMIN_DATA: Getting pool analytics...')
   
   try {
-    // Get all pools with owner info
+    // Get all pools
     const { data: pools, error: poolsError } = await supabase
       .from('pools')
       .select(`
@@ -291,8 +293,7 @@ async function handleGetPoolAnalytics(supabase: any) {
         draft_open,
         draft_locked,
         season_complete,
-        has_buy_in,
-        profiles!pools_owner_id_fkey (display_name)
+        has_buy_in
       `)
     
     if (poolsError) {
@@ -319,15 +320,27 @@ async function handleGetPoolAnalytics(supabase: any) {
       console.warn('COMPANY_ADMIN_DATA: Entries error:', entryError)
     }
 
+    // Get owner profiles separately to handle missing profiles gracefully
+    const ownerIds = [...new Set(pools?.map(p => p.owner_id).filter(Boolean) || [])]
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('user_id, display_name')
+      .in('user_id', ownerIds)
+    
+    if (profilesError) {
+      console.warn('COMPANY_ADMIN_DATA: Profiles error:', profilesError)
+    }
+
     // Process pool data
     const processedPools = (pools || []).map((pool: any) => {
       const memberCount = memberships?.filter((m: any) => m.pool_id === pool.id).length || 0
       const entryCount = entries?.filter((e: any) => e.pool_id === pool.id).length || 0
       const confirmedEntries = entries?.filter((e: any) => e.pool_id === pool.id && e.payment_confirmed).length || 0
+      const ownerProfile = profiles?.find((p: any) => p.user_id === pool.owner_id)
       
       return {
         ...pool,
-        owner_display_name: pool.profiles?.display_name || 'Unknown Owner',
+        owner_display_name: ownerProfile?.display_name || 'Deleted User',
         member_count: memberCount,
         entry_count: entryCount,
         prize_pool_total: pool.has_buy_in ? (confirmedEntries * pool.entry_fee_amount) : 0,
@@ -484,6 +497,67 @@ async function handleDeleteTestPools(supabase: any) {
 
   } catch (error: any) {
     console.error('COMPANY_ADMIN_DATA: Error in handleDeleteTestPools:', error)
+    throw error
+  }
+}
+
+async function handleDeleteAllPools(supabase: any) {
+  console.log('COMPANY_ADMIN_DATA: Deleting ALL pools...')
+  
+  try {
+    // Get count of pools before deletion
+    const { data: poolCount, error: countError } = await supabase
+      .from('pools')
+      .select('id', { count: 'exact' })
+    
+    if (countError) {
+      console.error('COMPANY_ADMIN_DATA: Error counting pools:', countError)
+      throw countError
+    }
+
+    const totalPools = poolCount?.length || 0
+
+    if (totalPools === 0) {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'No pools found to delete',
+          deleted_count: 0
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      )
+    }
+
+    // Delete all pools (cascades to related tables)
+    const { error: deleteError } = await supabase
+      .from('pools')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000') // This will match all pools
+    
+    if (deleteError) {
+      console.error('COMPANY_ADMIN_DATA: Error deleting all pools:', deleteError)
+      throw deleteError
+    }
+
+    console.log(`COMPANY_ADMIN_DATA: Successfully deleted ${totalPools} pools`)
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Successfully deleted all ${totalPools} pools`,
+        deleted_count: totalPools
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+
+  } catch (error: any) {
+    console.error('COMPANY_ADMIN_DATA: Error in handleDeleteAllPools:', error)
     throw error
   }
 }

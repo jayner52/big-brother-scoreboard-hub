@@ -40,11 +40,14 @@ export const usePaymentNotifications = () => {
       if (notificationsError) throw notificationsError;
 
       // Check for outstanding payment entries (user's own entries that are not payment confirmed)
+      // Only show payment notifications for pools that actually require payment
       const { data: entries, error: entriesError } = await supabase
         .from('pool_entries')
-        .select('id, payment_confirmed')
+        .select('id, payment_confirmed, pool_id, pools!inner(has_buy_in, entry_fee_amount)')
         .eq('user_id', user.id)
-        .eq('payment_confirmed', false);
+        .eq('payment_confirmed', false)
+        .eq('pools.has_buy_in', true)
+        .gt('pools.entry_fee_amount', 0);
 
       if (entriesError) throw entriesError;
 

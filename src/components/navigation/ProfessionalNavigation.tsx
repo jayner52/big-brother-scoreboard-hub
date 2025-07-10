@@ -52,7 +52,6 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
   const { isAdmin } = useUserPoolRole(activePool?.id, userId || undefined);
 
   const displayName = profile?.display_name || userEntry?.participant_name || user?.email?.split('@')[0] || 'User';
-  const avatarUrl = profile?.avatar_url;
   const initials = displayName.charAt(0).toUpperCase();
 
 

@@ -55,7 +55,11 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
               <AvatarFallback className={`text-white font-semibold text-sm ${
                 profile?.background_color ? `bg-gradient-to-br ${profile.background_color}` : 'bg-gradient-to-br from-coral to-brand-teal'
               }`}>
-                {initials}
+                {profile?.avatar_url ? (
+                  <span className="text-lg">{profile.avatar_url}</span>
+                ) : (
+                  initials
+                )}
               </AvatarFallback>
             </Avatar>
             {!isMobile && (

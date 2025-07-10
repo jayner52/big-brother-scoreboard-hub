@@ -21,9 +21,15 @@ export const DynamicTeamDraftSection: React.FC<DynamicTeamDraftSectionProps> = (
   const picksPerTeam = poolData?.picks_per_team || 5;
   
   // **CRITICAL FIX: Filter groups by those that have contestants to avoid empty dropdowns**
+  // Also deduplicate contestants by name to prevent duplicates from appearing in dropdowns
   const groupsWithContestants = contestantGroups.filter(group => 
     group.contestants && group.contestants.length > 0
-  );
+  ).map(group => ({
+    ...group,
+    contestants: group.contestants.filter((contestant, index, arr) => 
+      arr.findIndex(c => c.name === contestant.name) === index
+    )
+  }));
   
   const regularGroups = groupsWithContestants.filter(g => g.group_name !== 'Free Pick');
   const freePickGroup = contestantGroups.find(g => g.group_name === 'Free Pick'); // Free Pick can be empty initially

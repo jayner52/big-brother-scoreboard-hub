@@ -1,4 +1,4 @@
-import { ContestantWithBio } from '@/types/admin';
+import { ContestantWithBio, ContestantGroup } from '@/types/admin';
 import { useContestantForm } from './useContestantForm';
 import { useContestantCrud } from './useContestantCrud';
 import { useAIContestantGeneration } from './useAIContestantGeneration';
@@ -6,7 +6,8 @@ import { useAIContestantGeneration } from './useAIContestantGeneration';
 export const useContestantActions = (
   contestants: ContestantWithBio[],
   setContestants: React.Dispatch<React.SetStateAction<ContestantWithBio[]>>,
-  loadContestants: () => Promise<void>
+  loadContestants: () => Promise<void>,
+  groups: ContestantGroup[] = []
 ) => {
   const {
     editingId,
@@ -16,8 +17,9 @@ export const useContestantActions = (
     handleEdit,
     handleCancel,
     handleFormChange,
-    resetForm
-  } = useContestantForm();
+    resetForm,
+    handleShowAddForm
+  } = useContestantForm(groups);
 
   const {
     saveContestant,
@@ -70,6 +72,7 @@ export const useContestantActions = (
     handleClearAll,
     handleCancel,
     handleFormChange,
-    handleAIProfilesGenerated
+    handleAIProfilesGenerated,
+    handleShowAddForm
   };
 };

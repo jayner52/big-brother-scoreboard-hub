@@ -28,8 +28,9 @@ const ContestantManagement: React.FC = () => {
     handleClearAll,
     handleCancel,
     handleFormChange,
-    handleAIProfilesGenerated
-  } = useContestantActions(contestants, setContestants, loadContestants);
+    handleAIProfilesGenerated,
+    handleShowAddForm
+  } = useContestantActions(contestants, setContestants, loadContestants, groups);
 
   const handleViewProfile = (contestant: any) => {
     setSelectedContestant(contestant);
@@ -63,7 +64,7 @@ const ContestantManagement: React.FC = () => {
         </div>
       </InstructionAccordion>
       
-      <ContestantManagementHeader onAddClick={() => setShowAddForm(true)} />
+      <ContestantManagementHeader onAddClick={handleShowAddForm} />
 
       <Tabs defaultValue="manage" className="w-full">
         <TabsList className="grid w-full grid-cols-1">

@@ -44,14 +44,13 @@ export const ContestantForm: React.FC<ContestantFormProps> = ({
           <div>
             <Label htmlFor="group_assignment">Group Assignment</Label>
             <Select 
-              value={editForm.group_id || 'unassigned'} 
-              onValueChange={(value) => onFormChange({ group_id: value === 'unassigned' ? null : value })}
+              value={editForm.group_id || groups.find(g => g.sort_order === 1)?.id || groups[0]?.id || ''} 
+              onValueChange={(value) => onFormChange({ group_id: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select group" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unassigned">No Group</SelectItem>
                 {groups.map(group => (
                   <SelectItem key={group.id} value={group.id}>
                     {group.group_name}

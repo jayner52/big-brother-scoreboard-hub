@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { ContestantWithBio } from '@/types/admin';
+import { ContestantWithBio, ContestantGroup } from '@/types/admin';
 
-export const useContestantForm = () => {
+export const useContestantForm = (groups: ContestantGroup[] = []) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<ContestantWithBio>>({});
   const [showAddForm, setShowAddForm] = useState(false);
+
+  const getDefaultGroupId = () => {
+    const groupA = groups.find(g => g.sort_order === 1);
+    return groupA?.id || groups[0]?.id || null;
+  };
 
   const handleEdit = (contestant: ContestantWithBio) => {
     setEditingId(contestant.id);
@@ -15,6 +20,11 @@ export const useContestantForm = () => {
     setEditingId(null);
     setShowAddForm(false);
     setEditForm({});
+  };
+
+  const handleShowAddForm = () => {
+    setShowAddForm(true);
+    setEditForm({ group_id: getDefaultGroupId() });
   };
 
   const handleFormChange = (updates: Partial<ContestantWithBio>) => {
@@ -35,6 +45,7 @@ export const useContestantForm = () => {
     handleEdit,
     handleCancel,
     handleFormChange,
-    resetForm
+    resetForm,
+    handleShowAddForm
   };
 };

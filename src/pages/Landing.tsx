@@ -13,7 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const Landing = () => {
   const navigate = useNavigate();
-  const { activePool } = usePool();
+  const { activePool, setActivePool, userPools, poolEntries } = usePool();
   const isMobile = useIsMobile();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,9 +101,68 @@ const Landing = () => {
             <h1 className="text-5xl md:text-6xl font-bold text-dark mb-4">
               Big Brother Pool
             </h1>
-            <p className="text-xl md:text-2xl text-dark/80 mb-8">
-              Join the ultimate Big Brother fantasy experience
-            </p>
+            
+            {user ? (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-brand-teal/10 to-coral/10 border border-brand-teal/30 rounded-xl p-6">
+                  <p className="text-xl md:text-2xl text-dark font-medium mb-2">
+                    Welcome back, {user.user_metadata?.display_name || user.email}! 👋
+                  </p>
+                  <p className="text-dark/70">
+                    Ready to check on your Big Brother picks?
+                  </p>
+                </div>
+                
+                {/* Your Pools Section */}
+                {userPools.length > 0 && (
+                  <div className="bg-white/50 border border-brand-teal/20 rounded-xl p-6">
+                    <h3 className="text-xl font-semibold text-dark mb-4">Your Pools</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {userPools.map((membership) => {
+                        const pool = membership.pool;
+                        const userEntry = poolEntries.find(entry => 
+                          entry.pool_id === pool?.id && entry.user_id === user.id
+                        );
+                        
+                        return pool ? (
+                          <div key={pool.id} className="bg-white border border-brand-teal/30 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <h4 className="font-semibold text-dark mb-2">{pool.name}</h4>
+                            {userEntry && (
+                              <div className="text-sm text-dark/70 mb-3">
+                                <p>Rank: #{userEntry.current_rank || 'TBD'}</p>
+                                <p>Points: {userEntry.total_points}</p>
+                              </div>
+                            )}
+                            <Button 
+                              onClick={() => {
+                                setActivePool(pool);
+                                navigate('/dashboard');
+                              }}
+                              size="sm"
+                              className="w-full bg-coral hover:bg-coral/90 text-coral-foreground"
+                            >
+                              Enter Pool
+                            </Button>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {userPools.length === 0 && (
+                  <div className="bg-gradient-to-r from-coral/10 to-brand-teal/10 border border-coral/30 rounded-xl p-6">
+                    <p className="text-dark/80 mb-4">
+                      You haven't joined any pools yet. Get started with your first Big Brother pool!
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xl md:text-2xl text-dark/80 mb-8">
+                Join the ultimate Big Brother fantasy experience
+              </p>
+            )}
           </div>
 
           {/* Authentication-aware CTAs */}

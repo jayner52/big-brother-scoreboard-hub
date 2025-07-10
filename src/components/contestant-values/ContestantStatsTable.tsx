@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,14 @@ interface ContestantStatsTableProps {
   povWinner?: string | null;
   nominees?: string[];
 }
+
+// Helper component for formatting statistics numbers
+const StatNumber: React.FC<{ value: number }> = ({ value }) => {
+  if (value === 0) {
+    return <span className="text-muted-foreground">{value}</span>;
+  }
+  return <span className="font-bold text-blue-600">{value}</span>;
+};
 
 export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
   contestantStats,
@@ -88,16 +97,16 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                   </TableCell>
                 )}
                 <TableCell className="text-center">
-                  {stat.hoh_wins}
+                  <StatNumber value={stat.hoh_wins} />
                 </TableCell>
                 <TableCell className="text-center">
-                  {stat.veto_wins}
+                  <StatNumber value={stat.veto_wins} />
                 </TableCell>
                 <TableCell className="text-center">
-                  {stat.times_on_block_at_eviction}
+                  <StatNumber value={stat.times_on_block_at_eviction} />
                 </TableCell>
                 <TableCell className="text-center">
-                  {stat.times_saved_by_veto}
+                  <StatNumber value={stat.times_saved_by_veto} />
                 </TableCell>
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-1">

@@ -42,19 +42,88 @@ export const calculateBlockSurvivalStats = async (contestantId: string, weeklyEv
     }
   }
   
-  // Count times on block at eviction where they survived
-  let timesOnBlockAtEviction = 0;
-  for (const nomEvent of nomineeEvents) {
-    const week = nomEvent.week_number;
-    if (weeksWithEvictions.has(week) && 
-        !weeksSavedByPov.has(week) && 
-        !weeksWonBBArena.has(week) && 
-        !weeksEvicted.has(week)) {
-      timesOnBlockAtEviction++;
-    }
-  }
+  // Get weekly_results data to cross-reference nominations and evictions
+  try {
+    const { data: weeklyResults } = await supabase
+      .from('weekly_results')
+      .select('*')
+      .order('week_number');
 
-  return timesOnBlockAtEviction;
+    // Get contestant name for cross-referencing
+    const { data: contestant } = await supabase
+      .from('contestants')
+      .select('name')
+      .eq('id', contestantId)
+      .single();
+
+    if (!contestant || !weeklyResults) {
+      // Fallback to original calculation if we can't get weekly results
+      let timesOnBlockAtEviction = 0;
+      for (const nomEvent of nomineeEvents) {
+        const week = nomEvent.week_number;
+        if (weeksWithEvictions.has(week) && 
+            !weeksSavedByPov.has(week) && 
+            !weeksWonBBArena.has(week) && 
+            !weeksEvicted.has(week)) {
+          timesOnBlockAtEviction++;
+        }
+      }
+      return timesOnBlockAtEviction;
+    }
+
+    const contestantName = contestant.name;
+    let survivedEvictions = 0;
+
+    // Check each week's results to see if contestant was nominated but survived
+    for (const weekResult of weeklyResults) {
+      const nominees = weekResult.nominees || [];
+      const secondNominees = weekResult.second_nominees || [];
+      const allNominees = [...nominees, ...secondNominees];
+      
+      // Check if contestant was nominated this week
+      const wasNominated = allNominees.includes(contestantName);
+      
+      if (wasNominated) {
+        // Check if there was an eviction this week
+        const wasEvictionWeek = weekResult.evicted_contestant || 
+                               weekResult.second_evicted_contestant || 
+                               weekResult.third_evicted_contestant;
+        
+        if (wasEvictionWeek) {
+          // Check if this contestant was evicted
+          const wasEvicted = contestantName === weekResult.evicted_contestant ||
+                            contestantName === weekResult.second_evicted_contestant ||
+                            contestantName === weekResult.third_evicted_contestant;
+          
+          // Check if they were saved by veto
+          const wasSavedByVeto = contestantName === weekResult.pov_used_on ||
+                                contestantName === weekResult.second_pov_used_on;
+          
+          // If nominated, there was an eviction, but they weren't evicted and weren't saved by veto
+          if (!wasEvicted && !wasSavedByVeto) {
+            survivedEvictions++;
+          }
+        }
+      }
+    }
+
+    return survivedEvictions;
+  } catch (error) {
+    console.error('Error calculating block survival stats from weekly results:', error);
+    
+    // Fallback to original calculation
+    let timesOnBlockAtEviction = 0;
+    for (const nomEvent of nomineeEvents) {
+      const week = nomEvent.week_number;
+      if (weeksWithEvictions.has(week) && 
+          !weeksSavedByPov.has(week) && 
+          !weeksWonBBArena.has(week) && 
+          !weeksEvicted.has(week)) {
+        timesOnBlockAtEviction++;
+      }
+    }
+    return timesOnBlockAtEviction;
+  }
 };
 
 export const createBlockSurvivalBonuses = async (contestants: any[], weeklyEvents: any[]) => {

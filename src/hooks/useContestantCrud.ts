@@ -55,6 +55,15 @@ export const useContestantCrud = (
   const addContestant = async (editForm: Partial<ContestantWithBio>) => {
     if (!editForm.name) return false;
 
+    if (!activePool?.id) {
+      toast({
+        title: "Error",
+        description: "No active pool found for adding contestant",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     try {
       const { data, error } = await supabase
         .from('contestants')
@@ -69,7 +78,8 @@ export const useContestantCrud = (
           age: editForm.age,
           occupation: editForm.occupation,
           season_number: 26,
-          data_source: 'manual'
+          data_source: 'manual',
+          pool_id: activePool.id
         })
         .select()
         .single();

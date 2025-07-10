@@ -116,18 +116,20 @@ export const EnhancedPrizePoolSection: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <AlertCircle className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-              Prize Pool Building...
-            </h3>
-            <p className="text-yellow-700">
-              The prize pool will be calculated once participants join the pool.
-            </p>
+        <div className="text-center py-8">
+          <AlertCircle className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+            Prize Pool Building...
+          </h3>
+          <p className="text-yellow-700">
+            The prize pool will be calculated once participants join the pool.
+          </p>
+          {activePool.has_buy_in && (
             <p className="text-sm text-yellow-600 mt-2">
               Entry Fee: {formatPrize(activePool.entry_fee_amount, currency)} per person
             </p>
-          </div>
+          )}
+        </div>
         </CardContent>
       </Card>
     );

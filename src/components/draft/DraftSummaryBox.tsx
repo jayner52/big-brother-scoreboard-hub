@@ -13,11 +13,7 @@ export const DraftSummaryBox: React.FC = () => {
   return (
     <Card className="max-w-md mx-auto">
       <CardContent className="p-6">
-        <PaymentInfoDisplay poolSettings={{
-          ...poolData,
-          season_name: poolData.name,
-          season_active: !poolData.draft_locked
-        }} />
+        <PaymentInfoDisplay poolSettings={poolData} />
       </CardContent>
     </Card>
   );

@@ -1,13 +1,17 @@
 import React from 'react';
-import { PoolSettings } from '@/types/pool';
+import { Pool } from '@/types/pool';
 
 interface PaymentInfoDisplayProps {
-  poolSettings: PoolSettings;
+  poolSettings: Pool;
 }
 
 export const PaymentInfoDisplay: React.FC<PaymentInfoDisplayProps> = ({
   poolSettings,
 }) => {
+  // Don't render if pool doesn't have buy-in
+  if (!poolSettings.has_buy_in) {
+    return null;
+  }
   const formatDueDate = (dateString: string | null) => {
     if (!dateString) return null;
     try {

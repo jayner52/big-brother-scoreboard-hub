@@ -33,16 +33,15 @@ export const calculatePrizes = (
   
   // Check for new prize_configuration first, then fall back to old prize_distribution
   const prizeConfig = pool.prize_configuration || pool.prize_distribution;
-  const adminFee = prizeConfig?.admin_fee || 0;
   
   // Calculate tip jar amount
   const tipJarPercentage = (pool as any)?.tip_jar_percentage || 0;
   const tipJarAmount = Math.round((totalPot * tipJarPercentage) / 100);
   
-  // Available pool is total pot minus admin fee and tip jar
-  const availablePool = totalPot - adminFee - tipJarAmount;
+  // Available pool is total pot minus tip jar (admin fee removed)
+  const availablePool = totalPot - tipJarAmount;
 
-  console.log('💰 Prize Calculation - Total Pot:', totalPot, 'Admin Fee:', adminFee, 'Available:', availablePool);
+  console.log('💰 Prize Calculation - Total Pot:', totalPot, 'Available:', availablePool);
   console.log('🔧 Prize Config:', prizeConfig);
 
   let prizes: PrizeInfo[] = [];

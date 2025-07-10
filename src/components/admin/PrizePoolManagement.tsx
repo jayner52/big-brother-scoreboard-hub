@@ -20,13 +20,10 @@ interface CustomPrize {
 
 interface PrizeConfiguration {
   mode: 'percentage' | 'custom';
-  admin_fee: number;
   percentage_distribution: {
     first_place_percentage: number;
     second_place_percentage: number;
     third_place_percentage: number;
-    fourth_place_percentage: number;
-    fifth_place_percentage: number;
   };
   custom_prizes: CustomPrize[];
 }
@@ -44,13 +41,10 @@ export const PrizePoolManagement: React.FC = () => {
   
   const [config, setConfig] = useState<PrizeConfiguration>({
     mode: 'percentage',
-    admin_fee: 0,
     percentage_distribution: {
       first_place_percentage: 50,
       second_place_percentage: 30,
       third_place_percentage: 20,
-      fourth_place_percentage: 0,
-      fifth_place_percentage: 0,
     },
     custom_prizes: [
       { id: '1', place: 1, amount: 0, description: '1st Place' },
@@ -101,17 +95,12 @@ export const PrizePoolManagement: React.FC = () => {
       // Load existing configuration from new prize_configuration field
       const existingConfig = activePool.prize_configuration;
       if (existingConfig && existingConfig.mode) {
-        // Default admin fee to 5% of total expected if not set
-        const defaultAdminFee = existingConfig.admin_fee || Math.round((entryCount * (activePool?.entry_fee_amount || 0)) * 0.05);
         setConfig({
           mode: existingConfig.mode || 'percentage',
-          admin_fee: defaultAdminFee,
           percentage_distribution: {
             first_place_percentage: existingConfig.percentage_distribution?.first_place_percentage || 50,
             second_place_percentage: existingConfig.percentage_distribution?.second_place_percentage || 30,
             third_place_percentage: existingConfig.percentage_distribution?.third_place_percentage || 20,
-            fourth_place_percentage: existingConfig.percentage_distribution?.fourth_place_percentage || 0,
-            fifth_place_percentage: existingConfig.percentage_distribution?.fifth_place_percentage || 0,
           },
           custom_prizes: existingConfig.custom_prizes || [
             { id: '1', place: 1, amount: 0, description: '1st Place' },
@@ -125,13 +114,10 @@ export const PrizePoolManagement: React.FC = () => {
         if (oldConfig) {
           const migratedConfig = {
             mode: (activePool.prize_mode || 'percentage') as 'percentage' | 'custom',
-            admin_fee: Math.round((entryCount * (activePool?.entry_fee_amount || 0)) * 0.05),
             percentage_distribution: {
               first_place_percentage: oldConfig.first_place_percentage || 50,
               second_place_percentage: oldConfig.second_place_percentage || 30,
               third_place_percentage: oldConfig.third_place_percentage || 20,
-              fourth_place_percentage: 0,
-              fifth_place_percentage: 0,
             },
             custom_prizes: [
               { id: '1', place: 1, amount: oldConfig.first_place_amount || 0, description: '1st Place' },
@@ -169,7 +155,7 @@ export const PrizePoolManagement: React.FC = () => {
 
   const getAvailablePrizePool = () => {
     const tipJarAmount = calculateTipJarAmount();
-    return getTotalExpected() - config.admin_fee - tipJarAmount;
+    return getTotalExpected() - tipJarAmount;
   };
 
   const calculatePercentageAmounts = () => {
@@ -179,8 +165,6 @@ export const PrizePoolManagement: React.FC = () => {
       first: Math.round((availablePool * dist.first_place_percentage) / 100),
       second: Math.round((availablePool * dist.second_place_percentage) / 100),
       third: Math.round((availablePool * dist.third_place_percentage) / 100),
-      fourth: Math.round((availablePool * dist.fourth_place_percentage) / 100),
-      fifth: Math.round((availablePool * dist.fifth_place_percentage) / 100),
     };
   };
 
@@ -190,8 +174,7 @@ export const PrizePoolManagement: React.FC = () => {
 
   const getTotalPercentage = () => {
     const dist = config.percentage_distribution;
-    return dist.first_place_percentage + dist.second_place_percentage + 
-           dist.third_place_percentage + dist.fourth_place_percentage + dist.fifth_place_percentage;
+    return dist.first_place_percentage + dist.second_place_percentage + dist.third_place_percentage;
   };
 
   const updatePercentage = (key: keyof typeof config.percentage_distribution, value: number) => {
@@ -298,14 +281,6 @@ export const PrizePoolManagement: React.FC = () => {
     });
   };
 
-  const handleAdminFeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === '') {
-      setConfig({ ...config, admin_fee: 0 });
-    } else {
-      setConfig({ ...config, admin_fee: Number(value) || 0 });
-    }
-  };
 
   const handleCustomPrizeAmountChange = (id: string, value: string) => {
     const numericValue = value === '' ? 0 : (Number(value) || 0);
@@ -614,12 +589,6 @@ export const PrizePoolManagement: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-orange-50 border-orange-200">
-          <CardContent className="p-4 text-center">
-            <p className="text-sm text-orange-600 font-medium">Admin Fee</p>
-            <p className="text-2xl font-bold text-orange-900">{currency} ${config.admin_fee}</p>
-          </CardContent>
-        </Card>
         <Card className="bg-purple-50 border-purple-200">
           <CardContent className="p-4 text-center">
             <p className="text-sm text-purple-600 font-medium">Platform Support</p>
@@ -649,32 +618,6 @@ export const PrizePoolManagement: React.FC = () => {
         </Alert>
       )}
 
-      {/* Admin Fee Configuration */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin Fee Configuration</CardTitle>
-          <CardDescription>Your time has value. Set aside funds for pool administration costs.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <Label htmlFor="admin_fee" className="font-medium">
-              Admin Fee ({currency})
-            </Label>
-            <Input
-              id="admin_fee"
-              type="number"
-              value={config.admin_fee === 0 ? '' : config.admin_fee.toString()}
-              onChange={handleAdminFeeChange}
-              placeholder="0"
-              className="w-32"
-              min="0"
-            />
-            <div className="text-sm text-muted-foreground">
-              Available for prizes: {currency} ${availablePool}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Prize Mode Selection */}
       <Card>

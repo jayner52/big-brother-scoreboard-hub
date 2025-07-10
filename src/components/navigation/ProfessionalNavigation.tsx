@@ -108,7 +108,7 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
         </div>
 
         {/* CENTER SECTION - Core Actions (Hidden on mobile) */}
-        {!isMobile && (
+        {!isMobile && user && (
           <NavigationButtons
             hasUnreadNotifications={hasUnreadNotifications}
             hasOutstandingPayment={hasOutstandingPayment}

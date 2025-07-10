@@ -14,7 +14,7 @@ const About = () => {
   const faqs = [
     {
       question: "How much does it cost?",
-      answer: "Poolside Picks is completely free! You can create unlimited leagues, invite unlimited friends, and play all season long without any cost."
+      answer: "Poolside Picks is completely free! You can create unlimited leagues, invite unlimited friends, and play all season long without any cost. If you'd like to support the platform, you can optionally contribute a small percentage of your buy-in when setting up prize pools. You can see this option in 'prize pool management' in your pool settings, but it's completely voluntary!"
     },
     {
       question: "Do I need to know anything about Big Brother to play?",
@@ -62,7 +62,7 @@ const About = () => {
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
-          <PoolsidePicksLogo size="sm" />
+          <PoolsidePicksLogo size="md" />
         </div>
       </nav>
 
@@ -231,7 +231,7 @@ const About = () => {
             <Card className="text-center hover:shadow-lg transition-shadow duration-300">
               <CardHeader>
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-yellow)' }}>
-                  <Tv className="h-8 w-8 text-white" />
+                  <Users className="h-8 w-8 text-white" />
                 </div>
                 <CardTitle className="text-xl">Step 3: Draft Your Teams</CardTitle>
               </CardHeader>
@@ -247,14 +247,14 @@ const About = () => {
             <Card className="text-center hover:shadow-lg transition-shadow duration-300">
               <CardHeader>
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--gradient-orange)' }}>
-                  <MessageCircle className="h-8 w-8 text-white" />
+                  <HelpCircle className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl">Step 4: Make Weekly Picks</CardTitle>
+                <CardTitle className="text-xl">Step 4: Answer Bonus Questions</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-dark/70">
-                  Each week, you can set bonus questions—like "Who will win Veto?" or "Will anyone cry in the DR?"—and your league members 
-                  can submit their predictions for extra points.
+                  Make predictions about the season and earn bonus points for correct guesses. Answer questions like "Who will win Veto?" 
+                  or "Will anyone get in a showmance?" and see your points stack up.
                 </p>
               </CardContent>
             </Card>
@@ -419,15 +419,6 @@ const About = () => {
                 >
                   <Sparkles className="mr-3 h-6 w-6" />
                   Start Playing Free
-                </Button>
-                <Button
-                  onClick={() => navigate('/landing')}
-                  variant="outline"
-                  size={isMobile ? "default" : "lg"}
-                  className={`${isMobile ? 'w-full text-lg' : 'px-8 py-6 text-xl'} font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white`}
-                >
-                  <Trophy className="mr-3 h-5 w-5" />
-                  Try Demo League
                 </Button>
               </div>
             </CardContent>

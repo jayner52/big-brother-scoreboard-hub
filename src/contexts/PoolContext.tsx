@@ -166,22 +166,80 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const joinPoolByCode = async (inviteCode: string) => {
     try {
-      const result = await supabase.rpc('join_pool_by_invite', { 
-        invite_code_param: inviteCode 
-      });
-
-      if (result.error) throw result.error;
-
-      const response = result.data as any;
-      if (!response?.success) {
-        return { success: false, error: response?.error || 'Failed to join pool' };
+      console.log('🔧 JOIN POOL - Starting join process with code:', inviteCode);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('🔧 JOIN POOL - User not authenticated');
+        return { success: false, error: 'You must be logged in to join a pool' };
       }
 
+      console.log('🔧 JOIN POOL - User authenticated:', user.id);
+
+      // Look for pool with the invite code
+      const { data: pool, error: poolError } = await supabase
+        .from('pools')
+        .select('*')
+        .eq('invite_code', inviteCode.toUpperCase())
+        .single();
+
+      if (poolError || !pool) {
+        console.error('🔧 JOIN POOL - Pool not found:', poolError);
+        return { success: false, error: 'Invalid invite code' };
+      }
+
+      console.log('🔧 JOIN POOL - Pool found:', pool.name);
+
+      // Check if user is already a member
+      const { data: existingMembership } = await supabase
+        .from('pool_memberships')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('pool_id', pool.id)
+        .eq('active', true)
+        .single();
+
+      if (existingMembership) {
+        console.log('🔧 JOIN POOL - User already a member');
+        await refreshPools();
+        return { success: true, data: pool };
+      }
+
+      // Check if new participants are allowed
+      if (!pool.allow_new_participants) {
+        console.error('🔧 JOIN POOL - New participants not allowed');
+        return { success: false, error: 'This pool is not currently accepting new participants' };
+      }
+
+      // Check registration deadline
+      if (pool.registration_deadline) {
+        const deadline = new Date(pool.registration_deadline);
+        if (new Date() > deadline) {
+          console.error('🔧 JOIN POOL - Registration deadline passed');
+          return { success: false, error: 'Registration deadline has passed for this pool' };
+        }
+      }
+
+      // Create the membership
+      const { error: membershipError } = await supabase
+        .from('pool_memberships')
+        .insert({
+          user_id: user.id,
+          pool_id: pool.id,
+          role: 'member'
+        });
+
+      if (membershipError) {
+        console.error('🔧 JOIN POOL - Membership creation failed:', membershipError);
+        return { success: false, error: 'Failed to join pool. Please try again.' };
+      }
+
+      console.log('🔧 JOIN POOL - Successfully joined pool');
       await refreshPools();
-      return { success: true, data: response.pool };
+      return { success: true, data: pool };
     } catch (error: any) {
-      console.error('Error joining pool:', error);
-      return { success: false, error: error.message };
+      console.error('🔧 JOIN POOL - Unexpected error:', error);
+      return { success: false, error: error.message || 'Failed to join pool' };
     }
   };
 

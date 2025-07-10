@@ -6,7 +6,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import ContestantManagement from '@/components/admin/ContestantManagement';
 import WeekByWeekOverview from '@/components/admin/WeekByWeekOverview';
 import EnhancedBonusQuestionsPanel from '@/components/admin/EnhancedBonusQuestionsPanel';
-import PoolEntriesManagement from '@/components/PoolEntriesManagement';
+import { OptimizedPoolEntriesManagement } from '@/components/admin/OptimizedPoolEntriesManagement';
 import WeeklyEventsPanel from '@/components/admin/WeeklyEventsPanel';
 import RoleManagementPanel from '@/components/admin/RoleManagementPanel';
 
@@ -48,7 +48,7 @@ export const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ canManageRol
 
       <TabsContent value="entries" className="space-y-4 mt-0">
         <ErrorBoundary>
-          <PoolEntriesManagement />
+          <OptimizedPoolEntriesManagement />
         </ErrorBoundary>
       </TabsContent>
 

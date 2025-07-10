@@ -3,13 +3,13 @@ import { TabsContent } from '@/components/ui/tabs';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 // Lazy load components for better performance
-const ContestantManagement = React.lazy(() => import('@/components/admin/ContestantManagement').then(m => ({ default: m.ContestantManagement })));
-const WeekByWeekOverview = React.lazy(() => import('@/components/admin/WeekByWeekOverview').then(m => ({ default: m.WeekByWeekOverview })));
-const EnhancedBonusQuestionsPanel = React.lazy(() => import('@/components/admin/EnhancedBonusQuestionsPanel').then(m => ({ default: m.EnhancedBonusQuestionsPanel })));
-const PoolSettingsPanel = React.lazy(() => import('@/components/admin/PoolSettingsPanel').then(m => ({ default: m.PoolSettingsPanel })));
-const PoolEntriesManagement = React.lazy(() => import('@/components/PoolEntriesManagement').then(m => ({ default: m.PoolEntriesManagement })));
-const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEventsPanel').then(m => ({ default: m.WeeklyEventsPanel })));
-const RoleManagementPanel = React.lazy(() => import('@/components/admin/RoleManagementPanel').then(m => ({ default: m.RoleManagementPanel })));
+const ContestantManagement = React.lazy(() => import('@/components/admin/ContestantManagement'));
+const WeekByWeekOverview = React.lazy(() => import('@/components/admin/WeekByWeekOverview'));
+const EnhancedBonusQuestionsPanel = React.lazy(() => import('@/components/admin/EnhancedBonusQuestionsPanel'));
+const PoolSettingsPanel = React.lazy(() => import('@/components/admin/PoolSettingsPanel'));
+const PoolEntriesManagement = React.lazy(() => import('@/components/PoolEntriesManagement'));
+const WeeklyEventsPanel = React.lazy(() => import('@/components/admin/WeeklyEventsPanel'));
+const RoleManagementPanel = React.lazy(() => import('@/components/admin/RoleManagementPanel'));
 
 interface AdminTabsContentProps {
   canManageRoles: boolean;

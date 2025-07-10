@@ -40,7 +40,7 @@ interface PoolSettings {
   buy_in_description?: string;
 }
 
-export const PoolSettingsPanel: React.FC = () => {
+const PoolSettingsPanel: React.FC = () => {
   const { toast } = useToast();
   const { activePool, updatePool } = usePool();
   const { redistributeHouseguests, saveGroupNames, isGenerating } = useGroupAutoGeneration();
@@ -1152,3 +1152,5 @@ export const PoolSettingsPanel: React.FC = () => {
     </div>
   );
 };
+
+export default PoolSettingsPanel;

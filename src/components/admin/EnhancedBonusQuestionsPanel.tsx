@@ -15,7 +15,7 @@ import { BonusQuestionCard } from './bonus-questions/BonusQuestionCard';
 import { Plus, Settings } from 'lucide-react';
 import { InstructionAccordion } from './InstructionAccordion';
 
-export const EnhancedBonusQuestionsPanel: React.FC = () => {
+const EnhancedBonusQuestionsPanel: React.FC = () => {
   const { activePool } = usePool();
   const { toast } = useToast();
   const { triggerRecalculation } = useAutoPointsRecalculation();
@@ -313,3 +313,5 @@ export const EnhancedBonusQuestionsPanel: React.FC = () => {
     </div>
   );
 };
+
+export default EnhancedBonusQuestionsPanel;

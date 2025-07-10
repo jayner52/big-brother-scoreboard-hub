@@ -39,7 +39,7 @@ interface PoolSettings {
   draft_locked: boolean;
 }
 
-export const PoolEntriesManagement: React.FC = () => {
+const PoolEntriesManagement: React.FC = () => {
   const { toast } = useToast();
   const activePool = useActivePool();
   const { updatePool } = usePoolOperations();
@@ -499,3 +499,5 @@ export const PoolEntriesManagement: React.FC = () => {
     </div>
   );
 };
+
+export default PoolEntriesManagement;

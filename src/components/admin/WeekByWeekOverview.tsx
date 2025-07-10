@@ -47,7 +47,7 @@ interface SpecialEvent {
   points_awarded: number;
 }
 
-export const WeekByWeekOverview: React.FC = () => {
+const WeekByWeekOverview: React.FC = () => {
   const { activePool } = usePool();
   const { scoringRules } = useScoringRules();
   const [weeklyResults, setWeeklyResults] = useState<WeekSummary[]>([]);
@@ -511,3 +511,5 @@ export const WeekByWeekOverview: React.FC = () => {
     </div>
   );
 };
+
+export default WeekByWeekOverview;

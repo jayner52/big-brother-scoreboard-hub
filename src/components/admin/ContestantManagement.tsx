@@ -10,7 +10,7 @@ import { AIGenerationTab } from './contestants/AIGenerationTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePool } from '@/contexts/PoolContext';
 import { InstructionAccordion } from './InstructionAccordion';
-export const ContestantManagement: React.FC = () => {
+const ContestantManagement: React.FC = () => {
   const { activePool } = usePool();
   const { contestants, setContestants, groups, loading, loadContestants } = useContestants(activePool?.id);
   const [selectedContestant, setSelectedContestant] = useState<any>(null);
@@ -98,3 +98,5 @@ export const ContestantManagement: React.FC = () => {
     </div>
   );
 };
+
+export default ContestantManagement;

@@ -30,7 +30,7 @@ interface PoolMember {
   team_count: number;
 }
 
-export const RoleManagementPanel: React.FC = () => {
+const RoleManagementPanel: React.FC = () => {
   const { activePool, canManageRoles, refreshPools } = usePool();
   const { toast } = useToast();
   const [members, setMembers] = useState<PoolMember[]>([]);
@@ -326,3 +326,5 @@ export const RoleManagementPanel: React.FC = () => {
     </div>
   );
 };
+
+export default RoleManagementPanel;

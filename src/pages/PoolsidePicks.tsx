@@ -22,22 +22,8 @@ const PoolsidePicks = () => {
 
   return (
     <div className="min-h-screen bg-cream relative">
-      {/* TEST BANNER - DELETE AFTER CONFIRMING CHANGES DEPLOY */}
-      <h1 style={{fontSize: '72px', color: 'red', textAlign: 'center', backgroundColor: 'yellow', padding: '20px', zIndex: 9999}}>
-        TEST - CAN YOU SEE THIS?
-      </h1>
       <FloatingPoolElements />
       <HomepageNavigation user={user} />
-      
-      {/* Simple About Link - Always Visible */}
-      <div className="fixed top-4 right-4 z-50">
-        <Link 
-          to="/about" 
-          className="bg-white text-dark px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-brand-teal"
-        >
-          Learn How It Works
-        </Link>
-      </div>
       
       <HomepageHero user={user} />
       <AvailableShowsSection />

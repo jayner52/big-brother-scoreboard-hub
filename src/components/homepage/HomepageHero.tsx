@@ -31,28 +31,9 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
     navigate('/landing');
   };
 
-  // Debug logging for mobile testing and About button visibility
-  console.log('PoolsidePicks Debug:', { 
-    user: !!user, 
-    userEmail: user?.email, 
-    profile: !!profile, 
-    profileName: profile?.display_name,
-    activePool: !!activePool, 
-    poolName: activePool?.name,
-    isMobile,
-    showingAboutButton: !user
-  });
 
   return (
-    <>
-      {/* DEBUG: Test button in fixed position */}
-      <div className="fixed top-20 right-10 z-50 bg-red-500 p-4">
-        <Button onClick={() => navigate("/about")}>
-          TEST ABOUT BUTTON
-        </Button>
-      </div>
-      
-      <section className="relative py-20 px-4">
+    <section className="relative py-20 px-4">
         <div className="container mx-auto text-center">
           {/* Giant Logo */}
           <div className="mb-12 flex justify-center">
@@ -63,11 +44,6 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
             Poolside Picks
             <div className="absolute -top-2 -right-2 text-2xl animate-bounce">✨</div>
           </h1>
-          
-          {/* DEBUG: Which branch is rendering */}
-          <div className="bg-red-500 text-white p-2 mb-2">
-            DEBUG: User is {user ? 'LOGGED IN' : 'NOT LOGGED IN'}
-          </div>
           
           {user ? (
             <>
@@ -117,7 +93,7 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
                   size={isMobile ? "default" : "lg"}
                   className={`${isMobile ? 'w-full text-lg' : 'px-12 py-6 text-xl'} font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white`}
                 >
-                  ℹ️ Learn How It Works
+                  Learn How It Works
                 </Button>
                 {!activePool && (
                   <Button
@@ -162,33 +138,18 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
                   Get Started Free
                 </Button>
                 
-                {/* DEBUG: Plain HTML button test */}
-                <button
-                  onClick={() => navigate("/about")}
-                  style={{
-                    backgroundColor: 'white',
-                    color: 'black',
-                    padding: '8px 16px',
-                    border: '1px solid black',
-                    cursor: 'pointer',
-                    display: 'block'
-                  }}
-                >
-                  Learn How It Works (HTML Button)
-                </button>
-                
                 <Button
                   onClick={() => navigate('/about')}
                   variant="outline"
-                  className="bg-white text-dark"
+                  size={isMobile ? "default" : "lg"}
+                  className={`${isMobile ? 'w-full text-lg' : 'px-12 py-6 text-xl'} font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-brand-teal text-brand-teal hover:bg-brand-teal hover:text-white`}
                 >
-                  Learn How It Works (Button Component)
+                  Learn How It Works
                 </Button>
               </div>
             </>
           )}
         </div>
       </section>
-    </>
   );
 };

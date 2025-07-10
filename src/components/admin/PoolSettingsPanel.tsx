@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Settings, DollarSign, UserCheck, HelpCircle, Clock, Eye, EyeOff, Users, Calculator } from 'lucide-react';
 import { usePool } from '@/contexts/PoolContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PrizePoolManagement } from '@/components/admin/PrizePoolManagement';
 import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
 
@@ -332,18 +333,42 @@ export const PoolSettingsPanel: React.FC = () => {
 
   const handleDraftToggle = async (draftOpen: boolean) => {
     if (!activePool) return;
+    
+    // If closing the draft, show cascade confirmation
+    if (!draftOpen) {
+      const confirmed = window.confirm(
+        'Closing the draft will automatically:\n\n' +
+        '• Disable new participants from joining\n' +
+        '• Lock all existing teams (prevent edits)\n' +
+        '• Make everyone\'s picks visible\n\n' +
+        'Continue?'
+      );
+      
+      if (!confirmed) return;
+    }
+
     setIsUpdating(true);
     try {
-      const success = await updatePool(activePool.id, {
-        draft_open: draftOpen
-      });
+      let updateData: any = { draft_open: draftOpen };
+      
+      // Apply cascade settings when closing draft
+      if (!draftOpen) {
+        updateData = {
+          draft_open: false,
+          allow_new_participants: false,
+          draft_locked: true,
+          hide_picks_until_draft_closed: false
+        };
+      }
+
+      const success = await updatePool(activePool.id, updateData);
 
       if (success) {
         toast({
           title: draftOpen ? "Draft Opened" : "Draft Closed",
           description: draftOpen 
             ? "Participants can now submit and edit their teams"
-            : "Draft is closed. No new submissions or edits allowed.",
+            : "Draft closed successfully. New participants disabled, teams locked, and picks are now visible.",
         });
       } else {
         throw new Error('Failed to update draft status');
@@ -560,7 +585,19 @@ export const PoolSettingsPanel: React.FC = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="draft_deadline">Draft Due Date & Time</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label htmlFor="draft_deadline" className="cursor-help flex items-center gap-1">
+                            Draft Due Date & Time
+                            <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                          </Label>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-sm">
+                          <p>Draft will automatically close at this date/time. When closed: New participants disabled, All teams locked, Everyone's picks become visible</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     <Input
                       id="draft_deadline"
                       type="datetime-local"
@@ -953,9 +990,19 @@ export const PoolSettingsPanel: React.FC = () => {
                   {/* Draft Open/Close Control */}
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label htmlFor="draft-open-toggle" className="text-base font-medium">
-                        Draft Open
-                      </Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label htmlFor="draft-open-toggle" className="text-base font-medium cursor-help flex items-center gap-1">
+                              Draft Open
+                              <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                            </Label>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-sm">
+                            <p>When draft closes, the following will automatically occur: New participants disabled, All teams locked, Everyone's picks become visible</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <p className="text-sm text-muted-foreground">
                         When enabled, draft submissions and edits are allowed
                       </p>

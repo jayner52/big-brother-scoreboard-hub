@@ -99,7 +99,78 @@ export const useDraftTogglePersistence = () => {
   };
 
   const handleDraftToggle = async (draftOpen: boolean) => {
+    // If closing the draft, apply cascade settings
+    if (!draftOpen) {
+      return await handleDraftCloseWithCascade();
+    }
     return await updateSetting('draft_open', draftOpen);
+  };
+
+  const handleDraftCloseWithCascade = async () => {
+    if (!activePool?.id) {
+      toast({
+        title: "Error",
+        description: "No active pool found",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Show confirmation for cascade effects
+    const confirmed = window.confirm(
+      'Closing the draft will automatically:\n\n' +
+      '• Disable new participants from joining\n' +
+      '• Lock all existing teams (prevent edits)\n' +
+      '• Make everyone\'s picks visible\n\n' +
+      'Continue?'
+    );
+    
+    if (!confirmed) return false;
+
+    setIsUpdating(true);
+    
+    try {
+      const cascadeSettings = {
+        draft_open: false,
+        allow_new_participants: false,
+        draft_locked: true,
+        hide_picks_until_draft_closed: false
+      };
+
+      const { data, error } = await supabase
+        .from('pools')
+        .update(cascadeSettings)
+        .eq('id', activePool.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setSettings(prev => ({ ...prev, ...cascadeSettings }));
+      
+      // Update pool context
+      if (setActivePool && data) {
+        setActivePool(data);
+      }
+
+      toast({
+        title: "Draft Closed",
+        description: "Draft closed successfully. New participants disabled, teams locked, and picks are now visible.",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error closing draft with cascade:', error);
+      toast({
+        title: "Error",
+        description: "Failed to close draft",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleDraftLockToggle = async (draftLocked: boolean) => {
@@ -142,6 +213,7 @@ export const useDraftTogglePersistence = () => {
     settings,
     isUpdating,
     handleDraftToggle,
+    handleDraftCloseWithCascade,
     handleDraftLockToggle,
     handleAllowNewParticipantsToggle,
     handleVisibilityToggle,

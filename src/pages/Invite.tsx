@@ -43,6 +43,14 @@ const Invite = () => {
       return;
     }
 
+    // Check if user is authenticated
+    if (!user) {
+      // Store invite code for after authentication
+      localStorage.setItem('pendingInviteCode', code);
+      navigate('/auth');
+      return;
+    }
+
     setLoading(true);
     try {
       const result = await joinPoolByCode(code);
@@ -136,7 +144,7 @@ const Invite = () => {
             </p>
           </div>
           <Button onClick={handleJoinPool} disabled={loading} className="w-full">
-            {loading ? 'Joining...' : 'Join Pool & Start Playing'}
+            {loading ? 'Processing...' : (user ? 'Join Pool & Start Playing' : 'Sign In & Join Pool')}
           </Button>
         </CardContent>
       </Card>

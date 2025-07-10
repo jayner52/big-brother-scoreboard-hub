@@ -7,7 +7,6 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 export const ContestantValues: React.FC = () => {
   const { contestants, contestantGroups, contestantStats, loading } = useContestantStats();
-  const { hohWinner, povWinner, nominees } = useCurrentWeekStatus();
 
   if (loading) {
     return (
@@ -27,9 +26,6 @@ export const ContestantValues: React.FC = () => {
           <ContestantPerformanceCard
             contestantStats={contestantStats}
             contestants={contestants}
-            hohWinner={hohWinner}
-            povWinner={povWinner}
-            nominees={nominees}
           />
         </ErrorBoundary>
         

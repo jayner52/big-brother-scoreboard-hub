@@ -36,20 +36,22 @@ export const useContestantStats = () => {
     try {
       console.log('🔄 ContestantStats - Processing stats for pool:', activePool.id);
       
-      // Create special events for block survival bonuses
+      // Create special events for block survival bonuses BEFORE calculating stats
+      console.log('🔄 Creating block survival bonuses...');
       await createBlockSurvivalBonuses(contestants, weeklyEvents);
       
       // Refetch data to include any newly created special events
+      console.log('🔄 Refetching data after creating bonuses...');
       await refetchData();
       
-      // REMOVED: evictedContestants parameter - will be reimplemented from scratch
+      // Calculate contestant stats using proper UUID matching
       const stats = await calculateContestantStats(
         contestants,
         contestantGroups,
         poolEntries,
         weeklyEvents,
         specialEvents,
-        [], // REMOVED: evictedContestants - empty array
+        [], // Empty array - eviction tracking now handled internally
         7 // Updated to current game week
       );
       

@@ -11,18 +11,18 @@ interface ContestantStatsTableProps {
   contestantStats: ContestantStats[];
   contestants: Contestant[];
   showSpoilers: boolean;
-  hohWinner: string | null;
-  povWinner: string | null;
-  nominees: string[];
+  hohWinner?: string | null;
+  povWinner?: string | null;
+  nominees?: string[];
 }
 
 export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
   contestantStats,
   contestants,
   showSpoilers,
-  hohWinner,
-  povWinner,
-  nominees,
+  hohWinner = null,
+  povWinner = null,
+  nominees = [],
 }) => {
   const { getEvictionStatus } = useEvictionData();
   return (
@@ -60,25 +60,25 @@ export const ContestantStatsTable: React.FC<ContestantStatsTableProps> = ({
                     {stat.group_name}
                   </Badge>
                 </TableCell>
-                {showSpoilers && (
+                 {showSpoilers && (
                   <TableCell>
                     <div className="flex flex-wrap gap-1 justify-center">
                       <Badge variant={evictionStatus === 'Active' ? 'default' : 'destructive'}>
                         {evictionStatus}
                       </Badge>
-                      {hohWinner === stat.contestant_name && (
+                      {stat.current_hoh && (
                         <Badge variant="secondary" className="flex items-center gap-1">
                           <Crown className="h-3 w-3" />
                           HOH
                         </Badge>
                       )}
-                      {povWinner === stat.contestant_name && (
+                      {stat.current_pov_winner && (
                         <Badge variant="secondary" className="flex items-center gap-1">
                           <Shield className="h-3 w-3" />
                           POV
                         </Badge>
                       )}
-                      {nominees.includes(stat.contestant_name) && (
+                      {stat.currently_nominated && (
                         <Badge variant="destructive" className="flex items-center gap-1">
                           <Target className="h-3 w-3" />
                           Nominated

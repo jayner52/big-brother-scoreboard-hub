@@ -10,17 +10,17 @@ import { Contestant } from '@/types/pool';
 interface ContestantPerformanceCardProps {
   contestantStats: ContestantStats[];
   contestants: Contestant[];
-  hohWinner: string | null;
-  povWinner: string | null;
-  nominees: string[];
+  hohWinner?: string | null;
+  povWinner?: string | null;
+  nominees?: string[];
 }
 
 export const ContestantPerformanceCard: React.FC<ContestantPerformanceCardProps> = ({
   contestantStats,
   contestants,
-  hohWinner,
-  povWinner,
-  nominees,
+  hohWinner = null,
+  povWinner = null,
+  nominees = [],
 }) => {
   const [showSpoilers, setShowSpoilers] = useState(false);
 

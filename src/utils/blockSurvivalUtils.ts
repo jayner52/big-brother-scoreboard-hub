@@ -116,12 +116,22 @@ export const checkAndCreateBlockSurvivalEvents = async (contestantId: string, we
   const milestones = [2, 4]; // Milestones to track
   const achievedMilestones = new Set();
   
+  // Get scoring rule UUIDs for block survival events
+  const { data: scoringRules } = await supabase
+    .from('detailed_scoring_rules')
+    .select('id, subcategory')
+    .in('subcategory', ['block_survival_2_weeks', 'block_survival_4_weeks'])
+    .eq('is_active', true);
+
+  const blockSurvival2WeeksId = scoringRules?.find(r => r.subcategory === 'block_survival_2_weeks')?.id;
+  const blockSurvival4WeeksId = scoringRules?.find(r => r.subcategory === 'block_survival_4_weeks')?.id;
+
   // Check existing special events to avoid duplicates
   const { data: existingEvents } = await supabase
     .from('special_events')
     .select('event_type, week_number')
     .eq('contestant_id', contestantId)
-    .in('event_type', ['block_survival_2_weeks', 'block_survival_4_weeks']);
+    .in('event_type', [blockSurvival2WeeksId, blockSurvival4WeeksId].filter(Boolean));
   
   const existingMilestones = new Set(
     existingEvents?.map(e => e.event_type) || []
@@ -144,9 +154,10 @@ export const checkAndCreateBlockSurvivalEvents = async (contestantId: string, we
           achievedMilestones.add(milestone);
           
           const eventType = milestone === 2 ? 'block_survival_2_weeks' : 'block_survival_4_weeks';
+          const eventTypeId = milestone === 2 ? blockSurvival2WeeksId : blockSurvival4WeeksId;
           
-          // Only create if it doesn't exist
-          if (!existingMilestones.has(eventType)) {
+          // Only create if it doesn't exist and we have the scoring rule ID
+          if (eventTypeId && !existingMilestones.has(eventTypeId)) {
             await createWeeklySpecialEvent(contestantId, eventType, week);
           }
         }
@@ -157,28 +168,37 @@ export const checkAndCreateBlockSurvivalEvents = async (contestantId: string, we
 
 export const createWeeklySpecialEvent = async (contestantId: string, eventType: string, weekNumber: number) => {
   try {
-    // Import scoring rules to get points
-    const { useScoringRules } = await import('@/hooks/useScoringRules');
-    const { getPointsForEvent } = useScoringRules();
-    
-    const points = eventType === 'block_survival_2_weeks' ? 
-      getPointsForEvent('block_survival_2_weeks') || 3 : 
-      getPointsForEvent('block_survival_4_weeks') || 5;
+    // Get scoring rule UUID for the event type
+    const { data: scoringRule } = await supabase
+      .from('detailed_scoring_rules')
+      .select('id, points')
+      .eq('subcategory', eventType)
+      .eq('is_active', true)
+      .single();
+
+    if (!scoringRule) {
+      console.error(`❌ No scoring rule found for ${eventType}`);
+      return;
+    }
     
     const description = eventType === 'block_survival_2_weeks' ? 
       'Survived 2+ Eviction Votes' : 'Survived 4+ Eviction Votes';
     
-    await supabase.from('special_events').insert({
+    const { error } = await supabase.from('special_events').insert({
       contestant_id: contestantId,
-      event_type: eventType,
+      event_type: scoringRule.id, // Use UUID instead of string
       description: description,
-      points_awarded: points,
+      points_awarded: scoringRule.points,
       week_number: weekNumber
     });
-    
-    console.log(`Created ${eventType} event for week ${weekNumber}`);
+
+    if (error) {
+      console.error('❌ Error creating special event:', error);
+    } else {
+      console.log(`✅ Created ${eventType} event for week ${weekNumber} with ${scoringRule.points} points`);
+    }
   } catch (error) {
-    console.error('Error creating weekly special event:', error);
+    console.error('❌ Error creating weekly special event:', error);
   }
 };
 

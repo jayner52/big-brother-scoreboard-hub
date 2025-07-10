@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
@@ -10,8 +10,7 @@ import { OptimizedPoolEntriesManagement } from '@/components/admin/OptimizedPool
 import WeeklyEventsPanel from '@/components/admin/WeeklyEventsPanel';
 import RoleManagementPanel from '@/components/admin/RoleManagementPanel';
 
-// Keep only PoolSettingsPanel as lazy-loaded since it works
-const PoolSettingsPanel = React.lazy(() => import('@/components/admin/PoolSettingsPanel'));
+import PoolSettingsPanel from '@/components/admin/PoolSettingsPanel';
 
 interface AdminTabsContentProps {
   canManageRoles: boolean;
@@ -22,9 +21,7 @@ export const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ canManageRol
     <div className="p-4 md:p-6" data-admin-panel>
       <TabsContent value="settings" className="space-y-4 mt-0">
         <ErrorBoundary>
-          <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Loading pool settings...</div>}>
-            <PoolSettingsPanel />
-          </Suspense>
+          <PoolSettingsPanel />
         </ErrorBoundary>
       </TabsContent>
 

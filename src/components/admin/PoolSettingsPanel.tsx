@@ -17,6 +17,7 @@ import { CustomScoringPanel } from '@/components/admin/CustomScoringPanel';
 
 import { useGroupAutoGeneration } from '@/hooks/useGroupAutoGeneration';
 import { InstructionAccordion } from './InstructionAccordion';
+import { RegistrationDeadlineControl } from './RegistrationDeadlineControl';
 
 interface PoolSettings {
   id: string;
@@ -583,56 +584,12 @@ const PoolSettingsPanel: React.FC = () => {
                 </div>
 
 
-                <div className="space-y-4">
-                  <div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Label htmlFor="draft_deadline" className="cursor-help flex items-center gap-1">
-                            Draft Due Date & Time
-                            <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                          </Label>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-sm">
-                          <p>Draft will automatically close at this date/time. When closed: New participants disabled, All teams locked, Everyone's picks become visible</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <Input
-                      id="draft_deadline"
-                      type="datetime-local"
-                      value={formatDateTimeLocal(settings.registration_deadline)}
-                      onChange={(e) => handleDateTimeChange(e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Time shown in selected timezone below
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select
-                      value={settings.registration_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone}
-                      onValueChange={(value) => setSettings({ ...settings, registration_timezone: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select timezone" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
-                        <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
-                        <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
-                        <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
-                        <SelectItem value="America/Toronto">Toronto (ET)</SelectItem>
-                        <SelectItem value="America/Vancouver">Vancouver (PT)</SelectItem>
-                        <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
-                        <SelectItem value="Europe/Paris">Paris (CET/CEST)</SelectItem>
-                        <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
-                        <SelectItem value="Australia/Sydney">Sydney (AEDT/AEST)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                {/* Enhanced Registration Deadline Control */}
+                <RegistrationDeadlineControl 
+                  poolId={activePool.id}
+                  currentDeadline={activePool.registration_deadline}
+                  disabled={saving || isUpdating}
+                />
 
                 {/* CRITICAL FIX: Consolidated Buy-In Settings */}
                 <div className="space-y-4 p-4 border rounded-lg bg-green-50">

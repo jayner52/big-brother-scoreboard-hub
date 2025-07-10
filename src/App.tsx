@@ -10,6 +10,7 @@ import Landing from "./pages/Landing";
 import PoolsidePicks from "./pages/PoolsidePicks";
 import Admin from "./pages/Admin";
 import CompanyAdmin from "./pages/CompanyAdmin";
+import HiddenCompanyAdmin from "./pages/HiddenCompanyAdmin";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
 import Draft from "./pages/Draft";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/dashboard" element={<Index />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/company-admin" element={<CompanyAdmin />} />
+              <Route path="/hidden-company-admin" element={<HiddenCompanyAdmin />} />
               <Route path="/about" element={<About />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/draft" element={<Draft />} />

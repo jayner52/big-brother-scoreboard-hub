@@ -119,10 +119,8 @@ export const CompanyAdminAccess: React.FC = () => {
         setPassword('');
         setAttemptCount(0);
         
-        toast({
-          title: "Access Granted",
-          description: "Welcome to Poolside Picks Company Admin",
-        });
+        // Navigate directly without toast notification
+        navigate('/hidden-company-admin?company=true');
       } else {
         setAttemptCount(prev => prev + 1);
         toast({
@@ -202,10 +200,10 @@ export const CompanyAdminAccess: React.FC = () => {
             Access comprehensive user registration data, analytics, and site management tools.
           </p>
           <Button 
-            onClick={() => navigate('/company-admin')}
+            onClick={() => navigate('/hidden-company-admin?company=true')}
             className="bg-emerald-600 hover:bg-emerald-700"
           >
-            Go to Company Admin Dashboard
+            Access Company Admin
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>

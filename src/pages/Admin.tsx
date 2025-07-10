@@ -9,7 +9,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { usePool } from '@/contexts/PoolContext';
-import { CompanyAdminAccess } from '@/components/admin/CompanyAdminAccess';
+
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 const Admin = () => {
@@ -173,8 +173,7 @@ const Admin = () => {
           <AdminScoringPanel />
         </div>
 
-        {/* Company Admin Access - Separate from pool admin */}
-        <CompanyAdminAccess />
+        {/* Company Admin Access removed for security */}
 
         {/* Footer */}
         <footer className="text-center text-gray-500 text-sm mt-16 py-8 border-t">

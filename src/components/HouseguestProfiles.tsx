@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Users, CreditCard } from 'lucide-react';
+import { Users, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry } from '@/types/pool';
 import { useHouseguestPoints } from '@/hooks/useHouseguestPoints';
@@ -10,6 +8,10 @@ import { useUserPaymentUpdate } from '@/hooks/useUserPaymentUpdate';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useActivePool } from '@/hooks/useActivePool';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { Skeleton } from '@/components/ui/loading-skeleton';
+import { MobileTeamCard } from '@/components/mobile/MobileTeamCard';
+import { MobileTeamNavigation } from '@/components/mobile/MobileTeamNavigation';
 
 interface UserTeamsProps {
   userId?: string;
@@ -169,35 +171,64 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
     }
   };
 
-  const renderPlayerName = (playerName: string) => {
-    const contestant = contestants.find(c => c.name === playerName);
-    const isEliminated = isEvicted(playerName);
-    const points = houseguestPoints[playerName] || 0;
-    
+  const refreshTeams = async () => {
+    await Promise.all([
+      loadUserEntries(),
+      loadDraftSettings(),
+      loadContestants()
+    ]);
+  };
+
+  const { containerRef, isRefreshing, pullDistance, isPulling } = usePullToRefresh({
+    onRefresh: refreshTeams,
+    enabled: !loading,
+    threshold: 80
+  });
+
+  if (loading) {
     return (
-      <div className={`flex flex-col items-center transition-colors ${isEliminated ? 'opacity-60' : ''}`}>
-        <span className={`font-medium text-xs mb-1 ${isEliminated ? 'text-destructive' : 'text-foreground'}`} title={playerName}>
-          {playerName.split(' ')[0]}
-        </span>
-        <div className={`rounded-full px-2 py-0.5 ${isEliminated ? 'bg-destructive/20 border border-destructive/30' : 'bg-primary/10'}`}>
-          <span className={`text-xs font-semibold ${isEliminated ? 'text-destructive' : 'text-primary'}`}>
-            {points}
-          </span>
+      <div className="w-full max-w-4xl mx-auto space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <div className="space-y-4">
+          {[1, 2].map((i) => (
+            <div key={i} className="bg-card rounded-lg border p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+                <Skeleton className="h-12 w-16 rounded-lg" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <Skeleton key={j} className="h-20 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
-  };
-
-  if (loading) {
-    return <div className="text-center py-2 text-sm text-muted-foreground">Loading team...</div>;
   }
 
   if (userEntries.length === 0) {
     return (
-      <div className="bg-muted/30 border rounded-lg p-3 text-center">
-        <Users className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
-        <p className="text-sm font-medium mb-1">No Teams Found</p>
-        <p className="text-xs text-muted-foreground">You haven't created any teams yet.</p>
+      <div 
+        ref={containerRef}
+        className="w-full max-w-4xl mx-auto"
+        style={{
+          transform: `translateY(${pullDistance}px)`,
+          transition: isPulling ? 'none' : 'transform 0.3s ease-out'
+        }}
+      >
+        <div className="bg-muted/30 border rounded-lg p-6 text-center">
+          <Users className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-lg font-medium mb-2">No Teams Found</p>
+          <p className="text-sm text-muted-foreground">You haven't created any teams yet.</p>
+        </div>
       </div>
     );
   }
@@ -212,112 +243,49 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
   
   const totalPoints = players.reduce((sum, player) => sum + (houseguestPoints[player] || 0), 0);
 
-  const nextEntry = () => {
-    setCurrentEntryIndex((prev) => (prev + 1) % userEntries.length);
-  };
-
-  const prevEntry = () => {
-    setCurrentEntryIndex((prev) => (prev - 1 + userEntries.length) % userEntries.length);
-  };
-
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      {/* Sleek Team Banner */}
-      <div className="bg-gradient-to-r from-primary/5 via-background to-primary/5 border rounded-xl p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          {/* Left: Team Info & Navigation */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Users className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm">{currentEntry.team_name}</h3>
-                <p className="text-xs text-muted-foreground">{currentEntry.participant_name}</p>
-              </div>
-            </div>
-            
-            {/* Team Navigation */}
-            {userEntries.length > 1 && (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={prevEntry}
-                  className="h-6 w-6 p-0"
-                >
-                  <ChevronLeft className="h-3 w-3" />
-                </Button>
-                <span className="text-xs text-muted-foreground px-2">
-                  {currentEntryIndex + 1}/{userEntries.length}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={nextEntry}
-                  className="h-6 w-6 p-0"
-                >
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
-          </div>
-          
-          {/* Center: Compact Player Cards */}
-          <div className="flex items-center gap-1">
-            {players.map((player, index) => (
-              <div key={index} className="bg-background/50 rounded-lg px-2 py-1 border">
-                {renderPlayerName(player)}
-              </div>
-            ))}
-          </div>
-          
-          {/* Right: Status & Actions */}
-          <div className="flex items-center gap-3">
-            {/* Edit Team Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleEditTeam(currentEntry)}
-              className="h-8 px-3 text-xs"
-              disabled={draftLocked}
-            >
-              {draftLocked ? "Locked" : "Edit Team"}
-            </Button>
-            
-            {/* Payment Toggle - only show if pool has buy-in */}
-            {activePool?.has_buy_in && (
-              <Button
-                variant={currentEntry.payment_confirmed ? "default" : "outline"}
-                size="sm"
-                onClick={() => handlePaymentToggle(currentEntry.id, currentEntry.payment_confirmed)}
-                disabled={updating}
-                className="h-8 px-3 text-xs"
-              >
-                <CreditCard className="h-3 w-3 mr-1" />
-                {updating ? "..." : currentEntry.payment_confirmed ? "Paid" : "Pay"}
-              </Button>
-            )}
-            
-            {/* Score Display */}
-            <div className="bg-primary/10 rounded-lg px-3 py-1 border">
-              <div className="text-lg font-bold text-primary">
-                {totalPoints}
-              </div>
-              <div className="text-xs text-muted-foreground text-center">
-                pts
-              </div>
-            </div>
-            
-            {/* Rank Badge */}
-            {currentEntry.current_rank && (
-              <Badge variant="outline" className="text-xs">
-                #{currentEntry.current_rank}
-              </Badge>
-            )}
+    <div 
+      ref={containerRef}
+      className="w-full max-w-4xl mx-auto space-y-4 relative"
+      style={{
+        transform: `translateY(${pullDistance}px)`,
+        transition: isPulling ? 'none' : 'transform 0.3s ease-out'
+      }}
+    >
+      {/* Pull to Refresh Indicator */}
+      {(isPulling || isRefreshing) && (
+        <div className="flex items-center justify-center py-4">
+          <div className={`flex items-center gap-2 text-sm ${
+            isRefreshing ? 'text-primary' : 'text-muted-foreground'
+          }`}>
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Pull to refresh'}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Mobile Team Navigation */}
+      <MobileTeamNavigation
+        userEntries={userEntries}
+        currentEntryIndex={currentEntryIndex}
+        setCurrentEntryIndex={setCurrentEntryIndex}
+        houseguestPoints={houseguestPoints}
+        picksPerTeam={picksPerTeam}
+      />
+
+      {/* Mobile Team Card */}
+      <MobileTeamCard
+        entry={currentEntry}
+        players={players}
+        totalPoints={totalPoints}
+        isEvicted={isEvicted}
+        houseguestPoints={houseguestPoints}
+        onEditTeam={handleEditTeam}
+        onTogglePayment={handlePaymentToggle}
+        draftLocked={draftLocked}
+        hasBuyIn={activePool?.has_buy_in || false}
+        updating={updating}
+      />
     </div>
   );
 };

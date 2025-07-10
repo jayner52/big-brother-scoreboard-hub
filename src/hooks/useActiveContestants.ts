@@ -15,7 +15,7 @@ export const useActiveContestants = (poolId?: string) => {
     try {
       console.log('📊 Loading contestant data for pool:', poolId);
       
-      // CRITICAL FIX: Ensure eviction status is synchronized before loading
+      // Synchronize eviction status for official contestants only (manual contestants are protected)
       await supabase.rpc('update_contestant_eviction_status', {
         target_pool_id: poolId
       });

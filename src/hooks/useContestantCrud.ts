@@ -82,7 +82,7 @@ export const useContestantCrud = (
           hometown: editForm.hometown,
           age: editForm.age,
           occupation: editForm.occupation,
-          season_number: 26,
+          season_number: 27,
           data_source: 'manual',
           pool_id: activePool.id
         })

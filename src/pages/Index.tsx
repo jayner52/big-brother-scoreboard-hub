@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Users, Plus, Trophy, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserPoolRole } from '@/hooks/useUserPoolRole';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const Index = () => {
   } = usePool();
 
   const { isAdmin } = useUserPoolRole(activePool?.id, user?.id);
+  const { profile } = useUserProfile(user);
 
   // Check if this is the pool owner's first visit
   useEffect(() => {
@@ -255,15 +257,25 @@ const Index = () => {
           onJoinPool={handleJoinPool}
         />
         
-        {/* Pool Controls Header */}
+        {/* Enhanced Welcome Header */}
         <div className="bg-gradient-to-r from-white to-brand-teal/5 border border-brand-teal/10 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-sm">
+          {/* Personalized Welcome Message */}
+          <div className="mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-dark mb-2">
+              Welcome back, {profile?.display_name || user.user_metadata?.display_name || user.email?.split('@')[0]}! 👋
+            </h1>
+            <p className="text-dark/70">
+              Ready to dominate your Big Brother pools?
+            </p>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             {/* Pool Info Section */}
             <div className="flex-1 min-w-0">
               {activePool ? (
                 <div className="space-y-1">
-                  <h1 className="text-xl sm:text-2xl font-bold text-dark flex items-center gap-2 flex-wrap">
-                    <span className="truncate">{activePool.name}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-lg sm:text-xl font-semibold text-dark truncate">Current Pool: {activePool.name}</span>
                     {userRank && (
                       <Badge 
                         variant="outline" 
@@ -272,15 +284,20 @@ const Index = () => {
                         Rank #{userRank}
                       </Badge>
                     )}
-                  </h1>
-                  <p className="text-sm sm:text-base text-dark/70 truncate">
-                    {userEntry?.participant_name && `Playing as ${userEntry.participant_name}`}
-                  </p>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-dark/70">
+                    {userEntry?.participant_name && (
+                      <span>Playing as {userEntry.participant_name}</span>
+                    )}
+                    {userEntry && (
+                      <span>Points: {userEntry.total_points}</span>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <h1 className="text-xl sm:text-2xl font-bold text-dark">Welcome to Poolside Picks</h1>
-                  <p className="text-sm sm:text-base text-dark/70">Join or create a pool to get started</p>
+                  <h2 className="text-lg sm:text-xl font-semibold text-dark">No Active Pool Selected</h2>
+                  <p className="text-sm sm:text-base text-dark/70">Choose a pool or create a new one to get started</p>
                 </div>
               )}
             </div>

@@ -6,8 +6,9 @@ const corsHeaders = {
 }
 
 interface CompanyAdminDataRequest {
-  action: 'get_user_data' | 'get_pool_analytics' | 'delete_user';
+  action: 'get_user_data' | 'get_pool_analytics' | 'delete_user' | 'delete_pool' | 'delete_test_pools';
   user_id?: string;
+  pool_id?: string;
 }
 
 interface EnhancedUserData {
@@ -60,7 +61,7 @@ Deno.serve(async (req) => {
 
     // Parse request body
     const requestBody: CompanyAdminDataRequest = await req.json()
-    const { action, user_id } = requestBody
+    const { action, user_id, pool_id } = requestBody
     console.log('COMPANY_ADMIN_DATA: Action requested:', action)
 
     if (action === 'get_user_data') {
@@ -78,6 +79,19 @@ Deno.serve(async (req) => {
         )
       }
       return await handleDeleteUser(supabase, user_id)
+    } else if (action === 'delete_pool') {
+      if (!pool_id) {
+        return new Response(
+          JSON.stringify({ error: 'pool_id is required for deletion' }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400 
+          }
+        )
+      }
+      return await handleDeletePool(supabase, pool_id)
+    } else if (action === 'delete_test_pools') {
+      return await handleDeleteTestPools(supabase)
     } else {
       return new Response(
         JSON.stringify({ error: 'Invalid action' }),
@@ -348,6 +362,128 @@ async function handleGetPoolAnalytics(supabase: any) {
 
   } catch (error: any) {
     console.error('COMPANY_ADMIN_DATA: Error in handleGetPoolAnalytics:', error)
+    throw error
+  }
+}
+
+async function handleDeletePool(supabase: any, poolId: string) {
+  console.log('COMPANY_ADMIN_DATA: Deleting pool:', poolId)
+  
+  try {
+    // Get pool data for audit log before deletion
+    const { data: poolData } = await supabase
+      .from('pools')
+      .select('name, created_at, owner_id')
+      .eq('id', poolId)
+      .single()
+
+    if (!poolData) {
+      return new Response(
+        JSON.stringify({ error: 'Pool not found' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 404 
+        }
+      )
+    }
+
+    // Delete pool (this cascades to related tables due to foreign keys)
+    const { error: deleteError } = await supabase
+      .from('pools')
+      .delete()
+      .eq('id', poolId)
+    
+    if (deleteError) {
+      console.error('COMPANY_ADMIN_DATA: Error deleting pool:', deleteError)
+      throw deleteError
+    }
+
+    console.log(`COMPANY_ADMIN_DATA: Successfully deleted pool ${poolId} (${poolData.name})`)
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Pool "${poolData.name}" deleted successfully`,
+        deleted_pool: {
+          pool_id: poolId,
+          name: poolData.name,
+          created_at: poolData.created_at,
+          owner_id: poolData.owner_id
+        }
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+
+  } catch (error: any) {
+    console.error('COMPANY_ADMIN_DATA: Error in handleDeletePool:', error)
+    throw error
+  }
+}
+
+async function handleDeleteTestPools(supabase: any) {
+  console.log('COMPANY_ADMIN_DATA: Deleting test pools...')
+  
+  try {
+    // Find pools that look like test pools (containing "test", "demo", etc.)
+    const { data: testPools, error: fetchError } = await supabase
+      .from('pools')
+      .select('id, name, created_at')
+      .or('name.ilike.%test%,name.ilike.%demo%,name.ilike.%example%,name.ilike.%sample%')
+
+    if (fetchError) {
+      console.error('COMPANY_ADMIN_DATA: Error fetching test pools:', fetchError)
+      throw fetchError
+    }
+
+    if (!testPools || testPools.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'No test pools found to delete',
+          deleted_count: 0
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      )
+    }
+
+    // Delete all found test pools
+    const { error: deleteError } = await supabase
+      .from('pools')
+      .delete()
+      .in('id', testPools.map(pool => pool.id))
+    
+    if (deleteError) {
+      console.error('COMPANY_ADMIN_DATA: Error deleting test pools:', deleteError)
+      throw deleteError
+    }
+
+    console.log(`COMPANY_ADMIN_DATA: Successfully deleted ${testPools.length} test pools`)
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Successfully deleted ${testPools.length} test pools`,
+        deleted_count: testPools.length,
+        deleted_pools: testPools.map(pool => ({
+          id: pool.id,
+          name: pool.name,
+          created_at: pool.created_at
+        }))
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+
+  } catch (error: any) {
+    console.error('COMPANY_ADMIN_DATA: Error in handleDeleteTestPools:', error)
     throw error
   }
 }

@@ -13,9 +13,12 @@ import {
   Trophy,
   Calendar,
   TrendingUp,
-  Database
+  Database,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PoolData {
@@ -58,6 +61,8 @@ export const PoolAnalyticsTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [deletePoolId, setDeletePoolId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -302,6 +307,63 @@ export const PoolAnalyticsTab: React.FC = () => {
     return { label: 'Unknown', variant: 'outline' as const };
   };
 
+  const deletePool = async (poolId: string) => {
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('company-admin-data', {
+        body: { action: 'delete_pool', pool_id: poolId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Pool Deleted",
+        description: data.message,
+      });
+
+      // Reload pool data
+      await loadPoolData();
+    } catch (error: any) {
+      console.error('Error deleting pool:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete pool",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeletePoolId(null);
+    }
+  };
+
+  const deleteAllTestPools = async () => {
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('company-admin-data', {
+        body: { action: 'delete_test_pools' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Test Pools Deleted",
+        description: data.message,
+      });
+
+      // Reload pool data
+      await loadPoolData();
+    } catch (error: any) {
+      console.error('Error deleting test pools:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete test pools",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading pool analytics...</div>;
   }
@@ -315,6 +377,15 @@ export const PoolAnalyticsTab: React.FC = () => {
           <Button onClick={exportPoolsToCsv} variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
+          </Button>
+          <Button 
+            onClick={deleteAllTestPools} 
+            variant="destructive" 
+            size="sm"
+            disabled={isDeleting}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Test Pools
           </Button>
         </div>
       </div>
@@ -497,6 +568,7 @@ export const PoolAnalyticsTab: React.FC = () => {
                     <th className="text-left py-2 px-4">Prize Pool</th>
                     <th className="text-left py-2 px-4">Status</th>
                     <th className="text-left py-2 px-4">Created</th>
+                    <th className="text-left py-2 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -547,6 +619,16 @@ export const PoolAnalyticsTab: React.FC = () => {
                         <td className="py-2 px-4 text-sm text-muted-foreground">
                           {new Date(pool.created_at).toLocaleDateString()}
                         </td>
+                        <td className="py-2 px-4">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setDeletePoolId(pool.id)}
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -556,6 +638,38 @@ export const PoolAnalyticsTab: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Pool Confirmation Dialog */}
+      <AlertDialog open={!!deletePoolId} onOpenChange={() => setDeletePoolId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete Pool
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this pool? This action cannot be undone and will permanently remove:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>The pool and all its settings</li>
+                <li>All participant entries</li>
+                <li>All pool memberships</li>
+                <li>All weekly results and scoring data</li>
+                <li>All chat messages</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletePoolId && deletePool(deletePoolId)}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Pool'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

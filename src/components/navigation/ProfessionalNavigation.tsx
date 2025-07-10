@@ -95,15 +95,17 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
       
       <nav className="sticky top-0 z-40 flex items-center justify-between py-3 px-6 bg-background/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
         {/* LEFT SECTION - Pool Identity */}
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-1 mr-4">
           <button 
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
           >
             <PoolsidePicksLogo size="sm" />
           </button>
-          <h3 className="text-lg font-semibold text-foreground truncate">
-            {activePool?.name || 'Poolside Picks'}
+          <h3 className="text-lg font-semibold text-foreground min-w-0 flex-1">
+            <span className={`${isMobile ? 'line-clamp-2 text-sm leading-tight' : 'truncate'}`}>
+              {activePool?.name || 'Poolside Picks'}
+            </span>
           </h3>
         </div>
 
@@ -116,21 +118,21 @@ export const ProfessionalNavigation: React.FC<ProfessionalNavigationProps> = ({
         )}
 
         {/* RIGHT SECTION - User Menu */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {isMobile && <EnhancedChatIcon />}
           
-          {!isMobile ? (
-            <UserDropdown
-              user={user}
-              profile={profile}
-              displayName={displayName}
-              initials={initials}
-              userRank={userRank}
-              isAdmin={isAdmin}
-              onSignOut={onSignOut}
-              onProfileModalOpen={() => setProfileModalOpen(true)}
-            />
-          ) : (
+          <UserDropdown
+            user={user}
+            profile={profile}
+            displayName={displayName}
+            initials={initials}
+            userRank={userRank}
+            isAdmin={isAdmin}
+            onSignOut={onSignOut}
+            onProfileModalOpen={() => setProfileModalOpen(true)}
+          />
+
+          {isMobile && (
             <MobileMenu
               user={user}
               isAdmin={isAdmin}

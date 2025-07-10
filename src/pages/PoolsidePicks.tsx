@@ -22,6 +22,17 @@ const PoolsidePicks = () => {
   const { profile } = useUserProfile(user);
   const { activePool } = usePool();
 
+  // Debug logging for mobile testing
+  console.log('PoolsidePicks Debug:', { 
+    user: !!user, 
+    userEmail: user?.email, 
+    profile: !!profile, 
+    profileName: profile?.display_name,
+    activePool: !!activePool, 
+    poolName: activePool?.name,
+    isMobile 
+  });
+
   useEffect(() => {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {

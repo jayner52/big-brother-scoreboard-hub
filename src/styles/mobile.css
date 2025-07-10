@@ -1,0 +1,33 @@
+/* Mobile-specific styles and optimizations */
+
+/* Mobile chat optimizations */
+@media (max-width: 640px) {
+  .chat-container {
+    height: calc(100vh - 120px); /* Account for header */
+  }
+  
+  .chat-input-container {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .chat-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .chat-message {
+    max-width: 85%;
+    font-size: 14px;
+  }
+  
+  .gif-picker-modal {
+    max-height: 60vh;
+    width: 90vw;
+    margin: 0 auto;
+  }
+  
+  .message-actions {
+    flex-direction: row;
+    gap: 4px;
+  }
+}

@@ -1,28 +1,24 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
 
 export const HomepageFooter: React.FC = () => {
-  console.log('HomepageFooter rendering');
+  const navigate = useNavigate();
 
-  // Temporarily remove useNavigate to isolate the useContext error
   const handleBigBrotherLaunch = () => {
-    console.log('Navigate to landing clicked');
-    // navigate('/landing');
+    navigate('/landing');
   };
 
   const handlePrivacyPolicy = () => {
-    console.log('Navigate to privacy policy clicked');
-    // navigate('/privacy-policy');
+    navigate('/privacy-policy');
   };
 
   const handleAbout = () => {
-    console.log('Navigate to about clicked');
-    // navigate('/about');
+    navigate('/about');
   };
 
   const handleAuth = () => {
-    console.log('Navigate to auth clicked');
-    // navigate('/auth');
+    navigate('/auth');
   };
 
   return (

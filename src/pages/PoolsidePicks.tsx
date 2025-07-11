@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// import { useAuth } from '@/hooks/useAuth'; // Temporarily disabled
+import { useAuth } from '@/hooks/useAuth';
 import { FloatingPoolElements } from '@/components/homepage/FloatingPoolElements';
 import { HomepageNavigation } from '@/components/homepage/HomepageNavigation';
 import { HomepageHero } from '@/components/homepage/HomepageHero';
@@ -10,11 +10,7 @@ import { FinalCTASection } from '@/components/homepage/FinalCTASection';
 import { HomepageFooter } from '@/components/homepage/HomepageFooter';
 
 const PoolsidePicks = () => {
-  // Temporarily bypass auth to test if the app loads
-  console.log('PoolsidePicks render - bypassing auth hooks');
-  
-  const user = null; // Simulate no user for now
-  const loading = false; // Simulate not loading
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (

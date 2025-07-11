@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { HouseguestProfiles } from '@/components/HouseguestProfiles';
+import { EnhancedMyTeams } from '@/components/teams/EnhancedMyTeams';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useState, useEffect } from 'react';
@@ -37,7 +37,7 @@ const MyTeams = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-8">
             <Button 
@@ -63,7 +63,7 @@ const MyTeams = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Navigation */}
         <div className="flex items-center gap-4 mb-8">
@@ -89,7 +89,7 @@ const MyTeams = () => {
 
         {/* Teams Display */}
         <div className="max-w-6xl mx-auto">
-          <HouseguestProfiles userId={user.id} />
+          <EnhancedMyTeams userId={user.id} />
         </div>
 
         {/* Footer */}

@@ -539,6 +539,8 @@ export type Database = {
           bonus_points: number
           created_at: string
           current_rank: number | null
+          deleted_at: string | null
+          deleted_by_user: boolean | null
           email: string | null
           id: string
           participant_name: string
@@ -560,6 +562,8 @@ export type Database = {
           bonus_points?: number
           created_at?: string
           current_rank?: number | null
+          deleted_at?: string | null
+          deleted_by_user?: boolean | null
           email?: string | null
           id?: string
           participant_name: string
@@ -581,6 +585,8 @@ export type Database = {
           bonus_points?: number
           created_at?: string
           current_rank?: number | null
+          deleted_at?: string | null
+          deleted_by_user?: boolean | null
           email?: string | null
           id?: string
           participant_name?: string

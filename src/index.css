@@ -4,12 +4,13 @@
 
 @layer base {
   :root {
-    /* Pale yellow background system */
-    --background: 60 30% 97%;
+    /* Modern warm background system */
+    --page-bg: 48 65% 85%;
+    --background: 0 0% 100%;
     --foreground: 0 0% 5%;
-    --card: 60 15% 95%;
+    --card: 0 0% 100%;
     --card-foreground: 0 0% 5%;
-    --popover: 60 30% 97%;
+    --popover: 0 0% 100%;
     --popover-foreground: 0 0% 5%;
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
@@ -51,6 +52,11 @@
     --gradient-teal-hover: linear-gradient(135deg, hsl(174 72% 51%), hsl(184 72% 51%));
     --gradient-summer: linear-gradient(135deg, hsl(174 72% 56%), hsl(16 100% 66%));
     --gradient-summer-hover: linear-gradient(135deg, hsl(174 72% 51%), hsl(16 100% 61%));
+    
+    /* Fix orange gradients for admin */
+    --orange: 25 95% 63%;
+    --orange-500: 25 95% 53%;
+    --red-500: 0 84% 60%;
     
     /* Legacy support - map to professional colors */
     --purple: 262 83% 58%;
@@ -112,7 +118,7 @@
     @apply border-border;
   }
   html, body, #root {
-    background-color: hsl(60 30% 97%) !important;
+    background-color: hsl(var(--page-bg)) !important;
     color: hsl(0 0% 5%) !important;
     min-height: 100vh;
   }
@@ -152,11 +158,11 @@
 
   /* Primary background colors */
   .bg-pale-yellow {
-    background-color: hsl(60 30% 97%);
+    background-color: hsl(var(--page-bg));
   }
 
   .bg-gradient-brand {
-    background: linear-gradient(to bottom right, hsl(60 30% 97%), hsl(50 25% 95%));
+    background: linear-gradient(to bottom right, hsl(var(--page-bg)), hsl(48 60% 82%));
   }
 
   .bg-gradient-subtle {
@@ -181,22 +187,22 @@
     overscroll-behavior: contain;
   }
 
-  /* MASTER THEME OVERRIDES - Force consistent pale yellow background */
+  /* MASTER THEME OVERRIDES - Modern warm background */
   body,
   html,
   #root {
-    background-color: hsl(60 30% 97%) !important;
+    background-color: hsl(var(--page-bg)) !important;
   }
   
-  /* Force pale yellow on main containers */
+  /* Force warm background on main containers */
   .min-h-screen,
   div[class*="min-h-screen"] {
-    background-color: hsl(60 30% 97%) !important;
+    background-color: hsl(var(--page-bg)) !important;
   }
 
   /* Beautiful gradient background option */
   .main-gradient {
-    background: linear-gradient(135deg, hsl(60 30% 97%) 0%, hsl(50 25% 95%) 50%, hsl(55 28% 96%) 100%) !important;
+    background: linear-gradient(135deg, hsl(var(--page-bg)) 0%, hsl(48 60% 82%) 50%, hsl(48 70% 87%) 100%) !important;
     min-height: 100vh;
   }
 
@@ -229,9 +235,30 @@
   .card, 
   [class*="card"],
   .ui-card {
-    background-color: hsl(60 15% 96%) !important;
-    border: 1px solid hsl(60 15% 88%) !important;
+    background-color: hsl(var(--background)) !important;
+    border: 1px solid hsl(210 40% 88%) !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24) !important;
+  }
+  
+  /* Fix coral and orange gradients */
+  .from-coral {
+    --tw-gradient-from: hsl(var(--coral)) var(--tw-gradient-from-position);
+    --tw-gradient-to: hsl(var(--coral) / 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  
+  .to-orange {
+    --tw-gradient-to: hsl(var(--orange)) var(--tw-gradient-to-position);
+  }
+  
+  .from-orange-500 {
+    --tw-gradient-from: hsl(var(--orange-500)) var(--tw-gradient-from-position);
+    --tw-gradient-to: hsl(var(--orange-500) / 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  
+  .to-red-500 {
+    --tw-gradient-to: hsl(var(--red-500)) var(--tw-gradient-to-position);
   }
 
   /* Professional brand color utilities */
@@ -259,5 +286,10 @@
   /* Page background utility */
   .bg-page {
     background-color: hsl(var(--page-bg)) !important;
+  }
+  
+  /* Ensure panels have proper backgrounds */
+  .bg-background {
+    background-color: hsl(var(--background)) !important;
   }
 }

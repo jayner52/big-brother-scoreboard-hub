@@ -80,7 +80,7 @@ const CompanyAdmin = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <div className="text-center">
           <Lock className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">Redirecting to admin panel...</p>
@@ -90,7 +90,7 @@ const CompanyAdmin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-page">
       <div className="container mx-auto px-4 py-8">
         {/* Navigation Header */}
         <div className="flex justify-between items-center mb-8">
@@ -115,7 +115,7 @@ const CompanyAdmin = () => {
         </div>
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white py-6 px-8 rounded-lg shadow-lg mb-6">
+        <div className="bg-gradient-to-r from-brand-teal to-coral text-white py-6 px-8 rounded-lg shadow-lg mb-6">
           <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
             <Building2 className="h-8 w-8" />
             Poolside Picks Company Admin

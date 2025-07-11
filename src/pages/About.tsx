@@ -39,7 +39,7 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-cream relative overflow-hidden">
+    <div className="min-h-screen main-gradient relative overflow-hidden">
       {/* Floating Pool Elements */}
       <div className="absolute top-20 left-10 opacity-40 animate-bounce">
         <PoolFloat className="w-16 h-16" color="teal" />

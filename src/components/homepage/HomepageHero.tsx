@@ -33,7 +33,7 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
 
 
   return (
-    <section className="relative py-20 px-4">
+    <section className="relative py-20 px-4 main-gradient">
         <div className="container mx-auto text-center">
           {/* Giant Logo */}
           <div className="mb-12 flex justify-center">

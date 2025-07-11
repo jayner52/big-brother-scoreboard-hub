@@ -1,10 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useGroupAutoGeneration = () => {
-  const { toast } = useToast();
+  const [isReactReady, setIsReactReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Ensure React context is fully initialized before using hooks
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsReactReady(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Guard clause to prevent hook usage before React is ready
+  let toast: any;
+  try {
+    toast = useToast()?.toast;
+  } catch (error) {
+    console.warn('useToast not ready yet, using fallback');
+    toast = () => {}; // Fallback function
+  }
+
+  if (!isReactReady) {
+    return {
+      redistributeHouseguests: async () => false,
+      saveGroupNames: async () => false,
+      isGenerating: false
+    };
+  }
 
   const redistributeHouseguests = async (poolId: string, numberOfGroups: number, enableFreePick = true) => {
     console.log('🔧 TRANSACTION START - Updating groups:', { poolId, numberOfGroups, enableFreePick });

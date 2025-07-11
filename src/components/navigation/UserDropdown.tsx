@@ -16,6 +16,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useFeedbackForm } from '@/hooks/useFeedbackForm';
 import { FeedbackForm } from '@/components/feedback/FeedbackForm';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface UserDropdownProps {
   user: SupabaseUser | null;
@@ -88,6 +89,11 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
           <DropdownMenuItem onClick={onProfileModalOpen} className="flex items-center gap-2 cursor-pointer">
             <User className="h-4 w-4" />
             Edit Profile
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem className="flex items-center gap-2 justify-between">
+            <span>Dark Mode</span>
+            <ThemeToggle />
           </DropdownMenuItem>
           
           {isAdmin && (

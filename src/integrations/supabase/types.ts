@@ -1626,6 +1626,10 @@ export type Database = {
         Args: { target_pool_id: string }
         Returns: undefined
       }
+      seed_pool_scoring_rules_clean: {
+        Args: { target_pool_id: string }
+        Returns: undefined
+      }
       update_contestant_eviction_status: {
         Args: { target_pool_id: string }
         Returns: {

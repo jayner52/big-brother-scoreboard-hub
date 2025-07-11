@@ -32,19 +32,32 @@ export const CustomScoringPanel: React.FC = () => {
   }, [activePool]);
 
   const loadScoringRules = async () => {
-    if (!activePool?.id) return;
+    if (!activePool?.id) {
+      console.warn('CustomScoringPanel: No active pool - cannot load scoring rules');
+      setScoringRules([]);
+      setLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
         .from('detailed_scoring_rules')
         .select('*')
         .eq('is_active', true)
-        .eq('pool_id', activePool.id)
+        .eq('pool_id', activePool.id) // CRITICAL: Pool-specific filtering
         .order('category', { ascending: true })
         .order('subcategory', { ascending: true });
 
       if (error) throw error;
-      setScoringRules(data || []);
+      
+      // Extra validation: Ensure all rules belong to this pool
+      const poolSpecificRules = (data || []).filter(rule => rule.pool_id === activePool.id);
+      
+      if (poolSpecificRules.length !== (data || []).length) {
+        console.warn('CustomScoringPanel: Filtered out non-pool-specific rules');
+      }
+      
+      setScoringRules(poolSpecificRules);
     } catch (error) {
       console.error('Error loading scoring rules:', error);
       toast({

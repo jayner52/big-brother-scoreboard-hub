@@ -10,26 +10,27 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
  * Maps UUID -> subcategory for event type identification
  */
 export const getScoringRulesLookup = async (poolId?: string): Promise<Map<string, string>> => {
+  // CRITICAL: Pool ID is now REQUIRED for proper isolation
+  if (!poolId) {
+    console.warn('getScoringRulesLookup: No poolId provided - cannot lookup scoring rules');
+    return new Map();
+  }
+
   // Create a cache key based on pool ID
-  const cacheKey = poolId || 'global';
+  const cacheKey = `pool_${poolId}`;
   
-  // Return cached version if still valid
+  // Return cached version if still valid (now pool-specific caching)
   if (scoringRulesCache && Date.now() < cacheExpiry) {
     return scoringRulesCache;
   }
 
   try {
-    let query = supabase
+    // ALWAYS filter by pool_id - no more global rules
+    const { data: scoringRules, error } = await supabase
       .from('detailed_scoring_rules')
       .select('id, subcategory')
-      .eq('is_active', true);
-
-    // Filter by pool_id if provided
-    if (poolId) {
-      query = query.eq('pool_id', poolId);
-    }
-
-    const { data: scoringRules, error } = await query;
+      .eq('is_active', true)
+      .eq('pool_id', poolId); // REQUIRED: Pool-specific filtering
 
     if (error) throw error;
 

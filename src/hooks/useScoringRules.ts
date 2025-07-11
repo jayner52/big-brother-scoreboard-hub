@@ -7,19 +7,22 @@ export const useScoringRules = (poolId?: string) => {
   const [loading, setLoading] = useState(true);
 
   const loadScoringRules = async () => {
+    // CRITICAL: Pool ID is now REQUIRED for proper isolation
+    if (!poolId) {
+      console.warn('useScoringRules: No poolId provided - cannot load scoring rules');
+      setScoringRules([]);
+      setLoading(false);
+      return;
+    }
+
     try {
-      let query = supabase
+      // ALWAYS filter by pool_id - no more global rules
+      const { data, error } = await supabase
         .from('detailed_scoring_rules')
         .select('*')
         .eq('is_active', true)
+        .eq('pool_id', poolId) // REQUIRED: Pool-specific filtering
         .order('category', { ascending: true });
-
-      // Filter by pool_id if provided
-      if (poolId) {
-        query = query.eq('pool_id', poolId);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
       

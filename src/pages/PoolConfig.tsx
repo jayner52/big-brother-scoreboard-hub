@@ -134,17 +134,43 @@ const About = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch default scoring rules (no pool-specific rules for general display)
-      const { data: rules, error: rulesError } = await supabase
-        .from('detailed_scoring_rules')
-        .select('*')
-        .eq('is_active', true)
-        .is('pool_id', null)
-        .order('category', { ascending: true });
+      // Create default scoring rules for display (since no global defaults exist)
+      const defaultRules = [
+        // Competition events
+        { id: 'default_hoh', category: 'competition', subcategory: 'hoh_winner', description: 'Head of Household Winner', emoji: '👑', points: 10, is_active: true },
+        { id: 'default_pov', category: 'competition', subcategory: 'pov_winner', description: 'Power of Veto Winner', emoji: '🛡️', points: 7, is_active: true },
+        
+        // Weekly events  
+        { id: 'default_nominee', category: 'weekly_events', subcategory: 'nominee', description: 'Nominated for Eviction', emoji: '🎯', points: 3, is_active: true },
+        { id: 'default_pov_used', category: 'weekly_events', subcategory: 'pov_used_on', description: 'Saved by Power of Veto', emoji: '🛡️', points: 5, is_active: true },
+        { id: 'default_replacement', category: 'weekly_events', subcategory: 'replacement_nominee', description: 'Replacement Nominee', emoji: '🔄', points: 2, is_active: true },
+        { id: 'default_survival', category: 'weekly_events', subcategory: 'survival', description: 'Survived the Week', emoji: '✅', points: 2, is_active: true },
+        { id: 'default_arena', category: 'weekly_events', subcategory: 'bb_arena_winner', description: 'BB Arena Competition Winner', emoji: '🏟️', points: 5, is_active: true },
+        
+        // Final placement
+        { id: 'default_winner', category: 'final_placement', subcategory: 'winner', description: 'Season Winner', emoji: '🏆', points: 25, is_active: true },
+        { id: 'default_runner_up', category: 'final_placement', subcategory: 'runner_up', description: 'Runner-up (2nd Place)', emoji: '🥈', points: 15, is_active: true },
+        { id: 'default_afp', category: 'final_placement', subcategory: 'americas_favorite', description: 'America\'s Favorite Player', emoji: '❤️', points: 10, is_active: true },
+        
+        // Jury phase
+        { id: 'default_jury', category: 'jury', subcategory: 'jury_member', description: 'Jury Member', emoji: '⚖️', points: 5, is_active: true },
+        
+        // Special achievements
+        { id: 'default_block2', category: 'special_achievements', subcategory: 'block_survival_2_weeks', description: 'Survived 2 Weeks on the Block', emoji: '💪', points: 3, is_active: true },
+        { id: 'default_block4', category: 'special_achievements', subcategory: 'block_survival_4_weeks', description: 'Survived 4 Weeks on the Block', emoji: '🛡️', points: 5, is_active: true },
+        { id: 'default_floater', category: 'special_achievements', subcategory: 'floater_achievement', description: 'Floater Achievement', emoji: '🎈', points: 3, is_active: true },
+        
+        // Special events
+        { id: 'default_costume', category: 'special_events', subcategory: 'costume_punishment', description: 'Costume Punishment', emoji: '🎭', points: 2, is_active: true },
+        { id: 'default_penalty', category: 'special_events', subcategory: 'received_penalty', description: 'Received Penalty Vote', emoji: '⚠️', points: -2, is_active: true },
+        { id: 'default_removed', category: 'special_events', subcategory: 'removed_production', description: 'Removed by Production', emoji: '🚨', points: -5, is_active: true },
+        { id: 'default_power_used', category: 'special_events', subcategory: 'used_special_power', description: 'Used Special Power', emoji: '⚡', points: 3, is_active: true },
+        { id: 'default_prize', category: 'special_events', subcategory: 'won_prize', description: 'Won Competition Prize', emoji: '🎁', points: 2, is_active: true },
+        { id: 'default_safety', category: 'special_events', subcategory: 'won_safety_comp', description: 'Won Safety Competition', emoji: '🛡️', points: 5, is_active: true },
+        { id: 'default_power_won', category: 'special_events', subcategory: 'won_special_power', description: 'Won Special Power', emoji: '⚡', points: 5, is_active: true }
+      ];
 
-      if (rulesError) throw rulesError;
-
-      setScoringRules(rules || []);
+      setScoringRules(defaultRules);
       // Set default values for general display
       setPoolConfig({
         picks_per_team: 5,
@@ -154,7 +180,7 @@ const About = () => {
       setBonusQuestions([]);
       setTotalEntries(0);
     } catch (err) {
-      console.error('Error fetching default configuration:', err);
+      console.error('Error setting up default configuration:', err);
       setError('Failed to load configuration');
     } finally {
       setLoading(false);

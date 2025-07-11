@@ -11,11 +11,11 @@ export const getDomainConfig = () => {
 };
 
 /**
- * Generate an invite link using the custom domain
+ * Generate an invite link using the current domain for functionality
  */
 export const generateInviteLink = (inviteCode: string): string => {
-  const { baseUrl } = getDomainConfig();
-  return `${baseUrl}/invite/${inviteCode.toUpperCase()}`;
+  const { currentDomain } = getDomainConfig();
+  return `${currentDomain}/invite/${inviteCode.toUpperCase()}`;
 };
 
 /**

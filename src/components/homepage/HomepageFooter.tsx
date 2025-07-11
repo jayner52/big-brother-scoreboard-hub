@@ -1,47 +1,63 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
 
 export const HomepageFooter: React.FC = () => {
-  const navigate = useNavigate();
+  console.log('HomepageFooter rendering');
 
+  // Temporarily remove useNavigate to isolate the useContext error
   const handleBigBrotherLaunch = () => {
-    navigate('/landing');
+    console.log('Navigate to landing clicked');
+    // navigate('/landing');
+  };
+
+  const handlePrivacyPolicy = () => {
+    console.log('Navigate to privacy policy clicked');
+    // navigate('/privacy-policy');
+  };
+
+  const handleAbout = () => {
+    console.log('Navigate to about clicked');
+    // navigate('/about');
+  };
+
+  const handleAuth = () => {
+    console.log('Navigate to auth clicked');
+    // navigate('/auth');
   };
 
   return (
-    <footer className="py-12 px-4 bg-dark border-t border-cream/20">
+    <footer className="py-12 px-4 bg-background border-t border-border">
       <div className="container mx-auto text-center">
         <div className="flex justify-center mb-6">
           <PoolsidePicksLogo size="sm" />
         </div>
-        <p className="text-cream/60 mb-4">
+        <p className="text-muted-foreground mb-4">
           © 2025 Poolside Picks | The Smartest Way to Watch Dumb TV
         </p>
         <div className="text-center mb-4">
           <button 
-            onClick={() => navigate('/privacy-policy')}
-            className="text-cream/50 hover:text-cream/80 transition-colors text-sm underline"
+            onClick={handlePrivacyPolicy}
+            className="text-muted-foreground hover:text-foreground transition-colors text-sm underline"
           >
             Privacy Policy
           </button>
         </div>
-        <div className="flex justify-center gap-8 text-cream/60">
+        <div className="flex justify-center gap-8 text-muted-foreground">
           <button 
-            onClick={() => navigate('/about')}
-            className="hover:text-coral transition-colors text-lg font-semibold bg-coral/20 px-4 py-2 rounded-lg hover:bg-coral hover:text-white"
+            onClick={handleAbout}
+            className="hover:text-primary transition-colors text-lg font-semibold bg-primary/20 px-4 py-2 rounded-lg hover:bg-primary hover:text-primary-foreground"
           >
             📖 About & FAQ
           </button>
           <button 
             onClick={handleBigBrotherLaunch}
-            className="hover:text-coral transition-colors"
+            className="hover:text-primary transition-colors"
           >
             Big Brother Pool
           </button>
           <button 
-            onClick={() => navigate('/auth')}
-            className="hover:text-brand-teal transition-colors"
+            onClick={handleAuth}
+            className="hover:text-secondary-foreground transition-colors"
           >
             Sign In
           </button>

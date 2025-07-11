@@ -17,6 +17,8 @@ interface PoolEntry {
   created_at: string;
   email: string;
   user_id: string;
+  deleted_at?: string;
+  deleted_by_user?: boolean;
   final_position?: number;
   prize_amount?: number;
   prize_status?: 'none' | 'pending_info' | 'info_submitted' | 'sent';
@@ -25,11 +27,13 @@ interface PoolEntry {
 interface UseOptimizedPoolEntriesOptions {
   poolId: string;
   pageSize?: number;
+  includeDeleted?: boolean;
 }
 
 export const useOptimizedPoolEntries = ({ 
   poolId, 
-  pageSize = 50 
+  pageSize = 50,
+  includeDeleted = false
 }: UseOptimizedPoolEntriesOptions) => {
   const { toast } = useToast();
   const [entries, setEntries] = useState<PoolEntry[]>([]);
@@ -81,16 +85,23 @@ export const useOptimizedPoolEntries = ({
       
       const offset = (page - 1) * pageSize;
       
+      // Build query based on includeDeleted flag
+      let entriesQuery = supabase
+        .from('pool_entries')
+        .select('*', { count: 'exact' })
+        .eq('pool_id', poolId);
+
+      if (!includeDeleted) {
+        entriesQuery = entriesQuery.is('deleted_at', null);
+      }
+
       // Single batch query for better performance
       const [
         { data: entriesData, error: entriesError, count },
         { data: winnersData, error: winnersError },
         { data: paymentDetailsData, error: paymentError }
       ] = await Promise.all([
-        supabase
-          .from('pool_entries')
-          .select('*', { count: 'exact' })
-          .eq('pool_id', poolId)
+        entriesQuery
           .order('total_points', { ascending: false })
           .range(offset, offset + pageSize - 1),
         supabase
@@ -123,7 +134,7 @@ export const useOptimizedPoolEntries = ({
     } finally {
       setLoading(false);
     }
-  }, [poolId, pageSize, toast]);
+  }, [poolId, pageSize, includeDeleted, toast]);
 
   // Optimized update functions with optimistic updates
   const updatePaymentStatus = useCallback(async (entryId: string, confirmed: boolean) => {
@@ -191,11 +202,47 @@ export const useOptimizedPoolEntries = ({
     }
   }, [entries, toast]);
 
+  const undeleteEntry = useCallback(async (entryId: string) => {
+    // Optimistic update
+    setEntries(prev => prev.map(entry => 
+      entry.id === entryId ? { ...entry, deleted_at: null, deleted_by_user: false } : entry
+    ));
+
+    try {
+      const { error } = await supabase
+        .from('pool_entries')
+        .update({ 
+          deleted_at: null, 
+          deleted_by_user: false 
+        })
+        .eq('id', entryId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Team entry restored successfully",
+      });
+    } catch (error) {
+      // Revert optimistic update on error
+      setEntries(prev => prev.map(entry => 
+        entry.id === entryId ? { ...entry, deleted_at: new Date().toISOString(), deleted_by_user: true } : entry
+      ));
+      
+      console.error('Error restoring entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to restore team entry",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (poolId) {
       loadData(1);
     }
-  }, [loadData]);
+  }, [poolId, loadData]);
 
   return {
     entries: enhancedEntries,
@@ -207,6 +254,7 @@ export const useOptimizedPoolEntries = ({
     loadData,
     updatePaymentStatus,
     deleteEntry,
+    undeleteEntry,
     goToPage: (page: number) => loadData(page),
     hasNextPage: currentPage * pageSize < totalEntries,
     hasPrevPage: currentPage > 1

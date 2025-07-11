@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Trash2, Users, Lock, Unlock, Check, X, CreditCard, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Users, Lock, Unlock, Check, X, CreditCard, DollarSign, ChevronLeft, ChevronRight, Undo2 } from 'lucide-react';
 import { useActivePool } from '@/hooks/useActivePool';
 import { usePoolOperations } from '@/hooks/usePoolOperations';
 import { useOptimizedPoolEntries } from '@/hooks/useOptimizedPoolEntries';
@@ -22,12 +22,20 @@ const EntryTableRow = memo(({
   currentUserId, 
   onUpdatePayment, 
   onDeleteEntry, 
-  onMarkPrizeSent 
+  onUndeleteEntry,
+  onMarkPrizeSent
 }: any) => {
   return (
-    <TableRow key={entry.id}>
+    <TableRow key={entry.id} className={entry.deleted_by_user ? "opacity-60 bg-muted/50" : ""}>
       <TableCell className="font-semibold">
-        {entry.participant_name}
+        <div className="flex items-center gap-2">
+          {entry.participant_name}
+          {entry.deleted_by_user && (
+            <Badge variant="outline" className="text-xs text-orange-600 border-orange-600">
+              Deleted by User
+            </Badge>
+          )}
+        </div>
       </TableCell>
       <TableCell>{entry.team_name}</TableCell>
       <TableCell className="text-sm">{entry.email}</TableCell>
@@ -111,15 +119,27 @@ const EntryTableRow = memo(({
             </>
           )}
           
-          {/* Delete button */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onDeleteEntry(entry.id)}
-            className="text-red-600 hover:bg-red-50 h-7"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
+          {/* Delete/Undelete buttons */}
+          {entry.deleted_by_user ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onUndeleteEntry(entry.id)}
+              className="text-green-600 hover:bg-green-50 h-7"
+            >
+              <Undo2 className="h-3 w-3 mr-1" />
+              Restore
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onDeleteEntry(entry.id)}
+              className="text-red-600 hover:bg-red-50 h-7"
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          )}
         </div>
       </TableCell>
     </TableRow>
@@ -142,11 +162,13 @@ export const OptimizedPoolEntriesManagement: React.FC = () => {
     hasPrevPage,
     updatePaymentStatus,
     deleteEntry,
+    undeleteEntry,
     goToPage,
     loadData
   } = useOptimizedPoolEntries({ 
     poolId: activePool?.id || '',
-    pageSize: 25 
+    pageSize: 25,
+    includeDeleted: true // Show deleted entries in admin
   });
 
   const [draftLocked, setDraftLocked] = useState(activePool?.draft_locked || false);
@@ -179,6 +201,19 @@ export const OptimizedPoolEntriesManagement: React.FC = () => {
       updatePaymentStatus(entryId, true);
     }
   }, [entries, confirmDialog, updatePaymentStatus]);
+
+  // Handle undelete with confirmation
+  const handleUndeleteEntry = useCallback(async (entryId: string) => {
+    const entry = entries.find(e => e.id === entryId);
+    if (!entry) return;
+
+    const confirmed = await confirmDialog.confirm({
+      title: "Restore Team Entry",
+      description: `Restore ${entry.participant_name}'s team "${entry.team_name}"? This will make it visible to the user again.`,
+      confirmText: "Restore",
+      variant: "default"
+    }, () => undeleteEntry(entryId));
+  }, [entries, confirmDialog, undeleteEntry]);
 
   const handleToggleDraftLock = useCallback(async () => {
     if (!activePool) return;
@@ -341,6 +376,7 @@ export const OptimizedPoolEntriesManagement: React.FC = () => {
                     currentUserId={currentUserId}
                     onUpdatePayment={handleUpdatePayment}
                     onDeleteEntry={handleDeleteEntry}
+                    onUndeleteEntry={handleUndeleteEntry}
                     onMarkPrizeSent={() => {}} // Implement if needed
                   />
                 ))}

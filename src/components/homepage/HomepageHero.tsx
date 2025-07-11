@@ -60,7 +60,7 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
               {/* Current Pool Status */}
               {activePool && (
                 <div className="mb-8 max-w-md mx-auto">
-                  <Card className="bg-white/80 backdrop-blur-sm border-brand-teal/20">
+                  <Card className="bg-card/90 border-border shadow-lg">
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2 mb-2">
                         <Trophy className="h-5 w-5 text-brand-teal" />

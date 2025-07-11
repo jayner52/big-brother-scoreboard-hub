@@ -35,12 +35,23 @@ const Index = () => {
   const [hasError, setHasError] = useState(false);
   
   const { formData } = useDraftForm();
-  const { 
-    activePool, 
-    userPools, 
-    loading: poolsLoading, 
-    poolEntries // Use pool-scoped entries from context
-  } = usePool();
+  
+  // Safely access pool context with error handling
+  let activePool = null;
+  let userPools: any[] = [];
+  let poolsLoading = true;
+  let poolEntries: any[] = [];
+  
+  try {
+    const poolContext = usePool();
+    activePool = poolContext.activePool;
+    userPools = poolContext.userPools;
+    poolsLoading = poolContext.loading;
+    poolEntries = poolContext.poolEntries;
+  } catch (error) {
+    console.error('Error accessing pool context:', error);
+    setHasError(true);
+  }
 
   const { isAdmin } = useUserPoolRole(activePool?.id, user?.id);
   const { profile } = useUserProfile(user);

@@ -130,12 +130,13 @@ const About = () => {
 
       if (countError) throw countError;
 
-      // Deduplicate rules by category + subcategory combination
+      // Deduplicate rules by description to prevent duplicate rule names
       const uniqueRules = rules ? rules.filter((rule, index, arr) => 
-        arr.findIndex(r => r.category === rule.category && r.subcategory === rule.subcategory) === index
+        arr.findIndex(r => r.description === rule.description) === index
       ) : [];
       
       console.log('Setting', uniqueRules.length, 'unique rules');
+      console.log('Deduplication check:', uniqueRules.map(r => r.description));
       console.log('First few unique rules:', uniqueRules.slice(0, 3));
 
       console.log('fetchPoolConfiguration - setting rules:', uniqueRules.length, 'rules for pool:', activePool.id);

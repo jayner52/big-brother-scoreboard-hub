@@ -32,11 +32,14 @@ export const CustomScoringPanel: React.FC = () => {
   }, [activePool]);
 
   const loadScoringRules = async () => {
+    if (!activePool?.id) return;
+    
     try {
       const { data, error } = await supabase
         .from('detailed_scoring_rules')
         .select('*')
         .eq('is_active', true)
+        .eq('pool_id', activePool.id)
         .order('category', { ascending: true })
         .order('subcategory', { ascending: true });
 
@@ -63,10 +66,13 @@ export const CustomScoringPanel: React.FC = () => {
 
 
   const handleCustomEventAdd = async (eventData: { description: string; emoji: string; points: number }) => {
+    if (!activePool?.id) return;
+    
     try {
       const { error } = await supabase
         .from('detailed_scoring_rules')
         .insert({
+          pool_id: activePool.id,
           category: 'special_events',
           subcategory: 'custom_permanent',
           description: eventData.description,

@@ -422,6 +422,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           points: number
+          pool_id: string | null
           subcategory: string | null
         }
         Insert: {
@@ -433,6 +434,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           points: number
+          pool_id?: string | null
           subcategory?: string | null
         }
         Update: {
@@ -444,9 +446,18 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           points?: number
+          pool_id?: string | null
           subcategory?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "detailed_scoring_rules_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_list: {
         Row: {
@@ -1583,6 +1594,10 @@ export type Database = {
         Args: { invite_code_param: string }
         Returns: Json
       }
+      migrate_existing_pools_scoring_rules: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       populate_bb27_global_defaults: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1604,6 +1619,10 @@ export type Database = {
         Returns: undefined
       }
       seed_pool_contestants: {
+        Args: { target_pool_id: string }
+        Returns: undefined
+      }
+      seed_pool_scoring_rules: {
         Args: { target_pool_id: string }
         Returns: undefined
       }

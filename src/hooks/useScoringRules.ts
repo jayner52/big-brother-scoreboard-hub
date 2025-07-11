@@ -2,17 +2,24 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DetailedScoringRule } from '@/types/admin';
 
-export const useScoringRules = () => {
+export const useScoringRules = (poolId?: string) => {
   const [scoringRules, setScoringRules] = useState<DetailedScoringRule[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadScoringRules = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('detailed_scoring_rules')
         .select('*')
         .eq('is_active', true)
         .order('category', { ascending: true });
+
+      // Filter by pool_id if provided
+      if (poolId) {
+        query = query.eq('pool_id', poolId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -44,7 +51,7 @@ export const useScoringRules = () => {
 
   useEffect(() => {
     loadScoringRules();
-  }, []);
+  }, [poolId]);
 
   return {
     scoringRules,

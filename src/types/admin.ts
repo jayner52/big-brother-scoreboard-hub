@@ -28,6 +28,7 @@ export interface DetailedScoringRule {
   is_active: boolean;
   created_at: Date;
   emoji?: string | null;
+  pool_id?: string | null;
 }
 
 export interface ContestantWithBio {

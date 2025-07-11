@@ -8,6 +8,7 @@ import { usePool } from '@/contexts/PoolContext';
 
 export const useContestantStats = () => {
   const [contestantStats, setContestantStats] = useState<ContestantStats[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
   // REMOVED: evictedContestants - will be reimplemented from scratch
   const { activePool } = usePool();
   const { 
@@ -21,30 +22,28 @@ export const useContestantStats = () => {
   } = useContestantData(activePool?.id);
 
   useEffect(() => {
-    console.log('🔍 ContestantStats Effect - Loading:', loading, 'Contestants:', contestants.length, 'Pool:', activePool?.id);
-    if (!loading && contestants.length > 0 && activePool?.id) {
+    console.log('🔍 ContestantStats Effect - Loading:', loading, 'Contestants:', contestants.length, 'Pool:', activePool?.id, 'Processing:', isProcessing);
+    if (!loading && contestants.length > 0 && activePool?.id && !isProcessing) {
       processContestantStats();
     }
-  }, [loading, contestants, weeklyEvents, specialEvents, activePool?.id]); // REMOVED: evictedContestants dependency
+  }, [loading, contestants, weeklyEvents, activePool?.id, isProcessing]); // Removed specialEvents to prevent infinite loop
 
   const processContestantStats = async () => {
-    if (!activePool?.id) {
-      console.error('❌ ContestantStats - No active pool ID');
+    if (!activePool?.id || isProcessing) {
+      console.error('❌ ContestantStats - No active pool ID or already processing');
       return;
     }
     
+    setIsProcessing(true);
     try {
       console.log('🔄 ContestantStats - Processing stats for pool:', activePool.id);
       
       // Create special events for block survival bonuses BEFORE calculating stats
+      // This function now checks for existing events to prevent duplicates
       console.log('🔄 Creating block survival bonuses...');
       await createBlockSurvivalBonuses(contestants, weeklyEvents);
       
-      // Refetch data to include any newly created special events
-      console.log('🔄 Refetching data after creating bonuses...');
-      await refetchData();
-      
-      // Calculate contestant stats using proper UUID matching
+      // Calculate contestant stats using current data (including any newly created events)
       const stats = await calculateContestantStats(
         contestants,
         contestantGroups,
@@ -59,6 +58,8 @@ export const useContestantStats = () => {
       setContestantStats(stats);
     } catch (error) {
       console.error('❌ ContestantStats - Error processing stats:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -66,6 +67,6 @@ export const useContestantStats = () => {
     contestants,
     contestantGroups,
     contestantStats,
-    loading
+    loading: loading || isProcessing
   };
 };

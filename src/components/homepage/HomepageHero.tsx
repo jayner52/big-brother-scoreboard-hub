@@ -69,10 +69,58 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
                   <h3 className="text-2xl font-bold text-dark mb-6 text-center">Your Pools</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {userPools.map((membership) => {
+                      const pool = membership.pool;
+                      if (!pool) return null;
+                      
                       const userEntry = poolEntries.find(entry => entry.user_id === user.id && entry.pool_id === membership.pool_id);
                       const isActivePool = activePool?.id === membership.pool_id;
-                      const sortedEntries = [...poolEntries.filter(entry => entry.pool_id === membership.pool_id)].sort((a, b) => b.total_points - a.total_points);
+                      const poolEntriesForThisPool = poolEntries.filter(entry => entry.pool_id === membership.pool_id);
+                      const sortedEntries = [...poolEntriesForThisPool].sort((a, b) => b.total_points - a.total_points);
                       const userRankInPool = userEntry ? sortedEntries.findIndex(entry => entry.id === userEntry.id) + 1 : null;
+                      const participantCount = poolEntriesForThisPool.length;
+                      
+                      // Draft status logic
+                      const isDraftAccessible = pool.draft_open && pool.allow_new_participants;
+                      const hasDeadline = pool.registration_deadline;
+                      const deadline = hasDeadline ? new Date(pool.registration_deadline!) : null;
+                      const isDeadlinePassed = deadline ? new Date() > deadline : false;
+                      const isDraftComplete = !!userEntry;
+                      
+                      // Status determination
+                      let statusColor = 'bg-green-500';
+                      let statusText = 'Open';
+                      let actionText = 'Complete Draft';
+                      
+                      if (!isDraftAccessible || isDeadlinePassed) {
+                        statusColor = 'bg-red-500';
+                        statusText = 'Closed';
+                        actionText = 'Draft Closed';
+                      } else if (isDraftComplete) {
+                        statusColor = 'bg-blue-500';
+                        statusText = 'Entered';
+                        actionText = 'View Entry';
+                      } else if (!userEntry && pool.has_buy_in && !userEntry?.payment_confirmed) {
+                        statusColor = 'bg-yellow-500';
+                        statusText = 'Payment Due';
+                        actionText = 'Complete Entry';
+                      }
+                      
+                      // Time until deadline
+                      const getTimeUntilDeadline = () => {
+                        if (!deadline) return null;
+                        const now = new Date();
+                        const diffMs = deadline.getTime() - now.getTime();
+                        if (diffMs < 0) return 'Deadline passed';
+                        
+                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        
+                        if (diffDays > 0) return `${diffDays} day${diffDays !== 1 ? 's' : ''} left`;
+                        if (diffHours > 0) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} left`;
+                        return 'Less than 1 hour left';
+                      };
+                      
+                      const deadlineText = getTimeUntilDeadline();
                       
                       return (
                         <Card 
@@ -81,9 +129,8 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
                             isActivePool ? 'ring-2 ring-primary shadow-lg' : ''
                           }`}
                           onClick={() => {
-                            // Set active pool and navigate to dashboard
                             if (!isActivePool) {
-                              setActivePool(membership.pool!);
+                              setActivePool(pool);
                               setTimeout(() => navigate('/dashboard'), 100);
                             } else {
                               navigate('/dashboard');
@@ -93,21 +140,50 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between">
                               <div className="flex-1 min-w-0">
-                                <CardTitle className="text-lg truncate">{membership.pool?.name || 'Unknown Pool'}</CardTitle>
-                                <div className="flex items-center gap-2 mt-1">
+                                <CardTitle className="text-lg truncate">{pool.name}</CardTitle>
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
                                   <Badge variant="secondary" className="text-xs">
                                     {membership.role === 'owner' ? 'Owner' : membership.role === 'admin' ? 'Admin' : 'Member'}
                                   </Badge>
                                   {isActivePool && (
                                     <Badge className="text-xs bg-primary">Active</Badge>
                                   )}
+                                  <div className="flex items-center gap-1">
+                                    <div className={`w-2 h-2 rounded-full ${statusColor}`}></div>
+                                    <span className="text-xs text-muted-foreground">{statusText}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </CardHeader>
-                          <CardContent>
+                          <CardContent className="space-y-3">
+                            {/* Pool Stats */}
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Players</span>
+                                <span className="font-medium">{participantCount}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Entry Fee</span>
+                                <span className="font-medium">
+                                  {pool.has_buy_in ? `${pool.entry_fee_currency} $${pool.entry_fee_amount}` : 'Free'}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Deadline Info */}
+                            {deadlineText && (
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Draft closes</span>
+                                <span className={`font-medium ${isDeadlinePassed ? 'text-red-600' : 'text-orange-600'}`}>
+                                  {deadlineText}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {/* User Entry Status */}
                             {userEntry ? (
-                              <div className="space-y-2">
+                              <div className="space-y-2 pt-2 border-t">
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm text-muted-foreground">Your Rank</span>
                                   <span className="font-semibold">#{userRankInPool}</span>
@@ -117,25 +193,42 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
                                   <span className="font-semibold">{userEntry.total_points}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                  <span className="text-sm text-muted-foreground">Playing as</span>
-                                  <span className="text-sm font-medium truncate max-w-[120px]" title={userEntry.participant_name}>
-                                    {userEntry.participant_name}
+                                  <span className="text-sm text-muted-foreground">Team</span>
+                                  <span className="text-sm font-medium truncate max-w-[120px]" title={userEntry.team_name}>
+                                    {userEntry.team_name}
                                   </span>
                                 </div>
+                                {pool.has_buy_in && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm text-muted-foreground">Payment</span>
+                                    <span className={`text-sm font-medium ${userEntry.payment_confirmed ? 'text-green-600' : 'text-red-600'}`}>
+                                      {userEntry.payment_confirmed ? 'Confirmed' : 'Pending'}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             ) : (
-                              <div className="text-center py-4">
-                                <p className="text-sm text-muted-foreground mb-2">No entry yet</p>
+                              <div className="pt-2 border-t">
                                 <Button 
                                   size="sm" 
-                                  variant="outline"
+                                  variant={isDraftAccessible && !isDeadlinePassed ? "default" : "outline"}
+                                  disabled={!isDraftAccessible || isDeadlinePassed}
+                                  className="w-full"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    navigate('/draft');
+                                    if (isDraftAccessible && !isDeadlinePassed) {
+                                      setActivePool(pool);
+                                      navigate('/draft');
+                                    }
                                   }}
                                 >
-                                  Join Pool
+                                  {actionText}
                                 </Button>
+                                {!isDraftAccessible && (
+                                  <p className="text-xs text-muted-foreground mt-1 text-center">
+                                    New registrations are closed
+                                  </p>
+                                )}
                               </div>
                             )}
                           </CardContent>

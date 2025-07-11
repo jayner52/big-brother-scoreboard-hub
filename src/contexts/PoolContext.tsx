@@ -54,6 +54,7 @@ interface PoolContextType {
   canManageRoles: (poolId?: string) => boolean;
   canManageWeeklyEvents: (poolId?: string) => boolean;
   canManageBonusQuestions: (poolId?: string) => boolean;
+  loadAllUserPoolEntries: () => Promise<void>;
 }
 
 const PoolContext = createContext<PoolContextType | undefined>(undefined);
@@ -115,6 +116,20 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
       setUserPools((memberships || []) as PoolMembership[]);
+      
+      // Load entries for all user pools after loading pools
+      if (memberships && memberships.length > 0) {
+        const poolIds = memberships.map(p => p.pool_id);
+        const { data: entriesData, error: entriesError } = await supabase
+          .from('pool_entries')
+          .select('*')
+          .in('pool_id', poolIds)
+          .order('total_points', { ascending: false });
+
+        if (!entriesError && entriesData) {
+          setPoolEntries(entriesData);
+        }
+      }
     } catch (error) {
       console.error('Error loading user pools:', error);
       setUserPools([]);
@@ -135,6 +150,24 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPoolEntries(data || []);
     } catch (error) {
       console.error('Error loading pool entries:', error);
+    }
+  };
+
+  const loadAllUserPoolEntries = async () => {
+    try {
+      if (userPools.length === 0) return;
+      
+      const poolIds = userPools.map(p => p.pool_id);
+      const { data, error } = await supabase
+        .from('pool_entries')
+        .select('*')
+        .in('pool_id', poolIds)
+        .order('total_points', { ascending: false });
+
+      if (error) throw error;
+      setPoolEntries(data || []);
+    } catch (error) {
+      console.error('Error loading all pool entries:', error);
     }
   };
 
@@ -318,6 +351,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshPools = async () => {
     await loadUserPools();
+    await loadAllUserPoolEntries();
   };
 
   const getUserRole = (poolId: string) => {
@@ -419,7 +453,8 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       canViewFinancials,
       canManageRoles,
       canManageWeeklyEvents,
-      canManageBonusQuestions
+      canManageBonusQuestions,
+      loadAllUserPoolEntries
     }}>
       {children}
     </PoolContext.Provider>

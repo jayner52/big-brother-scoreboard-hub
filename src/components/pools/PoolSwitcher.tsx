@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChevronDown, Plus, Users, Trash2, LogOut, UserCheck } from 'lucide-react';
+import { ChevronDown, Plus, Users, Trash2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -30,13 +30,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -56,8 +49,6 @@ export const PoolSwitcher = () => {
     getUserRole, 
     deletePool, 
     leavePool,
-    transferOwnership,
-    getEligibleAdminsForTransfer,
     getUserPaymentStatus,
     getPoolPaymentStatus,
     loading 
@@ -66,36 +57,61 @@ export const PoolSwitcher = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [poolToDelete, setPoolToDelete] = useState<string | null>(null);
+  const [poolToDelete, setPoolToDelete] = useState<{ id: string; name: string; hasMoney: boolean } | null>(null);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [poolToLeave, setPoolToLeave] = useState<{ id: string; name: string } | null>(null);
-  const [poolToTransfer, setPoolToTransfer] = useState<{ id: string; name: string } | null>(null);
   const [userHasPaid, setUserHasPaid] = useState(false);
-  const [poolHasMoney, setPoolHasMoney] = useState(false);
-  const [eligibleAdmins, setEligibleAdmins] = useState<Array<{ user_id: string; display_name: string }>>([]);
-  const [selectedNewOwner, setSelectedNewOwner] = useState<string>('');
   const [loading_operations, setLoadingOperations] = useState(false);
+  const [adminConfirmsRefunds, setAdminConfirmsRefunds] = useState(false);
+  const [confirmationText, setConfirmationText] = useState('');
 
   const handleDeletePool = async () => {
     if (!poolToDelete) return;
     
-    const success = await deletePool(poolToDelete);
-    if (success) {
+    // Validate confirmation text for pools with money
+    if (poolToDelete.hasMoney && confirmationText !== poolToDelete.name) {
       toast({
-        title: "Pool deleted",
-        description: "The pool has been permanently deleted.",
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to delete pool",
+        title: "Error", 
+        description: "Please type the pool name exactly to confirm deletion",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Require admin confirmation for pools with money
+    if (poolToDelete.hasMoney && !adminConfirmsRefunds) {
+      toast({
+        title: "Error",
+        description: "You must confirm that refunds will be handled",
+        variant: "destructive",
+      });
+      return;
     }
     
-    setDeleteDialogOpen(false);
-    setPoolToDelete(null);
+    try {
+      setLoadingOperations(true);
+      await deletePool(poolToDelete.id, adminConfirmsRefunds);
+      
+      toast({
+        title: "Pool deleted",
+        description: poolToDelete.hasMoney 
+          ? "Pool deleted. All members have been notified about potential refunds." 
+          : "Pool deleted successfully.",
+      });
+      
+      setDeleteDialogOpen(false);
+      setPoolToDelete(null);
+      setAdminConfirmsRefunds(false);
+      setConfirmationText('');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete pool",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingOperations(false);
+    }
   };
 
   const confirmDeletePool = async (poolId: string, poolName: string) => {
@@ -103,8 +119,7 @@ export const PoolSwitcher = () => {
     try {
       // Check if pool has collected money
       const hasMoney = await getPoolPaymentStatus(poolId);
-      setPoolHasMoney(hasMoney);
-      setPoolToDelete(poolId);
+      setPoolToDelete({ id: poolId, name: poolName, hasMoney });
       setDeleteDialogOpen(true);
     } catch (error) {
       toast({
@@ -163,65 +178,11 @@ export const PoolSwitcher = () => {
     setLoadingOperations(false);
   };
 
-  const handleTransferOwnership = async (poolId: string, poolName: string) => {
-    setLoadingOperations(true);
-    try {
-      const admins = await getEligibleAdminsForTransfer(poolId);
-      if (admins.length === 0) {
-        toast({
-          title: "No eligible members",
-          description: "There are no admin members available to transfer ownership to.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setEligibleAdmins(admins);
-      setPoolToTransfer({ id: poolId, name: poolName });
-      setSelectedNewOwner('');
-      setTransferDialogOpen(true);
-    } catch (error) {
-      toast({
-        title: "Error", 
-        description: "Failed to load eligible admins",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingOperations(false);
-    }
-  };
-
-  const confirmTransferOwnership = async () => {
-    if (!poolToTransfer || !selectedNewOwner) return;
-    
-    setLoadingOperations(true);
-    const result = await transferOwnership(poolToTransfer.id, selectedNewOwner);
-    
-    if (result.success) {
-      toast({
-        title: "Ownership transferred",
-        description: `Ownership of ${poolToTransfer.name} has been transferred`,
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: result.error || "Failed to transfer ownership",
-        variant: "destructive",
-      });
-    }
-    
-    setTransferDialogOpen(false);
-    setPoolToTransfer(null);
-    setSelectedNewOwner('');
-    setLoadingOperations(false);
-  };
 
   const canLeavePool = (membership: any) => {
     return membership.role !== 'owner' && userPools.filter(p => p.active).length > 1;
   };
 
-  const canTransferOwnership = (membership: any) => {
-    return membership.role === 'owner';
-  };
 
   const getTooltipContent = (action: string, membership: any) => {
     switch (action) {
@@ -233,9 +194,6 @@ export const PoolSwitcher = () => {
           return "You must be in at least one pool. Join another pool first.";
         }
         return "Leave this pool. You will lose access to teams, standings, and chat.";
-      
-      case 'transfer':
-        return "Transfer ownership to another admin member. You will become a regular member.";
       
       case 'delete':
         return membership.pool?.has_buy_in 
@@ -339,27 +297,6 @@ export const PoolSwitcher = () => {
                     </TooltipContent>
                   </Tooltip>
                 )}
-                {canTransferOwnership(membership) && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-muted-foreground/80"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTransferOwnership(membership.pool_id, membership.pool!.name);
-                        }}
-                        disabled={loading_operations}
-                      >
-                        <UserCheck className="h-3 w-3" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{getTooltipContent('transfer', membership)}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
                 {membership.role === 'owner' && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -415,29 +352,66 @@ export const PoolSwitcher = () => {
         onSuccess={() => setShowJoinModal(false)}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Pool</AlertDialogTitle>
-            <AlertDialogDescription>
-              {poolHasMoney && (
-                <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                  <p className="text-sm text-yellow-800">
-                    ⚠️ This pool has collected entry fees. Ensure all funds are properly handled before deletion.
-                  </p>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Delete Pool: {poolToDelete?.name}</DialogTitle>
+            <DialogDescription>
+              {poolToDelete?.hasMoney ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-md">
+                    <p className="text-sm text-destructive font-medium">
+                      ⚠️ This pool has collected entry fees
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      All pool members will be notified of the deletion and advised to contact you for refunds.
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="flex items-start space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={adminConfirmsRefunds}
+                        onChange={(e) => setAdminConfirmsRefunds(e.target.checked)}
+                        className="mt-1"
+                      />
+                      <span className="text-sm">
+                        I confirm that I will handle refunds for all members who have paid entry fees
+                      </span>
+                    </label>
+                    <div>
+                      <label className="text-sm font-medium">
+                        Type the pool name "{poolToDelete?.name}" to confirm:
+                      </label>
+                      <input
+                        type="text"
+                        value={confirmationText}
+                        onChange={(e) => setConfirmationText(e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border rounded-md"
+                        placeholder={poolToDelete?.name}
+                      />
+                    </div>
+                  </div>
                 </div>
+              ) : (
+                <p>Are you sure you want to permanently delete this pool? This action cannot be undone and will remove all pool data, entries, and results.</p>
               )}
-              Are you sure you want to permanently delete this pool? This action cannot be undone and will remove all pool data, entries, and results.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeletePool} className="bg-destructive hover:bg-destructive/90">
-              Delete Pool
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDeletePool}
+              disabled={loading_operations || (poolToDelete?.hasMoney && (!adminConfirmsRefunds || confirmationText !== poolToDelete?.name))}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {loading_operations ? "Deleting..." : "Delete Pool"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
         <DialogContent>
@@ -469,41 +443,6 @@ export const PoolSwitcher = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Transfer Ownership of {poolToTransfer?.name}</DialogTitle>
-            <DialogDescription>
-              Select an admin member to transfer ownership to. This action cannot be undone. You will become a regular member.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Select value={selectedNewOwner} onValueChange={setSelectedNewOwner}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select new owner..." />
-              </SelectTrigger>
-              <SelectContent>
-                {eligibleAdmins.map((admin) => (
-                  <SelectItem key={admin.user_id} value={admin.user_id}>
-                    {admin.display_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTransferDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={confirmTransferOwnership}
-              disabled={loading_operations || !selectedNewOwner}
-            >
-              {loading_operations ? "Transferring..." : "Transfer Ownership"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </TooltipProvider>
   );
 };

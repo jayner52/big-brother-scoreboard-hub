@@ -702,6 +702,48 @@ export type Database = {
           },
         ]
       }
+      pool_notifications: {
+        Row: {
+          amount_paid: number | null
+          created_at: string | null
+          deleted_by_admin: string | null
+          id: string
+          message: string | null
+          notification_type: string
+          pool_id: string
+          pool_name: string
+          read_at: string | null
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number | null
+          created_at?: string | null
+          deleted_by_admin?: string | null
+          id?: string
+          message?: string | null
+          notification_type: string
+          pool_id: string
+          pool_name: string
+          read_at?: string | null
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number | null
+          created_at?: string | null
+          deleted_by_admin?: string | null
+          id?: string
+          message?: string | null
+          notification_type?: string
+          pool_id?: string
+          pool_name?: string
+          read_at?: string | null
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pool_settings: {
         Row: {
           buy_in_description: string | null

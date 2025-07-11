@@ -44,11 +44,9 @@ interface PoolContextType {
   createPool: (poolData: any) => Promise<{ success: boolean; data?: Pool; error?: string }>;
   joinPoolByCode: (inviteCode: string) => Promise<{ success: boolean; data?: Pool; error?: string }>;
   updatePool: (poolId: string, updates: any) => Promise<boolean>;
-  deletePool: (poolId: string) => Promise<boolean>;
+  deletePool: (poolId: string, adminConfirmsRefunds?: boolean) => Promise<boolean>;
   leavePool: (poolId: string) => Promise<{ success: boolean; error?: string }>;
-  transferOwnership: (poolId: string, newOwnerId: string) => Promise<{ success: boolean; error?: string }>;
   getPoolPaymentStatus: (poolId: string) => Promise<boolean>;
-  getEligibleAdminsForTransfer: (poolId: string) => Promise<Array<{ user_id: string; display_name: string }>>;
   getUserPaymentStatus: (poolId: string, userId: string) => Promise<boolean>;
   refreshPools: () => Promise<void>;
   getUserRole: (poolId: string) => 'owner' | 'admin' | 'member' | null;
@@ -309,8 +307,79 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const deletePool = async (poolId: string) => {
+  const deletePool = async (poolId: string, adminConfirmsRefunds = false) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Get pool info for notifications
+      const { data: pool, error: poolError } = await supabase
+        .from('pools')
+        .select('name')
+        .eq('id', poolId)
+        .single();
+
+      if (poolError) throw poolError;
+
+      // Get admin profile for notification
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .single();
+
+      // Get all pool members for notifications
+      const { data: memberships, error: membershipError } = await supabase
+        .from('pool_memberships')
+        .select('user_id')
+        .eq('pool_id', poolId)
+        .eq('active', true);
+
+      if (membershipError) throw membershipError;
+
+      // Get payment info for notifications
+      const { data: paidEntries } = await supabase
+        .from('pool_entries')
+        .select('user_id, participant_name')
+        .eq('pool_id', poolId)
+        .eq('payment_confirmed', true);
+
+      // Check if pool has collected funds
+      const hasCollectedFunds = await getPoolPaymentStatus(poolId);
+      
+      if (hasCollectedFunds && !adminConfirmsRefunds) {
+        throw new Error('Pool has collected funds. Admin must confirm refunds will be handled.');
+      }
+
+      // Create notifications for all members BEFORE deleting the pool
+      const notifications = memberships.map(membership => {
+        const hasPaid = paidEntries?.some(entry => entry.user_id === membership.user_id);
+        return {
+          pool_id: poolId,
+          user_id: membership.user_id,
+          notification_type: 'pool_deleted',
+          pool_name: pool.name,
+          amount_paid: hasPaid ? 25 : 0, // You might want to get actual amount
+          deleted_by_admin: adminProfile?.display_name || 'Pool Admin',
+          message: hasCollectedFunds 
+            ? `The pool "${pool.name}" has been deleted. If you paid entry fees, please contact the admin for refund information.`
+            : `The pool "${pool.name}" has been deleted.`
+        };
+      });
+
+      // Insert notifications
+      if (notifications.length > 0) {
+        const { error: notificationError } = await supabase
+          .from('pool_notifications')
+          .insert(notifications);
+
+        if (notificationError) {
+          console.error('Failed to create notifications:', notificationError);
+          // Don't fail the delete for notification errors, but log it
+        }
+      }
+
+      // Delete the pool
       const { error } = await supabase
         .from('pools')
         .delete()
@@ -325,7 +394,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (error) {
       console.error('Error deleting pool:', error);
-      return false;
+      throw error;
     }
   };
 
@@ -376,64 +445,6 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const transferOwnership = async (poolId: string, newOwnerId: string) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // Verify current user is owner
-      const userRole = getUserRole(poolId);
-      if (userRole !== 'owner') {
-        throw new Error('Only pool owners can transfer ownership');
-      }
-
-      // Verify new owner is an admin
-      const { data: newOwnerMembership, error: membershipError } = await supabase
-        .from('pool_memberships')
-        .select('role')
-        .eq('pool_id', poolId)
-        .eq('user_id', newOwnerId)
-        .eq('active', true)
-        .single();
-
-      if (membershipError || !newOwnerMembership || newOwnerMembership.role !== 'admin') {
-        throw new Error('New owner must be an admin of the pool');
-      }
-
-      // Update pool owner
-      const { error: poolError } = await supabase
-        .from('pools')
-        .update({ owner_id: newOwnerId })
-        .eq('id', poolId);
-
-      if (poolError) throw poolError;
-
-      // Update old owner to member role
-      const { error: oldOwnerError } = await supabase
-        .from('pool_memberships')
-        .update({ role: 'member' })
-        .eq('pool_id', poolId)
-        .eq('user_id', user.id);
-
-      if (oldOwnerError) throw oldOwnerError;
-
-      // Update new owner role
-      const { error: newOwnerError } = await supabase
-        .from('pool_memberships')
-        .update({ role: 'owner' })
-        .eq('pool_id', poolId)
-        .eq('user_id', newOwnerId);
-
-      if (newOwnerError) throw newOwnerError;
-
-      await refreshPools();
-      return { success: true };
-    } catch (error) {
-      console.error('Error transferring ownership:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to transfer ownership' };
-    }
-  };
-
   const getPoolPaymentStatus = async (poolId: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase
@@ -447,40 +458,6 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error checking pool payment status:', error);
       return false;
-    }
-  };
-
-  const getEligibleAdminsForTransfer = async (poolId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('pool_memberships')
-        .select(`
-          user_id
-        `)
-        .eq('pool_id', poolId)
-        .eq('role', 'admin')
-        .eq('active', true);
-
-      if (error) throw error;
-      
-      // Get profiles separately to avoid complex join issues
-      const profilePromises = data.map(async (membership) => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('display_name')
-          .eq('user_id', membership.user_id)
-          .single();
-        
-        return {
-          user_id: membership.user_id,
-          display_name: profile?.display_name || 'Unknown User'
-        };
-      });
-      
-      return await Promise.all(profilePromises);
-    } catch (error) {
-      console.error('Error getting eligible admins:', error);
-      return [];
     }
   };
 
@@ -593,15 +570,13 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       userPools,
       userPoolsLoading,
       poolEntries,
-      createPool,
-      joinPoolByCode,
-      updatePool,
-      deletePool,
-      leavePool,
-      transferOwnership,
-      getPoolPaymentStatus,
-      getEligibleAdminsForTransfer,
-      getUserPaymentStatus,
+    createPool,
+    joinPoolByCode,
+    updatePool,
+    deletePool,
+    leavePool,
+    getPoolPaymentStatus,
+    getUserPaymentStatus,
       refreshPools,
       getUserRole,
       canManagePool,

@@ -20,15 +20,15 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   return (
     <Tabs defaultValue="users" className="w-full animate-fade-in">
       <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="users" className="flex items-center gap-2 hover-scale">
+        <TabsTrigger value="users" className="flex items-center gap-2 hover-scale hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white">
           <Users className="h-4 w-4" />
           User Management
         </TabsTrigger>
-        <TabsTrigger value="pools" className="flex items-center gap-2 hover-scale">
+        <TabsTrigger value="pools" className="flex items-center gap-2 hover-scale hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white">
           <Database className="h-4 w-4" />
           Pool Analytics
         </TabsTrigger>
-        <TabsTrigger value="feedback" className="flex items-center gap-2 hover-scale">
+        <TabsTrigger value="feedback" className="flex items-center gap-2 hover-scale hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white">
           <MessageSquare className="h-4 w-4" />
           Feedback
         </TabsTrigger>

@@ -35,6 +35,11 @@
     --brand-purple-foreground: 210 40% 98%;
     --brand-purple-muted: 262 50% 85%;
     
+    /* Coral for admin sections */
+    --coral: 16 100% 66%;
+    --coral-foreground: 210 40% 98%;
+    --coral-muted: 16 30% 85%;
+    
     /* Professional gradients */
     --gradient-blue-purple: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%));
     --gradient-blue-purple-hover: linear-gradient(135deg, hsl(217 91% 55%), hsl(262 83% 53%));
@@ -184,8 +189,10 @@
     min-height: 100vh;
   }
 
-  /* Professional button styling */
-  button:not(.unstyled) {
+  /* Restrained button styling - only primary actions get gradients */
+  .btn-primary, 
+  button[type="submit"]:not(.unstyled),
+  .primary-action {
     background: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%)) !important;
     color: white !important;
     border: none !important;
@@ -195,7 +202,9 @@
     cursor: pointer !important;
   }
 
-  button:not(.unstyled):hover {
+  .btn-primary:hover,
+  button[type="submit"]:not(.unstyled):hover,
+  .primary-action:hover {
     background: linear-gradient(135deg, hsl(217 91% 55%), hsl(262 83% 53%)) !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;

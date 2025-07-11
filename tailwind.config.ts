@@ -57,6 +57,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				'brand-teal': {
+					DEFAULT: 'hsl(var(--brand-teal))',
+					foreground: 'hsl(var(--brand-teal-foreground))',
+					muted: 'hsl(var(--brand-teal-muted))'
+				},
+				coral: {
+					DEFAULT: 'hsl(var(--coral))',
+					foreground: 'hsl(var(--coral-foreground))',
+					muted: 'hsl(var(--coral-muted))'
+				},
+				// Legacy support - mapped to brand colors
 				purple: {
 					DEFAULT: 'hsl(var(--purple))',
 					foreground: 'hsl(var(--purple-foreground))',
@@ -67,25 +78,9 @@ export default {
 					foreground: 'hsl(var(--teal-foreground))',
 					muted: 'hsl(var(--teal-muted))'
 				},
-				coral: {
-					DEFAULT: 'hsl(var(--coral))',
-					foreground: 'hsl(var(--coral-foreground))'
-				},
-				'brand-teal': {
-					DEFAULT: 'hsl(var(--brand-teal))',
-					foreground: 'hsl(var(--brand-teal-foreground))'
-				},
-				yellow: {
-					DEFAULT: 'hsl(var(--yellow))',
-					foreground: 'hsl(var(--yellow-foreground))'
-				},
 				orange: {
 					DEFAULT: 'hsl(var(--orange))',
 					foreground: 'hsl(var(--orange-foreground))'
-				},
-				cream: {
-					DEFAULT: 'hsl(var(--cream))',
-					foreground: 'hsl(var(--cream-foreground))'
 				},
 				dark: {
 					DEFAULT: 'hsl(var(--dark))',

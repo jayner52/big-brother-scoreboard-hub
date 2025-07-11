@@ -101,7 +101,7 @@ const Admin = () => {
   // Show loading while checking authentication and admin access
   if (authLoading || adminLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-muted-foreground">
@@ -115,7 +115,7 @@ const Admin = () => {
   // If not authenticated or not admin, don't render anything (will redirect)
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground">Redirecting...</p>
         </div>
@@ -124,7 +124,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Navigation */}
         <div className="flex justify-between items-center mb-8">

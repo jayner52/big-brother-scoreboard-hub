@@ -164,7 +164,7 @@ const Index = () => {
 
   if (hasError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple/5 via-background to-teal/5">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-16">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold">Welcome!</h1>
@@ -203,7 +203,7 @@ const Index = () => {
   // Show pool selection if user has no pools
   if (userPools.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple/5 via-background to-teal/5">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-16">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold">Welcome to Poolside Picks!</h1>
@@ -247,7 +247,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple/5 via-background to-teal/5">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <ProfessionalNavigation
           user={user}

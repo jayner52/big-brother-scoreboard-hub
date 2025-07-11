@@ -81,6 +81,10 @@ const About = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Clear previous state to prevent accumulation
+      setScoringRules([]);
+      setBonusQuestions([]);
 
       // Fetch pool details
       const { data: pool, error: poolError } = await supabase
@@ -119,9 +123,14 @@ const About = () => {
 
       if (countError) throw countError;
 
-      console.log('fetchPoolConfiguration - setting rules:', rules?.length || 0, 'rules for pool:', activePool.id);
+      // Deduplicate rules by category + subcategory combination
+      const uniqueRules = rules ? rules.filter((rule, index, arr) => 
+        arr.findIndex(r => r.category === rule.category && r.subcategory === rule.subcategory) === index
+      ) : [];
+
+      console.log('fetchPoolConfiguration - setting rules:', uniqueRules.length, 'rules for pool:', activePool.id);
       setPoolConfig(pool);
-      setScoringRules(rules || []);
+      setScoringRules(uniqueRules);
       setBonusQuestions(questions || []);
       setTotalEntries(count || 0);
     } catch (err) {
@@ -136,6 +145,10 @@ const About = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Clear previous state to prevent accumulation
+      setScoringRules([]);
+      setBonusQuestions([]);
 
       // Create default scoring rules for display (since no global defaults exist)
       const defaultRules = [

@@ -484,7 +484,7 @@ const PoolSettingsPanel: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading || !activePool) {
     return <div className="text-center py-8">Loading pool settings...</div>;
   }
 
@@ -587,11 +587,13 @@ const PoolSettingsPanel: React.FC = () => {
 
 
                 {/* Enhanced Registration Deadline Control */}
-                <RegistrationDeadlineControl 
-                  poolId={activePool.id}
-                  currentDeadline={activePool.registration_deadline}
-                  disabled={saving || isUpdating}
-                />
+                      {activePool && (
+                        <RegistrationDeadlineControl
+                          poolId={activePool.id}
+                          currentDeadline={activePool.registration_deadline}
+                          disabled={saving || isUpdating}
+                        />
+                      )}
 
                 {/* CRITICAL FIX: Consolidated Buy-In Settings */}
                 <div className="space-y-4 p-4 border rounded-lg bg-green-50">

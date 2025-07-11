@@ -89,11 +89,12 @@ const About = () => {
 
       if (poolError) throw poolError;
 
-      // Fetch scoring rules
+      // Fetch scoring rules for this pool
       const { data: rules, error: rulesError } = await supabase
         .from('detailed_scoring_rules')
         .select('*')
         .eq('is_active', true)
+        .eq('pool_id', activePool.id)
         .order('category', { ascending: true });
 
       if (rulesError) throw rulesError;

@@ -79,7 +79,7 @@ const Chat: React.FC = () => {
 
   if (!activePool) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-pale-yellow flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="p-6 text-center">
             <p className="text-muted-foreground mb-4">No active pool selected</p>
@@ -105,7 +105,7 @@ const Chat: React.FC = () => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0 bg-background">
+                <SheetContent side="left" className="w-80 p-0 bg-pale-yellow">
                   <ChatSidebar 
                     poolId={activePool.id}
                     currentUserId={userId || ''}

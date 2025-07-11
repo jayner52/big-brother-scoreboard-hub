@@ -109,8 +109,28 @@ const About = () => {
 
       if (rulesError) throw rulesError;
       
-      console.log('Database returned', rules?.length, 'rules');
-      console.log('First few rules from DB:', rules?.slice(0, 3));
+      console.log('=== RAW DATABASE RESULTS ===');
+      console.log('Total rules from DB:', rules?.length);
+      console.log('Sample rules:', rules?.slice(0, 5).map(r => ({
+        id: r.id,
+        subcategory: r.subcategory,
+        description: r.description,
+        category: r.category
+      })));
+
+      // Check for duplicates in raw data
+      const subcategoryCount = {};
+      rules?.forEach(rule => {
+        subcategoryCount[rule.subcategory] = (subcategoryCount[rule.subcategory] || 0) + 1;
+      });
+      console.log('Subcategory counts:', subcategoryCount);
+
+      // Check for description duplicates
+      const descriptionCount = {};
+      rules?.forEach(rule => {
+        descriptionCount[rule.description] = (descriptionCount[rule.description] || 0) + 1;
+      });
+      console.log('Description counts:', descriptionCount);
 
       // Fetch bonus questions for this pool
       const { data: questions, error: questionsError } = await supabase

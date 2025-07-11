@@ -46,7 +46,7 @@ export const CurrentWeekProvider: React.FC<{ children: React.ReactNode }> = ({ c
         .eq('user_id', session.session.user.id)
         .eq('active', true)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!membership) {
         console.log('CurrentWeekContext: No active pool membership found');

@@ -17,7 +17,7 @@ const Draft = () => {
 
 const DraftContent = ({ navigate }: { navigate: any }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50">
+    <div className="min-h-screen bg-background" style={{ background: 'var(--gradient-subtle)' }}>
       <div className="container mx-auto px-4 py-8">
         {/* Navigation */}
         <div className="flex justify-between items-center mb-8">

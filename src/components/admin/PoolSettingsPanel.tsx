@@ -484,7 +484,7 @@ const PoolSettingsPanel: React.FC = () => {
     }
   };
 
-  if (loading || !activePool) {
+  if (loading) {
     return <div className="text-center py-8">Loading pool settings...</div>;
   }
 

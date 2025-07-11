@@ -45,7 +45,11 @@ interface PoolContextType {
   joinPoolByCode: (inviteCode: string) => Promise<{ success: boolean; data?: Pool; error?: string }>;
   updatePool: (poolId: string, updates: any) => Promise<boolean>;
   deletePool: (poolId: string) => Promise<boolean>;
-  leavePool: (poolId: string) => Promise<boolean>;
+  leavePool: (poolId: string) => Promise<{ success: boolean; error?: string }>;
+  transferOwnership: (poolId: string, newOwnerId: string) => Promise<{ success: boolean; error?: string }>;
+  getPoolPaymentStatus: (poolId: string) => Promise<boolean>;
+  getEligibleAdminsForTransfer: (poolId: string) => Promise<Array<{ user_id: string; display_name: string }>>;
+  getUserPaymentStatus: (poolId: string, userId: string) => Promise<boolean>;
   refreshPools: () => Promise<void>;
   getUserRole: (poolId: string) => 'owner' | 'admin' | 'member' | null;
   canManagePool: (poolId?: string) => boolean;
@@ -330,6 +334,22 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Check if user is owner
+      const userRole = getUserRole(poolId);
+      if (userRole === 'owner') {
+        // Check if pool has collected money
+        const hasCollectedMoney = await getPoolPaymentStatus(poolId);
+        if (hasCollectedMoney) {
+          throw new Error('Cannot leave pool with collected funds. Pool must be completed or funds returned.');
+        }
+      }
+
+      // Check if this is user's only pool
+      const activePools = userPools.filter(p => p.active);
+      if (activePools.length <= 1) {
+        throw new Error('You must be in at least one pool. Join another pool first.');
+      }
+
       const { error } = await supabase
         .from('pool_memberships')
         .update({ active: false })
@@ -338,13 +358,145 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
 
+      // If leaving active pool, switch to another available pool
       if (activePool?.id === poolId) {
-        setActivePool(null);
+        const remainingPools = userPools.filter(p => p.pool_id !== poolId && p.active);
+        if (remainingPools.length > 0) {
+          setActivePool(remainingPools[0].pool!);
+        } else {
+          setActivePool(null);
+        }
       }
+      
       await refreshPools();
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('Error leaving pool:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to leave pool' };
+    }
+  };
+
+  const transferOwnership = async (poolId: string, newOwnerId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Verify current user is owner
+      const userRole = getUserRole(poolId);
+      if (userRole !== 'owner') {
+        throw new Error('Only pool owners can transfer ownership');
+      }
+
+      // Verify new owner is an admin
+      const { data: newOwnerMembership, error: membershipError } = await supabase
+        .from('pool_memberships')
+        .select('role')
+        .eq('pool_id', poolId)
+        .eq('user_id', newOwnerId)
+        .eq('active', true)
+        .single();
+
+      if (membershipError || !newOwnerMembership || newOwnerMembership.role !== 'admin') {
+        throw new Error('New owner must be an admin of the pool');
+      }
+
+      // Update pool owner
+      const { error: poolError } = await supabase
+        .from('pools')
+        .update({ owner_id: newOwnerId })
+        .eq('id', poolId);
+
+      if (poolError) throw poolError;
+
+      // Update old owner to member role
+      const { error: oldOwnerError } = await supabase
+        .from('pool_memberships')
+        .update({ role: 'member' })
+        .eq('pool_id', poolId)
+        .eq('user_id', user.id);
+
+      if (oldOwnerError) throw oldOwnerError;
+
+      // Update new owner role
+      const { error: newOwnerError } = await supabase
+        .from('pool_memberships')
+        .update({ role: 'owner' })
+        .eq('pool_id', poolId)
+        .eq('user_id', newOwnerId);
+
+      if (newOwnerError) throw newOwnerError;
+
+      await refreshPools();
+      return { success: true };
+    } catch (error) {
+      console.error('Error transferring ownership:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to transfer ownership' };
+    }
+  };
+
+  const getPoolPaymentStatus = async (poolId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('pool_entries')
+        .select('payment_confirmed')
+        .eq('pool_id', poolId)
+        .eq('payment_confirmed', true);
+
+      if (error) throw error;
+      return data.length > 0;
+    } catch (error) {
+      console.error('Error checking pool payment status:', error);
+      return false;
+    }
+  };
+
+  const getEligibleAdminsForTransfer = async (poolId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('pool_memberships')
+        .select(`
+          user_id
+        `)
+        .eq('pool_id', poolId)
+        .eq('role', 'admin')
+        .eq('active', true);
+
+      if (error) throw error;
+      
+      // Get profiles separately to avoid complex join issues
+      const profilePromises = data.map(async (membership) => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', membership.user_id)
+          .single();
+        
+        return {
+          user_id: membership.user_id,
+          display_name: profile?.display_name || 'Unknown User'
+        };
+      });
+      
+      return await Promise.all(profilePromises);
+    } catch (error) {
+      console.error('Error getting eligible admins:', error);
+      return [];
+    }
+  };
+
+  const getUserPaymentStatus = async (poolId: string, userId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('pool_entries')
+        .select('payment_confirmed')
+        .eq('pool_id', poolId)
+        .eq('user_id', userId)
+        .single();
+
+      if (error) return false;
+      return data?.payment_confirmed || false;
+    } catch (error) {
+      console.error('Error checking user payment status:', error);
       return false;
     }
   };
@@ -446,6 +598,10 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updatePool,
       deletePool,
       leavePool,
+      transferOwnership,
+      getPoolPaymentStatus,
+      getEligibleAdminsForTransfer,
+      getUserPaymentStatus,
       refreshPools,
       getUserRole,
       canManagePool,

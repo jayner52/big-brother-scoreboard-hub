@@ -156,12 +156,12 @@ const Admin = () => {
         )}
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-6 px-8 rounded-lg shadow-lg mb-6">
+        <div className="bg-gradient-to-r from-brand-teal to-coral text-white py-6 px-8 rounded-lg shadow-lg mb-6">
           <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
             <Settings className="h-8 w-8" />
             Admin Panel
           </h1>
-          <p className="text-lg text-red-100">
+          <p className="text-lg text-brand-teal-foreground/90">
             Manage weekly results, houseguest status, and bonus questions
           </p>
         </div>

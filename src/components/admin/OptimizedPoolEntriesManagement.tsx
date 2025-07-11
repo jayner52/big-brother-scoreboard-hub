@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Trash2, Users, Lock, Unlock, Check, X, CreditCard, DollarSign, ChevronLeft, ChevronRight, Undo2 } from 'lucide-react';
+import { Trash2, Users, Lock, Unlock, Check, X, CreditCard, DollarSign, ChevronLeft, ChevronRight, Undo2, Trash } from 'lucide-react';
 import { useActivePool } from '@/hooks/useActivePool';
 import { usePoolOperations } from '@/hooks/usePoolOperations';
 import { useOptimizedPoolEntries } from '@/hooks/useOptimizedPoolEntries';
@@ -23,6 +23,7 @@ const EntryTableRow = memo(({
   onUpdatePayment, 
   onDeleteEntry, 
   onUndeleteEntry,
+  onPermanentDelete,
   onMarkPrizeSent
 }: any) => {
   return (
@@ -121,15 +122,25 @@ const EntryTableRow = memo(({
           
           {/* Delete/Undelete buttons */}
           {entry.deleted_by_user ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onUndeleteEntry(entry.id)}
-              className="text-green-600 hover:bg-green-50 h-7"
-            >
-              <Undo2 className="h-3 w-3 mr-1" />
-              Restore
-            </Button>
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onUndeleteEntry(entry.id)}
+                className="text-green-600 hover:bg-green-50 h-7"
+              >
+                <Undo2 className="h-3 w-3 mr-1" />
+                Restore
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onPermanentDelete(entry.id)}
+                className="text-red-600 hover:bg-red-50 h-7"
+              >
+                <Trash className="h-3 w-3" />
+              </Button>
+            </div>
           ) : (
             <Button
               size="sm"
@@ -163,6 +174,7 @@ export const OptimizedPoolEntriesManagement: React.FC = () => {
     updatePaymentStatus,
     deleteEntry,
     undeleteEntry,
+    permanentDeleteEntry,
     goToPage,
     loadData
   } = useOptimizedPoolEntries({ 
@@ -214,6 +226,19 @@ export const OptimizedPoolEntriesManagement: React.FC = () => {
       variant: "default"
     }, () => undeleteEntry(entryId));
   }, [entries, confirmDialog, undeleteEntry]);
+
+  // Handle permanent delete with strong confirmation
+  const handlePermanentDelete = useCallback(async (entryId: string) => {
+    const entry = entries.find(e => e.id === entryId);
+    if (!entry) return;
+
+    const confirmed = await confirmDialog.confirm({
+      title: "Permanently Delete Team",
+      description: `⚠️ WARNING: This will permanently delete ${entry.participant_name}'s team "${entry.team_name}" from the database. This action CANNOT be undone and the team will be completely removed forever. Are you absolutely sure?`,
+      confirmText: "Permanently Delete",
+      variant: "destructive"
+    }, () => permanentDeleteEntry(entryId));
+  }, [entries, confirmDialog, permanentDeleteEntry]);
 
   const handleToggleDraftLock = useCallback(async () => {
     if (!activePool) return;
@@ -377,6 +402,7 @@ export const OptimizedPoolEntriesManagement: React.FC = () => {
                     onUpdatePayment={handleUpdatePayment}
                     onDeleteEntry={handleDeleteEntry}
                     onUndeleteEntry={handleUndeleteEntry}
+                    onPermanentDelete={handlePermanentDelete}
                     onMarkPrizeSent={() => {}} // Implement if needed
                   />
                 ))}

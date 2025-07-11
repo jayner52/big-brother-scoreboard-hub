@@ -238,6 +238,41 @@ export const useOptimizedPoolEntries = ({
     }
   }, [toast]);
 
+  const permanentDeleteEntry = useCallback(async (entryId: string) => {
+    // Optimistic update
+    const entryToDelete = entries.find(e => e.id === entryId);
+    setEntries(prev => prev.filter(entry => entry.id !== entryId));
+
+    try {
+      const { error } = await supabase
+        .from('pool_entries')
+        .delete()
+        .eq('id', entryId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Team Permanently Deleted",
+        description: "The team has been permanently removed from the database.",
+      });
+
+      // Reload data to ensure consistency
+      loadData(currentPage);
+    } catch (error) {
+      // Revert optimistic update on error
+      if (entryToDelete) {
+        setEntries(prev => [...prev, entryToDelete].sort((a, b) => b.total_points - a.total_points));
+      }
+      
+      console.error('Error permanently deleting entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to permanently delete the team entry.",
+        variant: "destructive",
+      });
+    }
+  }, [entries, toast, loadData, currentPage]);
+
   useEffect(() => {
     if (poolId) {
       loadData(1);
@@ -255,6 +290,7 @@ export const useOptimizedPoolEntries = ({
     updatePaymentStatus,
     deleteEntry,
     undeleteEntry,
+    permanentDeleteEntry,
     goToPage: (page: number) => loadData(page),
     hasNextPage: currentPage * pageSize < totalEntries,
     hasPrevPage: currentPage > 1

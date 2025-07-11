@@ -53,14 +53,23 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
 
   // Persist tab selection and update URL hash
   const handleTabClick = (tabId: string, tab: TabConfig) => {
-    if (tab.locked) return; // Don't allow clicking locked tabs
-    setActiveTab(tabId);
-    
-    // Persist to localStorage
-    localStorage.setItem('dashboard-active-tab', tabId);
-    
-    // Update URL hash without triggering navigation
-    window.history.replaceState(null, '', `#${tabId}`);
+    try {
+      if (tab.locked) {
+        console.log('Tab is locked:', tabId, tab.lockTooltip);
+        return; // Don't allow clicking locked tabs
+      }
+      
+      console.log('Switching to tab:', tabId);
+      setActiveTab(tabId);
+      
+      // Persist to localStorage
+      localStorage.setItem('dashboard-active-tab', tabId);
+      
+      // Update URL hash without triggering navigation
+      window.history.replaceState(null, '', `#${tabId}`);
+    } catch (error) {
+      console.error('Error handling tab click:', error);
+    }
   };
 
   // Listen for hash changes (back/forward button)
@@ -92,34 +101,56 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
         {/* Mobile Tiles */}
         <div className="mb-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-            {visibleTabs.map((tab) => (
+            {visibleTabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const isLocked = tab.locked;
+              
+              return (
                 <Button
                   key={tab.id}
-                  variant={activeTab === tab.id ? "default" : "outline"}
+                  variant={isActive ? "default" : "outline"}
                   onClick={() => handleTabClick(tab.id, tab)}
-                  disabled={tab.locked}
+                  disabled={isLocked}
                   className={cn(
                     "h-24 min-h-[6rem] flex flex-col items-center justify-center gap-2 text-sm font-medium transition-all duration-300 relative touch-action-manipulation active:scale-95",
-                    activeTab === tab.id 
-                      ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg scale-105" 
-                      : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple border-purple/20 hover:scale-102",
-                    tab.locked && "opacity-50 cursor-not-allowed"
+                    isActive 
+                      ? "bg-gradient-to-r from-[hsl(var(--purple))] to-[hsl(var(--teal))] text-white shadow-lg scale-105" 
+                      : isLocked
+                        ? "bg-muted/30 text-muted-foreground border-muted-foreground/20"
+                        : "hover:bg-muted hover:text-foreground border-muted-foreground/20 hover:scale-102",
+                    isLocked && "opacity-60 cursor-not-allowed"
                   )}
                   style={{ minHeight: '44px' }} // Ensure touch target meets accessibility guidelines
                 >
-                <tab.icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                <span 
-                  className="text-xs sm:text-sm leading-tight text-center font-medium"
-                  title={tab.locked && tab.lockTooltip ? tab.lockTooltip : undefined}
-                >
-                  {tab.shortLabel}
-                </span>
-                {tab.locked && <Lock className="h-3 w-3 absolute top-2 right-2" />}
-                {activeTab === tab.id && (
-                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
-                )}
-              </Button>
-            ))}
+                  <tab.icon className={cn(
+                    "h-5 w-5 sm:h-6 sm:w-6",
+                    isLocked && "text-muted-foreground"
+                  )} />
+                  <span 
+                    className={cn(
+                      "text-xs sm:text-sm leading-tight text-center font-medium",
+                      isLocked && "text-muted-foreground"
+                    )}
+                    title={isLocked && tab.lockTooltip ? tab.lockTooltip : undefined}
+                  >
+                    {tab.shortLabel}
+                  </span>
+                  {isLocked && (
+                    <div className="absolute top-2 right-2 flex items-center gap-1">
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  )}
+                  {isLocked && tab.lockTooltip && (
+                    <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 text-[10px] text-muted-foreground text-center px-1">
+                      Locked
+                    </div>
+                  )}
+                  {isActive && !isLocked && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full" />
+                  )}
+                </Button>
+              );
+            })}
           </div>
         </div>
 
@@ -135,22 +166,27 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
     <TooltipProvider>
       <div className={cn('w-full', className)}>
         {/* Desktop Tab Navigation */}
-        <div className="sticky top-4 z-10 mb-8 bg-background/80 backdrop-blur-sm rounded-2xl border border-purple/20 p-2 shadow-lg">
+        <div className="sticky top-4 z-10 mb-8 bg-background/80 backdrop-blur-sm rounded-2xl border border-[hsl(var(--purple))]/20 p-2 shadow-lg">
           <div className="grid grid-cols-6 gap-2">
             {visibleTabs.length === 5 && <div></div>} {/* Spacer for 5 tabs */}
             {visibleTabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const isLocked = tab.locked;
+              
               const TabButton = (
                 <Button
                   key={tab.id}
-                  variant={activeTab === tab.id ? "default" : "ghost"}
+                  variant={isActive ? "default" : "ghost"}
                   onClick={() => handleTabClick(tab.id, tab)}
-                  disabled={tab.locked}
+                  disabled={isLocked}
                   className={cn(
                     "relative h-16 flex flex-col items-center gap-2 text-base font-medium transition-all duration-300 hover:scale-105",
-                    activeTab === tab.id 
-                      ? "bg-gradient-to-r from-purple to-teal text-white shadow-lg tab-active" 
-                      : "hover:bg-gradient-to-r hover:from-purple/10 hover:to-teal/10 hover:text-purple",
-                    tab.locked && "opacity-50 cursor-not-allowed"
+                    isActive 
+                      ? "bg-gradient-to-r from-[hsl(var(--purple))] to-[hsl(var(--teal))] text-white shadow-lg tab-active" 
+                      : isLocked
+                        ? "bg-muted/30 text-muted-foreground"
+                        : "hover:bg-muted hover:text-[hsl(var(--purple))]",
+                    isLocked && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -158,12 +194,12 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
                     <span className="text-sm leading-tight text-center">
                       {tab.shortLabel}
                     </span>
-                    {tab.locked && <Lock className="h-3 w-3" />}
+                    {isLocked && <Lock className="h-3 w-3" />}
                   </div>
                 </Button>
               );
 
-              if (tab.locked && tab.lockTooltip) {
+              if (isLocked && tab.lockTooltip) {
                 return (
                   <Tooltip key={tab.id}>
                     <TooltipTrigger asChild>

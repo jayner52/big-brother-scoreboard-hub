@@ -46,29 +46,7 @@ const PoolSettingsPanel: React.FC = () => {
   
   const { toast } = useToast();
   const { activePool, updatePool } = usePool();
-  
-  // Add loading guard for hook initialization
-  const [isHooksReady, setIsHooksReady] = useState(false);
-  const [hookError, setHookError] = useState<string | null>(null);
-  
-  // Initialize hooks with error handling
-  let groupAutoGeneration;
-  try {
-    groupAutoGeneration = useGroupAutoGeneration();
-    if (!isHooksReady) {
-      setTimeout(() => setIsHooksReady(true), 100);
-    }
-  } catch (error) {
-    console.error('🔧 Error initializing useGroupAutoGeneration:', error);
-    setHookError(`Hook initialization failed: ${error}`);
-    groupAutoGeneration = {
-      redistributeHouseguests: async () => false,
-      saveGroupNames: async () => false,
-      isGenerating: false
-    };
-  }
-  
-  const { redistributeHouseguests, saveGroupNames, isGenerating } = groupAutoGeneration;
+  const { redistributeHouseguests, saveGroupNames, isGenerating } = useGroupAutoGeneration();
   const [settings, setSettings] = useState<PoolSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -506,24 +484,7 @@ const PoolSettingsPanel: React.FC = () => {
     }
   };
 
-  // Handle hook initialization errors
-  if (hookError) {
-    console.error('🔧 PoolSettingsPanel: Hook error detected:', hookError);
-    return (
-      <div className="text-center py-8 space-y-4">
-        <div className="text-red-600">
-          <h3 className="text-lg font-semibold">Pool Settings Error</h3>
-          <p className="text-sm">Unable to initialize pool settings. Please refresh the page.</p>
-          <p className="text-xs text-gray-500 mt-2">{hookError}</p>
-        </div>
-        <Button onClick={() => window.location.reload()}>
-          Refresh Page
-        </Button>
-      </div>
-    );
-  }
-
-  if (loading || !isHooksReady) {
+  if (loading) {
     return <div className="text-center py-8">Loading pool settings...</div>;
   }
 

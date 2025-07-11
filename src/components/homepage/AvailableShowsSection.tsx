@@ -14,7 +14,7 @@ export const AvailableShowsSection: React.FC = () => {
   };
 
   return (
-    <section className="py-20 px-4 bg-white/80 backdrop-blur-sm">
+    <section className="py-20 px-4">
       <div className="container mx-auto">
         <h2 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-bold text-center text-dark mb-6`}>
           Available Reality Shows

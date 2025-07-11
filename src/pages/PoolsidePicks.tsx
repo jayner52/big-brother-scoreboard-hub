@@ -21,7 +21,7 @@ const PoolsidePicks = () => {
   }
 
   return (
-    <div className="min-h-screen bg-pale-yellow relative">
+    <div className="min-h-screen relative" style={{ background: 'var(--gradient-unified)' }}>
       <FloatingPoolElements />
       <HomepageNavigation user={user} />
       

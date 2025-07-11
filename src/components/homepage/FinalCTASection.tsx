@@ -22,7 +22,7 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({ user }) => {
   };
 
   return (
-    <section className="py-20 px-4 bg-dark relative">
+    <section className="py-20 px-4 relative">
       <div className="container mx-auto text-center">
         <h2 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-bold text-cream mb-6`}>
           Ready to Dive In?

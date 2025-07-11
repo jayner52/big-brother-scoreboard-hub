@@ -26,7 +26,7 @@ export const HomepageFooter: React.FC = () => {
   };
 
   return (
-    <footer className="py-12 px-4 bg-background border-t border-border">
+    <footer className="py-12 px-4">
       <div className="container mx-auto text-center">
         <div className="flex justify-center mb-6">
           <PoolsidePicksLogo size="sm" />

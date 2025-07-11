@@ -4,28 +4,32 @@
 
 @layer base {
   :root {
-    /* Modern warm background system - elegant off-white cream */
-    --page-bg: 45 25% 94%;
-    --background: 0 0% 100%;
-    --foreground: 0 0% 5%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 5%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5%;
-    --primary: 222.2 47.4% 11.2%;
+    /* Sophisticated cream-to-peach color system - warm and elegant */
+    --page-bg: 48 15% 96%;
+    --background: 48 15% 96%; /* Sophisticated warm cream */
+    --foreground: 222.2 84% 4.9%;
+    --card: 48 15% 98%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 48 15% 98%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 16 100% 66%; /* Coral */
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
+    --secondary: 174 72% 56%; /* Teal */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 25 20% 90%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
+    --accent: 25 35% 92%; /* Subtle peachy warmth */
     --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 25 25% 88%;
+    --input: 25 25% 88%;
+    --ring: 16 100% 66%; /* Coral for focus rings */
     --radius: 0.75rem;
+    
+    /* Custom Brand Colors */
+    --pale-yellow: 48 15% 96%; /* Updated to match new sophisticated cream */
+    --cream: 48 15% 98%; /* Brighter cream variant */
     
     /* Professional Brand Colors */
     --brand-blue: 217 91% 60%;
@@ -45,23 +49,25 @@
     --gradient-blue-purple: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%));
     --gradient-blue-purple-hover: linear-gradient(135deg, hsl(217 91% 55%), hsl(262 83% 53%));
     
-    /* Additional professional gradients */
+    /* Beautiful unified gradients for seamless design */
     --gradient-coral: linear-gradient(135deg, hsl(16 100% 66%), hsl(25 95% 63%));
     --gradient-coral-hover: linear-gradient(135deg, hsl(16 100% 61%), hsl(25 95% 58%));
     --gradient-teal: linear-gradient(135deg, hsl(174 72% 56%), hsl(184 72% 56%));
     --gradient-teal-hover: linear-gradient(135deg, hsl(174 72% 51%), hsl(184 72% 51%));
     --gradient-summer: linear-gradient(135deg, hsl(174 72% 56%), hsl(16 100% 66%));
     --gradient-summer-hover: linear-gradient(135deg, hsl(174 72% 51%), hsl(16 100% 61%));
+    --gradient-unified: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--accent)) 50%, hsl(var(--background)) 100%);
     
     /* Brand Teal */
     --brand-teal: 174 72% 56%;
     --brand-teal-foreground: 210 40% 98%;
     --brand-teal-muted: 174 50% 85%;
     
-    /* Fix orange gradients for admin */
+    /* Supporting colors that work with our new palette */
     --orange: 25 95% 63%;
     --orange-500: 25 95% 53%;
     --red-500: 0 84% 60%;
+    --yellow: 45 90% 75%;
     
     /* Legacy support - map to professional colors */
     --purple: 262 83% 58%;

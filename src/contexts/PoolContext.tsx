@@ -370,7 +370,23 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     };
 
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // User signed in, reload their pools
+          await loadUserPools();
+        } else if (event === 'SIGNED_OUT') {
+          // User signed out, clear pools and active pool
+          setUserPools([]);
+          setActivePool(null);
+        }
+      }
+    );
+
     loadSavedPool();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return (

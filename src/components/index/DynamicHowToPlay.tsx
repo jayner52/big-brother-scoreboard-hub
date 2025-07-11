@@ -70,13 +70,30 @@ export const DynamicHowToPlay: React.FC<DynamicHowToPlayProps> = ({
       
       console.log('🔧 HOW TO PLAY - Pool data received:', pool);
 
-      // Fetch scoring rules
-      console.log('🔧 HOW TO PLAY - Fetching scoring rules...');
+      // Fetch scoring rules for THIS POOL ONLY
+      console.log('🔧 HOW TO PLAY - Fetching scoring rules for pool:', poolId);
       const { data: rules, error: rulesError } = await supabase
         .from('detailed_scoring_rules')
         .select('*')
+        .eq('pool_id', poolId)
         .eq('is_active', true)
         .order('category', { ascending: true });
+
+      console.log('=== RAW SCORING RULES RESULTS ===');
+      console.log('Total rules from DB for pool:', rules?.length);
+      console.log('Sample rules:', rules?.slice(0, 3).map(r => ({
+        id: r.id,
+        category: r.category,
+        subcategory: r.subcategory,
+        description: r.description
+      })));
+
+      // Check for duplicates in raw data
+      const subcategoryCount = {};
+      rules?.forEach(rule => {
+        subcategoryCount[rule.subcategory] = (subcategoryCount[rule.subcategory] || 0) + 1;
+      });
+      console.log('Subcategory counts:', subcategoryCount);
 
       if (rulesError) {
         console.error('🔧 HOW TO PLAY - Scoring rules fetch error:', rulesError);

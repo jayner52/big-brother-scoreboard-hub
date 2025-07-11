@@ -157,7 +157,7 @@ const Index = () => {
 
   if (hasError) {
     return (
-      <div className="min-h-screen bg-page">
+      <div className="min-h-screen" style={{ background: 'var(--gradient-unified)' }}>
         <div className="container mx-auto px-4 py-16">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold">Welcome!</h1>
@@ -196,7 +196,7 @@ const Index = () => {
   // Show pool selection if user has no pools
   if (userPools.length === 0) {
     return (
-      <div className="min-h-screen bg-page">
+      <div className="min-h-screen" style={{ background: 'var(--gradient-unified)' }}>
         <div className="container mx-auto px-4 py-16">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold">Welcome to Poolside Picks!</h1>
@@ -240,7 +240,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-page">
+    <div className="min-h-screen" style={{ background: 'var(--gradient-unified)' }}>
       <div className="container mx-auto px-4 py-8">
         <ProfessionalNavigation
           user={user}
@@ -263,35 +263,12 @@ const Index = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-            {/* Pool Info Section */}
+            {/* Quick Actions */}
             <div className="flex-1 min-w-0">
-              {activePool ? (
-                <div className="space-y-1">
-                   <div className="flex items-center gap-2 flex-wrap">
-                     <span className="text-lg sm:text-xl font-semibold text-white truncate">Current Pool: {activePool.name}</span>
-                     {userRank && (
-                       <Badge 
-                         className="bg-white/20 text-white border-white/30 text-xs sm:text-sm flex-shrink-0 hover:bg-white/30"
-                       >
-                         Rank #{userRank}
-                       </Badge>
-                     )}
-                   </div>
-                   <div className="flex items-center gap-4 text-sm text-white/80">
-                     {userEntry?.participant_name && (
-                       <span>Playing as {userEntry.participant_name}</span>
-                     )}
-                     {userEntry && (
-                       <span>Points: {userEntry.total_points}</span>
-                     )}
-                   </div>
-                </div>
-               ) : (
-                 <div className="space-y-1">
-                   <h2 className="text-lg sm:text-xl font-semibold text-white">No Active Pool Selected</h2>
-                   <p className="text-sm sm:text-base text-white/80">Choose a pool or create a new one to get started</p>
-                </div>
-              )}
+              <div className="space-y-1">
+                <h2 className="text-lg sm:text-xl font-semibold text-white">Your Pool Dashboard</h2>
+                <p className="text-sm sm:text-base text-white/80">Select a pool below to view your dashboard</p>
+              </div>
             </div>
 
             {/* Action Controls */}
@@ -330,6 +307,86 @@ const Index = () => {
                 )}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Active Pools Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-6">Your Active Pools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {userPools.map((membership) => {
+              const userEntry = poolEntries.find(entry => entry.user_id === user.id && entry.pool_id === membership.pool_id);
+              const isActivePool = activePool?.id === membership.pool_id;
+              const sortedEntries = [...poolEntries.filter(entry => entry.pool_id === membership.pool_id)].sort((a, b) => b.total_points - a.total_points);
+              const userRankInPool = userEntry ? sortedEntries.findIndex(entry => entry.id === userEntry.id) + 1 : null;
+              
+              return (
+                <Card 
+                  key={membership.pool_id} 
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
+                    isActivePool ? 'ring-2 ring-primary shadow-lg' : ''
+                  }`}
+                  onClick={() => {
+                    // Set active pool and navigate to dashboard
+                    if (!isActivePool) {
+                      window.location.href = `/dashboard?pool=${membership.pool_id}`;
+                    } else {
+                      navigate('/dashboard');
+                    }
+                  }}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg truncate">{membership.pool?.name || 'Unknown Pool'}</CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {membership.role === 'owner' ? 'Owner' : membership.role === 'admin' ? 'Admin' : 'Member'}
+                          </Badge>
+                          {isActivePool && (
+                            <Badge className="text-xs bg-primary">Active</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {userEntry ? (
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Your Rank</span>
+                          <span className="font-semibold">#{userRankInPool}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Points</span>
+                          <span className="font-semibold">{userEntry.total_points}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Playing as</span>
+                          <span className="text-sm font-medium truncate max-w-[120px]" title={userEntry.participant_name}>
+                            {userEntry.participant_name}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-muted-foreground mb-2">No entry yet</p>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/draft');
+                          }}
+                        >
+                          Join Pool
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
         

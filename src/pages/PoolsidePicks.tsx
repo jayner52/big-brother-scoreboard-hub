@@ -12,10 +12,13 @@ import { HomepageFooter } from '@/components/homepage/HomepageFooter';
 const PoolsidePicks = () => {
   const { user, loading } = useAuth();
 
+  // Temporary fix: Remove loading check to see if app renders
+  console.log('PoolsidePicks render - loading:', loading, 'user:', user);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-coral"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }

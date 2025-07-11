@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Trophy, Play, Sparkles } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
@@ -17,7 +18,7 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { profile } = useUserProfile(user);
-  const { activePool } = usePool();
+  const { activePool, userPools, poolEntries, setActivePool } = usePool();
 
   const handleGetStarted = () => {
     if (user) {
@@ -57,19 +58,86 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
                 </p>
               </div>
 
-              {/* Current Pool Status */}
-              {activePool && (
-                <div className="mb-8 max-w-md mx-auto">
-                  <Card className="bg-card/90 border-border shadow-lg">
-                    <CardContent className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Trophy className="h-5 w-5 text-brand-teal" />
-                        <span className="font-semibold text-dark">Current Pool</span>
-                      </div>
-                      <h3 className="text-lg font-bold text-dark mb-1">{activePool.name}</h3>
-                      <p className="text-sm text-dark/70">Big Brother Fantasy Pool</p>
-                    </CardContent>
-                  </Card>
+              {/* Pool Selection Grid */}
+              {userPools.length > 0 && (
+                <div className="mb-8 max-w-4xl mx-auto">
+                  <h3 className="text-2xl font-bold text-dark mb-6 text-center">Your Pools</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {userPools.map((membership) => {
+                      const userEntry = poolEntries.find(entry => entry.user_id === user.id && entry.pool_id === membership.pool_id);
+                      const isActivePool = activePool?.id === membership.pool_id;
+                      const sortedEntries = [...poolEntries.filter(entry => entry.pool_id === membership.pool_id)].sort((a, b) => b.total_points - a.total_points);
+                      const userRankInPool = userEntry ? sortedEntries.findIndex(entry => entry.id === userEntry.id) + 1 : null;
+                      
+                      return (
+                        <Card 
+                          key={membership.pool_id} 
+                          className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
+                            isActivePool ? 'ring-2 ring-primary shadow-lg' : ''
+                          }`}
+                          onClick={() => {
+                            // Set active pool and navigate to dashboard
+                            if (!isActivePool) {
+                              setActivePool(membership.pool!);
+                              setTimeout(() => navigate('/dashboard'), 100);
+                            } else {
+                              navigate('/dashboard');
+                            }
+                          }}
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className="text-lg truncate">{membership.pool?.name || 'Unknown Pool'}</CardTitle>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {membership.role === 'owner' ? 'Owner' : membership.role === 'admin' ? 'Admin' : 'Member'}
+                                  </Badge>
+                                  {isActivePool && (
+                                    <Badge className="text-xs bg-primary">Active</Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            {userEntry ? (
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-muted-foreground">Your Rank</span>
+                                  <span className="font-semibold">#{userRankInPool}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-muted-foreground">Points</span>
+                                  <span className="font-semibold">{userEntry.total_points}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-muted-foreground">Playing as</span>
+                                  <span className="text-sm font-medium truncate max-w-[120px]" title={userEntry.participant_name}>
+                                    {userEntry.participant_name}
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-center py-4">
+                                <p className="text-sm text-muted-foreground mb-2">No entry yet</p>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate('/draft');
+                                  }}
+                                >
+                                  Join Pool
+                                </Button>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 

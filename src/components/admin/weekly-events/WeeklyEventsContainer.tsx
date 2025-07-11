@@ -4,6 +4,7 @@ import { useWeeklyEventsSave } from '@/hooks/useWeeklyEventsSave';
 import { useWeekManagement } from '@/hooks/useWeekManagement';
 import { useWeekAwareContestants } from '@/hooks/useWeekAwareContestants';
 import { usePool } from '@/contexts/PoolContext';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { WeeklyEventsInstructions } from './WeeklyEventsInstructions';
 import { WeeklyEventsForm } from './WeeklyEventsForm';
 
@@ -86,27 +87,29 @@ export const WeeklyEventsContainer: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <WeeklyEventsInstructions />
-      
-      <WeeklyEventsForm
-        eventForm={eventForm}
-        setEventForm={setEventForm}
-        currentGameWeek={currentGameWeek}
-        isWeekComplete={isWeekComplete}
-        isLoadingWeek={isLoadingWeek}
-        isAutoSaving={isAutoSaving}
-        isSubmitting={isSubmitting}
-        contestants={contestants}
-        scoringRules={scoringRules}
-        pointsPreview={pointsPreview}
-        evictedThisWeek={evictedThisWeek}
-        onWeekChange={handleWeekChange}
-        onMarkComplete={handleMarkComplete}
-        onClearWeek={handleClearWeek}
-        onSaveProgress={saveCurrentWeekDraft}
-        onSubmitWeek={handleSubmit}
-      />
-    </div>
+    <TooltipProvider>
+      <div className="space-y-6">
+        <WeeklyEventsInstructions />
+        
+        <WeeklyEventsForm
+          eventForm={eventForm}
+          setEventForm={setEventForm}
+          currentGameWeek={currentGameWeek}
+          isWeekComplete={isWeekComplete}
+          isLoadingWeek={isLoadingWeek}
+          isAutoSaving={isAutoSaving}
+          isSubmitting={isSubmitting}
+          contestants={contestants}
+          scoringRules={scoringRules}
+          pointsPreview={pointsPreview}
+          evictedThisWeek={evictedThisWeek}
+          onWeekChange={handleWeekChange}
+          onMarkComplete={handleMarkComplete}
+          onClearWeek={handleClearWeek}
+          onSaveProgress={saveCurrentWeekDraft}
+          onSubmitWeek={handleSubmit}
+        />
+      </div>
+    </TooltipProvider>
   );
 };

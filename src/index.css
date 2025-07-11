@@ -256,8 +256,8 @@
     color: hsl(0 0% 5%) !important;
   }
   
-  /* Force consistent backgrounds */
+  /* Force consistent backgrounds - ALL PALE YELLOW */
   .bg-background {
-    background-color: hsl(60 15% 96%) !important;
+    background-color: hsl(60 30% 97%) !important;
   }
 }

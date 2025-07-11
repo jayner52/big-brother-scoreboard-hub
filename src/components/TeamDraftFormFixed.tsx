@@ -433,7 +433,7 @@ export const TeamDraftFormFixed: React.FC = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-lg font-semibold"
+                  className="w-full submit-team-btn py-3 text-lg font-semibold"
                   disabled={isDraftLocked || validationErrors.length > 0}
                 >
                   {editingTeamId ? 'Update Team & Predictions' : 'Submit My Team & Predictions'}

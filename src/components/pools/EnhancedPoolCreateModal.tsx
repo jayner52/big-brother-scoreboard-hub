@@ -86,7 +86,7 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={loading}>
+          <Button onClick={onSubmit} disabled={loading} className="create-pool-btn">
             {loading ? 'Creating...' : 'Create Pool'}
           </Button>
         </DialogFooter>

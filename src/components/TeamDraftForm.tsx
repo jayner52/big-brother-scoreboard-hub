@@ -226,7 +226,7 @@ export const TeamDraftForm: React.FC = () => {
 
           <Button 
             type="submit" 
-            className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold ${isMobile ? 'mobile-button text-base' : 'py-3 text-lg'}`}
+            className={`w-full submit-team-btn font-semibold ${isMobile ? 'mobile-button text-base' : 'py-3 text-lg'}`}
           >
             Submit My Team & Predictions
           </Button>

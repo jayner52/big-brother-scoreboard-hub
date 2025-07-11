@@ -109,7 +109,7 @@ export const PoolJoinModal = ({ open, onOpenChange, onSuccess }: PoolJoinModalPr
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={loading || !inviteCode.trim()}>
+          <Button onClick={handleSubmit} disabled={loading || !inviteCode.trim()} className="join-pool-btn">
             {loading ? 'Joining...' : 'Join Pool'}
           </Button>
         </DialogFooter>

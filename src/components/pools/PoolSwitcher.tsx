@@ -70,11 +70,11 @@ export const PoolSwitcher = () => {
   if (!activePool && userPools.length === 0) {
     return (
       <div className="flex items-center gap-2">
-        <Button onClick={() => setShowCreateModal(true)} size="sm">
+        <Button onClick={() => setShowCreateModal(true)} size="sm" className="create-pool-btn">
           <Plus className="h-4 w-4 mr-2" />
           Create Pool
         </Button>
-        <Button onClick={() => setShowJoinModal(true)} variant="outline" size="sm">
+        <Button onClick={() => setShowJoinModal(true)} variant="outline" size="sm" className="join-pool-btn">
           Join Pool
         </Button>
         <PoolCreateModal 

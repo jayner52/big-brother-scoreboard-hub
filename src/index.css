@@ -44,6 +44,14 @@
     --gradient-blue-purple: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%));
     --gradient-blue-purple-hover: linear-gradient(135deg, hsl(217 91% 55%), hsl(262 83% 53%));
     
+    /* Additional professional gradients */
+    --gradient-coral: linear-gradient(135deg, hsl(16 100% 66%), hsl(25 95% 63%));
+    --gradient-coral-hover: linear-gradient(135deg, hsl(16 100% 61%), hsl(25 95% 58%));
+    --gradient-teal: linear-gradient(135deg, hsl(174 72% 56%), hsl(184 72% 56%));
+    --gradient-teal-hover: linear-gradient(135deg, hsl(174 72% 51%), hsl(184 72% 51%));
+    --gradient-summer: linear-gradient(135deg, hsl(174 72% 56%), hsl(16 100% 66%));
+    --gradient-summer-hover: linear-gradient(135deg, hsl(174 72% 51%), hsl(16 100% 61%));
+    
     /* Legacy support - map to professional colors */
     --purple: 262 83% 58%;
     --purple-foreground: 210 40% 98%;
@@ -173,12 +181,15 @@
     overscroll-behavior: contain;
   }
 
-  /* MASTER THEME OVERRIDES - Nuclear option to force pale yellow everywhere */
-  .bg-background,
-  .bg-white,
-  [class*="bg-background"],
+  /* MASTER THEME OVERRIDES - Force consistent pale yellow background */
   body,
-  main,
+  html,
+  #root {
+    background-color: hsl(60 30% 97%) !important;
+  }
+  
+  /* Force pale yellow on main containers */
+  .min-h-screen,
   div[class*="min-h-screen"] {
     background-color: hsl(60 30% 97%) !important;
   }
@@ -189,10 +200,12 @@
     min-height: 100vh;
   }
 
-  /* Restrained button styling - only primary actions get gradients */
-  .btn-primary, 
-  button[type="submit"]:not(.unstyled),
-  .primary-action {
+  /* Restrained button styling - only specific primary actions get gradients */
+  .primary-action-gradient,
+  .btn-primary,
+  .create-pool-btn,
+  .join-pool-btn,
+  .submit-team-btn {
     background: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%)) !important;
     color: white !important;
     border: none !important;
@@ -202,37 +215,49 @@
     cursor: pointer !important;
   }
 
+  .primary-action-gradient:hover,
   .btn-primary:hover,
-  button[type="submit"]:not(.unstyled):hover,
-  .primary-action:hover {
+  .create-pool-btn:hover,
+  .join-pool-btn:hover,
+  .submit-team-btn:hover {
     background: linear-gradient(135deg, hsl(217 91% 55%), hsl(262 83% 53%)) !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
   }
 
-  /* Beautiful card styling */
-  .card, [class*="card"] {
-    background-color: hsl(60 20% 94%) !important;
-    border: 1px solid hsl(60 15% 90%) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  /* Beautiful card styling with proper contrast */
+  .card, 
+  [class*="card"],
+  .ui-card {
+    background-color: hsl(60 15% 96%) !important;
+    border: 1px solid hsl(60 15% 88%) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24) !important;
   }
 
-  /* Professional brand color overrides */
-  .bg-brand-blue {
-    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%)) !important;
+  /* Professional brand color utilities */
+  .bg-coral {
+    background: linear-gradient(135deg, hsl(16 100% 66%), hsl(25 95% 63%)) !important;
+  }
+  
+  .bg-teal {
+    background: linear-gradient(135deg, hsl(174 72% 56%), hsl(184 72% 56%)) !important;
+  }
+  
+  .bg-summer {
+    background: linear-gradient(135deg, hsl(174 72% 56%), hsl(16 100% 66%)) !important;
   }
 
   .bg-gradient-primary {
     background: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%)) !important;
   }
 
-  /* Tab hover effects */
-  .hover\:bg-gradient-primary:hover {
-    background: linear-gradient(135deg, hsl(217 91% 55%), hsl(262 83% 53%)) !important;
-  }
-
   /* Ensure text is visible */
   .text-foreground {
     color: hsl(0 0% 5%) !important;
+  }
+  
+  /* Force consistent backgrounds */
+  .bg-background {
+    background-color: hsl(60 15% 96%) !important;
   }
 }

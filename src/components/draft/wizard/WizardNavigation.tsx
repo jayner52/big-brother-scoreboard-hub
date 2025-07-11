@@ -75,7 +75,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
           <Button
             onClick={onSubmit}
             disabled={!isCurrentStepValid}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex items-center gap-2 px-8 py-3 text-lg font-semibold shadow-lg"
+            className="submit-team-btn flex items-center gap-2 px-8 py-3 text-lg font-semibold shadow-lg"
             size="lg"
           >
             <Check className="h-5 w-5" />

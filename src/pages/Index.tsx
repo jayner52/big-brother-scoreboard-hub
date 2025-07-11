@@ -175,11 +175,11 @@ const Index = () => {
           <div className="text-center">
             <p className="text-lg mb-4">Something went wrong loading your pools.</p>
             <div className="flex gap-4 justify-center">
-              <Button onClick={() => setShowCreateModal(true)}>
+              <Button onClick={() => setShowCreateModal(true)} className="create-pool-btn">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Pool
               </Button>
-              <Button variant="outline" onClick={() => setShowJoinModal(true)}>
+              <Button variant="outline" onClick={() => setShowJoinModal(true)} className="join-pool-btn">
                 <Users className="h-4 w-4 mr-2" />
                 Join Pool
               </Button>
@@ -220,11 +220,11 @@ const Index = () => {
             </div>
             
             <div className="flex gap-4 justify-center">
-              <Button size="lg" onClick={() => setShowCreateModal(true)}>
+              <Button size="lg" onClick={() => setShowCreateModal(true)} className="create-pool-btn">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Pool
               </Button>
-              <Button size="lg" variant="outline" onClick={() => setShowJoinModal(true)}>
+              <Button size="lg" variant="outline" onClick={() => setShowJoinModal(true)} className="join-pool-btn">
                 <Users className="h-4 w-4 mr-2" />
                 Join Pool
               </Button>

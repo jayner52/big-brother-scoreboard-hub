@@ -14,14 +14,14 @@ const PoolsidePicks = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-pale-yellow flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-pale-yellow relative">
       <FloatingPoolElements />
       <HomepageNavigation user={user} />
       

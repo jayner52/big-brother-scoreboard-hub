@@ -46,6 +46,8 @@ const Invite = () => {
       
       setPoolLoading(true);
       try {
+        console.log('Fetching pool with invite code:', code.toUpperCase());
+        
         // Fetch pool by invite code
         const { data: pool, error: poolError } = await supabase
           .from('pools')
@@ -53,11 +55,25 @@ const Invite = () => {
           .eq('invite_code', code.toUpperCase())
           .single();
 
-        if (poolError || !pool) {
-          console.error('Pool not found:', poolError);
+        if (poolError) {
+          console.error('Pool fetch error:', poolError);
+          console.error('Error details:', {
+            code: poolError.code,
+            details: poolError.details,
+            hint: poolError.hint,
+            message: poolError.message
+          });
           setPoolLoading(false);
           return;
         }
+
+        if (!pool) {
+          console.error('No pool found with invite code:', code.toUpperCase());
+          setPoolLoading(false);
+          return;
+        }
+
+        console.log('Successfully fetched pool:', pool.name);
 
         setPoolData(pool);
 

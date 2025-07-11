@@ -19,49 +19,7 @@ import { UserDeleteConfirmation } from './UserDeleteConfirmation';
 import { EnhancedUserFilters } from './EnhancedUserFilters';
 import { BulkActionToolbar } from './BulkActionToolbar';
 import { EnhancedUserTable } from './EnhancedUserTable';
-
-interface EnhancedUserData {
-  id: string;
-  user_id: string;
-  display_name: string | null;
-  email: string | null;
-  avatar_url?: string | null;
-  background_color?: string | null;
-  registration_date: string;
-  email_source: 'google_oauth' | 'manual_signup' | 'email_list' | 'unknown';
-  email_verified: boolean;
-  terms_accepted: boolean;
-  terms_accepted_at: string | null;
-  terms_version: string | null;
-  email_opt_in: boolean;
-  email_subscription_status: string | null;
-  account_age_days: number;
-  profile_completion: number;
-  last_login: string | null;
-  chat_messages_count?: number;
-  pool_memberships: Array<{
-    pool_name: string;
-    role: string;
-    joined_at: string;
-  }>;
-  total_points?: number;
-  pools_owned?: number;
-  feedback_count?: number;
-}
-
-interface EnhancedStats {
-  total_registrations: number;
-  terms_accepted_count: number;
-  email_opted_in_count: number;
-  active_pool_members: number;
-  email_subscribers: number;
-  google_oauth_users: number;
-  manual_signup_users: number;
-  verified_emails: number;
-  total_chat_messages: number;
-  total_pool_entries: number;
-  total_feedback_items: number;
-}
+import { EnhancedUserData, EnhancedStats } from './types';
 
 interface FilterOptions {
   searchTerm: string;
@@ -344,16 +302,16 @@ export const EnhancedUserManagementTab: React.FC<UserManagementTabProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header with Actions */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Enhanced User Management</h3>
         <div className="flex gap-2">
-          <Button onClick={loadEnhancedUserData} variant="outline" size="sm">
+          <Button onClick={loadEnhancedUserData} variant="outline" size="sm" className="hover-scale">
             <TrendingUp className="h-4 w-4 mr-2" />
             Refresh Data
           </Button>
-          <Button onClick={() => exportUsersToCsv()} variant="outline" size="sm">
+          <Button onClick={() => exportUsersToCsv()} variant="outline" size="sm" className="hover-scale">
             <Download className="h-4 w-4 mr-2" />
             Export All
           </Button>
@@ -362,7 +320,7 @@ export const EnhancedUserManagementTab: React.FC<UserManagementTabProps> = ({
 
       {/* Enhanced Overview Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <Card>
+        <Card className="hover-scale">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-blue-600" />
@@ -374,7 +332,7 @@ export const EnhancedUserManagementTab: React.FC<UserManagementTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-scale">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Globe className="h-5 w-5 text-green-600" />
@@ -386,7 +344,7 @@ export const EnhancedUserManagementTab: React.FC<UserManagementTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-scale">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-purple-600" />
@@ -398,7 +356,7 @@ export const EnhancedUserManagementTab: React.FC<UserManagementTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-scale">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-orange-600" />
@@ -410,7 +368,7 @@ export const EnhancedUserManagementTab: React.FC<UserManagementTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-scale">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-cyan-600" />
@@ -422,7 +380,7 @@ export const EnhancedUserManagementTab: React.FC<UserManagementTabProps> = ({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-scale">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-amber-600" />

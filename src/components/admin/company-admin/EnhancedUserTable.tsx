@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { UserAvatar } from './UserAvatar';
+import { EnhancedUserData } from './types';
 import { 
   UserCheck,
   Trash2,
@@ -20,34 +21,6 @@ import {
   Activity
 } from 'lucide-react';
 
-interface EnhancedUserData {
-  id: string;
-  user_id: string;
-  display_name: string | null;
-  email: string | null;
-  avatar_url?: string | null;
-  background_color?: string | null;
-  registration_date: string;
-  email_source: 'google_oauth' | 'manual_signup' | 'email_list' | 'unknown';
-  email_verified: boolean;
-  terms_accepted: boolean;
-  terms_accepted_at: string | null;
-  terms_version: string | null;
-  email_opt_in: boolean;
-  email_subscription_status: string | null;
-  account_age_days: number;
-  profile_completion: number;
-  last_login: string | null;
-  chat_messages_count?: number;
-  pool_memberships: Array<{
-    pool_name: string;
-    role: string;
-    joined_at: string;
-  }>;
-  total_points?: number;
-  pools_owned?: number;
-  feedback_count?: number;
-}
 
 interface EnhancedUserTableProps {
   users: EnhancedUserData[];

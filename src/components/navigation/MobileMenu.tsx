@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, Info, Users, Settings, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface MobileMenuProps {
   user: SupabaseUser | null;
@@ -93,6 +94,13 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 </Button>
               </Link>
             )}
+            
+            <div className="pt-2 border-t border-border/50">
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-sm text-muted-foreground">Theme</span>
+                <ThemeToggle />
+              </div>
+            </div>
           </div>
         </div>
       )}

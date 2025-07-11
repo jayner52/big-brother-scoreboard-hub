@@ -16,7 +16,7 @@ import { PoolCreationSummary } from './creation/PoolCreationSummary';
 interface EnhancedPoolCreateModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess?: (isNewPool?: boolean) => void;
 }
 
 export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: EnhancedPoolCreateModalProps) => {
@@ -38,7 +38,7 @@ export const EnhancedPoolCreateModal = ({ open, onOpenChange, onSuccess }: Enhan
     
     if (result?.success) {
       onOpenChange(false);
-      onSuccess?.();
+      onSuccess?.(true); // Pass true to indicate this is a new pool creation
       resetForm();
     }
   };

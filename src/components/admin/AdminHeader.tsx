@@ -9,27 +9,27 @@ interface AdminHeaderProps {
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({ isOwner, isAdmin }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mb-6">
+    <div className="bg-gradient-admin rounded-lg p-6 shadow-lg mb-6 border-0">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         {/* Left: Admin Info */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="bg-gradient-to-r from-coral to-orange-500 p-2 rounded-lg">
+          <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
             <Settings className="h-5 w-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="font-semibold text-lg text-foreground">Pool Management</h2>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <h2 className="font-semibold text-xl text-white">Pool Management</h2>
+            <div className="flex items-center gap-2 text-sm text-white/80">
               <span>Admin Dashboard</span>
               {isOwner && (
                 <>
                   <span>•</span>
-                  <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded border">OWNER</span>
+                  <span className="text-xs bg-white/20 text-white px-2 py-1 rounded-full border border-white/30 backdrop-blur-sm">OWNER</span>
                 </>
               )}
               {isAdmin && (
                 <>
                   <span>•</span>
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded border">ADMIN</span>
+                  <span className="text-xs bg-white/20 text-white px-2 py-1 rounded-full border border-white/30 backdrop-blur-sm">ADMIN</span>
                 </>
               )}
             </div>

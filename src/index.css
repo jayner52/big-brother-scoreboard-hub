@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    /* Modern warm background system */
-    --page-bg: 48 65% 85%;
+    /* Modern warm background system - elegant off-white cream */
+    --page-bg: 45 25% 94%;
     --background: 0 0% 100%;
     --foreground: 0 0% 5%;
     --card: 0 0% 100%;
@@ -52,6 +52,11 @@
     --gradient-teal-hover: linear-gradient(135deg, hsl(174 72% 51%), hsl(184 72% 51%));
     --gradient-summer: linear-gradient(135deg, hsl(174 72% 56%), hsl(16 100% 66%));
     --gradient-summer-hover: linear-gradient(135deg, hsl(174 72% 51%), hsl(16 100% 61%));
+    
+    /* Brand Teal */
+    --brand-teal: 174 72% 56%;
+    --brand-teal-foreground: 210 40% 98%;
+    --brand-teal-muted: 174 50% 85%;
     
     /* Fix orange gradients for admin */
     --orange: 25 95% 63%;
@@ -286,6 +291,15 @@
   /* Page background utility */
   .bg-page {
     background-color: hsl(var(--page-bg)) !important;
+  }
+  
+  /* Beautiful gradients for panels */
+  .bg-gradient-admin {
+    background: linear-gradient(135deg, hsl(var(--coral)), hsl(var(--orange))) !important;
+  }
+  
+  .bg-gradient-welcome {
+    background: linear-gradient(135deg, hsl(var(--brand-teal)), hsl(var(--coral))) !important;
   }
   
   /* Ensure panels have proper backgrounds */

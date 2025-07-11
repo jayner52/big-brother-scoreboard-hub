@@ -114,7 +114,7 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
           ) : (
             <>
               {/* Original Content for Non-logged-in Users */}
-              <p className={`${isMobile ? 'text-2xl' : 'text-4xl'} text-brand-teal font-bold mb-4`} style={{ fontFamily: 'Orbitron, monospace' }}>
+              <p className={`${isMobile ? 'text-2xl' : 'text-4xl'} text-brand-teal font-bold mb-4`}>
                 The Smartest Way to Watch Dumb TV
               </p>
               

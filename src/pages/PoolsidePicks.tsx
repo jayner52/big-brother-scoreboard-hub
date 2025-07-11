@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+// import { useAuth } from '@/hooks/useAuth'; // Temporarily disabled
 import { FloatingPoolElements } from '@/components/homepage/FloatingPoolElements';
 import { HomepageNavigation } from '@/components/homepage/HomepageNavigation';
 import { HomepageHero } from '@/components/homepage/HomepageHero';
@@ -10,10 +10,11 @@ import { FinalCTASection } from '@/components/homepage/FinalCTASection';
 import { HomepageFooter } from '@/components/homepage/HomepageFooter';
 
 const PoolsidePicks = () => {
-  const { user, loading } = useAuth();
-
-  // Temporary fix: Remove loading check to see if app renders
-  console.log('PoolsidePicks render - loading:', loading, 'user:', user);
+  // Temporarily bypass auth to test if the app loads
+  console.log('PoolsidePicks render - bypassing auth hooks');
+  
+  const user = null; // Simulate no user for now
+  const loading = false; // Simulate not loading
 
   if (loading) {
     return (
@@ -24,7 +25,7 @@ const PoolsidePicks = () => {
   }
 
   return (
-    <div className="min-h-screen bg-cream relative">
+    <div className="min-h-screen bg-background relative">
       <FloatingPoolElements />
       <HomepageNavigation user={user} />
       

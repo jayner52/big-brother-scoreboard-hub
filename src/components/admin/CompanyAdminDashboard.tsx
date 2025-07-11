@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserManagementTab } from './company-admin/UserManagementTab';
+import { EnhancedUserManagementTab } from './company-admin/EnhancedUserManagementTab';
 import { PoolAnalyticsTab } from './company-admin/PoolAnalyticsTab';
 import { FeedbackManagementTab } from './company-admin/FeedbackManagementTab';
 import { Users, Database, MessageSquare } from 'lucide-react';
@@ -243,7 +243,7 @@ export const CompanyAdminDashboard: React.FC = () => {
         </TabsList>
         
         <TabsContent value="users">
-          <UserManagementTab 
+          <EnhancedUserManagementTab 
             users={users} 
             stats={stats} 
             onUsersUpdate={loadUserRegistrations}

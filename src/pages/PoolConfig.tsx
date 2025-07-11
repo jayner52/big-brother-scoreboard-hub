@@ -134,11 +134,12 @@ const About = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch scoring rules for general display
+      // Fetch default scoring rules (no pool-specific rules for general display)
       const { data: rules, error: rulesError } = await supabase
         .from('detailed_scoring_rules')
         .select('*')
         .eq('is_active', true)
+        .is('pool_id', null)
         .order('category', { ascending: true });
 
       if (rulesError) throw rulesError;
@@ -164,7 +165,7 @@ const About = () => {
   const getRulesByCategory = (category: string) =>
     scoringRules.filter(rule => rule.category === category);
 
-  const weeklyRules = getRulesByCategory('weekly');
+  const weeklyRules = [...getRulesByCategory('weekly'), ...getRulesByCategory('weekly_events')];
   const competitionRules = getRulesByCategory('competition');
   const specialRules = getRulesByCategory('special_events');
   const finalRules = getRulesByCategory('final_placement');

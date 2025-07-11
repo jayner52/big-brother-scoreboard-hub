@@ -15,7 +15,7 @@ export const getDomainConfig = () => {
  */
 export const generateInviteLink = (inviteCode: string): string => {
   const { baseUrl } = getDomainConfig();
-  return `${baseUrl}/invite/${inviteCode}`;
+  return `${baseUrl}/invite/${inviteCode.toUpperCase()}`;
 };
 
 /**

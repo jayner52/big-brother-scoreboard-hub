@@ -18,7 +18,7 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { profile } = useUserProfile(user);
-  const { activePool, userPools, poolEntries, setActivePool } = usePool();
+  const { activePool, userPools, userPoolsLoading, poolEntries, setActivePool } = usePool();
 
   const handleGetStarted = () => {
     if (user) {
@@ -59,7 +59,12 @@ export const HomepageHero: React.FC<HomepageHeroProps> = ({ user }) => {
               </div>
 
               {/* Pool Selection Grid */}
-              {userPools.length > 0 && (
+              {userPoolsLoading ? (
+                <div className="mb-8 max-w-4xl mx-auto text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-teal mx-auto mb-4"></div>
+                  <p className="text-lg text-dark/70">Loading your pools...</p>
+                </div>
+              ) : userPools.length > 0 && (
                 <div className="mb-8 max-w-4xl mx-auto">
                   <h3 className="text-2xl font-bold text-dark mb-6 text-center">Your Pools</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

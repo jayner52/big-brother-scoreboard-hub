@@ -39,6 +39,7 @@ interface PoolContextType {
   refreshPool: () => void;
   loading: boolean;
   userPools: PoolMembership[];
+  userPoolsLoading: boolean;
   poolEntries: PoolEntry[];
   createPool: (poolData: any) => Promise<{ success: boolean; data?: Pool; error?: string }>;
   joinPoolByCode: (inviteCode: string) => Promise<{ success: boolean; data?: Pool; error?: string }>;
@@ -60,6 +61,7 @@ const PoolContext = createContext<PoolContextType | undefined>(undefined);
 export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activePool, setActivePoolState] = useState<Pool | null>(null);
   const [userPools, setUserPools] = useState<PoolMembership[]>([]);
+  const [userPoolsLoading, setUserPoolsLoading] = useState(false);
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -95,8 +97,12 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadUserPools = async () => {
     try {
+      setUserPoolsLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setUserPools([]);
+        return;
+      }
 
       const { data: memberships, error } = await supabase
         .from('pool_memberships')
@@ -111,6 +117,9 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserPools((memberships || []) as PoolMembership[]);
     } catch (error) {
       console.error('Error loading user pools:', error);
+      setUserPools([]);
+    } finally {
+      setUserPoolsLoading(false);
     }
   };
 
@@ -396,6 +405,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
       refreshPool, 
       loading,
       userPools,
+      userPoolsLoading,
       poolEntries,
       createPool,
       joinPoolByCode,

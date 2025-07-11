@@ -135,7 +135,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
@@ -143,11 +143,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 pb-4">
           {/* Avatar Section */}
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
-              <Avatar className="w-24 h-24">
+              <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
                 {avatarUrl ? (
                   <div className={`w-full h-full flex items-center justify-center text-5xl rounded-full ${
                     backgroundColor ? `bg-gradient-to-br ${backgroundColor}` : 'bg-gradient-to-br from-brand-teal/20 to-coral/20'
@@ -185,7 +185,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           {/* Background Color */}
           <div className="space-y-2">
             <Label>Background Color</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {backgroundColors.map((color) => (
                 <button
                   key={color.name}

@@ -1,4 +1,4 @@
-import * as React from "react"
+import { useState, useEffect } from "react"
 
 // Mobile breakpoints for responsive design
 export const BREAKPOINTS = {
@@ -10,9 +10,9 @@ export const BREAKPOINTS = {
 } as const
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined)
 
-  React.useEffect(() => {
+  useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${BREAKPOINTS.lg - 1}px)`)
     const onChange = () => {
       setIsMobile(window.innerWidth < BREAKPOINTS.lg)
@@ -26,9 +26,9 @@ export function useIsMobile() {
 }
 
 export function useBreakpoint() {
-  const [breakpoint, setBreakpoint] = React.useState<keyof typeof BREAKPOINTS>('xl')
+  const [breakpoint, setBreakpoint] = useState<keyof typeof BREAKPOINTS>('xl')
 
-  React.useEffect(() => {
+  useEffect(() => {
     const getBreakpoint = (): keyof typeof BREAKPOINTS => {
       const width = window.innerWidth
       if (width < BREAKPOINTS.xs) return 'xs'

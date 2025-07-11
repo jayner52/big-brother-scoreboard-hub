@@ -82,6 +82,10 @@ const About = () => {
       setLoading(true);
       setError(null);
       
+      console.log('=== FETCH START ===');
+      console.log('Active pool ID:', activePool?.id);
+      console.log('Current scoringRules length:', scoringRules.length);
+      
       // Clear previous state to prevent accumulation
       setScoringRules([]);
       setBonusQuestions([]);
@@ -104,6 +108,9 @@ const About = () => {
         .order('category', { ascending: true });
 
       if (rulesError) throw rulesError;
+      
+      console.log('Database returned', rules?.length, 'rules');
+      console.log('First few rules from DB:', rules?.slice(0, 3));
 
       // Fetch bonus questions for this pool
       const { data: questions, error: questionsError } = await supabase
@@ -127,6 +134,9 @@ const About = () => {
       const uniqueRules = rules ? rules.filter((rule, index, arr) => 
         arr.findIndex(r => r.category === rule.category && r.subcategory === rule.subcategory) === index
       ) : [];
+      
+      console.log('Setting', uniqueRules.length, 'unique rules');
+      console.log('First few unique rules:', uniqueRules.slice(0, 3));
 
       console.log('fetchPoolConfiguration - setting rules:', uniqueRules.length, 'rules for pool:', activePool.id);
       setPoolConfig(pool);
@@ -322,6 +332,10 @@ const About = () => {
                   Competition Events
                 </h3>
                 <div className="grid md:grid-cols-3 gap-3">
+                  {(() => {
+                    console.log('Rendering competition rules:', competitionRules.length);
+                    return null;
+                  })()}
                   {competitionRules.map((rule) => {
                     const emoji = getScoringRuleEmoji(rule.category, rule.subcategory);
                     return (

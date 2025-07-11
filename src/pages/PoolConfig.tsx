@@ -215,8 +215,11 @@ const About = () => {
   };
 
   // Group scoring rules by category
-  const getRulesByCategory = (category: string) =>
-    scoringRules.filter(rule => rule.category === category);
+  const getRulesByCategory = (category: string) => {
+    const filtered = scoringRules.filter(rule => rule.category === category);
+    console.log(`getRulesByCategory('${category}'):`, filtered.length, 'rules');
+    return filtered;
+  };
 
   const weeklyRules = [...getRulesByCategory('weekly'), ...getRulesByCategory('weekly_events')];
   const competitionRules = getRulesByCategory('competition');
@@ -224,6 +227,18 @@ const About = () => {
   const finalRules = getRulesByCategory('final_placement');
   const juryRules = getRulesByCategory('jury');
   const achievementRules = getRulesByCategory('special_achievements');
+
+  // Check for rule ID uniqueness
+  const allDisplayedRules = [...competitionRules, ...weeklyRules, ...achievementRules, ...specialRules, ...juryRules, ...finalRules];
+  const uniqueIds = new Set(allDisplayedRules.map(r => r.id));
+  console.log('Total rules being displayed:', allDisplayedRules.length);
+  console.log('Unique rule IDs:', uniqueIds.size);
+  console.log('Weekly rules count:', weeklyRules.length);
+  console.log('Competition rules count:', competitionRules.length);
+  console.log('Achievement rules count:', achievementRules.length);
+  console.log('Special rules count:', specialRules.length);
+  console.log('Jury rules count:', juryRules.length);
+  console.log('Final rules count:', finalRules.length);
 
   // Show prize section if admin allows it and pool has buy-in
   const showPrizeSection = poolConfig?.has_buy_in && poolConfig?.show_prize_amounts;

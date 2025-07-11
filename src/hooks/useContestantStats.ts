@@ -26,7 +26,7 @@ export const useContestantStats = () => {
     if (!loading && contestants.length > 0 && activePool?.id && !isProcessing) {
       processContestantStats();
     }
-  }, [loading, contestants, weeklyEvents, activePool?.id, isProcessing]); // Removed specialEvents to prevent infinite loop
+  }, [loading, contestants, weeklyEvents, activePool?.id]); // Removed specialEvents and isProcessing to prevent infinite loop
 
   const processContestantStats = async () => {
     if (!activePool?.id || isProcessing) {

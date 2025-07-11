@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ChevronDown, Plus, Users, Trash2, LogOut, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { usePool } from '@/contexts/PoolContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,6 +59,7 @@ export const PoolSwitcher = () => {
     transferOwnership,
     getEligibleAdminsForTransfer,
     getUserPaymentStatus,
+    getPoolPaymentStatus,
     loading 
   } = usePool();
   const { toast } = useToast();
@@ -64,6 +72,7 @@ export const PoolSwitcher = () => {
   const [poolToLeave, setPoolToLeave] = useState<{ id: string; name: string } | null>(null);
   const [poolToTransfer, setPoolToTransfer] = useState<{ id: string; name: string } | null>(null);
   const [userHasPaid, setUserHasPaid] = useState(false);
+  const [poolHasMoney, setPoolHasMoney] = useState(false);
   const [eligibleAdmins, setEligibleAdmins] = useState<Array<{ user_id: string; display_name: string }>>([]);
   const [selectedNewOwner, setSelectedNewOwner] = useState<string>('');
   const [loading_operations, setLoadingOperations] = useState(false);
@@ -89,9 +98,23 @@ export const PoolSwitcher = () => {
     setPoolToDelete(null);
   };
 
-  const confirmDeletePool = (poolId: string, poolName: string) => {
-    setPoolToDelete(poolId);
-    setDeleteDialogOpen(true);
+  const confirmDeletePool = async (poolId: string, poolName: string) => {
+    setLoadingOperations(true);
+    try {
+      // Check if pool has collected money
+      const hasMoney = await getPoolPaymentStatus(poolId);
+      setPoolHasMoney(hasMoney);
+      setPoolToDelete(poolId);
+      setDeleteDialogOpen(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to prepare delete pool dialog",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingOperations(false);
+    }
   };
 
   const handleLeavePool = async (poolId: string, poolName: string) => {
@@ -200,6 +223,30 @@ export const PoolSwitcher = () => {
     return membership.role === 'owner';
   };
 
+  const getTooltipContent = (action: string, membership: any) => {
+    switch (action) {
+      case 'leave':
+        if (membership.role === 'owner') {
+          return "Owners must transfer ownership before leaving the pool";
+        }
+        if (userPools.filter(p => p.active).length <= 1) {
+          return "You must be in at least one pool. Join another pool first.";
+        }
+        return "Leave this pool. You will lose access to teams, standings, and chat.";
+      
+      case 'transfer':
+        return "Transfer ownership to another admin member. You will become a regular member.";
+      
+      case 'delete':
+        return membership.pool?.has_buy_in 
+          ? "Permanently delete this pool. WARNING: This pool has entry fees - ensure all funds are handled first."
+          : "Permanently delete this pool. This action cannot be undone.";
+      
+      default:
+        return "";
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center gap-2">
@@ -231,7 +278,7 @@ export const PoolSwitcher = () => {
   }
 
   return (
-    <>
+    <TooltipProvider>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-2 min-w-48">
@@ -272,45 +319,66 @@ export const PoolSwitcher = () => {
                   <Badge variant="secondary" className="text-xs">Active</Badge>
                 )}
                 {canLeavePool(membership) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-muted-foreground hover:text-muted-foreground/80"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleLeavePool(membership.pool_id, membership.pool!.name);
-                    }}
-                    disabled={loading_operations}
-                  >
-                    <LogOut className="h-3 w-3" />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-muted-foreground/80"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLeavePool(membership.pool_id, membership.pool!.name);
+                        }}
+                        disabled={loading_operations}
+                      >
+                        <LogOut className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{getTooltipContent('leave', membership)}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
                 {canTransferOwnership(membership) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-muted-foreground hover:text-muted-foreground/80"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTransferOwnership(membership.pool_id, membership.pool!.name);
-                    }}
-                    disabled={loading_operations}
-                  >
-                    <UserCheck className="h-3 w-3" />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-muted-foreground/80"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTransferOwnership(membership.pool_id, membership.pool!.name);
+                        }}
+                        disabled={loading_operations}
+                      >
+                        <UserCheck className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{getTooltipContent('transfer', membership)}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
                 {membership.role === 'owner' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      confirmDeletePool(membership.pool_id, membership.pool!.name);
-                    }}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          confirmDeletePool(membership.pool_id, membership.pool!.name);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{getTooltipContent('delete', membership)}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
               </div>
             </DropdownMenuItem>
@@ -352,6 +420,13 @@ export const PoolSwitcher = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Pool</AlertDialogTitle>
             <AlertDialogDescription>
+              {poolHasMoney && (
+                <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ This pool has collected entry fees. Ensure all funds are properly handled before deletion.
+                  </p>
+                </div>
+              )}
               Are you sure you want to permanently delete this pool? This action cannot be undone and will remove all pool data, entries, and results.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -429,6 +504,6 @@ export const PoolSwitcher = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </TooltipProvider>
   );
 };

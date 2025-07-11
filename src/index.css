@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    /* Clean, modern background system */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Pale yellow background system */
+    --background: 60 30% 97%;
+    --foreground: 0 0% 5%;
+    --card: 60 15% 95%;
+    --card-foreground: 0 0% 5%;
+    --popover: 60 30% 97%;
+    --popover-foreground: 0 0% 5%;
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
@@ -26,7 +26,7 @@
     --ring: 222.2 84% 4.9%;
     --radius: 0.75rem;
     
-    /* Consolidated Brand Colors */
+    /* Brand Colors */
     --brand-teal: 174 72% 56%;
     --brand-teal-foreground: 210 40% 98%;
     --brand-teal-muted: 174 30% 85%;
@@ -50,13 +50,8 @@
     --dark: 222.2 84% 4.9%;
     --dark-foreground: 210 40% 98%;
     
-    /* Beautiful gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--brand-teal)), hsl(var(--coral)));
-    --gradient-subtle: linear-gradient(135deg, hsl(var(--brand-teal) / 0.05), hsl(var(--coral) / 0.05));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--brand-teal) / 0.1), transparent);
-    
     /* Sidebar */
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 60 20% 96%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
@@ -139,17 +134,25 @@
     display: none;
   }
 
-  /* Gradient utilities using design system colors */
+  /* Primary background colors */
+  .bg-pale-yellow {
+    background-color: hsl(60 30% 97%);
+  }
+
+  .bg-gradient-brand {
+    background: linear-gradient(to bottom right, hsl(60 30% 97%), hsl(50 25% 95%));
+  }
+
   .bg-gradient-subtle {
-    background: var(--gradient-subtle);
+    background: linear-gradient(135deg, hsl(174 72% 56% / 0.05), hsl(16 100% 66% / 0.05));
   }
   
   .bg-gradient-primary {
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, hsl(174 72% 56%), hsl(16 100% 66%));
   }
 
   .text-gradient-primary {
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, hsl(174 72% 56%), hsl(16 100% 66%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

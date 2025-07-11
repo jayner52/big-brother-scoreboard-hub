@@ -8,8 +8,8 @@ import { ThemeProvider } from 'next-themes'
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider
     attribute="class"
-    defaultTheme="system"
-    enableSystem
+    defaultTheme="light"
+    enableSystem={false}
     disableTransitionOnChange
   >
     <PoolProvider>

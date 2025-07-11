@@ -47,11 +47,13 @@ const About = () => {
   }, []);
 
   useEffect(() => {
+    console.log('PoolConfig useEffect - activePool?.id:', activePool?.id, 'user:', !!user);
     if (activePool?.id) {
+      console.log('Calling fetchPoolConfiguration for pool:', activePool.id);
       fetchPoolConfiguration();
       checkAdminStatus();
     } else {
-      // For non-authenticated users, fetch default rules
+      console.log('Calling fetchDefaultConfiguration - no active pool');
       fetchDefaultConfiguration();
     }
   }, [activePool?.id, user]);
@@ -117,6 +119,7 @@ const About = () => {
 
       if (countError) throw countError;
 
+      console.log('fetchPoolConfiguration - setting rules:', rules?.length || 0, 'rules for pool:', activePool.id);
       setPoolConfig(pool);
       setScoringRules(rules || []);
       setBonusQuestions(questions || []);
@@ -170,6 +173,7 @@ const About = () => {
         { id: 'default_power_won', category: 'special_events', subcategory: 'won_special_power', description: 'Won Special Power', emoji: '⚡', points: 5, is_active: true }
       ];
 
+      console.log('fetchDefaultConfiguration - setting default rules:', defaultRules.length);
       setScoringRules(defaultRules);
       // Set default values for general display
       setPoolConfig({

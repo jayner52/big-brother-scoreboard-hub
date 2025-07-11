@@ -3,9 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { useBonusQuestions } from '@/hooks/useBonusQuestions';
+import { useActivePool } from '@/hooks/useActivePool';
 
 export const ScoringBadges: React.FC = () => {
-  const { scoringRules } = useScoringRules();
+  const activePool = useActivePool();
+  const { scoringRules } = useScoringRules(activePool?.id);
   const { bonusQuestions } = useBonusQuestions();
 
   const badges = [];

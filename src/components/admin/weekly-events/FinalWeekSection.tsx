@@ -7,6 +7,7 @@ import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { SpecialEventsDropdown } from '../special-events/SpecialEventsDropdown';
 import { PointsEarnedSection } from '../weekly-overview/PointsEarnedSection';
+import { useActivePool } from '@/hooks/useActivePool';
 
 interface FinalWeekSectionProps {
   eventForm: WeeklyEventForm;
@@ -25,7 +26,8 @@ export const FinalWeekSection: React.FC<FinalWeekSectionProps> = ({
   pointsPreview = {},
   evictedThisWeek = [],
 }) => {
-  const { getWinnerPoints, getRunnerUpPoints, getHohPoints, getPointsForEvent } = useScoringRules();
+  const activePool = useActivePool();
+  const { getWinnerPoints, getRunnerUpPoints, getHohPoints, getPointsForEvent } = useScoringRules(activePool?.id);
   
   if (!eventForm.isFinalWeek) {
     return null;

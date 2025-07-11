@@ -39,7 +39,7 @@ export const SpecialEventsSection: React.FC<SpecialEventsSectionProps> = ({
 }) => {
   const { activePool } = usePool();
   const { toast } = useToast();
-  const { scoringRules } = useScoringRules();
+  const { scoringRules } = useScoringRules(activePool?.id);
   const { validateSpecialEventsForm } = useSpecialEventHandler();
   const [showCustomEventForm, setShowCustomEventForm] = useState(false);
   

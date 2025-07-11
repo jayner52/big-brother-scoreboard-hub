@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
+import { useActivePool } from '@/hooks/useActivePool';
 
 interface SpecialEventsBadgesProps {
   events: Array<{
@@ -15,7 +16,8 @@ interface SpecialEventsBadgesProps {
 }
 
 export const SpecialEventsBadges: React.FC<SpecialEventsBadgesProps> = ({ events }) => {
-  const { scoringRules } = useScoringRules();
+  const activePool = useActivePool();
+  const { scoringRules } = useScoringRules(activePool?.id);
   
   if (events.length === 0) return null;
 

@@ -48,8 +48,8 @@ export const PointsEarnedSection: React.FC<PointsEarnedSectionProps> = ({
   allContestants = [],
   evictedThisWeek = []
 }) => {
-  const { scoringRules } = useScoringRules();
   const { activePool } = usePool();
+  const { scoringRules } = useScoringRules(activePool?.id);
   const { allContestants: weekAwareContestants, evictedContestants } = useWeekAwareContestants(weekNumber);
   
   // Add status sync hook to ensure consistency

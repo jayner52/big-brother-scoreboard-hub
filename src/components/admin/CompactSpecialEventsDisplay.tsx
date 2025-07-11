@@ -3,6 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
+import { useActivePool } from '@/hooks/useActivePool';
 
 interface SpecialEvent {
   week_number: number;
@@ -23,7 +24,8 @@ export const CompactSpecialEventsDisplay: React.FC<CompactSpecialEventsDisplayPr
   weekNumber,
   className = ""
 }) => {
-  const { scoringRules } = useScoringRules();
+  const activePool = useActivePool();
+  const { scoringRules } = useScoringRules(activePool?.id);
   const weekEvents = events.filter(event => event.week_number === weekNumber);
 
   if (weekEvents.length === 0) return null;

@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
+import { useActivePool } from '@/hooks/useActivePool';
 
 export const EmojiLegend: React.FC = () => {
-  const { scoringRules } = useScoringRules();
+  const activePool = useActivePool();
+  const { scoringRules } = useScoringRules(activePool?.id);
 
   // Filter out regular weekly events that are tracked elsewhere
   const excludedEventTypes = [

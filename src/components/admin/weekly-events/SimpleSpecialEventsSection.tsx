@@ -8,6 +8,7 @@ import { Plus, Trash2, Zap } from 'lucide-react';
 import { useScoringRules } from '@/hooks/useScoringRules';
 import { ContestantWithBio, WeeklyEventForm } from '@/types/admin';
 import { getScoringRuleEmoji } from '@/utils/scoringCategoryEmojis';
+import { useActivePool } from '@/hooks/useActivePool';
 
 interface SimpleSpecialEvent {
   id: string;
@@ -26,7 +27,8 @@ export const SimpleSpecialEventsSection: React.FC<SimpleSpecialEventsSectionProp
   setEventForm,
   allContestants
 }) => {
-  const { scoringRules } = useScoringRules();
+  const activePool = useActivePool();
+  const { scoringRules } = useScoringRules(activePool?.id);
 
   // Get special events from scoring rules
   const availableEvents = scoringRules.filter(rule => 

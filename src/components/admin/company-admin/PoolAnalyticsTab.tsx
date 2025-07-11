@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { MultiSelectFilter } from '@/components/ui/multi-select-filter';
 import { 
   Download, 
   Search, 
@@ -60,7 +61,13 @@ export const PoolAnalyticsTab: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [filters, setFilters] = useState({
+    status: [] as string[],
+    type: [] as string[],
+    entryFeeRange: [] as string[],
+    poolSize: [] as string[],
+    creationDate: [] as string[]
+  });
   const [deletePoolId, setDeletePoolId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
@@ -71,7 +78,7 @@ export const PoolAnalyticsTab: React.FC = () => {
 
   useEffect(() => {
     filterPools();
-  }, [pools, searchTerm, filterStatus]);
+  }, [pools, searchTerm, filters]);
 
   const loadPoolData = async () => {
     try {
@@ -223,6 +230,7 @@ export const PoolAnalyticsTab: React.FC = () => {
   const filterPools = () => {
     let filtered = pools;
 
+    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(pool => 
         pool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -230,24 +238,100 @@ export const PoolAnalyticsTab: React.FC = () => {
       );
     }
 
-    if (filterStatus) {
-      switch (filterStatus) {
-        case 'active':
-          filtered = filtered.filter(p => !p.season_complete && p.draft_open);
-          break;
-        case 'draft_locked':
-          filtered = filtered.filter(p => p.draft_locked);
-          break;
-        case 'completed':
-          filtered = filtered.filter(p => p.season_complete);
-          break;
-        case 'has_buy_in':
-          filtered = filtered.filter(p => p.has_buy_in);
-          break;
-        case 'free':
-          filtered = filtered.filter(p => !p.has_buy_in);
-          break;
-      }
+    // Status filters (OR logic within category)
+    if (filters.status.length > 0) {
+      filtered = filtered.filter(pool => {
+        return filters.status.some(status => {
+          switch (status) {
+            case 'active':
+              return !pool.season_complete && pool.draft_open;
+            case 'draft_locked':
+              return pool.draft_locked;
+            case 'completed':
+              return pool.season_complete;
+            default:
+              return false;
+          }
+        });
+      });
+    }
+
+    // Type filters (OR logic within category)
+    if (filters.type.length > 0) {
+      filtered = filtered.filter(pool => {
+        return filters.type.some(type => {
+          switch (type) {
+            case 'has_buy_in':
+              return pool.has_buy_in;
+            case 'free':
+              return !pool.has_buy_in;
+            default:
+              return false;
+          }
+        });
+      });
+    }
+
+    // Entry fee range filters
+    if (filters.entryFeeRange.length > 0) {
+      filtered = filtered.filter(pool => {
+        return filters.entryFeeRange.some(range => {
+          const fee = pool.entry_fee_amount;
+          switch (range) {
+            case 'under_20':
+              return fee < 20;
+            case '20_50':
+              return fee >= 20 && fee <= 50;
+            case '50_100':
+              return fee > 50 && fee <= 100;
+            case 'over_100':
+              return fee > 100;
+            default:
+              return false;
+          }
+        });
+      });
+    }
+
+    // Pool size filters
+    if (filters.poolSize.length > 0) {
+      filtered = filtered.filter(pool => {
+        return filters.poolSize.some(size => {
+          const members = pool.member_count;
+          switch (size) {
+            case 'small':
+              return members <= 5;
+            case 'medium':
+              return members > 5 && members <= 15;
+            case 'large':
+              return members > 15;
+            default:
+              return false;
+          }
+        });
+      });
+    }
+
+    // Creation date filters
+    if (filters.creationDate.length > 0) {
+      const now = new Date();
+      filtered = filtered.filter(pool => {
+        const createdDate = new Date(pool.created_at);
+        return filters.creationDate.some(range => {
+          switch (range) {
+            case 'last_week':
+              return (now.getTime() - createdDate.getTime()) <= (7 * 24 * 60 * 60 * 1000);
+            case 'last_month':
+              return (now.getTime() - createdDate.getTime()) <= (30 * 24 * 60 * 60 * 1000);
+            case 'last_3_months':
+              return (now.getTime() - createdDate.getTime()) <= (90 * 24 * 60 * 60 * 1000);
+            case 'older':
+              return (now.getTime() - createdDate.getTime()) > (90 * 24 * 60 * 60 * 1000);
+            default:
+              return false;
+          }
+        });
+      });
     }
 
     setFilteredPools(filtered);
@@ -525,7 +609,8 @@ export const PoolAnalyticsTab: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="space-y-4">
+            {/* Search */}
             <div className="flex items-center gap-2">
               <Search className="h-4 w-4" />
               <Input
@@ -536,62 +621,133 @@ export const PoolAnalyticsTab: React.FC = () => {
               />
             </div>
             
-            <Separator orientation="vertical" className="h-6" />
-            
-            <div className="flex gap-2">
-              <Button
-                variant={filterStatus === 'active' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilterStatus(filterStatus === 'active' ? null : 'active')}
-              >
-                Active Pools
-              </Button>
-              <Button
-                variant={filterStatus === 'draft_locked' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilterStatus(filterStatus === 'draft_locked' ? null : 'draft_locked')}
-              >
-                Draft Locked
-              </Button>
-              <Button
-                variant={filterStatus === 'completed' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilterStatus(filterStatus === 'completed' ? null : 'completed')}
-              >
-                Completed
-              </Button>
+            {/* Multiselect Filters */}
+            <div className="flex flex-wrap gap-3 items-center">
+              <MultiSelectFilter
+                title="Pool Status"
+                options={[
+                  { value: 'active', label: 'Active' },
+                  { value: 'draft_locked', label: 'Draft Locked' },
+                  { value: 'completed', label: 'Completed' }
+                ]}
+                selectedValues={filters.status}
+                onChange={(values) => setFilters(prev => ({ ...prev, status: values }))}
+                placeholder="Select status..."
+              />
+
+              <MultiSelectFilter
+                title="Pool Type"
+                options={[
+                  { value: 'has_buy_in', label: 'Buy-in Pools' },
+                  { value: 'free', label: 'Free Pools' }
+                ]}
+                selectedValues={filters.type}
+                onChange={(values) => setFilters(prev => ({ ...prev, type: values }))}
+                placeholder="Select type..."
+              />
+
+              <MultiSelectFilter
+                title="Entry Fee Range"
+                options={[
+                  { value: 'under_20', label: 'Under $20' },
+                  { value: '20_50', label: '$20 - $50' },
+                  { value: '50_100', label: '$50 - $100' },
+                  { value: 'over_100', label: 'Over $100' }
+                ]}
+                selectedValues={filters.entryFeeRange}
+                onChange={(values) => setFilters(prev => ({ ...prev, entryFeeRange: values }))}
+                placeholder="Select fee range..."
+              />
+
+              <MultiSelectFilter
+                title="Pool Size"
+                options={[
+                  { value: 'small', label: 'Small (1-5)' },
+                  { value: 'medium', label: 'Medium (6-15)' },
+                  { value: 'large', label: 'Large (16+)' }
+                ]}
+                selectedValues={filters.poolSize}
+                onChange={(values) => setFilters(prev => ({ ...prev, poolSize: values }))}
+                placeholder="Select pool size..."
+              />
+
+              <MultiSelectFilter
+                title="Creation Date"
+                options={[
+                  { value: 'last_week', label: 'Last Week' },
+                  { value: 'last_month', label: 'Last Month' },
+                  { value: 'last_3_months', label: 'Last 3 Months' },
+                  { value: 'older', label: 'Older' }
+                ]}
+                selectedValues={filters.creationDate}
+                onChange={(values) => setFilters(prev => ({ ...prev, creationDate: values }))}
+                placeholder="Select date range..."
+              />
+
+              {/* Clear All Filters */}
+              {(searchTerm || 
+                filters.status.length > 0 || 
+                filters.type.length > 0 || 
+                filters.entryFeeRange.length > 0 || 
+                filters.poolSize.length > 0 || 
+                filters.creationDate.length > 0) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilters({
+                      status: [],
+                      type: [],
+                      entryFeeRange: [],
+                      poolSize: [],
+                      creationDate: []
+                    });
+                  }}
+                >
+                  Clear All Filters
+                </Button>
+              )}
             </div>
 
-            <Separator orientation="vertical" className="h-6" />
-
-            <div className="flex gap-2">
-              <Button
-                variant={filterStatus === 'has_buy_in' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilterStatus(filterStatus === 'has_buy_in' ? null : 'has_buy_in')}
-              >
-                Buy-in Pools
-              </Button>
-              <Button
-                variant={filterStatus === 'free' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilterStatus(filterStatus === 'free' ? null : 'free')}
-              >
-                Free Pools
-              </Button>
-            </div>
-
-            {(searchTerm || filterStatus) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchTerm('');
-                  setFilterStatus(null);
-                }}
-              >
-                Clear Filters
-              </Button>
+            {/* Active Filters Summary */}
+            {(filters.status.length > 0 || 
+              filters.type.length > 0 || 
+              filters.entryFeeRange.length > 0 || 
+              filters.poolSize.length > 0 || 
+              filters.creationDate.length > 0) && (
+              <div className="flex flex-wrap gap-2 pt-2 border-t">
+                <span className="text-sm text-muted-foreground">Active filters:</span>
+                {filters.status.map(status => (
+                  <Badge key={status} variant="secondary" className="text-xs">
+                    {status === 'active' ? 'Active' : status === 'draft_locked' ? 'Draft Locked' : 'Completed'}
+                  </Badge>
+                ))}
+                {filters.type.map(type => (
+                  <Badge key={type} variant="secondary" className="text-xs">
+                    {type === 'has_buy_in' ? 'Buy-in' : 'Free'}
+                  </Badge>
+                ))}
+                {filters.entryFeeRange.map(range => (
+                  <Badge key={range} variant="secondary" className="text-xs">
+                    {range === 'under_20' ? 'Under $20' : 
+                     range === '20_50' ? '$20-$50' : 
+                     range === '50_100' ? '$50-$100' : 'Over $100'}
+                  </Badge>
+                ))}
+                {filters.poolSize.map(size => (
+                  <Badge key={size} variant="secondary" className="text-xs">
+                    {size === 'small' ? 'Small' : size === 'medium' ? 'Medium' : 'Large'}
+                  </Badge>
+                ))}
+                {filters.creationDate.map(date => (
+                  <Badge key={date} variant="secondary" className="text-xs">
+                    {date === 'last_week' ? 'Last Week' : 
+                     date === 'last_month' ? 'Last Month' : 
+                     date === 'last_3_months' ? 'Last 3 Months' : 'Older'}
+                  </Badge>
+                ))}
+              </div>
             )}
           </div>
         </CardContent>

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import PoolsidePicks from "./pages/PoolsidePicks";
@@ -15,28 +15,74 @@ import Chat from "./pages/Chat";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
+const router = createBrowserRouter([
+  {
+    path: "/test",
+    element: <div style={{padding: "20px", background: "lightgreen"}}>Test Route Works! React Router is functioning properly.</div>
+  },
+  {
+    path: "/",
+    element: <PoolsidePicks />
+  },
+  {
+    path: "/landing",
+    element: <Landing />
+  },
+  {
+    path: "/dashboard",
+    element: <Index />
+  },
+  {
+    path: "/admin",
+    element: <Admin />
+  },
+  {
+    path: "/company-admin",
+    element: <CompanyAdmin />
+  },
+  {
+    path: "/hidden-company-admin",
+    element: <HiddenCompanyAdmin />
+  },
+  {
+    path: "/about",
+    element: <About />
+  },
+  {
+    path: "/pool-config",
+    element: <PoolConfig />
+  },
+  {
+    path: "/auth",
+    element: <Auth />
+  },
+  {
+    path: "/draft",
+    element: <Draft />
+  },
+  {
+    path: "/my-teams",
+    element: <MyTeams />
+  },
+  {
+    path: "/chat",
+    element: <Chat />
+  },
+  {
+    path: "/privacy-policy",
+    element: <PrivacyPolicy />
+  },
+  {
+    path: "/invite/:code",
+    element: <Invite />
+  },
+  {
+    path: "*",
+    element: <NotFound />
+  }
+]);
+
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<PoolsidePicks />} />
-        <Route path="/landing" element={<Landing />} />
-        <Route path="/dashboard" element={<Index />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/company-admin" element={<CompanyAdmin />} />
-        <Route path="/hidden-company-admin" element={<HiddenCompanyAdmin />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/pool-config" element={<PoolConfig />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/draft" element={<Draft />} />
-        <Route path="/my-teams" element={<MyTeams />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/invite/:code" element={<Invite />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 

@@ -79,7 +79,7 @@ const MyTeams = () => {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4 text-foreground" style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <h1 className="text-4xl font-bold mb-4 text-gradient-primary">
             My Team(s)
           </h1>
           <p className="text-lg text-muted-foreground">

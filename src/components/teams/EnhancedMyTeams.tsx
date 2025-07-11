@@ -260,9 +260,9 @@ export const EnhancedMyTeams: React.FC<EnhancedMyTeamsProps> = ({ userId }) => {
   return (
     <div 
       ref={containerRef}
-      className="w-full max-w-6xl mx-auto space-y-6 relative"
+      className="w-full max-w-6xl mx-auto space-y-6 relative mobile-scroll-container"
       style={{
-        transform: `translateY(${pullDistance}px)`,
+        transform: isPulling ? `translateY(${Math.min(pullDistance, 80)}px)` : 'translateY(0px)',
         transition: isPulling ? 'none' : 'transform 0.3s ease-out'
       }}
     >

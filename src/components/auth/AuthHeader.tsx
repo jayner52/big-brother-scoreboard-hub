@@ -11,6 +11,11 @@ export const AuthHeader = () => {
           Back to Home
         </Button>
       </Link>
+      <img 
+        src="/lovable-uploads/f309be89-df57-4c2e-8282-470bdac2f499.png" 
+        alt="Poolside Picks Logo" 
+        className="w-16 h-16 mx-auto mb-4"
+      />
       <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent mb-2">
         Join the Pool
       </h1>

@@ -14,6 +14,7 @@ import { PoolSwitcher } from '@/components/pools/PoolSwitcher';
 import { InviteFriendsButton } from '@/components/pools/InviteFriendsButton';
 import { PoolCreateModal } from '@/components/pools/PoolCreateModal';
 import { PoolJoinModal } from '@/components/pools/PoolJoinModal';
+import { PoolSelection } from '@/components/pools/PoolSelection';
 import { usePool } from '@/contexts/PoolContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,7 @@ const Index = memo(() => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [showPoolSelection, setShowPoolSelection] = useState(false);
   
   const { formData } = useDraftForm();
   
@@ -94,16 +96,11 @@ const Index = memo(() => {
     }
   }, [user, authLoading, navigate]);
 
-  // Handle sign-in success flow - wait for pools to load before showing dashboard
+  // Handle sign-in success flow - show pool selection instead of auto-selecting
   useEffect(() => {
     if (user && !authLoading && userPools.length > 0 && !poolsLoading && !activePool) {
-      // Pools loaded but no active pool - trigger auto-selection
-      const savedPoolId = localStorage.getItem('activePoolId');
-      const savedPool = userPools.find(p => p.pool_id === savedPoolId)?.pool || userPools[0]?.pool;
-      if (savedPool && activePool !== savedPool) {
-        // This will trigger the context to set the active pool
-        console.log('Auto-selecting pool after sign-in:', savedPool.name);
-      }
+      // Show pool selection screen instead of auto-selecting
+      setShowPoolSelection(true);
     }
   }, [user, authLoading, userPools, poolsLoading, activePool]);
 
@@ -145,9 +142,18 @@ const Index = memo(() => {
     navigate('/draft');
   };
 
+  const handleSelectPool = (pool: any) => {
+    // Set the selected pool as active and hide pool selection
+    localStorage.setItem('activePoolId', pool.id);
+    setShowPoolSelection(false);
+    // The pool context will handle setting the active pool
+    window.location.reload(); // Simple refresh to trigger pool context update
+  };
+
   const handlePoolSuccess = (isNewPool?: boolean) => {
     setShowCreateModal(false);
     setShowJoinModal(false);
+    setShowPoolSelection(false);
     
     // Only redirect to admin with welcome message for newly created pools
     if (isNewPool) {
@@ -236,7 +242,30 @@ const Index = memo(() => {
     authLoading
   });
 
-  // Show pool selection if user has no pools (but only after pools have finished loading)
+  // Show pool selection screen if user has pools but hasn't selected one
+  if (user && !poolsLoading && userPools.length > 0 && showPoolSelection) {
+    return (
+      <>
+        <PoolSelection
+          onSelectPool={handleSelectPool}
+          onCreatePool={() => setShowCreateModal(true)}
+          onJoinPool={() => setShowJoinModal(true)}
+        />
+        <PoolCreateModal 
+          open={showCreateModal} 
+          onOpenChange={setShowCreateModal}
+          onSuccess={handlePoolSuccess}
+        />
+        <PoolJoinModal 
+          open={showJoinModal} 
+          onOpenChange={setShowJoinModal}
+          onSuccess={handlePoolSuccess}
+        />
+      </>
+    );
+  }
+
+  // Show pool creation if user has no pools (but only after pools have finished loading)
   if (user && !poolsLoading && userPools.length === 0) {
     console.log('🚨 Showing pool creation screen - no pools found');
     return (

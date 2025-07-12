@@ -11,7 +11,7 @@ import { DynamicTeamDraftSection } from '@/components/draft/DynamicTeamDraftSect
 import { BonusQuestionsSection } from '@/components/draft/BonusQuestionsSection';
 import { MultiTeamSwitcher } from '@/components/draft/MultiTeamSwitcher';
 import { useActivePool } from '@/hooks/useActivePool';
-import { usePoolData } from '@/hooks/usePoolData';
+import { useOptimizedPoolData } from '@/hooks/useOptimizedPoolData';
 import { useDynamicDraftForm } from '@/hooks/useDynamicDraftForm';
 import { useDynamicDraftValidation } from '@/hooks/useDynamicDraftValidation';
 import { useDynamicDraftSubmission } from '@/hooks/useDynamicDraftSubmission';
@@ -22,7 +22,7 @@ import { Shuffle, AlertCircle, Trash2, Plus } from 'lucide-react';
 
 export const TeamDraftFormFixed: React.FC = () => {
   const activePool = useActivePool();
-  const { activePool: poolData, contestantGroups, bonusQuestions, loading } = usePoolData({ poolId: activePool?.id });
+  const { activePool: poolData, contestantGroups, bonusQuestions, loading } = useOptimizedPoolData({ poolId: activePool?.id });
   const { toast } = useToast();
   
   // State for multi-team functionality

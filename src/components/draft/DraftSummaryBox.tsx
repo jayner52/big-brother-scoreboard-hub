@@ -2,11 +2,11 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PaymentInfoDisplay } from './PaymentInfoDisplay';
 import { usePool } from '@/contexts/PoolContext';
-import { usePoolData } from '@/hooks/usePoolData';
+import { useOptimizedPoolData } from '@/hooks/useOptimizedPoolData';
 
 export const DraftSummaryBox: React.FC = () => {
   const { activePool } = usePool();
-  const { activePool: poolData } = usePoolData({ poolId: activePool?.id });
+  const { activePool: poolData } = useOptimizedPoolData({ poolId: activePool?.id });
 
   if (!poolData) return null;
 

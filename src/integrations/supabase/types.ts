@@ -94,6 +94,7 @@ export type Database = {
       }
       chat_messages: {
         Row: {
+          chat_type: string
           created_at: string | null
           id: string
           is_deleted: boolean | null
@@ -102,10 +103,12 @@ export type Database = {
           message: string
           parent_message_id: string | null
           pool_id: string
+          recipient_user_id: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          chat_type?: string
           created_at?: string | null
           id?: string
           is_deleted?: boolean | null
@@ -114,10 +117,12 @@ export type Database = {
           message: string
           parent_message_id?: string | null
           pool_id: string
+          recipient_user_id?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          chat_type?: string
           created_at?: string | null
           id?: string
           is_deleted?: boolean | null
@@ -126,6 +131,7 @@ export type Database = {
           message?: string
           parent_message_id?: string | null
           pool_id?: string
+          recipient_user_id?: string | null
           updated_at?: string | null
           user_id?: string
         }

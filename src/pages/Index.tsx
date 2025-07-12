@@ -228,8 +228,17 @@ const Index = memo(() => {
     );
   }
 
+  console.log('📊 Index.tsx render state:', {
+    user: user?.email || null,
+    poolsLoading,
+    userPoolsLength: userPools.length,
+    activePool: activePool?.name || null,
+    authLoading
+  });
+
   // Show pool selection if user has no pools (but only after pools have finished loading)
   if (user && !poolsLoading && userPools.length === 0) {
+    console.log('🚨 Showing pool creation screen - no pools found');
     return (
       <div className="min-h-screen" style={{ background: 'var(--gradient-unified)' }}>
         <div className="container mx-auto px-4 py-16">

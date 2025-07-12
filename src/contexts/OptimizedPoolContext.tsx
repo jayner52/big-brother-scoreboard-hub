@@ -575,13 +575,22 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Auto-select active pool logic with improved sign-in handling
   useEffect(() => {
+    console.log('🔄 Pool Selection Effect:', {
+      userPoolsLength: userPools.length,
+      userPoolsLoading,
+      activePool: activePool?.name || null,
+      loading
+    });
+
     if (userPools.length > 0 && !userPoolsLoading) {
+      console.log('✅ User has pools, selecting active pool');
       const savedPoolId = localStorage.getItem('activePoolId');
       
       // Try to restore saved pool first
       if (savedPoolId) {
         const savedPool = userPools.find(p => p.pool_id === savedPoolId)?.pool;
         if (savedPool && !activePool) {
+          console.log('🎯 Restoring saved pool:', savedPool.name);
           setActivePool(savedPool);
           setLoading(false);
           return;
@@ -590,11 +599,14 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // If no saved pool or saved pool not found, auto-select first available pool
       if (!activePool && userPools[0]?.pool) {
+        console.log('🎯 Auto-selecting first pool:', userPools[0].pool.name);
         setActivePool(userPools[0].pool);
       }
       
+      console.log('✅ Pool context loading complete');
       setLoading(false);
     } else if (userPools.length === 0 && !userPoolsLoading) {
+      console.log('❌ No pools available - clearing active pool');
       // No pools available - clear active pool and stop loading
       setActivePoolState(null);
       setLoading(false);
@@ -604,11 +616,15 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
   // Enhanced auth state handling with immediate pool loading
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth state change:', event, session?.user?.email || 'no session');
+      
       if (event === 'SIGNED_IN') {
+        console.log('🚀 User signed in - loading pools immediately');
         // User just signed in - immediately load pools without cache
         setLoading(true);
         await loadUserPoolsOptimized(false);
       } else if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out - clearing all data');
         // User signed out - clear everything
         setUserPools([]);
         setPoolEntries([]);
@@ -622,6 +638,7 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     });
 
+    console.log('🔄 Initial pool context setup');
     // Initial load
     loadUserPoolsOptimized();
 

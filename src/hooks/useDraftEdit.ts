@@ -27,18 +27,24 @@ export const useDraftEdit = () => {
   const getEditFormData = (): Partial<DraftFormData> | null => {
     if (!editEntryData) return null;
     
-    return {
+    // Dynamic player data extraction for all possible player slots (1-12)
+    const formData: any = {
       participant_name: editEntryData.participant_name,
       team_name: editEntryData.team_name,
       email: editEntryData.email,
-      player_1: editEntryData.player_1,
-      player_2: editEntryData.player_2,
-      player_3: editEntryData.player_3,
-      player_4: editEntryData.player_4,
-      player_5: editEntryData.player_5,
       bonus_answers: editEntryData.bonus_answers || {},
       payment_confirmed: editEntryData.payment_confirmed,
     };
+
+    // Add all player fields that exist in the entry data
+    for (let i = 1; i <= 12; i++) {
+      const playerKey = `player_${i}`;
+      if (editEntryData[playerKey]) {
+        formData[playerKey] = editEntryData[playerKey];
+      }
+    }
+    
+    return formData;
   };
 
   const clearEditData = () => {

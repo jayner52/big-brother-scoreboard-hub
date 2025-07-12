@@ -59,7 +59,8 @@ export const TeamDraftFormFixed: React.FC = () => {
         .from('pool_entries')
         .select('*')
         .eq('pool_id', activePool.id)
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .is('deleted_at', null);
 
       if (error) throw error;
       
@@ -82,7 +83,7 @@ export const TeamDraftFormFixed: React.FC = () => {
     setEditingTeamId(team.id);
     setIsEditingExisting(true);
     
-    // Load team data into form
+    // Load team data into form with dynamic player field support
     const teamFormData = {
       participant_name: team.participant_name,
       team_name: team.team_name,
@@ -91,9 +92,19 @@ export const TeamDraftFormFixed: React.FC = () => {
       bonus_answers: team.bonus_answers || {},
     };
     
-    // Load player selections
-    for (let i = 1; i <= picksPerTeam; i++) {
-      teamFormData[`player_${i}`] = team[`player_${i}`] || '';
+    // Load all player selections (1-12) based on current pool settings and existing data
+    for (let i = 1; i <= 12; i++) {
+      const playerKey = `player_${i}`;
+      if (i <= picksPerTeam) {
+        // Active player slots - load existing data or empty
+        teamFormData[playerKey] = team[playerKey] || '';
+      } else if (team[playerKey]) {
+        // Inactive slots with existing data - preserve but don't show in form
+        teamFormData[playerKey] = team[playerKey];
+      } else {
+        // Empty inactive slots
+        teamFormData[playerKey] = '';
+      }
     }
     
     updateFormData(teamFormData);

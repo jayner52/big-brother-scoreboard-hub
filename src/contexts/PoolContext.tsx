@@ -126,6 +126,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('pool_entries')
           .select('*')
           .in('pool_id', poolIds)
+          .is('deleted_at', null)
           .order('total_points', { ascending: false });
 
         if (!entriesError && entriesData) {
@@ -146,6 +147,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('pool_entries')
         .select('*')
         .eq('pool_id', poolId)
+        .is('deleted_at', null)
         .order('total_points', { ascending: false });
 
       if (error) throw error;
@@ -164,6 +166,7 @@ export const PoolProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('pool_entries')
         .select('*')
         .in('pool_id', poolIds)
+        .is('deleted_at', null)
         .order('total_points', { ascending: false });
 
       if (error) throw error;

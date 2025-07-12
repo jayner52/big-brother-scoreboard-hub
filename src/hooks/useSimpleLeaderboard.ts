@@ -58,6 +58,7 @@ export const useSimpleLeaderboard = () => {
         .from('pool_entries')
         .select('*')
         .eq('pool_id', activePool.id)
+        .is('deleted_at', null)
         .order('total_points', { ascending: false })
         .order('weekly_points', { ascending: false })
         .order('bonus_points', { ascending: false })

@@ -36,7 +36,7 @@ export const EveryonesPicks: React.FC = () => {
       console.log('EveryonesPicks: Loading data for pool', activePool.id);
       
       const [entriesResult, questionsResult, contestantsResult] = await Promise.all([
-        supabase.from('pool_entries').select('*').eq('pool_id', activePool.id).order('participant_name'),
+        supabase.from('pool_entries').select('*').eq('pool_id', activePool.id).is('deleted_at', null).order('participant_name'),
         supabase.from('bonus_questions').select('*').eq('pool_id', activePool.id).eq('is_active', true).order('sort_order'),
         supabase.from('contestants').select('name, is_active').eq('pool_id', activePool.id)
       ]);
@@ -126,8 +126,11 @@ export const EveryonesPicks: React.FC = () => {
                     </Badge>
                   </div>
                   
-                   {/* Players - horizontal layout with even spacing */}
-                   <div className="flex-1 grid grid-cols-5 gap-3">
+                   {/* Players - responsive layout for different team sizes */}
+                   <div className={`flex-1 grid gap-3 ${
+                     (activePool?.picks_per_team || 5) <= 5 ? 'grid-cols-5' :
+                     (activePool?.picks_per_team || 5) <= 8 ? 'grid-cols-4' : 'grid-cols-3'
+                   }`}>
                        {Array.from({ length: activePool?.picks_per_team || 5 }, (_, i) => {
                          const playerKey = `player_${i + 1}` as keyof typeof entry;
                          return entry[playerKey];

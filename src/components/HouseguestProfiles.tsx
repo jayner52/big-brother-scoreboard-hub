@@ -50,7 +50,8 @@ export const HouseguestProfiles: React.FC<UserTeamsProps> = ({ userId }) => {
       let query = supabase
         .from('pool_entries')
         .select('*')
-        .eq('pool_id', activePool.id); // Filter by active pool
+        .eq('pool_id', activePool.id) // Filter by active pool
+        .is('deleted_at', null); // Exclude soft-deleted teams
       
       if (userId) {
         query = query.eq('user_id', userId);

@@ -81,6 +81,11 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
   const [error, setError] = useState<string | null>(null);
   const [cachedData, setCachedData] = useState<CachedData | null>(null);
   const [subscriptionChannel, setSubscriptionChannel] = useState<any>(null);
+  
+  // Anti-infinite loop protection
+  const [isLoadingPools, setIsLoadingPools] = useState(false);
+  const [authStateChangeCount, setAuthStateChangeCount] = useState(0);
+  const [lastAuthStateChange, setLastAuthStateChange] = useState(0);
 
   // Memoized permission checks
   const getUserRole = useCallback((poolId: string) => {
@@ -123,81 +128,116 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
     return Date.now() - cache.timestamp < CACHE_DURATION;
   }, []);
 
-  // Optimized single query for user pools and entries
+  // Simplified pool loading to avoid RLS issues and infinite loops
   const loadUserPoolsOptimized = useCallback(async (useCache = true) => {
+    // Prevent concurrent loading calls
+    if (isLoadingPools) {
+      console.log('⚠️ Pool loading already in progress, skipping...');
+      return;
+    }
+
     try {
+      setIsLoadingPools(true);
       setError(null);
       setUserPoolsLoading(true);
+      console.log('🔄 Loading user pools...');
 
       // Check cache first
       if (useCache && cachedData && isCacheValid(cachedData)) {
+        console.log('📋 Using cached data');
         setUserPools(cachedData.userPools);
         setPoolEntries(cachedData.poolEntries);
         setUserPoolsLoading(false);
+        setIsLoadingPools(false);
         return;
       }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.log('❌ No user found');
         setUserPools([]);
         setPoolEntries([]);
         setUserPoolsLoading(false);
+        setIsLoadingPools(false);
         return;
       }
 
-      // Loading timeout
-      const timeoutId = setTimeout(() => {
-        setError('Loading is taking longer than expected. Please check your connection.');
-      }, LOADING_TIMEOUT);
-
-      // Single optimized query - get memberships with pools and entries in one call
+      // Simplified query - separate queries to avoid RLS complexity
+      console.log('📡 Fetching pool memberships...');
+      
+      // First get memberships
       const { data: memberships, error: membershipError } = await supabase
         .from('pool_memberships')
-        .select(`
-          *,
-          pool:pools(*),
-          pool_entries:pool_entries(*)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .eq('active', true);
 
-      clearTimeout(timeoutId);
+      if (membershipError) {
+        console.error('❌ Membership error:', membershipError);
+        throw membershipError;
+      }
 
-      if (membershipError) throw membershipError;
+      if (!memberships || memberships.length === 0) {
+        console.log('❌ No pool memberships found');
+        setUserPools([]);
+        setPoolEntries([]);
+        setUserPoolsLoading(false);
+        setIsLoadingPools(false);
+        return;
+      }
 
-      const poolMemberships = (memberships || []) as any[];
-      
-      // Extract and deduplicate entries from all pools
-      const allEntries: PoolEntry[] = [];
-      poolMemberships.forEach(membership => {
-        if (membership.pool_entries) {
-          membership.pool_entries.forEach((entry: any) => {
-            if (!entry.deleted_at && !allEntries.find(e => e.id === entry.id)) {
-              allEntries.push(entry);
-            }
-          });
-        }
-      });
+      console.log(`📊 Found ${memberships.length} pool memberships`);
 
-      // Sort entries by total points
-      allEntries.sort((a, b) => b.total_points - a.total_points);
+      // Then get pools for those memberships
+      const poolIds = memberships.map(m => m.pool_id);
+      const { data: pools, error: poolsError } = await supabase
+        .from('pools')
+        .select('*')
+        .in('id', poolIds);
 
-      const mappedMemberships = poolMemberships.map(m => ({
-        ...m,
-        pool_entries: undefined // Remove to avoid duplication
+      if (poolsError) {
+        console.error('❌ Pools error:', poolsError);
+        throw poolsError;
+      }
+
+      console.log(`📊 Found ${pools?.length || 0} pools`);
+
+      // Map pools to memberships with proper typing
+      const poolMemberships: PoolMembership[] = memberships.map(membership => ({
+        ...membership,
+        role: membership.role as 'owner' | 'admin' | 'member',
+        pool: pools?.find(p => p.id === membership.pool_id)
       }));
+
+      // Get pool entries separately (simplified query)
+      const { data: entries, error: entriesError } = await supabase
+        .from('pool_entries')
+        .select('*')
+        .in('pool_id', poolIds)
+        .is('deleted_at', null)
+        .order('total_points', { ascending: false });
+
+      if (entriesError) {
+        console.error('❌ Entries error:', entriesError);
+        // Don't fail for entries - continue without them
+      }
+
+      const allEntries = entries || [];
+      console.log(`📊 Found ${allEntries.length} pool entries`);
 
       // Cache the results
       const newCachedData: CachedData = {
-        userPools: mappedMemberships,
+        userPools: poolMemberships,
         poolEntries: allEntries,
         timestamp: Date.now(),
         activePoolId: activePool?.id
       };
       setCachedData(newCachedData);
 
-      setUserPools(mappedMemberships);
+      setUserPools(poolMemberships);
       setPoolEntries(allEntries);
+      
+      console.log('✅ Successfully loaded user pools and entries');
       
     } catch (error: any) {
       console.error('Error loading user pools:', error);
@@ -206,8 +246,9 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
       setPoolEntries([]);
     } finally {
       setUserPoolsLoading(false);
+      setIsLoadingPools(false);
     }
-  }, [cachedData, isCacheValid, activePool?.id]);
+  }, [cachedData, isCacheValid, activePool?.id, isLoadingPools]);
 
   // Optimized pool-specific subscription
   const setupPoolSubscription = useCallback((poolId: string) => {
@@ -613,16 +654,31 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [userPools, userPoolsLoading, activePool, setActivePool]);
 
-  // Enhanced auth state handling with immediate pool loading
+  // Enhanced auth state handling with anti-infinite loop protection
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const now = Date.now();
       console.log('🔐 Auth state change:', event, session?.user?.email || 'no session');
+      
+      // Anti-infinite loop protection
+      if (now - lastAuthStateChange < 1000) { // Less than 1 second since last change
+        setAuthStateChangeCount(prev => prev + 1);
+        if (authStateChangeCount > 5) {
+          console.error('🚨 Too many auth state changes detected, preventing infinite loop');
+          return;
+        }
+      } else {
+        setAuthStateChangeCount(0); // Reset counter after 1 second gap
+      }
+      setLastAuthStateChange(now);
       
       if (event === 'SIGNED_IN') {
         console.log('🚀 User signed in - loading pools immediately');
-        // User just signed in - immediately load pools without cache
+        // User just signed in - use setTimeout to break potential loop
         setLoading(true);
-        await loadUserPoolsOptimized(false);
+        setTimeout(() => {
+          loadUserPoolsOptimized(false);
+        }, 100);
       } else if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out - clearing all data');
         // User signed out - clear everything
@@ -631,6 +687,7 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
         setActivePoolState(null);
         localStorage.removeItem('activePoolId');
         setLoading(false);
+        setIsLoadingPools(false);
         if (subscriptionChannel) {
           supabase.removeChannel(subscriptionChannel);
           setSubscriptionChannel(null);
@@ -639,11 +696,13 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     console.log('🔄 Initial pool context setup');
-    // Initial load
-    loadUserPoolsOptimized();
+    // Initial load with small delay to avoid race conditions
+    setTimeout(() => {
+      loadUserPoolsOptimized();
+    }, 50);
 
     return () => subscription.unsubscribe();
-  }, [loadUserPoolsOptimized]);
+  }, [loadUserPoolsOptimized, lastAuthStateChange, authStateChangeCount]);
 
   // Cleanup subscription on unmount
   useEffect(() => {

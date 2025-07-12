@@ -310,3 +310,5 @@ export const ContestantBios: React.FC = () => {
     </div>
   );
 };
+
+export default ContestantBios;

@@ -45,3 +45,5 @@ export const ContestantValues: React.FC = () => {
     </ErrorBoundary>
   );
 };
+
+export default ContestantValues;

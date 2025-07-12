@@ -1,11 +1,5 @@
-import React, { memo } from 'react';
-import { TeamDraftForm } from '@/components/TeamDraftForm';
-import { EnhancedTeamLeaderboard } from '@/components/enhanced/EnhancedTeamLeaderboard';
-import { EveryonesPicksMatrix } from '@/components/enhanced/EveryonesPicksMatrix';
-import { LiveResults } from '@/components/LiveResults';
-import { ContestantValues } from '@/components/ContestantValues';
-import { ContestantBios } from '@/components/ContestantBios';
-import { TeamSummaryBanner } from '@/components/draft/TeamSummaryBanner';
+import React, { memo, Suspense } from 'react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { WinnerBanner } from '@/components/WinnerBanner';
 import { EnhancedTabSystem, TabConfig } from '@/components/dashboard/EnhancedTabSystem';
 import { WinnerNotificationsBanner } from '@/components/dashboard/WinnerNotificationsBanner';
@@ -14,6 +8,14 @@ import { usePool } from '@/contexts/PoolContext';
 import { useDraftAccess } from '@/hooks/useDraftAccess';
 import { useDashboardTabPersistence } from '@/hooks/useDashboardTabPersistence';
 import { Users, Trophy, Eye, BarChart2, User, ClipboardList } from 'lucide-react';
+
+// Lazy load heavy components for better performance
+const TeamDraftForm = React.lazy(() => import('@/components/TeamDraftForm'));
+const EnhancedTeamLeaderboard = React.lazy(() => import('@/components/enhanced/EnhancedTeamLeaderboard').then(m => ({ default: m.EnhancedTeamLeaderboard })));
+const EveryonesPicksMatrix = React.lazy(() => import('@/components/enhanced/EveryonesPicksMatrix').then(m => ({ default: m.EveryonesPicksMatrix })));
+const LiveResults = React.lazy(() => import('@/components/LiveResults'));
+const ContestantValues = React.lazy(() => import('@/components/ContestantValues'));
+const ContestantBios = React.lazy(() => import('@/components/ContestantBios'));
 
 interface MainContentProps {
   formData: DraftFormData;
@@ -39,15 +41,22 @@ export const MainContent: React.FC<MainContentProps> = memo(({ formData, picksPe
       shortLabel: 'Draft',
       icon: Users,
       component: (
-        <div>
-          {/* Team Summary Banner - Show when user has draft progress */}
-          {hasAnyPlayers && (
-            <div className="mb-6 relative z-10">
-              <TeamSummaryBanner formData={formData} picksPerTeam={picksPerTeam} />
-            </div>
-          )}
-          <TeamDraftForm />
-        </div>
+        <Suspense fallback={<LoadingSpinner text="Loading draft form..." />}>
+          <div>
+            {/* Team Summary Banner - Lazy load this too */}
+            {hasAnyPlayers && (
+              <Suspense fallback={<div className="h-20 animate-pulse bg-muted rounded-lg mb-6" />}>
+                {React.createElement(
+                  React.lazy(() => import('@/components/draft/TeamSummaryBanner').then(m => ({ 
+                    default: m.TeamSummaryBanner
+                  }))), 
+                  { formData, picksPerTeam }
+                )}
+              </Suspense>
+            )}
+            <TeamDraftForm />
+          </div>
+        </Suspense>
       ),
       locked: !isDraftAccessible
     },
@@ -56,7 +65,11 @@ export const MainContent: React.FC<MainContentProps> = memo(({ formData, picksPe
       label: 'Leaderboard',
       shortLabel: 'Ranks',
       icon: Trophy,
-      component: <EnhancedTeamLeaderboard />,
+      component: (
+        <Suspense fallback={<LoadingSpinner text="Loading leaderboard..." />}>
+          <EnhancedTeamLeaderboard />
+        </Suspense>
+      ),
       locked: shouldLockPicks,
       lockTooltip: shouldLockPicks ? "Teams are hidden until drafting is finished. They will be revealed when the draft period ends." : undefined
     },
@@ -65,7 +78,11 @@ export const MainContent: React.FC<MainContentProps> = memo(({ formData, picksPe
       label: "Everyone's Picks",
       shortLabel: 'Picks',
       icon: Eye,
-      component: <EveryonesPicksMatrix />,
+      component: (
+        <Suspense fallback={<LoadingSpinner text="Loading team picks..." />}>
+          <EveryonesPicksMatrix />
+        </Suspense>
+      ),
       locked: shouldLockPicks,
       lockTooltip: shouldLockPicks ? "Teams are hidden until drafting is finished. They will be revealed when the draft period ends." : undefined
     },
@@ -74,21 +91,33 @@ export const MainContent: React.FC<MainContentProps> = memo(({ formData, picksPe
       label: 'Live Results',
       shortLabel: 'Results',
       icon: BarChart2,
-      component: <LiveResults />
+      component: (
+        <Suspense fallback={<LoadingSpinner text="Loading live results..." />}>
+          <LiveResults />
+        </Suspense>
+      )
     },
     {
       id: 'contestants',
       label: 'Houseguest Values',
       shortLabel: 'Houseguests',
       icon: User,
-      component: <ContestantValues />
+      component: (
+        <Suspense fallback={<LoadingSpinner text="Loading houseguest data..." />}>
+          <ContestantValues />
+        </Suspense>
+      )
     },
     {
       id: 'bios',
       label: 'Houseguest Bios',
       shortLabel: 'Bios',
       icon: ClipboardList,
-      component: <ContestantBios />
+      component: (
+        <Suspense fallback={<LoadingSpinner text="Loading houseguest bios..." />}>
+          <ContestantBios />
+        </Suspense>
+      )
     }
   ];
 

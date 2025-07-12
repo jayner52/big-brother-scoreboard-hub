@@ -560,3 +560,5 @@ export const LiveResults: React.FC = () => {
     </div>
   );
 };
+
+export default LiveResults;

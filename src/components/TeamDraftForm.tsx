@@ -235,3 +235,5 @@ export const TeamDraftForm: React.FC = () => {
     </Card>
   );
 };
+
+export default TeamDraftForm;

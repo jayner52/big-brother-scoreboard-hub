@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ContestantStats } from '@/types/contestant-stats';
 import { useActiveContestants } from './useActiveContestants';
 import { useContestantData } from './useContestantData';
 import { calculateContestantStats } from '@/utils/contestantStatsCalculator';
 import { createBlockSurvivalBonuses } from '@/utils/blockSurvivalUtils';
 import { usePool } from '@/contexts/PoolContext';
+import { useStableDependencies } from './useOptimizedDependencies';
 
 export const useContestantStats = () => {
   const [contestantStats, setContestantStats] = useState<ContestantStats[]>([]);
@@ -21,12 +22,29 @@ export const useContestantStats = () => {
     refetchData
   } = useContestantData(activePool?.id);
 
+  // Optimize dependencies with stable references
+  const stableDeps = useStableDependencies({
+    poolId: activePool?.id,
+    contestantsLength: contestants.length,
+    weeklyEventsLength: weeklyEvents.length,
+    loading
+  });
+
+  // Memoize expensive calculations
+  const shouldProcessStats = useMemo(() => 
+    !stableDeps.loading && 
+    stableDeps.contestantsLength > 0 && 
+    stableDeps.poolId && 
+    !isProcessing,
+    [stableDeps, isProcessing]
+  );
+
   useEffect(() => {
-    console.log('🔍 ContestantStats Effect - Loading:', loading, 'Contestants:', contestants.length, 'Pool:', activePool?.id, 'Processing:', isProcessing);
-    if (!loading && contestants.length > 0 && activePool?.id && !isProcessing) {
+    console.log('🔍 ContestantStats Effect - Should Process:', shouldProcessStats, 'Pool:', activePool?.id);
+    if (shouldProcessStats) {
       processContestantStats();
     }
-  }, [loading, contestants, weeklyEvents, activePool?.id]); // Removed specialEvents and isProcessing to prevent infinite loop
+  }, [shouldProcessStats]); // Simplified dependency array
 
   const processContestantStats = async () => {
     if (!activePool?.id || isProcessing) {

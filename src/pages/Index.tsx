@@ -35,6 +35,7 @@ const Index = memo(() => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [showPoolSelection, setShowPoolSelection] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
   
   const { formData } = useDraftForm();
   
@@ -43,6 +44,9 @@ const Index = memo(() => {
   let userPools: any[] = [];
   let poolsLoading = true;
   let poolEntries: any[] = [];
+  let clearActivePool = () => {};
+  let forceShowPoolSelection = false;
+  let setForceShowPoolSelection = (force: boolean) => {};
   
   try {
     const poolContext = usePool();
@@ -50,6 +54,9 @@ const Index = memo(() => {
     userPools = poolContext.userPools;
     poolsLoading = poolContext.loading;
     poolEntries = poolContext.poolEntries;
+    clearActivePool = poolContext.clearActivePool;
+    forceShowPoolSelection = poolContext.forceShowPoolSelection;
+    setForceShowPoolSelection = poolContext.setForceShowPoolSelection;
   } catch (error) {
     console.error('Error accessing pool context:', error);
     setHasError(true);
@@ -96,16 +103,40 @@ const Index = memo(() => {
     }
   }, [user, authLoading, navigate]);
 
-  // Handle sign-in success flow - show pool selection when no active pool
+  // Enhanced pool selection logic with debugging
   useEffect(() => {
-    if (user && !authLoading && userPools.length > 0 && !poolsLoading && !activePool) {
-      // Show pool selection screen when user has pools but no active pool
+    const timestamp = new Date().toISOString();
+    const savedPoolId = localStorage.getItem('activePoolId');
+    
+    console.log('🔄 DEBUG Index.tsx Pool Selection Logic:', {
+      timestamp,
+      user: user?.email || null,
+      authLoading,
+      userPoolsLength: userPools.length,
+      poolsLoading,
+      activePool: activePool?.name || null,
+      showPoolSelection,
+      forceShowPoolSelection,
+      savedPoolId,
+      location: window.location.href
+    });
+
+    // Force show pool selection overrides everything
+    if (forceShowPoolSelection) {
+      console.log('🚨 DEBUG: Force show pool selection enabled');
       setShowPoolSelection(true);
-    } else if (activePool) {
-      // Hide pool selection if an active pool is set
+      return;
+    }
+
+    // Show pool selection when user is authenticated, has pools, and no active pool
+    if (user && !authLoading && userPools.length > 0 && !poolsLoading && !activePool) {
+      console.log('✅ DEBUG: Conditions met for showing pool selection');
+      setShowPoolSelection(true);
+    } else if (activePool && !forceShowPoolSelection) {
+      console.log('❌ DEBUG: Active pool exists, hiding pool selection');
       setShowPoolSelection(false);
     }
-  }, [user, authLoading, userPools, poolsLoading, activePool]);
+  }, [user, authLoading, userPools, poolsLoading, activePool, forceShowPoolSelection]);
 
   const loadUserEntry = async (userId: string) => {
     try {
@@ -146,11 +177,27 @@ const Index = memo(() => {
   };
 
   const handleSelectPool = (pool: any) => {
-    // Set the selected pool as active and hide pool selection
+    console.log('🎯 DEBUG: handleSelectPool called with:', pool.name);
+    
+    // Set the pool via localStorage and let the context pick it up
+    // This is mobile-friendly and doesn't require page reload
     localStorage.setItem('activePoolId', pool.id);
     setShowPoolSelection(false);
-    // The pool context will handle setting the active pool
-    window.location.reload(); // Simple refresh to trigger pool context update
+    setForceShowPoolSelection(false);
+    
+    // Force a context refresh by clearing and setting the pool
+    setTimeout(() => {
+      // The context will automatically pick up the localStorage change
+      window.dispatchEvent(new Event('storage'));
+    }, 100);
+    
+    console.log('✅ DEBUG: Successfully set active pool via localStorage');
+  };
+
+  const handleForceShowPools = () => {
+    console.log('🚨 DEBUG: Force showing pool selection');
+    clearActivePool();
+    setForceShowPoolSelection(true);
   };
 
   const handlePoolSuccess = (isNewPool?: boolean) => {
@@ -379,6 +426,18 @@ const Index = memo(() => {
                         <span className="hidden sm:inline">Admin</span>
                       </Button>
                     )}
+                    
+                    {/* Debug button for pool selection */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleForceShowPools}
+                      className="border-yellow-500/30 text-yellow-600 hover:bg-yellow-500 hover:text-white transition-all duration-200 text-xs sm:text-sm"
+                      title="Show All My Pools (Debug)"
+                    >
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Show All Pools</span>
+                    </Button>
                   </div>
                 )}
               </div>

@@ -42,6 +42,9 @@ interface CachedData {
 interface PoolContextType {
   activePool: Pool | null;
   setActivePool: (pool: Pool | null) => void;
+  clearActivePool: () => void;
+  forceShowPoolSelection: boolean;
+  setForceShowPoolSelection: (force: boolean) => void;
   refreshPool: () => void;
   loading: boolean;
   userPools: PoolMembership[];
@@ -86,6 +89,10 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoadingPools, setIsLoadingPools] = useState(false);
   const [authStateChangeCount, setAuthStateChangeCount] = useState(0);
   const [lastAuthStateChange, setLastAuthStateChange] = useState(0);
+  
+  // Pool selection debugging and control
+  const [forceShowPoolSelection, setForceShowPoolSelection] = useState(false);
+  const [userHasChosenPoolThisSession, setUserHasChosenPoolThisSession] = useState(false);
 
   // Memoized permission checks
   const getUserRole = useCallback((poolId: string) => {
@@ -301,7 +308,10 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const setActivePool = useCallback((pool: Pool | null) => {
+    console.log('🎯 DEBUG: setActivePool called with:', pool?.name || 'null', new Date().toISOString());
     setActivePoolState(pool);
+    setUserHasChosenPoolThisSession(true);
+    
     if (pool) {
       localStorage.setItem('activePoolId', pool.id);
       setupPoolSubscription(pool.id);
@@ -314,6 +324,17 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     }
   }, [setupPoolSubscription, loadPoolEntriesOptimized, subscriptionChannel]);
+
+  const clearActivePool = useCallback(() => {
+    console.log('🧹 DEBUG: clearActivePool called', new Date().toISOString());
+    setActivePoolState(null);
+    setUserHasChosenPoolThisSession(false);
+    localStorage.removeItem('activePoolId');
+    if (subscriptionChannel) {
+      supabase.removeChannel(subscriptionChannel);
+      setSubscriptionChannel(null);
+    }
+  }, [subscriptionChannel]);
 
   const refreshPool = useCallback(async () => {
     if (!activePool) return;
@@ -342,6 +363,9 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
   const contextValue = useMemo(() => ({
     activePool,
     setActivePool,
+    clearActivePool,
+    forceShowPoolSelection,
+    setForceShowPoolSelection,
     refreshPool,
     loading,
     userPools,
@@ -609,45 +633,66 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
     retryLoading
   }), [
     activePool, loading, userPools, userPoolsLoading, poolEntries, error,
-    setActivePool, refreshPool, getUserRole, canManagePool, isPoolOwner,
+    setActivePool, clearActivePool, forceShowPoolSelection, refreshPool, getUserRole, canManagePool, isPoolOwner,
     canViewFinancials, canManageRoles, canManageWeeklyEvents, canManageBonusQuestions,
     loadUserPoolsOptimized, retryLoading
   ]);
 
   // Auto-select active pool logic - only restore saved pools, don't auto-select
   useEffect(() => {
-    console.log('🔄 Pool Selection Effect:', {
+    const timestamp = new Date().toISOString();
+    const savedPoolId = localStorage.getItem('activePoolId');
+    
+    console.log('🔄 DEBUG Pool Selection Effect:', {
+      timestamp,
       userPoolsLength: userPools.length,
       userPoolsLoading,
       activePool: activePool?.name || null,
-      loading
+      loading,
+      forceShowPoolSelection,
+      userHasChosenPoolThisSession,
+      savedPoolId,
+      availablePoolNames: userPools.map(p => p.pool?.name).join(', ')
     });
 
+    // If force show is enabled, clear active pool and return
+    if (forceShowPoolSelection) {
+      console.log('🚨 DEBUG: Force show pool selection is enabled - clearing active pool');
+      if (activePool) {
+        setActivePoolState(null);
+        setUserHasChosenPoolThisSession(false);
+      }
+      setLoading(false);
+      return;
+    }
+
     if (userPools.length > 0 && !userPoolsLoading) {
-      console.log('✅ User has pools, checking for saved pool');
-      const savedPoolId = localStorage.getItem('activePoolId');
+      console.log('✅ DEBUG: User has pools, checking conditions...');
       
-      // Only restore a previously saved pool - don't auto-select
-      if (savedPoolId) {
+      // Only restore a previously saved pool if user hasn't chosen one this session
+      if (savedPoolId && !userHasChosenPoolThisSession) {
         const savedPool = userPools.find(p => p.pool_id === savedPoolId)?.pool;
         if (savedPool && !activePool) {
-          console.log('🎯 Restoring saved pool:', savedPool.name);
-          setActivePool(savedPool);
+          console.log('🎯 DEBUG: Restoring saved pool from localStorage:', savedPool.name);
+          setActivePoolState(savedPool); // Use direct state setter to avoid triggering session flag
           setLoading(false);
           return;
+        } else if (savedPoolId && !savedPool) {
+          console.log('⚠️ DEBUG: Saved pool ID not found in user pools, clearing localStorage');
+          localStorage.removeItem('activePoolId');
         }
       }
       
-      // If no saved pool, leave activePool as null to show pool selection screen
-      console.log('🎯 No saved pool - leaving activePool null for pool selection');
+      // If no saved pool or user needs to choose, leave activePool as null to show pool selection screen
+      console.log('🎯 DEBUG: No saved pool to restore - leaving activePool null for pool selection');
       setLoading(false);
     } else if (userPools.length === 0 && !userPoolsLoading) {
-      console.log('❌ No pools available - clearing active pool');
+      console.log('❌ DEBUG: No pools available - clearing active pool');
       // No pools available - clear active pool and stop loading
       setActivePoolState(null);
       setLoading(false);
     }
-  }, [userPools, userPoolsLoading, activePool, setActivePool]);
+  }, [userPools, userPoolsLoading, activePool, forceShowPoolSelection, userHasChosenPoolThisSession]);
 
   // Enhanced auth state handling with anti-infinite loop protection
   useEffect(() => {

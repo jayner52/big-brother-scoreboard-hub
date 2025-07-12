@@ -42,37 +42,37 @@ export const PoolSelection: React.FC<PoolSelectionProps> = ({
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--gradient-unified)' }}>
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Choose Your Pool</h1>
-          <p className="text-muted-foreground">Select a pool to view your dashboard and compete with friends!</p>
+      <div className="container mx-auto px-4 py-8 sm:py-16">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Choose Your Pool</h1>
+          <p className="text-sm sm:text-base text-muted-foreground px-2">Select a pool to view your dashboard and compete with friends!</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {userPools.map((userPool) => {
             const pool = userPool.pool;
             
             return (
-              <Card key={pool.id} className="hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
+              <Card key={pool.id} className="hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20 touch-manipulation">
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-1">{pool.name}</CardTitle>
+                      <CardTitle className="text-base sm:text-lg mb-1">{pool.name}</CardTitle>
                       {pool.description && (
-                        <CardDescription className="text-sm">{pool.description}</CardDescription>
+                        <CardDescription className="text-xs sm:text-sm">{pool.description}</CardDescription>
                       )}
                     </div>
-                    <Badge className={`ml-2 flex items-center gap-1 ${getRoleColor(userPool.role)}`}>
+                    <Badge className={`self-start flex items-center gap-1 text-xs ${getRoleColor(userPool.role)}`}>
                       {getRoleIcon(userPool.role)}
                       <span className="capitalize">{userPool.role}</span>
                     </Badge>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
+                <CardContent className="space-y-3 pt-0">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <div className="flex items-center gap-1 text-muted-foreground">
-                      <Users className="h-4 w-4" />
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>Pool Members</span>
                     </div>
                     {pool.has_buy_in && (
@@ -84,7 +84,7 @@ export const PoolSelection: React.FC<PoolSelectionProps> = ({
                   
                   <Button 
                     onClick={() => onSelectPool(pool)}
-                    className="w-full"
+                    className="w-full h-10 sm:h-9 text-sm sm:text-base touch-manipulation"
                     size="sm"
                   >
                     Enter Pool

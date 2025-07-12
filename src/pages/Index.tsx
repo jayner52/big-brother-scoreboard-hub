@@ -96,11 +96,14 @@ const Index = memo(() => {
     }
   }, [user, authLoading, navigate]);
 
-  // Handle sign-in success flow - show pool selection instead of auto-selecting
+  // Handle sign-in success flow - show pool selection when no active pool
   useEffect(() => {
     if (user && !authLoading && userPools.length > 0 && !poolsLoading && !activePool) {
-      // Show pool selection screen instead of auto-selecting
+      // Show pool selection screen when user has pools but no active pool
       setShowPoolSelection(true);
+    } else if (activePool) {
+      // Hide pool selection if an active pool is set
+      setShowPoolSelection(false);
     }
   }, [user, authLoading, userPools, poolsLoading, activePool]);
 

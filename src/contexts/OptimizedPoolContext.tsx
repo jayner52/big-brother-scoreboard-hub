@@ -614,7 +614,7 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
     loadUserPoolsOptimized, retryLoading
   ]);
 
-  // Auto-select active pool logic with improved sign-in handling
+  // Auto-select active pool logic - only restore saved pools, don't auto-select
   useEffect(() => {
     console.log('🔄 Pool Selection Effect:', {
       userPoolsLength: userPools.length,
@@ -624,10 +624,10 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     if (userPools.length > 0 && !userPoolsLoading) {
-      console.log('✅ User has pools, selecting active pool');
+      console.log('✅ User has pools, checking for saved pool');
       const savedPoolId = localStorage.getItem('activePoolId');
       
-      // Try to restore saved pool first
+      // Only restore a previously saved pool - don't auto-select
       if (savedPoolId) {
         const savedPool = userPools.find(p => p.pool_id === savedPoolId)?.pool;
         if (savedPool && !activePool) {
@@ -638,13 +638,8 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
       
-      // If no saved pool or saved pool not found, auto-select first available pool
-      if (!activePool && userPools[0]?.pool) {
-        console.log('🎯 Auto-selecting first pool:', userPools[0].pool.name);
-        setActivePool(userPools[0].pool);
-      }
-      
-      console.log('✅ Pool context loading complete');
+      // If no saved pool, leave activePool as null to show pool selection screen
+      console.log('🎯 No saved pool - leaving activePool null for pool selection');
       setLoading(false);
     } else if (userPools.length === 0 && !userPoolsLoading) {
       console.log('❌ No pools available - clearing active pool');

@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
@@ -9,7 +8,9 @@ interface HomepageNavigationProps {
 }
 
 export const HomepageNavigation: React.FC<HomepageNavigationProps> = ({ user }) => {
-  const navigate = useNavigate();
+  const handleNavigation = (path: string) => {
+    window.location.href = path;
+  };
 
   return (
     <nav className="relative z-10 p-6">
@@ -19,7 +20,7 @@ export const HomepageNavigation: React.FC<HomepageNavigationProps> = ({ user }) 
         </div>
         <div className="flex items-center gap-3">
           <Button
-            onClick={() => navigate('/about')}
+            onClick={() => handleNavigation('/about')}
             size="lg"
             className="bg-coral hover:bg-coral/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-semibold px-6"
           >
@@ -27,14 +28,14 @@ export const HomepageNavigation: React.FC<HomepageNavigationProps> = ({ user }) 
           </Button>
           {user ? (
             <Button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => handleNavigation('/dashboard')}
               className="bg-coral hover:bg-coral/90 text-white"
             >
               Dashboard
             </Button>
           ) : (
             <Button
-              onClick={() => navigate('/auth')}
+              onClick={() => handleNavigation('/auth')}
               className="bg-brand-teal hover:bg-brand-teal/90 text-white"
             >
               Sign In

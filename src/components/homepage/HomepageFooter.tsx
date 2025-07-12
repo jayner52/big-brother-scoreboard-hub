@@ -1,24 +1,25 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PoolsidePicksLogo } from '@/components/brand/PoolsidePicksLogo';
 
 export const HomepageFooter: React.FC = () => {
-  const navigate = useNavigate();
+  const handleNavigation = (path: string) => {
+    window.location.href = path;
+  };
 
   const handleBigBrotherLaunch = () => {
-    navigate('/landing');
+    handleNavigation('/landing');
   };
 
   const handlePrivacyPolicy = () => {
-    navigate('/privacy-policy');
+    handleNavigation('/privacy-policy');
   };
 
   const handleAbout = () => {
-    navigate('/about');
+    handleNavigation('/about');
   };
 
   const handleAuth = () => {
-    navigate('/auth');
+    handleNavigation('/auth');
   };
 
   return (

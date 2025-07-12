@@ -8,12 +8,14 @@ interface ChatHeaderProps {
   poolName: string;
   activeChat: 'group' | string;
   memberCount: number;
+  recipientName?: string;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
   poolName,
   activeChat,
-  memberCount
+  memberCount,
+  recipientName
 }) => {
   const navigate = useNavigate();
 
@@ -32,11 +34,11 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           </Button>
           <div className="flex-1">
             <CardTitle className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              {activeChat === 'group' ? `${poolName} - Group Chat` : `Private Chat`}
+              {activeChat === 'group' ? `${poolName} - Group Chat` : `DM: ${recipientName || 'Private Chat'}`}
             </CardTitle>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Users className="h-3 w-3" />
-              <span>{memberCount} members</span>
+              <span>{activeChat === 'group' ? `${memberCount} members` : 'Direct Message'}</span>
             </div>
           </div>
         </div>

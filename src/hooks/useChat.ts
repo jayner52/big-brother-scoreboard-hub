@@ -14,16 +14,18 @@ export interface ChatMessage {
   updated_at: string;
   user_name?: string;
   user_email?: string;
+  recipient_user_id?: string;
+  chat_type: 'group' | 'direct';
 }
 
-export const useChat = (poolId?: string, userId?: string) => {
+export const useChat = (poolId?: string, userId?: string, activeChat: 'group' | string = 'group') => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load messages for the pool
+  // Load messages for the pool or DM
   const loadMessages = useCallback(async () => {
-    if (!poolId) {
+    if (!poolId || !userId) {
       setMessages([]);
       setLoading(false);
       return;
@@ -31,7 +33,7 @@ export const useChat = (poolId?: string, userId?: string) => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('chat_messages')
         .select(`
           id,
@@ -43,11 +45,24 @@ export const useChat = (poolId?: string, userId?: string) => {
           is_edited,
           is_deleted,
           created_at,
-          updated_at
+          updated_at,
+          recipient_user_id,
+          chat_type
         `)
         .eq('pool_id', poolId)
-        .eq('is_deleted', false)
-        .order('created_at', { ascending: true });
+        .eq('is_deleted', false);
+
+      if (activeChat === 'group') {
+        // Load group messages
+        query = query.eq('chat_type', 'group');
+      } else {
+        // Load DM messages between current user and selected user
+        query = query
+          .eq('chat_type', 'direct')
+          .or(`and(user_id.eq.${userId},recipient_user_id.eq.${activeChat}),and(user_id.eq.${activeChat},recipient_user_id.eq.${userId})`);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: true });
 
       if (error) throw error;
 
@@ -62,7 +77,7 @@ export const useChat = (poolId?: string, userId?: string) => {
         return {
           ...msg,
           user_name: profile?.display_name || 'Unknown User'
-        };
+        } as ChatMessage;
       }));
 
       setMessages(messagesWithUserInfo);
@@ -72,16 +87,16 @@ export const useChat = (poolId?: string, userId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [poolId]);
+  }, [poolId, userId, activeChat]);
 
   // Subscribe to real-time messages
   useEffect(() => {
-    if (!poolId) return;
+    if (!poolId || !userId) return;
 
     loadMessages();
 
     const channel = supabase
-      .channel(`pool-chat-${poolId}`)
+      .channel(`pool-chat-${poolId}-${activeChat}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -90,23 +105,35 @@ export const useChat = (poolId?: string, userId?: string) => {
       }, async (payload) => {
         console.log('New message received:', payload);
         
+        const newMessageData = payload.new as any;
+        
+        // Check if this message should be displayed in current chat
+        const shouldShow = activeChat === 'group' 
+          ? newMessageData.chat_type === 'group'
+          : newMessageData.chat_type === 'direct' && (
+              (newMessageData.user_id === userId && newMessageData.recipient_user_id === activeChat) ||
+              (newMessageData.user_id === activeChat && newMessageData.recipient_user_id === userId)
+            );
+
+        if (!shouldShow) return;
+        
         // Fetch user info for the new message
         const { data: profile } = await supabase
           .from('profiles')
           .select('display_name')
-          .eq('user_id', payload.new.user_id)
+          .eq('user_id', newMessageData.user_id)
           .maybeSingle();
 
         const newMessage = {
-          ...payload.new,
+          ...newMessageData,
           user_name: profile?.display_name || 'Unknown User'
         } as ChatMessage;
 
         setMessages(prev => [...prev, newMessage]);
 
         // Update unread counts for other users
-        if (payload.new.user_id !== userId) {
-          await updateUnreadCounts(poolId, payload.new as ChatMessage);
+        if (newMessageData.user_id !== userId) {
+          await updateUnreadCounts(poolId, newMessage);
         }
       })
       .subscribe();
@@ -114,29 +141,41 @@ export const useChat = (poolId?: string, userId?: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [poolId, userId, loadMessages]);
+  }, [poolId, userId, activeChat, loadMessages]);
 
   // Update unread counts when new messages arrive
   const updateUnreadCounts = async (poolId: string, message: ChatMessage) => {
     try {
-      // Get all pool members except the message sender
-      const { data: members } = await supabase
-        .from('pool_memberships')
-        .select('user_id')
-        .eq('pool_id', poolId)
-        .eq('active', true)
-        .neq('user_id', message.user_id);
+      if (message.chat_type === 'group') {
+        // Get all pool members except the message sender
+        const { data: members } = await supabase
+          .from('pool_memberships')
+          .select('user_id')
+          .eq('pool_id', poolId)
+          .eq('active', true)
+          .neq('user_id', message.user_id);
 
-      if (!members) return;
+        if (!members) return;
 
-      // Update unread counts for each member
-      for (const member of members) {
-        const isMentioned = message.mentioned_user_ids.includes(member.user_id);
-        
+        // Update unread counts for each member
+        for (const member of members) {
+          const isMentioned = message.mentioned_user_ids.includes(member.user_id);
+          
+          await supabase.rpc('increment_unread_counts', {
+            target_user_id: member.user_id,
+            target_pool_id: poolId,
+            is_mention: isMentioned,
+            target_chat_type: 'group'
+          });
+        }
+      } else if (message.chat_type === 'direct' && message.recipient_user_id) {
+        // Update unread count for DM recipient
         await supabase.rpc('increment_unread_counts', {
-          target_user_id: member.user_id,
+          target_user_id: message.recipient_user_id,
           target_pool_id: poolId,
-          is_mention: isMentioned
+          is_mention: false,
+          target_chat_type: 'direct',
+          target_other_user_id: message.user_id
         });
       }
     } catch (error) {
@@ -144,19 +183,27 @@ export const useChat = (poolId?: string, userId?: string) => {
     }
   };
 
-  // Send a new message
+  // Send a new message (group or DM)
   const sendMessage = async (messageText: string, mentionedUserIds: string[] = []) => {
     if (!poolId || !userId || !messageText.trim()) return false;
 
     try {
+      const messageData: any = {
+        pool_id: poolId,
+        user_id: userId,
+        message: messageText.trim(),
+        mentioned_user_ids: mentionedUserIds,
+        chat_type: activeChat === 'group' ? 'group' : 'direct'
+      };
+
+      // Add recipient for DMs
+      if (activeChat !== 'group') {
+        messageData.recipient_user_id = activeChat;
+      }
+
       const { error } = await supabase
         .from('chat_messages')
-        .insert({
-          pool_id: poolId,
-          user_id: userId,
-          message: messageText.trim(),
-          mentioned_user_ids: mentionedUserIds
-        });
+        .insert(messageData);
 
       if (error) throw error;
       

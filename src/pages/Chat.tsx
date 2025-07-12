@@ -32,8 +32,8 @@ const Chat: React.FC = () => {
     });
   }, []);
 
-  const { messages, loading, sendMessage, deleteMessage, extractMentions } = useChat(activePool?.id, userId || undefined);
-  const { markAsRead } = useChatNotifications(activePool?.id, userId || undefined);
+  const { messages, loading, sendMessage, deleteMessage, extractMentions } = useChat(activePool?.id, userId || undefined, activeChat);
+  const { markAsRead } = useChatNotifications(activePool?.id, userId || undefined, activeChat);
   const { poolMembers } = usePoolMembers(activePool?.id);
   const {
     newMessage,
@@ -50,12 +50,12 @@ const Chat: React.FC = () => {
     setShowGifs
   } = useChatInput();
 
-  // Mark messages as read when component mounts or pool changes
+  // Mark messages as read when component mounts or pool/chat changes
   useEffect(() => {
     if (activePool?.id && userId) {
       markAsRead();
     }
-  }, [activePool?.id, userId, markAsRead]);
+  }, [activePool?.id, userId, activeChat, markAsRead]);
 
   // Send message
   const handleSendMessage = async () => {
@@ -119,7 +119,9 @@ const Chat: React.FC = () => {
               </Sheet>
               
               <div>
-                <h1 className="text-white font-bold text-lg">{activePool.name}</h1>
+                <h1 className="text-white font-bold text-lg">
+                  {activeChat === 'group' ? activePool.name : `DM: ${poolMembers.find(m => m.id === activeChat)?.name || 'Unknown'}`}
+                </h1>
                 <p className="text-white/80 text-sm">
                   {activeChat === 'group' ? `${poolMembers.length} members` : 'Direct Message'}
                 </p>
@@ -185,6 +187,7 @@ const Chat: React.FC = () => {
           poolName={activePool.name}
           activeChat={activeChat}
           memberCount={poolMembers.length}
+          recipientName={activeChat !== 'group' ? poolMembers.find(m => m.id === activeChat)?.name : undefined}
         />
 
         <BrandedChatContainer 

@@ -154,9 +154,11 @@ export type Database = {
       }
       chat_read_status: {
         Row: {
+          chat_type: string | null
           created_at: string | null
           id: string
           last_read_at: string | null
+          other_user_id: string | null
           pool_id: string
           unread_count: number | null
           unread_mentions: number | null
@@ -164,9 +166,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          chat_type?: string | null
           created_at?: string | null
           id?: string
           last_read_at?: string | null
+          other_user_id?: string | null
           pool_id: string
           unread_count?: number | null
           unread_mentions?: number | null
@@ -174,9 +178,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          chat_type?: string | null
           created_at?: string | null
           id?: string
           last_read_at?: string | null
+          other_user_id?: string | null
           pool_id?: string
           unread_count?: number | null
           unread_mentions?: number | null
@@ -1658,11 +1664,19 @@ export type Database = {
         Returns: boolean
       }
       increment_unread_counts: {
-        Args: {
-          target_user_id: string
-          target_pool_id: string
-          is_mention?: boolean
-        }
+        Args:
+          | {
+              target_user_id: string
+              target_pool_id: string
+              is_mention?: boolean
+            }
+          | {
+              target_user_id: string
+              target_pool_id: string
+              is_mention?: boolean
+              target_chat_type?: string
+              target_other_user_id?: string
+            }
         Returns: undefined
       }
       join_pool_by_invite: {

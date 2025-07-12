@@ -52,10 +52,15 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           display_name: (m.profiles as any)?.display_name || 'Unknown User',
           role: m.role,
           active: m.active,
-          unread_count: 0 // TODO: Implement DM unread counts
+          unread_count: 0 // Will be loaded separately
         }));
 
         setPoolMembers(members);
+        
+        // Load unread counts for DMs
+        if (currentUserId) {
+          await loadUnreadCounts(members);
+        }
       } catch (error) {
         console.error('Error loading pool members:', error);
       } finally {
@@ -63,8 +68,32 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       }
     };
 
+    const loadUnreadCounts = async (members: PoolMember[]) => {
+      try {
+        const { data: unreadData } = await supabase
+          .from('chat_read_status')
+          .select('other_user_id, unread_count')
+          .eq('user_id', currentUserId)
+          .eq('pool_id', poolId)
+          .eq('chat_type', 'direct');
+
+        if (unreadData) {
+          const unreadMap = new Map(unreadData.map(item => [item.other_user_id, item.unread_count]));
+          
+          setPoolMembers(prevMembers => 
+            prevMembers.map(member => ({
+              ...member,
+              unread_count: unreadMap.get(member.user_id) || 0
+            }))
+          );
+        }
+      } catch (error) {
+        console.error('Error loading unread counts:', error);
+      }
+    };
+
     loadPoolMembers();
-  }, [poolId]);
+  }, [poolId, currentUserId]);
 
   const getRoleIcon = (role: string) => {
     switch (role) {

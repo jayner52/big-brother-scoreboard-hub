@@ -105,22 +105,31 @@ export const useDynamicDraftSubmission = () => {
 
       console.log('🚀 User authenticated:', user.id);
 
-      // CRITICAL FIX: Dynamic player data handling
+      // FIXED: Dynamic player data handling with support for up to 12 players
       const playerData: any = {};
+      
+      // Safety check: Don't exceed database schema limit
+      const maxSupportedPlayers = 12;
+      if (picksPerTeam > maxSupportedPlayers) {
+        console.error(`🚀 Team size ${picksPerTeam} exceeds maximum supported ${maxSupportedPlayers}`);
+        toast({
+          title: "Error",
+          description: `Maximum team size is ${maxSupportedPlayers} players`,
+          variant: "destructive",
+        });
+        return false;
+      }
 
-      // Always fill the base 5 slots for database compatibility
-      for (let i = 1; i <= 5; i++) {
+      // Fill all player slots up to the actual team size
+      for (let i = 1; i <= picksPerTeam; i++) {
         const playerKey = `player_${i}`;
         playerData[playerKey] = formData[playerKey] || '';
       }
 
-      // Add any additional dynamic picks beyond the base 5
-      for (let i = 6; i <= picksPerTeam; i++) {
+      // Ensure remaining slots are empty (for pools that used to have larger teams)
+      for (let i = picksPerTeam + 1; i <= maxSupportedPlayers; i++) {
         const playerKey = `player_${i}`;
-        if (formData[playerKey]) {
-          // These would need additional database columns, but for now we'll focus on the base 5
-          console.warn(`🚀 Additional pick ${i} detected but not stored:`, formData[playerKey]);
-        }
+        playerData[playerKey] = '';
       }
 
       console.log('🚀 Player data prepared:', playerData);

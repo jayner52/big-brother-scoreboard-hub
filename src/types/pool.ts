@@ -51,6 +51,13 @@ export interface PoolEntry {
   player_3: string;
   player_4: string;
   player_5: string;
+  player_6?: string;
+  player_7?: string;
+  player_8?: string;
+  player_9?: string;
+  player_10?: string;
+  player_11?: string;
+  player_12?: string;
   bonus_answers: Record<string, any>;
   weekly_points: number;
   bonus_points: number;
@@ -93,6 +100,13 @@ export interface TeamRoster {
   player_3: string;
   player_4: string;
   player_5: string;
+  player_6?: string;
+  player_7?: string;
+  player_8?: string;
+  player_9?: string;
+  player_10?: string;
+  player_11?: string;
+  player_12?: string;
 }
 
 export interface PrizeDistribution {

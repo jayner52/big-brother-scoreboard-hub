@@ -546,10 +546,17 @@ export type Database = {
           participant_name: string
           payment_confirmed: boolean
           player_1: string
+          player_10: string | null
+          player_11: string | null
+          player_12: string | null
           player_2: string
           player_3: string
           player_4: string
           player_5: string
+          player_6: string | null
+          player_7: string | null
+          player_8: string | null
+          player_9: string | null
           pool_id: string
           team_name: string
           total_points: number
@@ -569,10 +576,17 @@ export type Database = {
           participant_name: string
           payment_confirmed?: boolean
           player_1: string
+          player_10?: string | null
+          player_11?: string | null
+          player_12?: string | null
           player_2: string
           player_3: string
           player_4: string
           player_5: string
+          player_6?: string | null
+          player_7?: string | null
+          player_8?: string | null
+          player_9?: string | null
           pool_id: string
           team_name: string
           total_points?: number
@@ -592,10 +606,17 @@ export type Database = {
           participant_name?: string
           payment_confirmed?: boolean
           player_1?: string
+          player_10?: string | null
+          player_11?: string | null
+          player_12?: string | null
           player_2?: string
           player_3?: string
           player_4?: string
           player_5?: string
+          player_6?: string | null
+          player_7?: string | null
+          player_8?: string | null
+          player_9?: string | null
           pool_id?: string
           team_name?: string
           total_points?: number

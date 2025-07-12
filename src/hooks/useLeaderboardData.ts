@@ -70,7 +70,12 @@ export const useLeaderboardData = () => {
     setLoading(false);
   };
 
-  const displayData = selectedWeek && snapshots.length > 0 ? snapshots : poolEntries;
+  // FIXED: Filter pool entries to only show data for the active pool
+  const filteredPoolEntries = poolEntries.filter(entry => 
+    activePool && entry.pool_id === activePool.id
+  );
+  
+  const displayData = selectedWeek && snapshots.length > 0 ? snapshots : filteredPoolEntries;
   const showHistoricalColumns = selectedWeek !== null && snapshots.length > 0;
 
   return {

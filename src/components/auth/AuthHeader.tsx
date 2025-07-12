@@ -12,7 +12,7 @@ export const AuthHeader = () => {
         </Button>
       </Link>
       <img 
-        src="/lovable-uploads/f309be89-df57-4c2e-8282-470bdac2f499.png" 
+        src="https://i.imgur.com/yfYAFd7.png" 
         alt="Poolside Picks Logo" 
         className="w-16 h-16 mx-auto mb-4"
       />

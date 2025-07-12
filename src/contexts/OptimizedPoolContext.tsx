@@ -573,26 +573,56 @@ export const OptimizedPoolProvider: React.FC<{ children: React.ReactNode }> = ({
     loadUserPoolsOptimized, retryLoading
   ]);
 
-  // Load saved pool from localStorage on mount
+  // Auto-select active pool logic with improved sign-in handling
   useEffect(() => {
-    const savedPoolId = localStorage.getItem('activePoolId');
-    if (savedPoolId && userPools.length > 0) {
-      const savedPool = userPools.find(p => p.pool_id === savedPoolId)?.pool;
-      if (savedPool && !activePool) {
-        setActivePool(savedPool);
+    if (userPools.length > 0 && !userPoolsLoading) {
+      const savedPoolId = localStorage.getItem('activePoolId');
+      
+      // Try to restore saved pool first
+      if (savedPoolId) {
+        const savedPool = userPools.find(p => p.pool_id === savedPoolId)?.pool;
+        if (savedPool && !activePool) {
+          setActivePool(savedPool);
+          setLoading(false);
+          return;
+        }
       }
+      
+      // If no saved pool or saved pool not found, auto-select first available pool
+      if (!activePool && userPools[0]?.pool) {
+        setActivePool(userPools[0].pool);
+      }
+      
+      setLoading(false);
+    } else if (userPools.length === 0 && !userPoolsLoading) {
+      // No pools available - clear active pool and stop loading
+      setActivePoolState(null);
+      setLoading(false);
     }
-    setLoading(false);
-  }, [userPools, activePool, setActivePool]);
+  }, [userPools, userPoolsLoading, activePool, setActivePool]);
 
-  // Load user pools on mount and auth changes
+  // Enhanced auth state handling with immediate pool loading
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-        loadUserPoolsOptimized(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        // User just signed in - immediately load pools without cache
+        setLoading(true);
+        await loadUserPoolsOptimized(false);
+      } else if (event === 'SIGNED_OUT') {
+        // User signed out - clear everything
+        setUserPools([]);
+        setPoolEntries([]);
+        setActivePoolState(null);
+        localStorage.removeItem('activePoolId');
+        setLoading(false);
+        if (subscriptionChannel) {
+          supabase.removeChannel(subscriptionChannel);
+          setSubscriptionChannel(null);
+        }
       }
     });
 
+    // Initial load
     loadUserPoolsOptimized();
 
     return () => subscription.unsubscribe();

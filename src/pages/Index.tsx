@@ -94,6 +94,19 @@ const Index = memo(() => {
     }
   }, [user, authLoading, navigate]);
 
+  // Handle sign-in success flow - wait for pools to load before showing dashboard
+  useEffect(() => {
+    if (user && !authLoading && userPools.length > 0 && !poolsLoading && !activePool) {
+      // Pools loaded but no active pool - trigger auto-selection
+      const savedPoolId = localStorage.getItem('activePoolId');
+      const savedPool = userPools.find(p => p.pool_id === savedPoolId)?.pool || userPools[0]?.pool;
+      if (savedPool && activePool !== savedPool) {
+        // This will trigger the context to set the active pool
+        console.log('Auto-selecting pool after sign-in:', savedPool.name);
+      }
+    }
+  }, [user, authLoading, userPools, poolsLoading, activePool]);
+
   const loadUserEntry = async (userId: string) => {
     try {
       if (!activePool || !poolEntries.length) return;
@@ -146,7 +159,18 @@ const Index = memo(() => {
     setHasError(true);
   };
 
-  if (authLoading || poolsLoading) {
+  // Enhanced loading state - show different messages based on what's loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse text-muted-foreground">Checking authentication...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user && poolsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -204,8 +228,8 @@ const Index = memo(() => {
     );
   }
 
-  // Show pool selection if user has no pools
-  if (userPools.length === 0) {
+  // Show pool selection if user has no pools (but only after pools have finished loading)
+  if (user && !poolsLoading && userPools.length === 0) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--gradient-unified)' }}>
         <div className="container mx-auto px-4 py-16">

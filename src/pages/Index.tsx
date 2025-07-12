@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -23,7 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUserPoolRole } from '@/hooks/useUserPoolRole';
 import { useUserProfile } from '@/hooks/useUserProfile';
 
-const Index = () => {
+const Index = memo(() => {
   const navigate = useNavigate();
   const [showRules, setShowRules] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -104,8 +104,8 @@ const Index = () => {
       if (userEntry) {
         setUserEntry(userEntry);
         
-        // Calculate rank from sorted entries
-        const sortedEntries = [...poolEntries].sort((a, b) => b.total_points - a.total_points);
+        // Calculate rank from sorted entries (optimized - avoid array spread)
+        const sortedEntries = poolEntries.slice().sort((a, b) => b.total_points - a.total_points);
         const rank = sortedEntries.findIndex(entry => entry.id === userEntry.id) + 1;
         setUserRank(rank);
       } else {
@@ -340,6 +340,6 @@ const Index = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Index;

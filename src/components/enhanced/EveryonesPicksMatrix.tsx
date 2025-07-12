@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PoolEntry, BonusQuestion } from '@/types/pool';
 // Remove useEvictedContestants - get contestant status from database
@@ -7,7 +7,7 @@ import { usePool } from '@/contexts/PoolContext';
 import { TeamDisplaySection } from './everyone-picks/TeamDisplaySection';
 import { BonusQuestionsMatrix } from './everyone-picks/BonusQuestionsMatrix';
 
-export const EveryonesPicksMatrix: React.FC = () => {
+export const EveryonesPicksMatrix: React.FC = memo(() => {
   const { activePool } = usePool();
   const [poolEntries, setPoolEntries] = useState<PoolEntry[]>([]);
   const [bonusQuestions, setBonusQuestions] = useState<BonusQuestion[]>([]);
@@ -51,12 +51,12 @@ export const EveryonesPicksMatrix: React.FC = () => {
       const [entriesResponse, questionsResponse, contestantsResponse] = await Promise.all([
         supabase
           .from('pool_entries')
-          .select('*')
+          .select('id, team_name, participant_name, user_id, pool_id, player_1, player_2, player_3, player_4, player_5, player_6, player_7, player_8, player_9, player_10, player_11, player_12, bonus_answers, total_points, current_rank, weekly_points, bonus_points, payment_confirmed, created_at, updated_at')
           .eq('pool_id', activePool.id)
           .order('team_name'),
         supabase
           .from('bonus_questions')
-          .select('*')
+          .select('id, question_text, question_type, points_value, sort_order, is_active, answer_revealed, created_at, updated_at')
           .eq('pool_id', activePool.id)
           .eq('is_active', true)
           .order('sort_order'),
@@ -120,4 +120,4 @@ export const EveryonesPicksMatrix: React.FC = () => {
       />
     </div>
   );
-};
+});

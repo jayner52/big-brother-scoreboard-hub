@@ -1,19 +1,23 @@
+import React, { Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Index from "./pages/Index";
-import Landing from "./pages/Landing";
-import PoolsidePicks from "./pages/PoolsidePicks";
-import Admin from "./pages/Admin";
-import CompanyAdmin from "./pages/CompanyAdmin";
-import HiddenCompanyAdmin from "./pages/HiddenCompanyAdmin";
-import About from "./pages/About";
-import PoolConfig from "./pages/PoolConfig";
-import Auth from "./pages/Auth";
-import Draft from "./pages/Draft";
-import MyTeams from "./pages/MyTeams";
-import Invite from "./pages/Invite";
-import Chat from "./pages/Chat";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import NotFound from "./pages/NotFound";
+import { PageLoadingSpinner } from "@/components/ui/loading-spinner";
+
+// Lazy load all route components for better performance
+const Index = React.lazy(() => import("./pages/Index"));
+const Landing = React.lazy(() => import("./pages/Landing"));
+const PoolsidePicks = React.lazy(() => import("./pages/PoolsidePicks"));
+const Admin = React.lazy(() => import("./pages/Admin"));
+const CompanyAdmin = React.lazy(() => import("./pages/CompanyAdmin"));
+const HiddenCompanyAdmin = React.lazy(() => import("./pages/HiddenCompanyAdmin"));
+const About = React.lazy(() => import("./pages/About"));
+const PoolConfig = React.lazy(() => import("./pages/PoolConfig"));
+const Auth = React.lazy(() => import("./pages/Auth"));
+const Draft = React.lazy(() => import("./pages/Draft"));
+const MyTeams = React.lazy(() => import("./pages/MyTeams"));
+const Invite = React.lazy(() => import("./pages/Invite"));
+const Chat = React.lazy(() => import("./pages/Chat"));
+const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 const router = createBrowserRouter([
   {
@@ -22,63 +26,63 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <PoolsidePicks />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading homepage..." />}><PoolsidePicks /></Suspense>
   },
   {
     path: "/landing",
-    element: <Landing />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading landing page..." />}><Landing /></Suspense>
   },
   {
     path: "/dashboard",
-    element: <Index />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading dashboard..." />}><Index /></Suspense>
   },
   {
     path: "/admin",
-    element: <Admin />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading admin panel..." />}><Admin /></Suspense>
   },
   {
     path: "/company-admin",
-    element: <CompanyAdmin />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading admin..." />}><CompanyAdmin /></Suspense>
   },
   {
     path: "/hidden-company-admin",
-    element: <HiddenCompanyAdmin />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading admin..." />}><HiddenCompanyAdmin /></Suspense>
   },
   {
     path: "/about",
-    element: <About />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading about page..." />}><About /></Suspense>
   },
   {
     path: "/pool-config",
-    element: <PoolConfig />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading pool configuration..." />}><PoolConfig /></Suspense>
   },
   {
     path: "/auth",
-    element: <Auth />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading authentication..." />}><Auth /></Suspense>
   },
   {
     path: "/draft",
-    element: <Draft />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading draft page..." />}><Draft /></Suspense>
   },
   {
     path: "/my-teams",
-    element: <MyTeams />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading your teams..." />}><MyTeams /></Suspense>
   },
   {
     path: "/chat",
-    element: <Chat />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading chat..." />}><Chat /></Suspense>
   },
   {
     path: "/privacy-policy",
-    element: <PrivacyPolicy />
+    element: <Suspense fallback={<PageLoadingSpinner text="Loading privacy policy..." />}><PrivacyPolicy /></Suspense>
   },
   {
     path: "/invite/:code",
-    element: <Invite />
+    element: <Suspense fallback={<PageLoadingSpinner text="Processing invite..." />}><Invite /></Suspense>
   },
   {
     path: "*",
-    element: <NotFound />
+    element: <Suspense fallback={<PageLoadingSpinner />}><NotFound /></Suspense>
   }
 ]);
 

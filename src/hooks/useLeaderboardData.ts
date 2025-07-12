@@ -45,15 +45,16 @@ export const useLeaderboardData = () => {
 
       console.log('🔍 LEADERBOARD DEBUG - Checking snapshots for week', week, 'pool', activePool.id);
 
-      // First check if snapshots exist for this week and pool
+      // First check if snapshots exist for this week and pool (optimized query)
       const { data: existingSnapshots } = await supabase
         .from('weekly_team_snapshots')
-        .select('id')
+        .select('id', { count: 'exact' })
         .eq('week_number', week)
         .eq('pool_id', activePool.id)
-        .limit(1);
+        .limit(1)
+        .single();
       
-      if (!existingSnapshots || existingSnapshots.length === 0) {
+      if (!existingSnapshots) {
         console.log('🔄 LEADERBOARD DEBUG - No snapshots found for week', week, 'generating...');
         try {
           await supabase.rpc('generate_weekly_snapshots', { week_num: week });

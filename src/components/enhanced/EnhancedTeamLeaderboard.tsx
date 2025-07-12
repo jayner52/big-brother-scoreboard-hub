@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLeaderboardData } from '@/hooks/useLeaderboardData';
@@ -8,7 +8,7 @@ import { ScoringBadges } from './ScoringBadges';
 import { WeekByWeekLeaderboard } from './WeekByWeekLeaderboard';
 import { BarChart3, Table } from 'lucide-react';
 
-export const EnhancedTeamLeaderboard: React.FC = () => {
+export const EnhancedTeamLeaderboard: React.FC = memo(() => {
   const {
     displayData,
     showHistoricalColumns,
@@ -120,4 +120,4 @@ export const EnhancedTeamLeaderboard: React.FC = () => {
       </CardContent>
     </Card>
   );
-};
+});

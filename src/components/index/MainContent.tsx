@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { TeamDraftForm } from '@/components/TeamDraftForm';
 import { EnhancedTeamLeaderboard } from '@/components/enhanced/EnhancedTeamLeaderboard';
 import { EveryonesPicksMatrix } from '@/components/enhanced/EveryonesPicksMatrix';
@@ -20,7 +20,7 @@ interface MainContentProps {
   picksPerTeam?: number;
 }
 
-export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam = 5 }) => {
+export const MainContent: React.FC<MainContentProps> = memo(({ formData, picksPerTeam = 5 }) => {
   const { activePool } = usePool();
   const { isAccessible: isDraftAccessible } = useDraftAccess();
   
@@ -114,4 +114,4 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       />
     </div>
   );
-};
+});

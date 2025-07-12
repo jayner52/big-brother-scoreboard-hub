@@ -35,25 +35,25 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     },
     {
       label: 'Standings',
-      href: '/standings',
+      href: '/dashboard#leaderboard',
       icon: Users,
       badge: badgeCount.standings
     },
     {
       label: 'Picks',
-      href: '/draft',
+      href: '/dashboard#draft',
       icon: Target,
       badge: badgeCount.picks
     },
     {
       label: 'Events',
-      href: '/events',
+      href: '/dashboard#results',
       icon: Calendar,
       badge: badgeCount.events
     },
     {
       label: 'More',
-      href: '/menu',
+      href: '/dashboard',
       icon: MoreHorizontal,
     }
   ];

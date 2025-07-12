@@ -12,6 +12,7 @@ import { WinnerNotificationsBanner } from '@/components/dashboard/WinnerNotifica
 import { DraftFormData } from '@/hooks/useDraftForm';
 import { usePool } from '@/contexts/PoolContext';
 import { useDraftAccess } from '@/hooks/useDraftAccess';
+import { useDashboardTabPersistence } from '@/hooks/useDashboardTabPersistence';
 import { Users, Trophy, Eye, BarChart2, User, ClipboardList } from 'lucide-react';
 
 interface MainContentProps {
@@ -91,6 +92,12 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
     }
   ];
 
+  const { activeTab, handleTabChange } = useDashboardTabPersistence({
+    activePool,
+    tabs,
+    defaultTab: 'draft'
+  });
+
   return (
     <div className="w-full space-y-4">
       {/* Winner Banner - shown for winning participants */}
@@ -99,7 +106,12 @@ export const MainContent: React.FC<MainContentProps> = ({ formData, picksPerTeam
       {/* Winner Notifications - shown for prize winners */}
       <WinnerNotificationsBanner />
       
-      <EnhancedTabSystem tabs={tabs} defaultTab="draft" />
+      <EnhancedTabSystem 
+        tabs={tabs} 
+        defaultTab="draft"
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
     </div>
   );
 };

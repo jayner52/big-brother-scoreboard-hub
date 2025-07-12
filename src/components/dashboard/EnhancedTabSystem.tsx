@@ -21,37 +21,36 @@ interface EnhancedTabSystemProps {
   tabs: TabConfig[];
   defaultTab?: string;
   className?: string;
+  activeTab?: string;
+  onTabChange?: (tabId: string) => void;
 }
 
 export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
   tabs,
   defaultTab,
-  className = ''
+  className = '',
+  activeTab: externalActiveTab,
+  onTabChange
 }) => {
   const isMobile = useIsMobile();
   const visibleTabs = tabs.filter(tab => !tab.hidden);
   
-  // Initialize active tab from URL hash or localStorage, fallback to defaultTab
-  const getInitialTab = () => {
+  // Use external tab state if provided, otherwise use internal state
+  const [internalActiveTab, setInternalActiveTab] = useState(() => {
     // First check URL hash
     const hashTab = window.location.hash.replace('#', '');
     if (hashTab && visibleTabs.some(tab => tab.id === hashTab)) {
       return hashTab;
     }
     
-    // Then check localStorage
-    const storedTab = localStorage.getItem('dashboard-active-tab');
-    if (storedTab && visibleTabs.some(tab => tab.id === storedTab)) {
-      return storedTab;
-    }
-    
-    // Finally use defaultTab or first available tab
-    return defaultTab || visibleTabs[0]?.id || '';
-  };
+    // Find first accessible tab (not locked)
+    const firstAccessibleTab = visibleTabs.find(tab => !tab.locked);
+    return defaultTab || firstAccessibleTab?.id || visibleTabs[0]?.id || '';
+  });
   
-  const [activeTab, setActiveTab] = useState(getInitialTab);
+  const activeTab = externalActiveTab || internalActiveTab;
 
-  // Persist tab selection and update URL hash
+  // Handle tab clicks
   const handleTabClick = (tabId: string, tab: TabConfig) => {
     try {
       if (tab.locked) {
@@ -60,38 +59,33 @@ export const EnhancedTabSystem: React.FC<EnhancedTabSystemProps> = ({
       }
       
       console.log('Switching to tab:', tabId);
-      setActiveTab(tabId);
       
-      // Persist to localStorage
-      localStorage.setItem('dashboard-active-tab', tabId);
-      
-      // Update URL hash without triggering navigation
-      window.history.replaceState(null, '', `#${tabId}`);
+      if (onTabChange) {
+        onTabChange(tabId);
+      } else {
+        setInternalActiveTab(tabId);
+        // Update URL hash without triggering navigation
+        window.history.replaceState(null, '', `#${tabId}`);
+      }
     } catch (error) {
       console.error('Error handling tab click:', error);
     }
   };
 
-  // Listen for hash changes (back/forward button)
+  // Listen for hash changes (back/forward button) - only if using internal state
   useEffect(() => {
+    if (externalActiveTab || !onTabChange) return;
+    
     const handleHashChange = () => {
       const hashTab = window.location.hash.replace('#', '');
       if (hashTab && visibleTabs.some(tab => tab.id === hashTab)) {
-        setActiveTab(hashTab);
-        localStorage.setItem('dashboard-active-tab', hashTab);
+        setInternalActiveTab(hashTab);
       }
     };
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [visibleTabs]);
-
-  // Set initial hash if none exists
-  useEffect(() => {
-    if (activeTab && !window.location.hash) {
-      window.history.replaceState(null, '', `#${activeTab}`);
-    }
-  }, [activeTab]);
+  }, [visibleTabs, externalActiveTab, onTabChange]);
 
   const activeTabData = visibleTabs.find(tab => tab.id === activeTab);
 

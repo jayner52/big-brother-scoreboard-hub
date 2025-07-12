@@ -22,9 +22,21 @@ export const EmojiLegend: React.FC = () => {
   ];
 
   // Group scoring rules by category for display - only show special events
-  const activeScoringRules = scoringRules.filter(rule => 
-    rule.is_active && !excludedEventTypes.includes(rule.subcategory)
-  );
+  // Add deduplication logic to prevent duplicate rules on mobile
+  const activeScoringRules = scoringRules
+    .filter(rule => rule.is_active && !excludedEventTypes.includes(rule.subcategory))
+    .reduce((unique, rule) => {
+      // Deduplicate based on category + subcategory + pool_id combination
+      const key = `${rule.category}-${rule.subcategory}-${rule.pool_id}`;
+      const existingRule = unique.find(r => 
+        `${r.category}-${r.subcategory}-${r.pool_id}` === key
+      );
+      
+      if (!existingRule) {
+        unique.push(rule);
+      }
+      return unique;
+    }, [] as typeof scoringRules);
 
   return (
     <Card className="mt-4">
@@ -32,12 +44,12 @@ export const EmojiLegend: React.FC = () => {
         <CardTitle className="text-sm">Scoring Legend</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
           {activeScoringRules.map((rule) => {
             // Prioritize database emoji field over utility function
             const emoji = rule.emoji || getScoringRuleEmoji(rule.category, rule.subcategory);
             return (
-              <div key={rule.id} className="flex items-center gap-2">
+              <div key={`${rule.id}-${rule.category}-${rule.subcategory}`} className="flex items-center gap-2">
                 <span className="text-sm">{emoji}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

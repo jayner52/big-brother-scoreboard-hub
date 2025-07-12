@@ -10,7 +10,7 @@ import { PaymentValidationSection } from '@/components/draft/PaymentValidationSe
 import { DynamicTeamDraftSection } from '@/components/draft/DynamicTeamDraftSection';
 import { BonusQuestionsSection } from '@/components/draft/BonusQuestionsSection';
 import { useActivePool } from '@/hooks/useActivePool';
-import { usePoolData } from '@/hooks/usePoolData';
+import { useOptimizedPoolData } from '@/hooks/useOptimizedPoolData';
 import { useDynamicDraftForm } from '@/hooks/useDynamicDraftForm';
 import { useDynamicDraftValidation } from '@/hooks/useDynamicDraftValidation';
 import { useDynamicDraftSubmission } from '@/hooks/useDynamicDraftSubmission';
@@ -21,7 +21,7 @@ import { Shuffle, AlertCircle, Trash2 } from 'lucide-react';
 
 export const TeamDraftForm: React.FC = () => {
   const activePool = useActivePool();
-  const { activePool: poolData, contestantGroups, bonusQuestions, loading } = usePoolData({ poolId: activePool?.id });
+  const { activePool: poolData, contestantGroups, bonusQuestions, loading } = useOptimizedPoolData({ poolId: activePool?.id });
   const isMobile = useIsMobile();
   
   // DEBUG: Log actual data flow

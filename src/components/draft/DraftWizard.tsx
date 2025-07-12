@@ -8,7 +8,7 @@ import { ProgressIndicator } from './ProgressIndicator';
 import { DraftFormPersistenceAlert } from './DraftFormPersistenceAlert';
 import { HouseguestProfiles } from '@/components/HouseguestProfiles';
 import { usePool } from '@/contexts/PoolContext';
-import { usePoolData } from '@/hooks/usePoolData';
+import { useOptimizedPoolData } from '@/hooks/useOptimizedPoolData';
 import { useDraftForm } from '@/hooks/useDraftForm';
 import { useDraftSubmission } from '@/hooks/useDraftSubmission';
 import { useDraftValidation } from '@/hooks/useDraftValidation';
@@ -24,7 +24,7 @@ export const DraftWizard: React.FC = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   
   const { activePool } = usePool();
-  const { activePool: poolData, contestantGroups, bonusQuestions, loading } = usePoolData({ poolId: activePool?.id });
+  const { activePool: poolData, contestantGroups, bonusQuestions, loading } = useOptimizedPoolData({ poolId: activePool?.id });
   const { formData, updateFormData, updateBonusAnswer, resetForm, clearSavedDraft } = useDraftForm();
   const { submitDraft } = useDraftSubmission();
   const { validateDraftForm } = useDraftValidation();

@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useActivePool } from '@/hooks/useActivePool';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
-import { Skeleton } from '@/components/ui/loading-skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PoolSelector } from './PoolSelector';
 import { TeamCarousel } from './TeamCarousel';
 import { TeamDeleteDialog } from './TeamDeleteDialog';

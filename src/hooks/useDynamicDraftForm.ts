@@ -27,8 +27,8 @@ export const useDynamicDraftForm = (poolData?: Pool | null) => {
       payment_confirmed: false,
     };
     
-    // Add dynamic player fields
-    for (let i = 1; i <= picksPerTeam; i++) {
+    // Add dynamic player fields up to maximum possible (12)
+    for (let i = 1; i <= 12; i++) {
       baseData[`player_${i}`] = '';
     }
     
@@ -37,26 +37,17 @@ export const useDynamicDraftForm = (poolData?: Pool | null) => {
 
   const [formData, setFormData] = useState<DynamicDraftFormData>(createInitialFormData());
 
-  // Update form data when picks per team changes
+  // Update form data when picks per team changes - handle team size increases/decreases
   useEffect(() => {
     setFormData(prev => {
       const newData = { ...prev };
       
-      // Add new player fields if increased
-      for (let i = 1; i <= picksPerTeam; i++) {
-        if (!newData[`player_${i}`]) {
+      // Ensure all player fields exist up to max (12)
+      for (let i = 1; i <= 12; i++) {
+        if (!newData.hasOwnProperty(`player_${i}`)) {
           newData[`player_${i}`] = '';
         }
       }
-      
-      // Remove extra player fields if decreased (but keep existing selections if possible)
-      const existingPlayerFields = Object.keys(newData).filter(key => key.startsWith('player_'));
-      existingPlayerFields.forEach(field => {
-        const playerNum = parseInt(field.split('_')[1]);
-        if (playerNum > picksPerTeam) {
-          delete newData[field];
-        }
-      });
       
       return newData;
     });
@@ -125,6 +116,18 @@ export const useDynamicDraftForm = (poolData?: Pool | null) => {
     return selections;
   };
 
+  // Get submission data with proper field management for team size changes
+  const getSubmissionData = () => {
+    const submissionData = { ...formData };
+    
+    // For slots beyond current team size, set to null to clear them
+    for (let i = picksPerTeam + 1; i <= 12; i++) {
+      submissionData[`player_${i}`] = null;
+    }
+    
+    return submissionData;
+  };
+
   return {
     formData,
     updateFormData,
@@ -132,6 +135,7 @@ export const useDynamicDraftForm = (poolData?: Pool | null) => {
     resetForm,
     clearSavedDraft,
     getPlayerSelections,
+    getSubmissionData,
     picksPerTeam
   };
 };

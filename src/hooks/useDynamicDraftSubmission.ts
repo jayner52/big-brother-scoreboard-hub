@@ -105,34 +105,26 @@ export const useDynamicDraftSubmission = () => {
 
       console.log('🚀 User authenticated:', user.id);
 
-      // FIXED: Dynamic player data handling with support for up to 12 players
+      // ENHANCED: Dynamic player data handling with proper team size management
       const playerData: any = {};
       
-      // Safety check: Don't exceed database schema limit
-      const maxSupportedPlayers = 12;
-      if (picksPerTeam > maxSupportedPlayers) {
-        console.error(`🚀 Team size ${picksPerTeam} exceeds maximum supported ${maxSupportedPlayers}`);
-        toast({
-          title: "Error",
-          description: `Maximum team size is ${maxSupportedPlayers} players`,
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Fill all player slots up to the actual team size
-      for (let i = 1; i <= picksPerTeam; i++) {
+      // Handle all player fields up to max supported (12)
+      for (let i = 1; i <= 12; i++) {
         const playerKey = `player_${i}`;
-        playerData[playerKey] = formData[playerKey] || '';
+        if (i <= picksPerTeam) {
+          // Active player slots - use form data or null
+          playerData[playerKey] = formData[playerKey]?.trim() || null;
+        } else {
+          // Inactive slots - explicitly set to null to clear old data
+          playerData[playerKey] = null;
+        }
       }
 
-      // Ensure remaining slots are empty (for pools that used to have larger teams)
-      for (let i = picksPerTeam + 1; i <= maxSupportedPlayers; i++) {
-        const playerKey = `player_${i}`;
-        playerData[playerKey] = '';
-      }
-
-      console.log('🚀 Player data prepared:', playerData);
+      console.log('🚀 Player data prepared:', { 
+        picksPerTeam, 
+        activeFields: Object.keys(playerData).filter(k => playerData[k] !== null).length,
+        totalFields: Object.keys(playerData).length
+      });
 
       const submissionData = {
         participant_name: formData.participant_name.trim(),
